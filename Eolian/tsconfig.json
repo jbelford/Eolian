@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "allowJs": true,
+    "types": [
+      "node",
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+      "./@types"
+    ],
+    "outDir": "./out",
+    "rootDirs": [
+      "./src"
+    ]
+  },
+  "include": [
+    "./@types/**/*.d.ts",
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.{spec,test}.ts"
+  ]
+}

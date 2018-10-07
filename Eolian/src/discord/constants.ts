@@ -1,0 +1,74 @@
+import { ClientOptions, PermissionResolvable, WSEventType } from 'discord.js';
+
+const EOLIAN_DISABLED_EVENTS: WSEventType[] = [
+  // 'READY',
+  // 'RESUMED',
+  // 'GUILD_SYNC',
+  // 'GUILD_CREATE',
+  // 'GUILD_DELETE',
+  // 'GUILD_UPDATE',
+  'GUILD_MEMBER_ADD',
+  'GUILD_MEMBER_REMOVE',
+  'GUILD_MEMBER_UPDATE',
+  'GUILD_MEMBERS_CHUNK',
+  'GUILD_ROLE_CREATE',
+  'GUILD_ROLE_DELETE',
+  'GUILD_ROLE_UPDATE',
+  'GUILD_BAN_ADD',
+  'GUILD_BAN_REMOVE',
+  'CHANNEL_CREATE',
+  'CHANNEL_DELETE',
+  'CHANNEL_UPDATE',
+  'CHANNEL_PINS_UPDATE',
+  // 'MESSAGE_CREATE',
+  'MESSAGE_DELETE',
+  'MESSAGE_UPDATE',
+  'MESSAGE_DELETE_BULK',
+  // 'MESSAGE_REACTION_ADD',
+  'MESSAGE_REACTION_REMOVE',
+  'MESSAGE_REACTION_REMOVE_ALL',
+  'USER_UPDATE',
+  'USER_NOTE_UPDATE',
+  'USER_SETTINGS_UPDATE',
+  'PRESENCE_UPDATE',
+  // 'VOICE_STATE_UPDATE',
+  'TYPING_START',
+  // 'VOICE_SERVER_UPDATE',
+  'RELATIONSHIP_ADD',
+  'RELATIONSHIP_REMOVE',
+];
+
+export const INVITE_PERMISSIONS: PermissionResolvable = [
+  'ADD_REACTIONS',
+  'CHANGE_NICKNAME',
+  'USE_EXTERNAL_EMOJIS',
+  'VIEW_CHANNEL',
+  'SEND_MESSAGES',
+  'SEND_TTS_MESSAGES',
+  'MANAGE_MESSAGES',
+  'EMBED_LINKS',
+  'READ_MESSAGE_HISTORY',
+  'MENTION_EVERYONE',
+  'CONNECT',
+  'SPEAK'
+];
+
+export const enum EVENTS {
+  READY = 'ready',
+  MESSAGE = 'message',
+  ERROR = 'error',
+  RECONNECTING = 'reconnecting',
+  RESUME = 'resume',
+  DEBUG = 'debug',
+  WARN = 'warn',
+  MESSAGE_REACTION_ADD = 'messageReactionAdd',
+};
+
+export const enum CHANNEL {
+  TEXT = 'text',
+  VOICE = 'voice'
+};
+
+export const EOLIAN_CLIENT_OPTIONS: ClientOptions = {
+  disabledEvents: EOLIAN_DISABLED_EVENTS
+};
