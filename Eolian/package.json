@@ -4,7 +4,7 @@
   "description": "A bot for music enthusiasts",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "keywords": [
     "music",
@@ -14,13 +14,17 @@
     "soundcloud"
   ],
   "author": "Jack Belford",
-  "license": "ISC",
+  "license": "GPL-3.0+",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "node-cleanup": "^2.1.2",
     "winston": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^10.11.4",
-    "@types/winston": "^2.4.4"
+    "@types/node-cleanup": "^2.1.0",
+    "@types/winston": "^2.4.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.1"
   }
 }

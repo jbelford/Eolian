@@ -1,5 +1,7 @@
+import { PERMISSION } from "../common/constants";
 import environment from "../environments/env";
 import { CommandAction } from "./command";
+import { COMMANDS } from "./index";
 import { KEYWORDS } from "./keywords";
 
 export class KeywordParsingStrategy implements CommandParsingStrategy {
@@ -9,8 +11,9 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
   }
 
   convertToExecutable(message: string, permission: PERMISSION): [CommandAction, EolianBotError] {
-    let text = message;
-    const keywordArguments = {};
+    let text = this.messageInvokesBot(message) ? message.substr(1) : message;
+
+    const params: CommandParams = {};
     // Extract complex keywords
     (Object.values(KEYWORDS) as Keyword[])
       // @ts-ignore // Let these be coerced into numbers so that complex are tested first
@@ -20,12 +23,27 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
         const result = keyword.matchText(text);
         if (!result.matches) return;
 
-        keywordArguments[keyword.name] = result.args;
+        params[keyword.name] = result.args;
         text = result.newText;
       });
 
+    // Search for commands after we have removed keyword arguments from the text
+    const textSplit = text.split(/\s+/g);
+    const matchedCommands = COMMANDS
+      .filter(cmd => cmd.permission <= permission)
+      .filter(cmd => textSplit.some(word => word === cmd.name));
 
-    throw new Error("Method not implemented.");
+    if (matchedCommands.length === 0) {
+      return [null, new EolianBotError('No command was specified or you do not have permission to use them.')];
+    } else if (matchedCommands.length > 1) {
+      let previewed = matchedCommands.map(cmd => `'${cmd.name}'`).slice(0, 3).join(',');
+      if (matchedCommands.length > 3) previewed += ', ...';
+      return [null, new EolianBotError('More than one command was specified: ' + previewed)];
+    }
+
+    const command = matchedCommands[0];
+    const action = command.createAction(params);
+    return [action, null];
   }
 
 }

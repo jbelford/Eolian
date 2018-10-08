@@ -1,19 +1,27 @@
-import { Message } from "discord.js";
+import { Message, RichEmbed } from "discord.js";
 
 export class DiscordMessageStrategy implements MessageStrategy {
 
   constructor(private readonly message: Message) { }
 
-  reply(message: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async reply(message: string): Promise<void> {
+    await this.message.reply(message);
   };
 
-  send(message: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async send(message: string): Promise<void> {
+    await this.message.channel.send(message);
   }
 
-  sendEmbed(embed: EmbedMessage): Promise<void> {
-    throw new Error("Method not implemented.");
+  async sendEmbed(embed: EmbedMessage): Promise<void> {
+    const rich: RichEmbed = new RichEmbed();
+    if (embed.color) rich.setColor(embed.color);
+    if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
+    if (embed.title) rich.setTitle(embed.title);
+    if (embed.description) rich.setDescription(embed.description);
+    if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
+    if (embed.image) rich.setImage(embed.image);
+    if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
+    await this.message.channel.send(rich);
   }
 
 }

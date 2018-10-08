@@ -1,18 +1,4 @@
-const defaultMatch = (text: string, reg: RegExp): { matches: boolean, newText: string, args: any } => {
-  const regArr = reg.exec(text);
-  const match = { matches: !!regArr, newText: text.replace(reg, ''), args: null };
-  if (match.matches) {
-    if (!regArr.groups) {
-      match.args = true;
-    } else {
-      match.args = regArr.groups;
-      if (Object.keys(match.args).length === 1) {
-        match.args = Object.values(match.args)[0];
-      }
-    }
-  }
-  return match;
-};
+import { PERMISSION } from "../common/constants";
 
 export const KEYWORDS: IKeywords = {
   ENABLE: {
@@ -123,11 +109,8 @@ export const KEYWORDS: IKeywords = {
       'TOP 5:-5  # Get the 5th song to the 5th last song'
     ],
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\bTOP\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i);
-      if (match.matches) {
-        match.args.start = parseInt(match.args.start);
-        match.args.stop = parseInt(match.args.stop);
-      }
+      const match = defaultMatch(text, /\bTOP\s+((\d+)(:(-?\d+))?)\b/i);
+      if (match.matches) match.args = { start: parseInt(match.args[1]), stop: parseInt(match.args[3]) };
       return match;
     },
   },
@@ -141,11 +124,8 @@ export const KEYWORDS: IKeywords = {
       'BOTTOM 5:-5  # Get the 5th last song to the 5th first song'
     ],
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\bBOTTOM\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i);
-      if (match.matches) {
-        match.args.start = parseInt(match.args.start);
-        match.args.stop = parseInt(match.args.stop);
-      }
+      const match = defaultMatch(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
+      if (match.matches) match.args = { start: parseInt(match.args[1]), stop: parseInt(match.args[3]) };
       return match;
     },
   },
@@ -155,7 +135,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],
     complex: true,
-    matchText: (text: string) => defaultMatch(text, /\B\(\s*(?<query>[^\[\]\(\)]*[^\s])\s*\)\B/i),
+    matchText: (text: string) => defaultMatch(text, /\B\(\s*([^\[\]\(\)]*[^\s])\s*\)\B/i, 1),
   },
   IDENTIFIER: {
     name: 'IDENTIFIER',
@@ -163,7 +143,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['[my identifier]', '[music playlist #2]'],
     complex: true,
-    matchText: (text: string) => defaultMatch(text, /\B\[\s*(?<identifier>[^\[\]\(\)]*[^\s])\s*\]\B/i),
+    matchText: (text: string) => defaultMatch(text, /\B\[\s*([^\[\]\(\)]*[^\s])\s*\]\B/i, 0),
   },
   URL: {
     name: 'URL',
@@ -175,7 +155,7 @@ export const KEYWORDS: IKeywords = {
       'spotify:album:3cWA6fj7NEfoGuGRYGxsam',
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
-    matchText: (text: string) => defaultMatch(text, /\b(?<url>(https?:\/\/)?[^\s]+\.com\/[^\s]+|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/),
+    matchText: (text: string) => defaultMatch(text, /\b((https?:\/\/)?[^\s]+\.com\/[^\s]+|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0),
   },
   ARG: {
     name: 'ARG',
@@ -185,10 +165,22 @@ export const KEYWORDS: IKeywords = {
       '{ arg1; arg2; arg3 }'
     ],
     complex: true,
-    matchText: (text: string) => {
-      const match = defaultMatch(text, /\B\{\s*(?<list>[^\{\}]+(;[^\{\}]+)+)\}\B/i);
-      match.args = (<string>match.args).trim().split(/\s*;\s*/g);
-      return match;
-    },
+    matchText: (text: string) => defaultMatch(text, /\B\{\s*([^\{\}]+(;[^\{\}]+)+)\}\B/i, 0),
   }
+};
+
+function defaultMatch(text: string, reg: RegExp, group?: number): { matches: boolean, newText: string, args: any } {
+  const regArr = reg.exec(text);
+  const match = { matches: !!regArr, newText: text.replace(reg, ''), args: null };
+  if (match.matches) {
+    if (regArr.length === 1) {
+      match.args = true;
+    } else {
+      match.args = regArr.slice(1);
+      if (group) {
+        match.args = match.args[group];
+      }
+    }
+  }
+  return match;
 };

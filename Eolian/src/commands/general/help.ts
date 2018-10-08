@@ -1,4 +1,6 @@
-import { CommandAction, GeneralCategory } from "../command";
+import { PERMISSION } from "../../common/constants";
+import { Embed } from "../../common/embed";
+import { CommandAction, COMMAND_CATEGORIES, GeneralCategory } from "../command";
 import { KEYWORDS } from "../keywords";
 
 export const HelpCommand: Command = {
@@ -16,8 +18,9 @@ export const HelpCommand: Command = {
  */
 class HelpAction extends CommandAction {
 
-  public execute({ message }: CommandActionParams): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async execute({ message }: CommandActionParams): Promise<void> {
+    const categoryListEmbed = Embed.Help.categoryList(COMMAND_CATEGORIES);
+    await message.sendEmbed(categoryListEmbed);
   }
 
 }
