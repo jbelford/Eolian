@@ -1,6 +1,17 @@
-const defaultMatch = (text: string, reg: RegExp): { matches: boolean, newText: string, args: { [x: string]: any } } => {
+const defaultMatch = (text: string, reg: RegExp): { matches: boolean, newText: string, args: any } => {
   const regArr = reg.exec(text);
-  return { matches: !!regArr, newText: text.replace(reg, ''), args: regArr.groups };
+  const match = { matches: !!regArr, newText: text.replace(reg, ''), args: null };
+  if (match.matches) {
+    if (!regArr.groups) {
+      match.args = true;
+    } else {
+      match.args = regArr.groups;
+      if (Object.keys(match.args).length === 1) {
+        match.args = Object.values(match.args)[0];
+      }
+    }
+  }
+  return match;
 };
 
 export const KEYWORDS: IKeywords = {
@@ -111,7 +122,14 @@ export const KEYWORDS: IKeywords = {
       'TOP 4:10  # Get the 4th song to the 10th song',
       'TOP 5:-5  # Get the 5th song to the 5th last song'
     ],
-    matchText: (text: string) => defaultMatch(text, /\bTOP\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i),
+    matchText: (text: string) => {
+      const match = defaultMatch(text, /\bTOP\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i);
+      if (match.matches) {
+        match.args.start = parseInt(match.args.start);
+        match.args.stop = parseInt(match.args.stop);
+      }
+      return match;
+    },
   },
   BOTTOM: {
     name: 'BOTTOM',
@@ -122,7 +140,14 @@ export const KEYWORDS: IKeywords = {
       'BOTTOM 4:10  # Get the 4th last song to the 10th last song',
       'BOTTOM 5:-5  # Get the 5th last song to the 5th first song'
     ],
-    matchText: (text: string) => defaultMatch(text, /\bBOTTOM\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i),
+    matchText: (text: string) => {
+      const match = defaultMatch(text, /\bBOTTOM\s+((?<start>\d+)(:(?<stop>-?\d+))?)\b/i);
+      if (match.matches) {
+        match.args.start = parseInt(match.args.start);
+        match.args.stop = parseInt(match.args.stop);
+      }
+      return match;
+    },
   },
   QUERY: {
     name: 'QUERY',
@@ -162,7 +187,7 @@ export const KEYWORDS: IKeywords = {
     complex: true,
     matchText: (text: string) => {
       const match = defaultMatch(text, /\B\{\s*(?<list>[^\{\}]+(;[^\{\}]+)+)\}\B/i);
-      match.args.list = (<string>match.args.list).trim().split(/\s*;\s*/g);
+      match.args = (<string>match.args).trim().split(/\s*;\s*/g);
       return match;
     },
   }

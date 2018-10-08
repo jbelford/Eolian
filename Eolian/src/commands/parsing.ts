@@ -1,4 +1,5 @@
 import environment from "../environments/env";
+import { CommandAction } from "./command";
 import { KEYWORDS } from "./keywords";
 
 export class KeywordParsingStrategy implements CommandParsingStrategy {
@@ -7,7 +8,7 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
     return message.trim().charAt(0) === environment.cmdToken;
   }
 
-  convertToExecutable(message: string, permission: PERMISSION): [CommandAction<unknown>, EolianBotError] {
+  convertToExecutable(message: string, permission: PERMISSION): [CommandAction, EolianBotError] {
     let text = message;
     const keywordArguments = {};
     // Extract complex keywords

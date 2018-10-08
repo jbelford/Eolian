@@ -10,20 +10,17 @@ interface EolianBot {
   stop(): Promise<void>;
 
   /**
-   * Registers strategie for handling messages received in chat
+   * Registers strategy for handling messages received in chat
    */
   onMessage(commandParser: CommandParsingStrategy);
 }
 
-type EmbedMessage = {
-
-};
-
-
 interface MessageStrategy {
+
+  reply(message: string): Promise<void>;
 
   send(message: string): Promise<void>;
 
-  sendEmbed(embed: EmbedMessage);
+  sendEmbed(embed: EmbedMessage): Promise<void>;
 
 }

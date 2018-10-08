@@ -1,21 +1,22 @@
-import { CommandAction } from "../commands";
+import { CommandAction, GeneralCategory } from "../command";
 import { KEYWORDS } from "../keywords";
 
-const helpDetails: CommandDetails = {
+export const HelpCommand: Command = {
   name: 'help',
-  permission: PERMISSION.USER,
   details: 'Shows list of all available categories, commands, keywords, and their details',
+  permission: PERMISSION.USER,
+  category: GeneralCategory,
   keywords: [KEYWORDS.ARG],
   usage: ['', '{1}', '{General}', '{poll}', '{spotify}', '{keywords}'],
+  createAction: (params: CommandParams) => new HelpAction(params)
 };
 
 /**
- * This is an object that must be constructed with the following keyword arguments.
- * It will use these arguments to generate a response based on a configured abstraction.
+ * Sends a help message for commands and categories based on user arguments.
  */
-class HelpAction extends CommandAction<{ ARG: string[] }> {
+class HelpAction extends CommandAction {
 
-  public execute(): Promise<string> {
+  public execute({ message }: CommandActionParams): Promise<void> {
     throw new Error("Method not implemented.");
   }
 

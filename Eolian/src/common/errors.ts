@@ -1,8 +1,3 @@
-
-enum ErrorType {
-
-};
-
 class EolianBotError extends Error {
 
   public response: string;

@@ -2,6 +2,7 @@ import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
 import { logger } from '../common/logger';
 import environment from '../environments/env';
 import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from './constants';
+import { DiscordMessageStrategy } from './messaging';
 
 class DiscordEolianBot implements EolianBot {
 
@@ -27,7 +28,8 @@ class DiscordEolianBot implements EolianBot {
   }
 
   public onMessage(parseStrategy: CommandParsingStrategy) {
-    this.client.on(EVENTS.MESSAGE, ({ author, member, content, channel, reply, isMentioned }) => {
+    this.client.on(EVENTS.MESSAGE, (message) => {
+      const { author, member, content, channel, reply, isMentioned } = message;
       if (author.bot) return;
       else if (!isMentioned(this.client.user) && !parseStrategy.messageInvokesBot(content)) return;
 
@@ -44,10 +46,9 @@ class DiscordEolianBot implements EolianBot {
         return reply(err.response);
       }
 
-      const user: ChatUser = { id: author.id };
-      action.execute({ user: user })
-        .then(response => reply(response).catch(err => logger.warn(`Failed to send to user: ${err}`)))
-        .catch(this.commandErrorHandler);
+      const params: CommandActionParams = { user: { id: author.id }, message: new DiscordMessageStrategy(message) };
+      action.execute(params)
+        .catch(err => logger.warn(`Something went wrong executing command: ${err}`));
     });
   }
 
@@ -74,10 +75,6 @@ class DiscordEolianBot implements EolianBot {
     if (environment.owners.includes(member.id)) return PERMISSION.OWNER;
     else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR))) return PERMISSION.ADMIN;
     return PERMISSION.USER;
-  }
-
-  private commandErrorHandler = (reason?: any) => {
-
   }
 
 }
