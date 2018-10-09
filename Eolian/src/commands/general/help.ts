@@ -10,7 +10,7 @@ export const HelpCommand: Command = {
   permission: PERMISSION.USER,
   category: GeneralCategory,
   keywords: [KEYWORDS.ARG],
-  usage: ['', '{1}', '{General}', '{poll}', '{spotify}', '{arg}', '{ARG}  // Everything is case insensitive',],
+  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
   createAction: (params: CommandParams) => new HelpAction(params)
 };
 

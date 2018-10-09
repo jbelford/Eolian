@@ -17,7 +17,7 @@ export namespace Embed {
         description: 'The following are categories for the various commands available:\n\n',
       }
       embed.description += '```' + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') + '```'
-        + `\nUse \`help {help}\` to see more details about using this command`
+        + `\nUse \`help /help/\` to see more details about using this command`
       return embed;
     }
 
@@ -31,7 +31,7 @@ export namespace Embed {
       };
       embed.description += '```'
         + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => `${environment.cmdToken} ${cmd.name}`).join('\n')
-        + '```' + `\nUse \`help {<command>}\` to see more information for that command.`
+        + '```' + `\nUse \`help /<command>/\` to see more information for that command.`
       return embed;
     }
 
@@ -50,10 +50,10 @@ export namespace Embed {
           + keywords.map(keyword => keyword.name).join('\n') + '```\n';
       }
       if (complexKeywords.length) {
-        embed.description += '**Argument Patterns:** Special patterns for taking inputs.\n```'
+        embed.description += '**Patterns:** Special patterns for taking inputs.\n```'
           + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
       }
-      embed.description += 'Use `help {<keyword / pattern>}` to learn more about patterns and keywords. All arguments are based on them!\n\n'
+      embed.description += 'Use `help /<name of pattern or keyword>/` to learn more about patterns and keywords. All arguments are based on them!\n\n'
       embed.description += '**Example Usage:**\n```' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
       return embed;
     }
@@ -62,7 +62,7 @@ export namespace Embed {
       const embed: EmbedMessage = {
         color: 0x5A54B8,
         header: {
-          text: `${keyword.complex ? 'Argument Pattern' : 'Keyword'}: ${keyword.name}`
+          text: `${keyword.complex ? 'Pattern' : 'Keyword'}: ${keyword.name}`
         },
         description: `${keyword.details}\n\n`,
       };
