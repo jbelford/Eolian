@@ -108,6 +108,7 @@ export const KEYWORDS: IKeywords = {
       'TOP 4:10  # Get the 4th song to the 10th song',
       'TOP 5:-5  # Get the 5th song to the 5th last song'
     ],
+    complex: true,
     matchText: (text: string) => {
       const match = defaultMatch(text, /\bTOP\s+((\d+)(:(-?\d+))?)\b/i);
       if (match.matches) match.args = { start: parseInt(match.args[1]), stop: parseInt(match.args[3]) };
@@ -123,6 +124,7 @@ export const KEYWORDS: IKeywords = {
       'BOTTOM 4:10  # Get the 4th last song to the 10th last song',
       'BOTTOM 5:-5  # Get the 5th last song to the 5th first song'
     ],
+    complex: true,
     matchText: (text: string) => {
       const match = defaultMatch(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
       if (match.matches) match.args = { start: parseInt(match.args[1]), stop: parseInt(match.args[3]) };
@@ -155,6 +157,7 @@ export const KEYWORDS: IKeywords = {
       'spotify:album:3cWA6fj7NEfoGuGRYGxsam',
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
+    complex: true,
     matchText: (text: string) => defaultMatch(text, /\b((https?:\/\/)?[^\s]+\.com\/[^\s]+|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0),
   },
   ARG: {
@@ -162,10 +165,11 @@ export const KEYWORDS: IKeywords = {
     details: `Used for when keywords just won't cut it.`,
     permission: PERMISSION.USER,
     usage: [
-      '{ arg1; arg2; arg3 }'
+      '{ argument 1; argument 2; argument 3 }',
+      '{ example }',
     ],
     complex: true,
-    matchText: (text: string) => defaultMatch(text, /\B\{\s*([^\{\}]+(;[^\{\}]+)+)\}\B/i, 0),
+    matchText: (text: string) => defaultMatch(text, /\B\{\s*([^\{\}]+(;[^\{\}]+)*)\}\B/i, 0),
   }
 };
 
@@ -176,7 +180,7 @@ function defaultMatch(text: string, reg: RegExp, group?: number): { matches: boo
     if (regArr.length === 1) {
       match.args = true;
     } else {
-      match.args = regArr.slice(1);
+      match.args = regArr.slice(1).map(group => group ? group.trim() : group);
       if (group) {
         match.args = match.args[group];
       }

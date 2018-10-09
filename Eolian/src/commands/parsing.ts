@@ -17,7 +17,7 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
     // Extract complex keywords
     (Object.values(KEYWORDS) as Keyword[])
       // @ts-ignore // Let these be coerced into numbers so that complex are tested first
-      .sort((a, b) => b.complex - a.complex)
+      .sort((a, b) => !!b.complex - !!a.complex)
       .filter(keyword => keyword.permission <= permission)
       .forEach(keyword => {
         const result = keyword.matchText(text);
@@ -28,7 +28,7 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
       });
 
     // Search for commands after we have removed keyword arguments from the text
-    const textSplit = text.split(/\s+/g);
+    const textSplit = text.toLowerCase().split(/\s+/g);
     const matchedCommands = COMMANDS
       .filter(cmd => cmd.permission <= permission)
       .filter(cmd => textSplit.some(word => word === cmd.name));

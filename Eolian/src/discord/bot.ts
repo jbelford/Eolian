@@ -35,19 +35,24 @@ export class DiscordEolianBot implements EolianBot {
         if (author.bot) return;
         else if (!message.isMentioned(this.client.user) && !parseStrategy.messageInvokesBot(content)) return;
 
+
         logger.debug(`Message event received: '${content}'`);
 
         if (channel.type === CHANNEL.TEXT && !this.hasSendPermission(<TextChannel>channel)) {
           return await author.send(`I do not have permission to send messages to the channel \`#${(<TextChannel>channel).name}\``);
         }
 
-        const [action, err] = parseStrategy.convertToExecutable(content, this.getPermissionLevel(message.member));
+        const permission = this.getPermissionLevel(message.member);
+        const [action, err] = parseStrategy.convertToExecutable(content, permission);
         if (err) {
           logger.debug(`Failed to get command action: ${err.message}`);
           return await message.reply(err.response);
         }
 
-        const params: CommandActionParams = { user: { id: author.id }, message: new DiscordMessageStrategy(message) };
+        const params: CommandActionParams = {
+          user: { id: author.id, permission: permission },
+          message: new DiscordMessageStrategy(message)
+        };
         await action.execute(params);
       } catch (e) {
         logger.warn(`Unhandled error occured during request: ${e instanceof Error ? e.stack : e}`);

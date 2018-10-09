@@ -1,9 +1,10 @@
 type ChatUser = {
   id: string;
+  permission: import('../src/common/constants').PERMISSION;
 };
 
 type EmbedMessage = {
-  header: {
+  header?: {
     icon?: string;
     text: string;
   };
