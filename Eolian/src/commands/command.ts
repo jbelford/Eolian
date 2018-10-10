@@ -3,7 +3,7 @@ export abstract class CommandAction {
   constructor(protected commandParams: CommandParams) {
   }
 
-  public abstract execute(params: CommandActionParams): Promise<void>;
+  public abstract execute(params: CommandActionContext): Promise<void>;
 }
 
 export const AccountCategory: CommandCategory = {

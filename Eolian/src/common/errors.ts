@@ -1,4 +1,4 @@
-class EolianBotError extends Error {
+export class EolianBotError extends Error {
 
   public response: string;
 

@@ -1,4 +1,5 @@
 import { PERMISSION } from "../common/constants";
+import { EolianBotError } from "../common/errors";
 import environment from "../environments/env";
 import { CommandAction } from "./command";
 import { COMMANDS } from "./index";

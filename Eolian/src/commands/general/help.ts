@@ -11,7 +11,7 @@ export const HelpCommand: Command = {
   category: GeneralCategory,
   keywords: [KEYWORDS.ARG],
   usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
-  createAction: (params: CommandParams) => new HelpAction(params)
+  createAction: (params) => new HelpAction(params)
 };
 
 /**
@@ -19,7 +19,7 @@ export const HelpCommand: Command = {
  */
 class HelpAction extends CommandAction {
 
-  public async execute({ user, message }: CommandActionParams): Promise<void> {
+  public async execute({ user, message }: CommandActionContext): Promise<void> {
     if (!this.commandParams.ARG) {
       const categoryListEmbed = Embed.Help.categoryList(COMMAND_CATEGORIES);
       return await message.sendEmbed(categoryListEmbed);

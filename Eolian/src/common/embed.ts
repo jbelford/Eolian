@@ -1,5 +1,6 @@
 import { COMMANDS } from "../commands/index";
 import environment from "../environments/env";
+import { COLOR } from "./constants";
 
 /**
  * This namespace describes functions for building embed messages
@@ -10,7 +11,7 @@ export namespace Embed {
 
     export function categoryList(categories: CommandCategory[]): EmbedMessage {
       const embed: EmbedMessage = {
-        color: 0x5A54B8,
+        color: COLOR.HELP,
         header: {
           text: 'Command Category List',
         },
@@ -23,7 +24,7 @@ export namespace Embed {
 
     export function commandList(category: CommandCategory): EmbedMessage {
       const embed: EmbedMessage = {
-        color: 0x5A54B8,
+        color: COLOR.HELP,
         header: {
           text: `Category: ${category.name}`,
         },
@@ -37,7 +38,7 @@ export namespace Embed {
 
     export function commandDetails(command: Command): EmbedMessage {
       const embed: EmbedMessage = {
-        color: 0x5A54B8,
+        color: COLOR.HELP,
         header: {
           text: `Command: ${command.name}`
         },
@@ -60,7 +61,7 @@ export namespace Embed {
 
     export function keywordDetails(keyword: Keyword): EmbedMessage {
       const embed: EmbedMessage = {
-        color: 0x5A54B8,
+        color: COLOR.HELP,
         header: {
           text: `${keyword.complex ? 'Pattern' : 'Keyword'}: ${keyword.name}`
         },
@@ -72,6 +73,16 @@ export namespace Embed {
       return embed;
     }
 
+  }
+
+  export function invite(link: string, username: string, pic: string): EmbedMessage {
+    return {
+      title: `**Invite: ${username}**`,
+      description: 'Click to invite bot to server',
+      url: link,
+      thumbnail: pic,
+      color: COLOR.INVITE
+    }
   }
 
 }

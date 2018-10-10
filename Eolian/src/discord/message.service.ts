@@ -1,6 +1,6 @@
 import { Message, RichEmbed } from "discord.js";
 
-export class DiscordMessageStrategy implements MessageStrategy {
+export class DiscordMessageService implements MessageService {
 
   constructor(private readonly message: Message) { }
 
@@ -20,6 +20,7 @@ export class DiscordMessageStrategy implements MessageStrategy {
     if (embed.description) rich.setDescription(embed.description);
     if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
     if (embed.image) rich.setImage(embed.image);
+    if (embed.url) rich.setURL(embed.url);
     if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
     await this.message.channel.send(rich);
   }

@@ -15,12 +15,22 @@ interface EolianBot {
   onMessage(commandParser: CommandParsingStrategy);
 }
 
-interface MessageStrategy {
+interface MessageService {
 
   reply(message: string): Promise<void>;
 
   send(message: string): Promise<void>;
 
   sendEmbed(embed: EmbedMessage): Promise<void>;
+
+}
+
+interface BotService {
+
+  name: string;
+
+  pic: string;
+
+  generateInvite(): Promise<string>;
 
 }

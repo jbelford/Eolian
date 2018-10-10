@@ -3,3 +3,8 @@ export enum PERMISSION {
   ADMIN,
   OWNER
 };
+
+export enum COLOR {
+  HELP = 0x5A54B8,
+  INVITE = 0x7985f0
+}

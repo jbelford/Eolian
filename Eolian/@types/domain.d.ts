@@ -12,6 +12,7 @@ type EmbedMessage = {
   description?: string;
   color?: number;
   thumbnail?: string;
+  url?: string;
   image?: string;
   footer?: {
     icon?: string;

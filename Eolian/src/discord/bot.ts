@@ -3,7 +3,8 @@ import { PERMISSION } from '../common/constants';
 import { logger } from '../common/logger';
 import environment from '../environments/env';
 import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from './constants';
-import { DiscordMessageStrategy } from './messaging';
+import { DiscordBotService } from './discord.service';
+import { DiscordMessageService } from './message.service';
 
 export class DiscordEolianBot implements EolianBot {
 
@@ -35,7 +36,6 @@ export class DiscordEolianBot implements EolianBot {
         if (author.bot) return;
         else if (!message.isMentioned(this.client.user) && !parseStrategy.messageInvokesBot(content)) return;
 
-
         logger.debug(`Message event received: '${content}'`);
 
         if (channel.type === CHANNEL.TEXT && !this.hasSendPermission(<TextChannel>channel)) {
@@ -49,9 +49,10 @@ export class DiscordEolianBot implements EolianBot {
           return await message.reply(err.response);
         }
 
-        const params: CommandActionParams = {
+        const params: CommandActionContext = {
           user: { id: author.id, permission: permission },
-          message: new DiscordMessageStrategy(message)
+          message: new DiscordMessageService(message),
+          bot: new DiscordBotService(this.client)
         };
         await action.execute(params);
       } catch (e) {

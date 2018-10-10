@@ -13,9 +13,10 @@ type CommandCategory = {
   details: string;
 };
 
-type CommandActionParams = {
+type CommandActionContext = {
   user: ChatUser;
-  message: MessageStrategy;
+  message: MessageService;
+  bot: BotService;
 };
 
 type CommandParams = {
@@ -53,6 +54,7 @@ interface CommandParsingStrategy {
    * Convert raw text into an actionable command object
    * @param message 
    */
-  convertToExecutable(message: string, permission: import('../src/common/constants').PERMISSION): [import('../src/commands/command').CommandAction, EolianBotError];
+  convertToExecutable(message: string, permission: import('../src/common/constants').PERMISSION):
+    [import('../src/commands/command').CommandAction, import('../src/common/errors').EolianBotError];
 
 }
