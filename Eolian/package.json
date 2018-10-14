@@ -19,6 +19,8 @@
     "discord.js": "^11.4.2",
     "mongodb": "^3.1.8",
     "node-cleanup": "^2.1.2",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "spotify-web-api-node": "^4.0.0",
     "winston": "^3.1.0"
   },
@@ -26,6 +28,7 @@
     "@types/mongodb": "^3.1.12",
     "@types/node": "^10.11.4",
     "@types/node-cleanup": "^2.1.0",
+    "@types/request-promise-native": "^1.0.15",
     "@types/winston": "^2.4.4",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1"

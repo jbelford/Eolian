@@ -11,10 +11,10 @@ export namespace Spotify {
   });
   let expiration = 0;
 
-  export async function getUser(userUri: string): Promise<[SpotifyUser, EolianBotError]> {
+  export async function getUser(userUri: string): Promise<SpotifyUser> {
     const matcher = /(spotify\.com\/user\/|spotify:user:)([^\?]+)/g
     const regArr = matcher.exec(userUri);
-    if (!regArr) return [null, new EolianBotError('Spotify URI is malformatted.')];
+    if (!regArr) throw new EolianBotError('Spotify URI is malformatted.');
 
     const userId = regArr[2];
     logger.debug(`Getting user: ${userId}`);
@@ -22,14 +22,14 @@ export namespace Spotify {
       await checkAndUpdateToken();
       const response = await spotify.getUser(userId);
       const user = <SpotifyUser>response.body;
-      return [user, null];
+      return user;
     } catch (e) {
-      return [null, new EolianBotError(e.stack ? e.stack : e, 'Failed to fetch Spotify user.')];
+      throw new EolianBotError(e.stack ? e.stack : e, 'Failed to fetch Spotify user.');
     }
   }
 
   async function checkAndUpdateToken() {
-    if (Date.now() + 1000 > expiration) {
+    if (Date.now() + 1000 >= expiration) {
       const data = await spotify.clientCredentialsGrant();
       expiration = Date.now() + data.body.expires_in;
       spotify.setAccessToken(data.body.access_token);

@@ -9,7 +9,7 @@ import { KEYWORDS } from "../keywords";
  */
 class HelpAction extends CommandAction {
 
-  public async execute({ user, channel, message }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
+  public async execute({ user, channel, message }: CommandActionContext, { ARG }: CommandActionParams): Promise<any> {
     if (!ARG) {
       const categoryListEmbed = Embed.Help.categoryList(COMMAND_CATEGORIES);
       return await channel.sendEmbed(categoryListEmbed);

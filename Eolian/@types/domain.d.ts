@@ -33,4 +33,3 @@ type PollOptionResult = {
   option: string;
   count: number;
 }
-

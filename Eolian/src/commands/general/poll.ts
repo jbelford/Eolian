@@ -27,11 +27,13 @@ class PollAction extends CommandAction {
 
     const closePollHandler = async (message: ContextMessage, reactionUser: ContextUser) => {
       if (reactionUser.id !== user.id) return;
+
       const buttons = message.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
       const results: PollOptionResult[] = options.map(option => {
         const button = buttons.find(button => button.emoji === option.emoji);
         return { option: option.text, count: button ? button.count : 0 };
       });
+
       const resultEmbed = Embed.Poll.results(question, results, user.name, user.avatar);
       await Promise.all([channel.sendEmbed(resultEmbed), message.delete()]);
       return true;

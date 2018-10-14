@@ -127,4 +127,18 @@ export namespace Embed {
 
   }
 
+  export function selection(question: string, options: string[]): EmbedMessage {
+    return {
+      header: {
+        text: '👈🏻 Select one 👉🏻'
+      },
+      title: `*${question}*`,
+      color: COLOR.SELECTION,
+      description: options.map((option, i) => `${i + 1}: ${option}`).join('\n') + '\n0: Cancel',
+      footer: {
+        text: `Enter the number of your selection in chat`
+      }
+    };
+  }
+
 }

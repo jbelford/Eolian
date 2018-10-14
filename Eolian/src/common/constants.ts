@@ -8,7 +8,8 @@ export enum PERMISSION {
 export enum COLOR {
   HELP = 0x5A54B8,
   INVITE = 0x7985f0,
-  POLL = 0x46DBC0
+  POLL = 0x46DBC0,
+  SELECTION = 0xe4ff1c
 }
 
 export enum IDENTIFIER_TYPE {

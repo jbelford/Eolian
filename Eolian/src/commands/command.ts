@@ -3,7 +3,7 @@ export abstract class CommandAction {
   constructor(protected readonly services: CommandActionServices) {
   }
 
-  public abstract execute(context: CommandActionContext, params: CommandActionParams): Promise<void>;
+  public abstract execute(context: CommandActionContext, params: CommandActionParams): Promise<any>;
 }
 
 export const AccountCategory: CommandCategory = {

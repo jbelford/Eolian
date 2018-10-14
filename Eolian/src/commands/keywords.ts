@@ -144,7 +144,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],
     complex: true,
-    matchText: (text: string) => defaultMatch(text, /\B\(\s*([^\[\]\(\)]*[^\s])\s*\)\B/i, 1),
+    matchText: (text: string) => defaultMatch(text, /\B\(\s*([^\[\]\(\)]*[^\s])\s*\)\B/i, 0),
   },
   IDENTIFIER: {
     name: 'IDENTIFIER',
