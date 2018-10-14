@@ -19,6 +19,7 @@ type CommandCategory = {
 
 type CommandActionServices = {
   bot: BotService;
+  users: import('../src/db/service').EolianUserService;
 };
 
 type CommandActionContext = {
@@ -32,6 +33,7 @@ type CommandActionParams = {
   DISABLE?: boolean;
   MORE?: boolean;
   LESS?: boolean;
+  MY?: boolean;
   SOUNDCLOUD?: boolean;
   SPOTIFY?: boolean;
   YOUTUBE?: boolean;
@@ -46,7 +48,7 @@ type CommandActionParams = {
   BOTTOM?: { start: number; stop: number };
   QUERY?: string;
   IDENTIFIER?: string;
-  URL?: string;
+  URL?: { value: string; source: import('../src/common/constants').SOURCE };
   ARG?: string[];
 };
 

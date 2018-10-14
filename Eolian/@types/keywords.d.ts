@@ -3,6 +3,7 @@ interface IKeywords {
   DISABLE: Keyword;
   MORE: Keyword;
   LESS: Keyword;
+  MY: Keyword;
   SOUNDCLOUD: Keyword;
   SPOTIFY: Keyword;
   YOUTUBE: Keyword;

@@ -50,15 +50,15 @@ export namespace Embed {
       const keywords = command.keywords.filter(keyword => !keyword.complex);
       const complexKeywords = command.keywords.filter(keywords => keywords.complex);
       if (keywords.length) {
-        embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```'
+        embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
           + keywords.map(keyword => keyword.name).join('\n') + '```\n';
       }
       if (complexKeywords.length) {
-        embed.description += '**Patterns:** Special patterns for taking inputs.\n```'
+        embed.description += '**Patterns:** Special patterns for taking inputs.\n```\n'
           + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
       }
       embed.description += 'Use `help /<name of pattern or keyword>/` to learn more about patterns and keywords. All arguments are based on them!\n\n'
-      embed.description += '**Example Usage:**\n```' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
+      embed.description += '**Example Usage:**\n```\n' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
       return embed;
     }
 

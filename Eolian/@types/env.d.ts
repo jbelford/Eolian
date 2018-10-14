@@ -6,6 +6,10 @@ type Environment = {
     discord: string;
     youtube: string;
     soundcloud: string;
+    spotify: {
+      clientId: string;
+      clientSecret: string;
+    }
   };
   invite: boolean;
   db: {

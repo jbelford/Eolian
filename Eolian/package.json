@@ -17,10 +17,13 @@
   "license": "GPL-3.0+",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "mongodb": "^3.1.8",
     "node-cleanup": "^2.1.2",
+    "spotify-web-api-node": "^4.0.0",
     "winston": "^3.1.0"
   },
   "devDependencies": {
+    "@types/mongodb": "^3.1.12",
     "@types/node": "^10.11.4",
     "@types/node-cleanup": "^2.1.0",
     "@types/winston": "^2.4.4",

@@ -5,6 +5,7 @@ const isProd = env === 'prod';
 
 export const logger = winston.createLogger({
   level: isProd ? 'info' : 'debug',
+  exitOnError: false,
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.colorize(),

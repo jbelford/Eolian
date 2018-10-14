@@ -3,6 +3,7 @@ import { CommandAction } from '../commands/command';
 import { COMMANDS } from '../commands/index';
 import { PERMISSION } from '../common/constants';
 import { logger } from '../common/logger';
+import { EolianUserService } from '../db/service';
 import environment from '../environments/env';
 import { DiscordTextChannel } from './channel';
 import { DiscordBotService } from './client';
@@ -15,7 +16,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly client: Client;
   private readonly commands: CommandAction[];
 
-  constructor() {
+  constructor(db: Database) {
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
     this.client.once(EVENTS.READY, this.readyEventHandler);
     this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
@@ -24,7 +25,8 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
     const services: CommandActionServices = {
-      bot: new DiscordBotService(this.client)
+      bot: new DiscordBotService(this.client),
+      users: new EolianUserService(db.usersDao)
     };
     this.commands = COMMANDS.map(cmd => new cmd.action(services));
   }

@@ -1,4 +1,4 @@
-import { PERMISSION } from "../common/constants";
+import { PERMISSION, SOURCE } from "../common/constants";
 
 export const KEYWORDS: IKeywords = {
   ENABLE: {
@@ -28,6 +28,13 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['less'],
     matchText: (text: string) => defaultMatch(text, /\bless\b/i),
+  },
+  MY: {
+    name: 'MY',
+    details: 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.',
+    permission: PERMISSION.USER,
+    usage: ['my'],
+    matchText: (text: string) => defaultMatch(text, /\bmy\b/i)
   },
   SOUNDCLOUD: {
     name: 'SOUNDCLOUD',
@@ -158,7 +165,17 @@ export const KEYWORDS: IKeywords = {
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
     complex: true,
-    matchText: (text: string) => defaultMatch(text, /\b((https?:\/\/)?[^\s]+\.com\/[^\s]+|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0),
+    matchText: (text: string) => {
+      const match = defaultMatch(text, /\b((https?:\/\/)?[^\s]+\.com\/[^\s]+|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
+      if (match.matches) {
+        const args = { value: match.args, source: SOURCE.UNKNOWN };
+        if (match.args.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;
+        else if (match.args.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
+        else if (match.args.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
+        match.args = args;
+      }
+      return match;
+    },
   },
   ARG: {
     name: 'ARG',
