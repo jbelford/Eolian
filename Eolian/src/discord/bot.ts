@@ -1,14 +1,19 @@
 import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
+import { CommandAction } from '../commands/command';
+import { COMMANDS } from '../commands/index';
 import { PERMISSION } from '../common/constants';
 import { logger } from '../common/logger';
 import environment from '../environments/env';
+import { DiscordTextChannel } from './channel';
+import { DiscordBotService } from './client';
 import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from './constants';
-import { DiscordBotService } from './discord.service';
-import { DiscordMessageService } from './message.service';
+import { DiscordMessage } from './message';
+import { DiscordUser } from './user';
 
 export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
+  private readonly commands: CommandAction[];
 
   constructor() {
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
@@ -18,6 +23,10 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(EVENTS.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
     this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
+    const services: CommandActionServices = {
+      bot: new DiscordBotService(this.client)
+    };
+    this.commands = COMMANDS.map(cmd => new cmd.action(services));
   }
 
   public async start() {
@@ -43,18 +52,20 @@ export class DiscordEolianBot implements EolianBot {
         }
 
         const permission = this.getPermissionLevel(message.member);
-        const [action, err] = parseStrategy.convertToExecutable(content, permission);
+        const [params, newText] = parseStrategy.parseParams(content, permission);
+
+        const [action, err] = parseStrategy.parseCommand(newText, permission, this.commands);
         if (err) {
           logger.debug(`Failed to get command action: ${err.message}`);
           return await message.reply(err.response);
         }
 
-        const params: CommandActionContext = {
-          user: { id: author.id, permission: permission },
-          message: new DiscordMessageService(message),
-          bot: new DiscordBotService(this.client)
+        const context: CommandActionContext = {
+          user: new DiscordUser(author, permission),
+          message: new DiscordMessage(message),
+          channel: new DiscordTextChannel(message.channel)
         };
-        await action.execute(params);
+        await action.execute(context, params);
       } catch (e) {
         logger.warn(`Unhandled error occured during request: ${e instanceof Error ? e.stack : e}`);
       }

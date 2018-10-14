@@ -16,8 +16,11 @@ export namespace Embed {
           text: 'Command Category List',
         },
         description: 'The following are categories for the various commands available:\n\n',
+        footer: {
+          text: `You can activate commands by tagging me directly OR by placing a \`${environment.cmdToken}\` symbol at the beginning of the message.`
+        }
       }
-      embed.description += '```' + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') + '```'
+      embed.description += '```\n' + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') + '```'
         + `\nUse \`help /help/\` to see more details about using this command`
       return embed;
     }
@@ -30,8 +33,8 @@ export namespace Embed {
         },
         description: `${category.details}\n\n`,
       };
-      embed.description += '```'
-        + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => `${environment.cmdToken} ${cmd.name}`).join('\n')
+      embed.description += '```\n'
+        + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => cmd.name).join('\n')
         + '```' + `\nUse \`help /<command>/\` to see more information for that command.`
       return embed;
     }
@@ -67,7 +70,7 @@ export namespace Embed {
         },
         description: `${keyword.details}\n\n`,
       };
-      embed.description += '**Example Usage:**\n```' + keyword.usage.map(example => `${example}`).join('\n') + '```';
+      embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => `${example}`).join('\n') + '```';
       if (keyword.complex)
         embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
       return embed;
@@ -83,6 +86,45 @@ export namespace Embed {
       thumbnail: pic,
       color: COLOR.INVITE
     }
+  }
+
+  export namespace Poll {
+
+    export function question(question: string, options: PollOption[], username: string, pic: string): EmbedMessage {
+      return {
+        header: {
+          text: '📣 Poll 📣'
+        },
+        title: `*${question}*`,
+        color: COLOR.POLL,
+        description: options.map(option => `${option.emoji}: ${option.text}`).join('\n\n'),
+        footer: {
+          text: `${username}'s poll`,
+          icon: pic
+        },
+        buttons: Array.from(options) // This is to break the reference
+      };
+    }
+
+    export function results(question: string, results: PollOptionResult[], username: string, pic: string): EmbedMessage {
+      const description = results.sort((a, b) => b.count - a.count)
+        .map(result => `**${result.option}**: ${result.count} Votes`);
+      description[0] += ' ✅';
+
+      return {
+        header: {
+          text: '📣 Poll Results 📣'
+        },
+        title: `*${question}*`,
+        color: COLOR.POLL,
+        description: description.join('\n'),
+        footer: {
+          text: `${username}'s poll`,
+          icon: pic
+        }
+      };
+    }
+
   }
 
 }

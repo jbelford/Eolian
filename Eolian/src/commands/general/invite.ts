@@ -2,6 +2,15 @@ import { PERMISSION } from "../../common/constants";
 import { Embed } from "../../common/embed";
 import { CommandAction, GeneralCategory } from "../command";
 
+class InviteAction extends CommandAction {
+
+  public async execute({ channel }: CommandActionContext): Promise<void> {
+    const inviteLink = await this.services.bot.generateInvite();
+    const inviteEmbed = Embed.invite(inviteLink, this.services.bot.name, this.services.bot.pic);
+    await channel.sendEmbed(inviteEmbed);
+  }
+
+}
 
 export const InviteCommand: Command = {
   name: 'invite',
@@ -10,15 +19,5 @@ export const InviteCommand: Command = {
   keywords: [],
   permission: PERMISSION.USER,
   usage: [''],
-  createAction: (params) => new InviteAction(params)
+  action: InviteAction
 };
-
-class InviteAction extends CommandAction {
-
-  public async execute({ message, bot }: CommandActionContext): Promise<void> {
-    const inviteLink = await bot.generateInvite();
-    const inviteEmbed = Embed.invite(inviteLink, bot.name, bot.pic);
-    await message.sendEmbed(inviteEmbed);
-  }
-
-}

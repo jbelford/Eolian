@@ -1,7 +1,6 @@
 import { Client } from "discord.js";
 import { INVITE_PERMISSIONS } from "./constants";
 
-
 export class DiscordBotService implements BotService {
 
   constructor(private readonly client: Client) { }

@@ -165,12 +165,11 @@ export const KEYWORDS: IKeywords = {
     details: `Used for when keywords just won't cut it.`,
     permission: PERMISSION.USER,
     usage: [
-      '/argument 1/ argument 2/ argument 3 /',
-      '/example/',
+      '/ argument 1 / argument 2 / argument 3 /'
     ],
     complex: true,
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\B\/\s*([^\/]+\b(\/[^\/]+\b)*)\/\B/i, 0);
+      const match = defaultMatch(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/i, 0);
       if (match.matches) match.args = match.args.split(/\s*\/\s*/g);
       return match;
     },

@@ -1,7 +1,3 @@
-type ChatUser = {
-  id: string;
-  permission: import('../src/common/constants').PERMISSION;
-};
 
 type EmbedMessage = {
   header?: {
@@ -18,4 +14,23 @@ type EmbedMessage = {
     icon?: string;
     text: string;
   };
+  buttons?: MessageButton[];
 };
+
+type MessageButton = {
+  emoji: string;
+  /**
+   * Return true if message is to be destroyed after.
+   */
+  onClick?: (message: ContextMessage, user: ContextUser) => Promise<boolean>;
+}
+
+interface PollOption extends MessageButton {
+  text: string;
+}
+
+type PollOptionResult = {
+  option: string;
+  count: number;
+}
+

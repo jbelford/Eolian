@@ -15,9 +15,26 @@ interface EolianBot {
   onMessage(commandParser: CommandParsingStrategy);
 }
 
-interface MessageService {
+interface ContextUser {
+
+  readonly id: string;
+  readonly name: string;
+  readonly avatar: string;
+  readonly permission: import('../src/common/constants').PERMISSION;
+
+}
+
+interface ContextMessage {
 
   reply(message: string): Promise<void>;
+
+  getButtons(): { emoji: string, count: number }[];
+
+  delete(): Promise<void>;
+
+}
+
+interface ContextTextChannel {
 
   send(message: string): Promise<void>;
 
@@ -27,9 +44,8 @@ interface MessageService {
 
 interface BotService {
 
-  name: string;
-
-  pic: string;
+  readonly name: string;
+  readonly pic: string;
 
   generateInvite(): Promise<string>;
 

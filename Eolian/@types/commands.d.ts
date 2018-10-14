@@ -5,21 +5,29 @@ type Command = {
   category: CommandCategory;
   keywords: Keyword[];
   usage: string[];
-  createAction: (params: CommandParams) => import('../src/commands/command').CommandAction;
+  action: CommandActionConstructor;
 };
+
+interface CommandActionConstructor {
+  new(services: CommandActionServices): import('../src/commands/command').CommandAction;
+}
 
 type CommandCategory = {
   name: string;
   details: string;
 };
 
-type CommandActionContext = {
-  user: ChatUser;
-  message: MessageService;
+type CommandActionServices = {
   bot: BotService;
 };
 
-type CommandParams = {
+type CommandActionContext = {
+  user: ContextUser;
+  message: ContextMessage;
+  channel: ContextTextChannel;
+};
+
+type CommandActionParams = {
   ENABLE?: boolean;
   DISABLE?: boolean;
   MORE?: boolean;
@@ -51,10 +59,14 @@ interface CommandParsingStrategy {
   messageInvokesBot(message: string): boolean;
 
   /**
-   * Convert raw text into an actionable command object
-   * @param message 
+   * Parse params from text and return text with those params removed.
    */
-  convertToExecutable(message: string, permission: import('../src/common/constants').PERMISSION):
+  parseParams(message: string, permission: import('../src/common/constants').PERMISSION): [CommandActionParams, string];
+
+  /**
+   * Parse command from text
+   */
+  parseCommand(message: string, permission: import('../src/common/constants').PERMISSION, commands: import('../src/commands/command').CommandAction[]):
     [import('../src/commands/command').CommandAction, import('../src/common/errors').EolianBotError];
 
 }

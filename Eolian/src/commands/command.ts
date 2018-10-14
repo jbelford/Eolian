@@ -1,9 +1,9 @@
 export abstract class CommandAction {
 
-  constructor(protected commandParams: CommandParams) {
+  constructor(protected readonly services: CommandActionServices) {
   }
 
-  public abstract execute(params: CommandActionContext): Promise<void>;
+  public abstract execute(context: CommandActionContext, params: CommandActionParams): Promise<void>;
 }
 
 export const AccountCategory: CommandCategory = {
