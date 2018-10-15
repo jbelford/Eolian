@@ -1,7 +1,7 @@
+import { EolianBotError } from 'common/errors';
+import { logger } from 'common/logger';
+import environment from 'environments/env';
 import * as SpotifyWebApi from 'spotify-web-api-node';
-import { EolianBotError } from '../common/errors';
-import { logger } from '../common/logger';
-import environment from '../environments/env';
 
 export namespace Spotify {
 
@@ -24,7 +24,7 @@ export namespace Spotify {
       const user = <SpotifyUser>response.body;
       return user;
     } catch (e) {
-      throw new EolianBotError(e.stack ? e.stack : e, 'Failed to fetch Spotify user.');
+      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify user.');
     }
   }
 

@@ -13,9 +13,12 @@
       "./@types"
     ],
     "outDir": "./out",
-    "rootDirs": [
-      "./src"
-    ]
+    "baseUrl": "src",
+    "paths": {
+      "*": [
+        "*"
+      ]
+    }
   },
   "include": [
     "./@types/**/*.d.ts",

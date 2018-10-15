@@ -1,5 +1,7 @@
-import { LinkCommand } from "./link";
+import { LinkCommand } from "commands/account/link";
+import { UnlinkCommand } from "commands/account/unlink";
 
 export const AccountCommands: Command[] = [
-  LinkCommand
+  LinkCommand,
+  UnlinkCommand
 ];

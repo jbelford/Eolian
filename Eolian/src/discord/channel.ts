@@ -1,9 +1,9 @@
+import { PERMISSION } from "common/constants";
+import { Embed } from "common/embed";
+import { logger } from "common/logger";
 import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from "discord.js";
-import { PERMISSION } from "../common/constants";
-import { Embed } from "../common/embed";
-import { logger } from "../common/logger";
-import { DiscordMessage } from "./message";
-import { DiscordUser } from "./user";
+import { DiscordMessage } from "discord/message";
+import { DiscordUser } from "discord/user";
 
 export class DiscordTextChannel implements ContextTextChannel {
 

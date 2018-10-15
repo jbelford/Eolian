@@ -1,8 +1,8 @@
+import { KeywordParsingStrategy } from "commands/parsing";
+import { logger } from "common/logger";
+import { MongoDatabase } from 'db/mongo/db';
+import { DiscordEolianBot } from "discord/bot";
 import * as nodeCleanup from 'node-cleanup';
-import { KeywordParsingStrategy } from "./commands/parsing";
-import { logger } from "./common/logger";
-import { MongoDatabase } from './db/mongo/db';
-import { DiscordEolianBot } from "./discord/bot";
 
 (async () => {
   try {
@@ -25,7 +25,7 @@ import { DiscordEolianBot } from "./discord/bot";
       return false;
     });
   } catch (e) {
-    logger.error(`Something went horribly wrong: ${e.stack ? e.stack : e}`);
+    logger.error(`Something went horribly wrong: ${e.stack || e}`);
   }
 })();
 

@@ -1,6 +1,6 @@
-import { PERMISSION } from "../../common/constants";
-import { Embed } from "../../common/embed";
-import { CommandAction, GeneralCategory } from "../command";
+import { CommandAction, GeneralCategory } from "commands/command";
+import { PERMISSION } from "common/constants";
+import { Embed } from "common/embed";
 
 class InviteAction extends CommandAction {
 

@@ -1,8 +1,8 @@
-import { PERMISSION } from "../../common/constants";
-import { Embed } from "../../common/embed";
-import { logger } from "../../common/logger";
-import { CommandAction, GeneralCategory } from "../command";
-import { KEYWORDS } from "../keywords";
+import { CommandAction, GeneralCategory } from "commands/command";
+import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from "common/constants";
+import { Embed } from "common/embed";
+import { logger } from "common/logger";
 
 // Have to use explicit unicode
 const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', '\u0035\u20E3',

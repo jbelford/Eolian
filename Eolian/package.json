@@ -2,9 +2,8 @@
   "name": "eolian",
   "version": "0.0.1",
   "description": "A bot for music enthusiasts",
-  "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "start": "node node_modules/ts-node/dist/bin.js --files src/index.ts"
   },
   "keywords": [
     "music",
@@ -17,6 +16,7 @@
   "license": "GPL-3.0+",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "module-alias": "^2.1.0",
     "mongodb": "^3.1.8",
     "node-cleanup": "^2.1.2",
     "request": "^2.88.0",
@@ -25,6 +25,7 @@
     "winston": "^3.1.0"
   },
   "devDependencies": {
+    "@types/module-alias": "^2.0.0",
     "@types/mongodb": "^3.1.12",
     "@types/node": "^10.11.4",
     "@types/node-cleanup": "^2.1.0",

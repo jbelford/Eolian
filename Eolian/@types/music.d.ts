@@ -6,5 +6,5 @@ type Track = {
   url: string;
   stream: string;
   artwork?: string;
-  src: import('../src/common/constants').SOURCE;
+  src: import('common/constants').SOURCE;
 };

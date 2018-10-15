@@ -1,7 +1,7 @@
 type Command = {
   name: string;
   details: string;
-  permission: import('../src/common/constants').PERMISSION;
+  permission: import('common/constants').PERMISSION;
   category: CommandCategory;
   keywords: Keyword[];
   usage: string[];
@@ -9,7 +9,7 @@ type Command = {
 };
 
 interface CommandActionConstructor {
-  new(services: CommandActionServices): import('../src/commands/command').CommandAction;
+  new(services: CommandActionServices): import('commands/command').CommandAction;
 }
 
 type CommandCategory = {
@@ -19,7 +19,7 @@ type CommandCategory = {
 
 type CommandActionServices = {
   bot: BotService;
-  users: import('../src/db/service').EolianUserService;
+  users: import('db/user-service').EolianUserService;
 };
 
 type CommandActionContext = {
@@ -48,7 +48,7 @@ type CommandActionParams = {
   BOTTOM?: { start: number; stop: number };
   QUERY?: string;
   IDENTIFIER?: string;
-  URL?: { value: string; source: import('../src/common/constants').SOURCE };
+  URL?: { value: string; source: import('common/constants').SOURCE };
   ARG?: string[];
 };
 
@@ -63,12 +63,12 @@ interface CommandParsingStrategy {
   /**
    * Parse params from text and return text with those params removed.
    */
-  parseParams(message: string, permission: import('../src/common/constants').PERMISSION): [CommandActionParams, string];
+  parseParams(message: string, permission: import('common/constants').PERMISSION): [CommandActionParams, string];
 
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: import('../src/common/constants').PERMISSION, commands: import('../src/commands/command').CommandAction[]):
-    [import('../src/commands/command').CommandAction, import('../src/common/errors').EolianBotError];
+  parseCommand(message: string, permission: import('common/constants').PERMISSION, commands: import('commands/command').CommandAction[]):
+    [import('commands/command').CommandAction, import('common/errors').EolianBotError];
 
 }

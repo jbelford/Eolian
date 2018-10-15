@@ -1,6 +1,6 @@
-import { COMMANDS } from "../commands/index";
-import environment from "../environments/env";
-import { COLOR } from "./constants";
+import { COMMANDS } from "commands/index";
+import { COLOR } from "common/constants";
+import environment from "environments/env";
 
 /**
  * This namespace describes functions for building embed messages

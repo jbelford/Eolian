@@ -1,7 +1,7 @@
+import { EolianBotError } from 'common/errors';
+import environment from "environments/env";
 import * as querystring from 'querystring';
 import * as request from 'request-promise-native';
-import { EolianBotError } from '../common/errors';
-import environment from "../environments/env";
 
 export namespace SoundCloud {
 
@@ -12,7 +12,7 @@ export namespace SoundCloud {
       const users: SoundCloudUser[] = await get('users', { q: query });
       return users.slice(0, limit);
     } catch (e) {
-      throw new EolianBotError(e.stack ? e.stack : e, 'I failed to search SoundCloud');
+      throw new EolianBotError(e.stack || e, 'I failed to search SoundCloud');
     }
   }
 
@@ -22,7 +22,7 @@ export namespace SoundCloud {
       if (!user.username) throw new EolianBotError('The url provided is not a SoundCloud user');
       return user;
     } catch (e) {
-      throw new EolianBotError(e.stack ? e.stack : e, 'I failed to resolve the URL from SoundCloud');
+      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
     }
   }
 

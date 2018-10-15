@@ -1,5 +1,5 @@
+import { PERMISSION } from "common/constants";
 import { User } from "discord.js";
-import { PERMISSION } from "../common/constants";
 
 export class DiscordUser implements ContextUser {
 

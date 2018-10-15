@@ -29,7 +29,7 @@ type UserDTO = {
 }
 
 type Identifier = {
-  type: import('../src/common/constants').IDENTIFIER_TYPE,
-  src: import('../src/common/constants').SOURCE,
+  type: import('common/constants').IDENTIFIER_TYPE,
+  src: import('common/constants').SOURCE,
   id: string
 }

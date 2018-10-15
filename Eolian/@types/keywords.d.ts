@@ -25,7 +25,7 @@ interface IKeywords {
 type Keyword = {
   readonly name: string;
   readonly details: string;
-  readonly permission: import('../src/common/constants').PERMISSION;
+  readonly permission: import('common/constants').PERMISSION;
   readonly usage: string[];
   // Indicates that a match could contain matches of other non-complex keywords
   // As such, any matches should be removed from the text before matching non-complex keywords

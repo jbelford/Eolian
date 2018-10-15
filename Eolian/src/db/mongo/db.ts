@@ -1,7 +1,7 @@
+import { logger } from 'common/logger';
+import { MongoUsers } from 'db/mongo/users';
+import environment from 'environments/env';
 import { MongoClient } from 'mongodb';
-import { logger } from '../../common/logger';
-import environment from '../../environments/env';
-import { MongoUsers } from './users';
 
 export class MongoDatabase implements Database {
 

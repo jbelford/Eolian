@@ -1,9 +1,9 @@
-import { SoundCloud } from "../../api/soundcloud";
-import { Spotify } from "../../api/spotify";
-import { PERMISSION, SOURCE } from "../../common/constants";
-import { logger } from "../../common/logger";
-import { AccountCategory, CommandAction } from "../command";
-import { KEYWORDS } from "../keywords";
+import { SoundCloud } from "api/soundcloud";
+import { Spotify } from "api/spotify";
+import { AccountCategory, CommandAction } from "commands/command";
+import { KEYWORDS } from "commands/keywords";
+import { PERMISSION, SOURCE } from "common/constants";
+import { logger } from "common/logger";
 
 class LinkAction extends CommandAction {
 
@@ -62,7 +62,7 @@ class LinkAction extends CommandAction {
 
   private async handleSoundCloud(context: CommandActionContext, soundCloudUser: SoundCloudUser) {
     await this.services.users.linkSoundCloudAccount(context.user.id, soundCloudUser.id);
-    await context.channel.send(`I have set your Spotify account to \`${soundCloudUser.username}\`!`
+    await context.channel.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
       + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
       + ` to use your playlists, favorites, and tracks.`);
   }

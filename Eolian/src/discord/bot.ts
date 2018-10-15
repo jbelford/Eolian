@@ -1,15 +1,15 @@
+import { CommandAction } from 'commands/command';
+import { COMMANDS } from 'commands/index';
+import { PERMISSION } from 'common/constants';
+import { logger } from 'common/logger';
+import { EolianUserService } from 'db/user-service';
 import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
-import { CommandAction } from '../commands/command';
-import { COMMANDS } from '../commands/index';
-import { PERMISSION } from '../common/constants';
-import { logger } from '../common/logger';
-import { EolianUserService } from '../db/service';
-import environment from '../environments/env';
-import { DiscordTextChannel } from './channel';
-import { DiscordBotService } from './client';
-import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from './constants';
-import { DiscordMessage } from './message';
-import { DiscordUser } from './user';
+import { DiscordTextChannel } from 'discord/channel';
+import { DiscordBotService } from 'discord/client';
+import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'discord/constants';
+import { DiscordMessage } from 'discord/message';
+import { DiscordUser } from 'discord/user';
+import environment from 'environments/env';
 
 export class DiscordEolianBot implements EolianBot {
 
@@ -69,7 +69,7 @@ export class DiscordEolianBot implements EolianBot {
         };
         await action.execute(context, params);
       } catch (e) {
-        logger.warn(`Unhandled error occured during request: ${e instanceof Error ? e.stack : e}`);
+        logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
       }
     });
   }

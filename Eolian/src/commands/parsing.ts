@@ -1,9 +1,9 @@
-import { PERMISSION } from "../common/constants";
-import { EolianBotError } from "../common/errors";
-import environment from "../environments/env";
-import { CommandAction } from "./command";
-import { COMMANDS } from "./index";
-import { KEYWORDS } from "./keywords";
+import { CommandAction } from "commands/command";
+import { COMMANDS } from "commands/index";
+import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from "common/constants";
+import { EolianBotError } from "common/errors";
+import environment from "environments/env";
 
 export class KeywordParsingStrategy implements CommandParsingStrategy {
   messageInvokesBot(message: string): boolean {
