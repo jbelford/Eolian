@@ -36,4 +36,20 @@ export class EolianUserService {
     }
   }
 
+  async addUserIdentifier(userId: string, key: string, identifier: Identifier) {
+    try {
+      await this.users.setIdentifier(userId, key, identifier);
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to set the identifier.');
+    }
+  }
+
+  async getUser(userId: string): Promise<UserDTO> {
+    try {
+      return await this.users.get(userId);
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to fetch user information.');
+    }
+  }
+
 }

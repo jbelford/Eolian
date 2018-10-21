@@ -18,17 +18,37 @@ export namespace SoundCloud {
 
   export async function resolveUser(url: string): Promise<SoundCloudUser> {
     try {
-      const user: SoundCloudUser = await get('resolve', { url: url });
-      if (!user.username) throw new EolianBotError('The url provided is not a SoundCloud user');
-      return user;
+      const resource: SoundCloudResource = await get('resolve', { url: url });
+      if (resource.kind !== 'user') throw new EolianBotError('The url provided is not a SoundCloud user');
+      return resource as SoundCloudUser;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
     }
   }
 
+  export async function resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
+    try {
+      const resource: SoundCloudResource = await get('resolve', { url: url, representation: 'compact' });
+      if (resource.kind !== 'playlist') throw new EolianBotError('The url provided is not a SoundCloud playlist');
+      return resource as SoundCloudPlaylist;
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
+    }
+  }
+
+  export async function searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
+    try {
+      const playlists: SoundCloudPlaylist[] = await get(userId ? `users/${userId}/playlists` : 'playlists',
+        { q: query, representation: 'compact' });
+      return playlists.slice(0, 5);
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, `Failed to search SoundCloud playlists.`);
+    }
+  }
+
   async function get(endpoint: string, params: any = {}) {
     params.client_id = environment.tokens.soundcloud;
-    const data = await request(`${API}/${endpoint}?${querystring.stringify(params)}`)
+    const data = await request(`${API}/${endpoint}?${querystring.stringify(params)}`);
     return JSON.parse(data);
   }
 

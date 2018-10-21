@@ -16,6 +16,8 @@
   "license": "GPL-3.0+",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "fuzzball": "^1.1.6",
+    "googleapis": "^34.0.0",
     "module-alias": "^2.1.0",
     "mongodb": "^3.1.8",
     "node-cleanup": "^2.1.2",

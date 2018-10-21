@@ -1,8 +1,9 @@
 import { SoundCloud } from "api/soundcloud";
-import { Spotify } from "api/spotify";
+import { Spotify, SpotifyResourceType } from "api/spotify";
 import { AccountCategory, CommandAction } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION, SOURCE } from "common/constants";
+import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
 class LinkAction extends CommandAction {
@@ -23,7 +24,10 @@ class LinkAction extends CommandAction {
 
   private async handleSpotify(context: CommandActionContext, url: string) {
     try {
-      const spotifyUser = await Spotify.getUser(url);
+      const resource = Spotify.getResourceType(url);
+      if (!resource || resource.type !== SpotifyResourceType.USER) throw new EolianBotError('Spotify resource is not a user!');
+
+      const spotifyUser = await Spotify.getUser(resource.id);
       await this.services.users.linkSpotifyAccount(context.user.id, spotifyUser.id);
       await context.channel.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
         + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\` keyword to search your playlists.`);
