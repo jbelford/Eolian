@@ -36,7 +36,7 @@ export class EolianUserService {
     }
   }
 
-  async addUserIdentifier(userId: string, key: string, identifier: Identifier) {
+  async addResourceIdentifier(userId: string, key: string, identifier: Identifier) {
     try {
       await this.users.setIdentifier(userId, key, identifier);
     } catch (e) {

@@ -21,132 +21,138 @@ class IdentifyAction extends CommandAction {
         identifier = await this.resolveQuery(context, params);
       }
       if (identifier) {
-        await this.services.users.addUserIdentifier(context.user.id, params.IDENTIFIER, identifier);
+        await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, identifier);
         const authors = identifier.authors.join(',');
         return await context.message
           .reply(`Awesome! The resource \`${identifier.name}\` by \`${authors}\` can now be identified with \`${params.IDENTIFIER}\`.`);
       }
     } catch (e) {
       logger.debug(e.message);
-      return await context.message.reply(e.response);
+      return await context.message.reply(e.response || 'Sorry. Something broke real bad.');
     }
     await context.message.reply(`You must provide me something to identify! Please try again with a URL or query.`);
   }
 
-  /**
-   * Resolve the URL. Accepts playlists and albums for Spotify, YouTube, or SoundCloud
-   */
-  private async resolveUrl(url: string, source: SOURCE): Promise<Identifier> {
-    if (source === SOURCE.SOUNDCLOUD) {
-      const playlist = await SoundCloud.resolvePlaylist(url);
-      return {
-        id: playlist.id.toString(),
-        name: playlist.title,
-        src: SOURCE.SOUNDCLOUD,
-        type: IDENTIFIER_TYPE.PLAYLIST,
-        authors: [playlist.user.username]
-      };
-    } else if (source === SOURCE.SPOTIFY) {
-      const resourceDetails = Spotify.getResourceType(url);
-      if (resourceDetails) {
-        if (resourceDetails.type === SpotifyResourceType.PLAYLIST) {
-          const playlist = await Spotify.getPlaylist(resourceDetails.id);
-          return {
-            id: playlist.id,
-            name: playlist.name,
-            authors: [playlist.owner.display_name],
-            src: SOURCE.SPOTIFY,
-            type: IDENTIFIER_TYPE.PLAYLIST
-          };
-        } else if (resourceDetails.type === SpotifyResourceType.ALBUM) {
-          const album = await Spotify.getAlbum(resourceDetails.id);
-          return {
-            id: album.id,
-            name: album.name,
-            authors: album.artists.map(artist => artist.name),
-            src: SOURCE.SPOTIFY,
-            type: IDENTIFIER_TYPE.ALBUM
-          }
-        }
-      }
-      throw new EolianBotError('The Spotify URL provided must be a playlist or an album!');
-    } else if (source === SOURCE.YOUTUBE) {
-      const resourceDetails = YouTube.getResourceType(url);
-      if (resourceDetails.type === YouTubeResourceType.PLAYLIST) {
-        const playlist = await YouTube.getPlaylist(resourceDetails.id);
+  private resolveUrl(url: string, source: SOURCE): Promise<Identifier> {
+    switch (source) {
+      case SOURCE.SOUNDCLOUD: return this.resolveSoundCloudUrl(url);
+      case SOURCE.SPOTIFY: return this.resolveSpotifyUrl(url);
+      case SOURCE.YOUTUBE: return this.resolveYouTubeUrl(url);
+      default: throw new EolianBotError('The URL provided is an unknown resource!');
+    }
+  }
+
+  private async resolveSoundCloudUrl(url: string): Promise<Identifier> {
+    const playlist = await SoundCloud.resolvePlaylist(url);
+    return {
+      id: playlist.id.toString(),
+      name: playlist.title,
+      src: SOURCE.SOUNDCLOUD,
+      type: IDENTIFIER_TYPE.PLAYLIST,
+      authors: [playlist.user.username]
+    };
+  }
+
+  private async resolveSpotifyUrl(url: string): Promise<Identifier> {
+    const resourceDetails = Spotify.getResourceType(url);
+    if (resourceDetails) {
+      if (resourceDetails.type === SpotifyResourceType.PLAYLIST) {
+        const playlist = await Spotify.getPlaylist(resourceDetails.id);
         return {
           id: playlist.id,
           name: playlist.name,
-          authors: [playlist.channelName],
-          src: SOURCE.YOUTUBE,
+          authors: [playlist.owner.display_name],
+          src: SOURCE.SPOTIFY,
           type: IDENTIFIER_TYPE.PLAYLIST
+        };
+      } else if (resourceDetails.type === SpotifyResourceType.ALBUM) {
+        const album = await Spotify.getAlbum(resourceDetails.id);
+        return {
+          id: album.id,
+          name: album.name,
+          authors: album.artists.map(artist => artist.name),
+          src: SOURCE.SPOTIFY,
+          type: IDENTIFIER_TYPE.ALBUM
         }
       }
-      throw new EolianBotError('The YouTube URL provided is not a playlist!');
     }
-    throw new EolianBotError('The URL provided is an unknown resource!');
+    throw new EolianBotError('The Spotify URL provided must be a playlist or an album!');
   }
 
-  private async resolveQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
-    if (params.SPOTIFY) {
-      return await this.resolveSpotifyQuery(context, params);
-    } else if (params.SOUNDCLOUD) {
-      return await this.resolveSoundCloudQuery(context, params);
-    } else if (params.YOUTUBE) {
-      return await this.resolveYouTubeQuery(context, params);
-    }
-    throw new EolianBotError('Query missing provider.', 'You must specify where I should search!');
-  }
-
-  private async resolveSpotifyQuery(context: CommandActionContext, params: CommandActionParams) {
-    if (params.PLAYLIST) {
-      let playlists: SpotifyPlaylist[];
-      if (params.MY) {
-        const user = await this.services.users.getUser(context.user.id);
-        if (!user.spotify) {
-          throw new EolianBotError(`User has not set Spotify account`,
-            `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
-        }
-        playlists = await Spotify.searchPlaylists(params.QUERY, user.spotify);
-      } else {
-        playlists = await Spotify.searchPlaylists(params.QUERY);
-      }
-      if (playlists.length === 0) throw new EolianBotError(`No Spotify playlists were found.`);
-
-      let playlist = playlists[0];
-      if (playlists.length > 1) {
-        const idx = await context.channel.sendSelection('Which playlist?',
-          playlists.map(playlist => playlist.name), context.user.id);
-        if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
-        playlist = playlists[idx];
-      }
-
+  private async resolveYouTubeUrl(url: string): Promise<Identifier> {
+    const resourceDetails = YouTube.getResourceType(url);
+    if (resourceDetails.type === YouTubeResourceType.PLAYLIST) {
+      const playlist = await YouTube.getPlaylist(resourceDetails.id);
       return {
         id: playlist.id,
         name: playlist.name,
-        authors: [playlist.owner.display_name],
-        src: SOURCE.SPOTIFY,
-        type: IDENTIFIER_TYPE.PLAYLIST,
-      };
-    } else if (params.ALBUM) {
-      const albums = await Spotify.searchAlbums(params.QUERY);
-      const idx = await context.channel.sendSelection('Which album?',
-        albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`), context.user.id);
-      if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
-
-      const album = albums[idx];
-      return {
-        id: album.id,
-        name: album.name,
-        authors: album.artists.map(artist => artist.name),
-        src: SOURCE.SPOTIFY,
-        type: IDENTIFIER_TYPE.ALBUM
-      };
+        authors: [playlist.channelName],
+        src: SOURCE.YOUTUBE,
+        type: IDENTIFIER_TYPE.PLAYLIST
+      }
     }
-    throw new EolianBotError('Spotify resource type not specified.', 'You must specify which type of resource to search!');
+    throw new EolianBotError('The YouTube URL provided is not a playlist!');
   }
 
-  private async resolveSoundCloudQuery(context: CommandActionContext, params: CommandActionParams) {
+  private resolveQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+    if (params.ALBUM) {
+      return this.resolveSpotifyAlbumQuery(context, params);
+    } else if (params.SPOTIFY) {
+      return this.resolveSpotifyPlaylistQuery(context, params);
+    } else if (params.SOUNDCLOUD) {
+      return this.resolveSoundCloudPlaylistQuery(context, params);
+    }
+    return this.resolveYouTubePlaylistQuery(context, params);
+  }
+
+  private async resolveSpotifyPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+    let playlists: SpotifyPlaylist[];
+    if (params.MY) {
+      const user = await this.services.users.getUser(context.user.id);
+      if (!user.spotify) {
+        throw new EolianBotError(`User has not set Spotify account`,
+          `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
+      }
+      playlists = await Spotify.searchPlaylists(params.QUERY, user.spotify);
+    } else {
+      playlists = await Spotify.searchPlaylists(params.QUERY);
+    }
+    if (playlists.length === 0) throw new EolianBotError(`No Spotify playlists were found.`);
+
+    let playlist = playlists[0];
+    if (playlists.length > 1) {
+      const idx = await context.channel.sendSelection('Choose a Spotify playlist',
+        playlists.map(playlist => playlist.name), context.user.id);
+      if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
+      playlist = playlists[idx];
+    }
+
+    return {
+      id: playlist.id,
+      name: playlist.name,
+      authors: [playlist.owner.display_name],
+      src: SOURCE.SPOTIFY,
+      type: IDENTIFIER_TYPE.PLAYLIST,
+    };
+  }
+
+  private async resolveSpotifyAlbumQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+    const albums = await Spotify.searchAlbums(params.QUERY);
+    const idx = await context.channel.sendSelection(`Select the album you want (resolved via Spotify)`,
+      albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`), context.user.id);
+    if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
+
+    const album = albums[idx];
+    return {
+      id: album.id,
+      name: album.name,
+      authors: album.artists.map(artist => artist.name),
+      src: SOURCE.SPOTIFY,
+      type: IDENTIFIER_TYPE.ALBUM
+    };
+  }
+
+  private async resolveSoundCloudPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
     let playlists: SoundCloudPlaylist[];
     if (params.MY) {
       const user = await this.services.users.getUser(context.user.id);
@@ -162,7 +168,7 @@ class IdentifyAction extends CommandAction {
 
     let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await context.channel.sendSelection('Which playlist?',
+      const idx = await context.channel.sendSelection('Choose a SoundCloud playlist',
         playlists.map(playlist => playlist.title), context.user.id);
       if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
       playlist = playlists[idx];
@@ -177,9 +183,9 @@ class IdentifyAction extends CommandAction {
     };
   }
 
-  private async resolveYouTubeQuery(context: CommandActionContext, params: CommandActionParams) {
+  private async resolveYouTubePlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
     const playlists = await YouTube.searchPlaylists(params.QUERY);
-    const idx = await context.channel.sendSelection('Which playlist?',
+    const idx = await context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => playlist.name), context.user.id);
     if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
 
