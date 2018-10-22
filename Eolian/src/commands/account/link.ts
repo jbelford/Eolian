@@ -8,7 +8,7 @@ import { logger } from "common/logger";
 
 class LinkAction extends CommandAction {
 
-  public async execute(context: CommandActionContext, { QUERY, URL }: CommandActionParams): Promise<void> {
+  public async execute(context: CommandActionContext, { QUERY, URL, SPOTIFY }: CommandActionParams): Promise<void> {
     if (QUERY && URL) {
       return await context.message.reply(`You provided both a query and a url. Please provide just one of those items.`);
     } else if (URL) {
@@ -17,6 +17,9 @@ class LinkAction extends CommandAction {
       logger.warn(`A URL was provided without a valid source. This should not happen: ${URL}`);
       return await context.message.reply('The URL you provided does not match any source.');
     } else if (QUERY) {
+      if (SPOTIFY) {
+        return await context.message.reply(`Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`);
+      }
       return await this.handleSoundCloudQuery(context, QUERY);
     }
     await context.message.reply('You must provide valid url or a query for me to link your account to!');

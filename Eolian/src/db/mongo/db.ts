@@ -18,8 +18,9 @@ export class MongoDatabase implements Database {
    */
   public static async getInstance(): Promise<MongoDatabase> {
     const client = new MongoClient(environment.db.url, { useNewUrlParser: true });
+    logger.info(`Connecting to Mongo: ${environment.db.url}`);
     await client.connect();
-    logger.info(`Connection to Mongo established: ${environment.db.url}`);
+    logger.info(`Connection to Mongo established`);
     return new MongoDatabase(client);
   }
 

@@ -141,4 +141,30 @@ export namespace Embed {
     };
   }
 
+  export function userDetails(contextUser: ContextUser, spotify?: SpotifyUser, soundcloud?: SoundCloudUser,
+    identifiers?: { [key: string]: Identifier }): EmbedMessage {
+
+    let description = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`
+      + `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n`
+      + `**Identifiers:** `;
+    if (identifiers && Object.keys(identifiers).length > 0) {
+      description += Object.keys(identifiers).map((key, i) => `[${key}](${identifiers[key].url})`).join(', ');
+    } else {
+      description += 'N/A';
+    }
+
+    return {
+      header: {
+        icon: contextUser.avatar,
+        text: `🎫 Profile Details 🎫 `
+      },
+      title: `Here's what I know about you ${contextUser.name}!`,
+      color: COLOR.PROFILE,
+      description: description,
+      footer: {
+        text: `See 'help' for the 'Account' category to configure your profile.`
+      }
+    }
+  }
+
 }

@@ -7,33 +7,43 @@ import { IDENTIFIER_TYPE, PERMISSION, SOURCE } from "common/constants";
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
+type ResolvedResource = {
+  authors: string[];
+  name: string;
+  identifier: Identifier;
+};
+
 class IdentifyAction extends CommandAction {
 
   public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
     if (!params.IDENTIFIER) {
       return await context.message.reply(`You forgot to specify the key for your identifer.`);
+    } else if (params.URL && params.QUERY) {
+      return await context.message.reply(`You specified both a url and a query! Please try again with only one of those.`);
     }
+
     try {
-      let identifier: Identifier;
+      let resource: ResolvedResource;
       if (params.URL) {
-        identifier = await this.resolveUrl(params.URL.value, params.URL.source);
+        resource = await this.resolveUrl(params.URL.value, params.URL.source);
       } else if (params.QUERY) {
-        identifier = await this.resolveQuery(context, params);
+        resource = await this.resolveQuery(context, params);
       }
-      if (identifier) {
-        await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, identifier);
-        const authors = identifier.authors.join(',');
+      if (resource) {
+        await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
+        const authors = resource.authors.join(',');
         return await context.message
-          .reply(`Awesome! The resource \`${identifier.name}\` by \`${authors}\` can now be identified with \`${params.IDENTIFIER}\`.`);
+          .reply(`Awesome! The resource \`${resource.name}\` by \`${authors}\` can now be identified with \`${params.IDENTIFIER}\`.`);
       }
     } catch (e) {
-      logger.debug(e.message);
+      logger.debug(e.stack || e);
       return await context.message.reply(e.response || 'Sorry. Something broke real bad.');
     }
+
     await context.message.reply(`You must provide me something to identify! Please try again with a URL or query.`);
   }
 
-  private resolveUrl(url: string, source: SOURCE): Promise<Identifier> {
+  private resolveUrl(url: string, source: SOURCE): Promise<ResolvedResource> {
     switch (source) {
       case SOURCE.SOUNDCLOUD: return this.resolveSoundCloudUrl(url);
       case SOURCE.SPOTIFY: return this.resolveSpotifyUrl(url);
@@ -42,59 +52,75 @@ class IdentifyAction extends CommandAction {
     }
   }
 
-  private async resolveSoundCloudUrl(url: string): Promise<Identifier> {
+  private async resolveSoundCloudUrl(url: string): Promise<ResolvedResource> {
     const playlist = await SoundCloud.resolvePlaylist(url);
-    return {
+    const identifer: Identifier = {
       id: playlist.id.toString(),
-      name: playlist.title,
       src: SOURCE.SOUNDCLOUD,
       type: IDENTIFIER_TYPE.PLAYLIST,
-      authors: [playlist.user.username]
+      url: playlist.permalink_url
+    };
+    return {
+      name: playlist.title,
+      authors: [playlist.user.username],
+      identifier: identifer
     };
   }
 
-  private async resolveSpotifyUrl(url: string): Promise<Identifier> {
+  private async resolveSpotifyUrl(url: string): Promise<ResolvedResource> {
     const resourceDetails = Spotify.getResourceType(url);
     if (resourceDetails) {
       if (resourceDetails.type === SpotifyResourceType.PLAYLIST) {
         const playlist = await Spotify.getPlaylist(resourceDetails.id);
-        return {
+        const identifer: Identifier = {
           id: playlist.id,
+          src: SOURCE.SPOTIFY,
+          type: IDENTIFIER_TYPE.PLAYLIST,
+          url: playlist.external_urls.spotify
+        };
+        return {
           name: playlist.name,
           authors: [playlist.owner.display_name],
-          src: SOURCE.SPOTIFY,
-          type: IDENTIFIER_TYPE.PLAYLIST
+          identifier: identifer
         };
       } else if (resourceDetails.type === SpotifyResourceType.ALBUM) {
         const album = await Spotify.getAlbum(resourceDetails.id);
-        return {
+        const identifer: Identifier = {
           id: album.id,
-          name: album.name,
-          authors: album.artists.map(artist => artist.name),
           src: SOURCE.SPOTIFY,
-          type: IDENTIFIER_TYPE.ALBUM
-        }
+          type: IDENTIFIER_TYPE.ALBUM,
+          url: album.external_urls.spotify
+        };
+        return {
+          name: album.name,
+          authors: album.artists.map(x => x.name),
+          identifier: identifer
+        };
       }
     }
     throw new EolianBotError('The Spotify URL provided must be a playlist or an album!');
   }
 
-  private async resolveYouTubeUrl(url: string): Promise<Identifier> {
+  private async resolveYouTubeUrl(url: string): Promise<ResolvedResource> {
     const resourceDetails = YouTube.getResourceType(url);
     if (resourceDetails.type === YouTubeResourceType.PLAYLIST) {
       const playlist = await YouTube.getPlaylist(resourceDetails.id);
-      return {
+      const identifer: Identifier = {
         id: playlist.id,
+        src: SOURCE.YOUTUBE,
+        type: IDENTIFIER_TYPE.PLAYLIST,
+        url: playlist.url
+      };
+      return {
         name: playlist.name,
         authors: [playlist.channelName],
-        src: SOURCE.YOUTUBE,
-        type: IDENTIFIER_TYPE.PLAYLIST
-      }
+        identifier: identifer
+      };
     }
     throw new EolianBotError('The YouTube URL provided is not a playlist!');
   }
 
-  private resolveQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+  private resolveQuery(context: CommandActionContext, params: CommandActionParams): Promise<ResolvedResource> {
     if (params.ALBUM) {
       return this.resolveSpotifyAlbumQuery(context, params);
     } else if (params.SPOTIFY) {
@@ -105,7 +131,7 @@ class IdentifyAction extends CommandAction {
     return this.resolveYouTubePlaylistQuery(context, params);
   }
 
-  private async resolveSpotifyPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+  private async resolveSpotifyPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<ResolvedResource> {
     let playlists: SpotifyPlaylist[];
     if (params.MY) {
       const user = await this.services.users.getUser(context.user.id);
@@ -127,32 +153,42 @@ class IdentifyAction extends CommandAction {
       playlist = playlists[idx];
     }
 
-    return {
+    const identifer: Identifier = {
       id: playlist.id,
-      name: playlist.name,
-      authors: [playlist.owner.display_name],
       src: SOURCE.SPOTIFY,
       type: IDENTIFIER_TYPE.PLAYLIST,
+      url: playlist.external_urls.spotify
+    };
+
+    return {
+      name: playlist.name,
+      authors: [playlist.owner.display_name],
+      identifier: identifer
     };
   }
 
-  private async resolveSpotifyAlbumQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+  private async resolveSpotifyAlbumQuery(context: CommandActionContext, params: CommandActionParams): Promise<ResolvedResource> {
     const albums = await Spotify.searchAlbums(params.QUERY);
     const idx = await context.channel.sendSelection(`Select the album you want (resolved via Spotify)`,
       albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`), context.user.id);
     if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
 
     const album = albums[idx];
-    return {
+    const identifer: Identifier = {
       id: album.id,
-      name: album.name,
-      authors: album.artists.map(artist => artist.name),
       src: SOURCE.SPOTIFY,
-      type: IDENTIFIER_TYPE.ALBUM
+      type: IDENTIFIER_TYPE.ALBUM,
+      url: album.external_urls.spotify
+    };
+
+    return {
+      name: album.name,
+      authors: album.artists.map(x => x.name),
+      identifier: identifer
     };
   }
 
-  private async resolveSoundCloudPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+  private async resolveSoundCloudPlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<ResolvedResource> {
     let playlists: SoundCloudPlaylist[];
     if (params.MY) {
       const user = await this.services.users.getUser(context.user.id);
@@ -174,29 +210,39 @@ class IdentifyAction extends CommandAction {
       playlist = playlists[idx];
     }
 
-    return {
+    const identifer: Identifier = {
       id: playlist.id.toString(),
-      authors: [playlist.user.username],
-      name: playlist.title,
       src: SOURCE.SOUNDCLOUD,
-      type: IDENTIFIER_TYPE.PLAYLIST
+      type: IDENTIFIER_TYPE.PLAYLIST,
+      url: playlist.permalink_url
+    };
+
+    return {
+      name: playlist.title,
+      authors: [playlist.user.username],
+      identifier: identifer
     };
   }
 
-  private async resolveYouTubePlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<Identifier> {
+  private async resolveYouTubePlaylistQuery(context: CommandActionContext, params: CommandActionParams): Promise<ResolvedResource> {
     const playlists = await YouTube.searchPlaylists(params.QUERY);
     const idx = await context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => playlist.name), context.user.id);
     if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
 
     const playlist = playlists[idx];
-    return {
+    const identifer: Identifier = {
       id: playlist.id,
-      authors: [playlist.channelName],
+      src: SOURCE.YOUTUBE,
+      type: IDENTIFIER_TYPE.PLAYLIST,
+      url: playlist.url
+    };
+
+    return {
       name: playlist.name,
-      src: SOURCE.SOUNDCLOUD,
-      type: IDENTIFIER_TYPE.PLAYLIST
-    }
+      authors: [playlist.channelName],
+      identifier: identifer
+    };
   }
 
 }

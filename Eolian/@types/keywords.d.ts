@@ -1,6 +1,7 @@
 interface IKeywords {
   ENABLE: Keyword;
   DISABLE: Keyword;
+  CLEAR: Keyword;
   MORE: Keyword;
   LESS: Keyword;
   MY: Keyword;

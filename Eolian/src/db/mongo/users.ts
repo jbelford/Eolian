@@ -12,7 +12,7 @@ export class MongoUsers implements UsersDAO {
     const result = await this.users.findOneAndUpdate(
       { _id: { $eq: id } },
       { $setOnInsert: { _id: id } },
-      { upsert: true }
+      { upsert: true, returnOriginal: false }
     );
     return result.value;
   }
@@ -59,6 +59,11 @@ export class MongoUsers implements UsersDAO {
     const unset = {};
     unset[`identifiers.${key}`] = '';
     await this.users.updateOne({ _id: { $eq: id } }, { $unset: unset });
+  }
+
+  public async delete(id: string) {
+    const result = await this.users.deleteOne({ _id: { $eq: id } });
+    return result.deletedCount > 0;
   }
 
 }

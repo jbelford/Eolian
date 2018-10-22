@@ -3,6 +3,7 @@ type SpotifyUser = {
   id: string;
   display_name: string;
   uri: string;
+  external_urls: SpotifyExternalUrls;
 }
 
 type SpotifyUrlDetails = {

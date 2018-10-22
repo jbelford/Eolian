@@ -46,6 +46,15 @@ export namespace SoundCloud {
     }
   }
 
+  export async function getUser(id: number): Promise<SoundCloudUser> {
+    try {
+      const user: SoundCloudUser = await get(`users/${id}`);
+      return user;
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, `Failed to fetch SoundCloud user profile.`);
+    }
+  }
+
   async function get(endpoint: string, params: any = {}) {
     params.client_id = environment.tokens.soundcloud;
     const data = await request(`${API}/${endpoint}?${querystring.stringify(params)}`);

@@ -15,6 +15,13 @@ export const KEYWORDS: IKeywords = {
     usage: ['disable'],
     matchText: (text: string) => defaultMatch(text, /\bdisable\b/i),
   },
+  CLEAR: {
+    name: 'CLEAR',
+    details: 'Indicates to remove some data',
+    permission: PERMISSION.USER,
+    usage: ['clear'],
+    matchText: (text: string) => defaultMatch(text, /\bclear\b/i),
+  },
   MORE: {
     name: 'MORE',
     details: 'Indicates to increase a value',

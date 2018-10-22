@@ -8,5 +8,6 @@ type YoutubePlaylist = {
   id: string;
   channelName: string;
   name: string;
+  url: string;
   videos?: number;
 }

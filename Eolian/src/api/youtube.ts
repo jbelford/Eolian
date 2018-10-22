@@ -32,7 +32,8 @@ export namespace YouTube {
         id: playlist.id,
         name: playlist.snippet.title,
         channelName: playlist.snippet.channelTitle,
-        videos: playlist.contentDetails.itemCount
+        videos: playlist.contentDetails.itemCount,
+        url: `https://www.youtube.com/playlist?list=${playlist.id}`
       };
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch YouTube playlist');
@@ -45,7 +46,8 @@ export namespace YouTube {
       return response.data.items.map(playlist => ({
         id: playlist.id.playlistId,
         name: playlist.snippet.title,
-        channelName: playlist.snippet.channelTitle
+        channelName: playlist.snippet.channelTitle,
+        url: `https://www.youtube.com/playlist?list=${playlist.id.playlistId}`
       }));
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');

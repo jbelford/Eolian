@@ -19,6 +19,8 @@ interface UsersDAO {
   setIdentifier(id: string, key: string, identifer: Identifier): Promise<void>;
   removeIdentifier(id: string, key: string): Promise<void>;
 
+  delete(id: string): Promise<boolean>;
+
 }
 
 type UserDTO = {
@@ -32,6 +34,5 @@ type Identifier = {
   type: import('common/constants').IDENTIFIER_TYPE;
   src: import('common/constants').SOURCE;
   id: string;
-  name: string;
-  authors: string[];
+  url: string;
 }

@@ -52,4 +52,12 @@ export class EolianUserService {
     }
   }
 
+  async removeUser(userId: string): Promise<boolean> {
+    try {
+      return await this.users.delete(userId);
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to remove user information.');
+    }
+  }
+
 }

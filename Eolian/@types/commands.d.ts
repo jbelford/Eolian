@@ -31,6 +31,7 @@ type CommandActionContext = {
 type CommandActionParams = {
   ENABLE?: boolean;
   DISABLE?: boolean;
+  CLEAR?: boolean;
   MORE?: boolean;
   LESS?: boolean;
   MY?: boolean;
