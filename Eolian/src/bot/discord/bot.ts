@@ -1,12 +1,12 @@
-import { EolianBot } from 'common/bot';
+import { DiscordTextChannel } from 'bot/discord/channel';
+import { DiscordBotService } from 'bot/discord/client';
+import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'bot/discord/constants';
+import { DiscordMessage } from 'bot/discord/message';
+import { DiscordUser } from 'bot/discord/user';
+import { EolianBot } from 'bot/eolian';
 import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
 import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
-import { DiscordTextChannel } from 'discord/channel';
-import { DiscordBotService } from 'discord/client';
-import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'discord/constants';
-import { DiscordMessage } from 'discord/message';
-import { DiscordUser } from 'discord/user';
 import environment from 'environments/env';
 
 export class DiscordEolianBot extends EolianBot {

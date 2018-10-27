@@ -1,4 +1,3 @@
-
 interface ContextUser {
 
   readonly id: string;

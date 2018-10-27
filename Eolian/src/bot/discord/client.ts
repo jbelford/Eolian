@@ -1,5 +1,5 @@
+import { INVITE_PERMISSIONS } from "bot/discord/constants";
 import { Client } from "discord.js";
-import { INVITE_PERMISSIONS } from "discord/constants";
 
 export class DiscordBotService implements BotService {
 

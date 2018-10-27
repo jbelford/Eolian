@@ -1,8 +1,8 @@
+import { DiscordEolianBot } from "bot/discord/bot";
+import { EolianBot } from "bot/eolian";
 import { KeywordParsingStrategy } from "commands/parsing";
-import { EolianBot } from "common/bot";
 import { logger } from "common/logger";
 import { MongoDatabase } from 'data/mongo/db';
-import { DiscordEolianBot } from "discord/bot";
 import * as nodeCleanup from 'node-cleanup';
 
 (async () => {
