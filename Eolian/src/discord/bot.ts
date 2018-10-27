@@ -1,8 +1,6 @@
-import { CommandAction } from 'commands/command';
-import { COMMANDS } from 'commands/index';
+import { EolianBot } from 'common/bot';
 import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
-import { EolianUserService } from 'db/user-service';
 import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
 import { DiscordTextChannel } from 'discord/channel';
 import { DiscordBotService } from 'discord/client';
@@ -11,36 +9,45 @@ import { DiscordMessage } from 'discord/message';
 import { DiscordUser } from 'discord/user';
 import environment from 'environments/env';
 
-export class DiscordEolianBot implements EolianBot {
+export class DiscordEolianBot extends EolianBot {
 
-  private readonly client: Client;
-  private readonly commands: CommandAction[];
+  private static bot: DiscordEolianBot;
 
-  constructor(db: Database) {
-    this.client = new Client(EOLIAN_CLIENT_OPTIONS);
+  private constructor(db: Database, parseStrategy: CommandParsingStrategy, private readonly client: Client) {
+    super(db, parseStrategy, new DiscordBotService(client));
+
     this.client.once(EVENTS.READY, this.readyEventHandler);
     this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
     this.client.on(EVENTS.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
     this.client.on(EVENTS.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
     this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
-    const services: CommandActionServices = {
-      bot: new DiscordBotService(this.client),
-      users: new EolianUserService(db.usersDao)
-    };
-    this.commands = COMMANDS.map(cmd => new cmd.action(services));
   }
 
-  public async start() {
+  /**
+   * Creates a bot instance and connects to discord
+   */
+  static async connect(db: Database, parseStrategy: CommandParsingStrategy): Promise<EolianBot> {
+    if (!this.bot) {
+      const client = new Client(EOLIAN_CLIENT_OPTIONS);
+      this.bot = new DiscordEolianBot(db, parseStrategy, client);
+      await this.bot.start();
+    }
+    return this.bot;
+  }
+
+  protected async _start() {
     if (!this.client.readyTimestamp)
       await this.client.login(environment.tokens.discord);
   }
 
-  public async stop() {
+  async stop() {
     await this.client.destroy();
   }
 
-  public onMessage(parseStrategy: CommandParsingStrategy) {
+
+  protected onMessage(parseStrategy: CommandParsingStrategy) {
+    this.client.removeAllListeners(EVENTS.MESSAGE);
     this.client.on(EVENTS.MESSAGE, async (message) => {
       try {
         const { author, content, channel } = message;

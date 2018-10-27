@@ -1,16 +1,14 @@
 import { KeywordParsingStrategy } from "commands/parsing";
+import { EolianBot } from "common/bot";
 import { logger } from "common/logger";
-import { MongoDatabase } from 'db/mongo/db';
+import { MongoDatabase } from 'data/mongo/db';
 import { DiscordEolianBot } from "discord/bot";
 import * as nodeCleanup from 'node-cleanup';
 
 (async () => {
   try {
-    const db = await MongoDatabase.getInstance();
-
-    const bot: EolianBot = new DiscordEolianBot(db);
-    bot.onMessage(new KeywordParsingStrategy());
-    await bot.start();
+    const db: Database = await MongoDatabase.connect();
+    const bot: EolianBot = await DiscordEolianBot.connect(db, new KeywordParsingStrategy());
 
     // Handler for cleaning up resources on shutdown
     nodeCleanup((exitCode, signal) => {

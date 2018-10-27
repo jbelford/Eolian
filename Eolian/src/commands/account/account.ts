@@ -37,7 +37,7 @@ class AccountAction extends CommandAction {
 }
 
 export const AccountCommand: Command = {
-  name: 'account',
+  name: 'me',
   category: AccountCategory,
   details: 'Show your account details. Including linked music accounts and identifiers',
   keywords: [KEYWORDS.CLEAR],

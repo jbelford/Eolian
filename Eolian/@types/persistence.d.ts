@@ -1,6 +1,7 @@
 interface Database {
 
   readonly usersDao: UsersDAO;
+  readonly queuesDao: MusicQueueDAO;
 
   cleanup(): Promise<void>;
 
@@ -36,3 +37,24 @@ type Identifier = {
   id: string;
   url: string;
 }
+
+interface MusicQueueDAO {
+
+  get(guildId: string, limit?: number): Promise<Track[]>;
+
+  add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
+
+  shuffle(guildId: string): Promise<boolean>;
+
+  clear(guildId: string): Promise<boolean>;
+
+  remove(guildId: string): Promise<Track | null>;
+
+  peek(guildId: string): Promise<Track | null>;
+
+}
+
+type QueueDTO = {
+  id: string;
+  tracks: Track[];
+};

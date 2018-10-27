@@ -19,7 +19,8 @@ type CommandCategory = {
 
 type CommandActionServices = {
   bot: BotService;
-  users: import('db/user-service').EolianUserService;
+  users: import('data/user').EolianUserService;
+  queues: import('data/queue').MusicQueueService;
 };
 
 type CommandActionContext = {

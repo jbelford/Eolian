@@ -12,7 +12,7 @@ class LinkAction extends CommandAction {
     if (QUERY && URL) {
       return await context.message.reply(`You provided both a query and a url. Please provide just one of those items.`);
     } else if (URL) {
-      if (URL.source === SOURCE.SPOTIFY) return await this.handleSpotify(context, URL.value);
+      if (URL.source === SOURCE.SPOTIFY) return await this.handleSpotifyUrl(context, URL.value);
       else if (URL.source === SOURCE.SOUNDCLOUD) return await this.handleSoundCloudUrl(context, URL.value);
       logger.warn(`A URL was provided without a valid source. This should not happen: ${URL}`);
       return await context.message.reply('The URL you provided does not match any source.');
@@ -25,7 +25,7 @@ class LinkAction extends CommandAction {
     await context.message.reply('You must provide valid url or a query for me to link your account to!');
   }
 
-  private async handleSpotify(context: CommandActionContext, url: string) {
+  private async handleSpotifyUrl(context: CommandActionContext, url: string) {
     try {
       const resource = Spotify.getResourceType(url);
       if (!resource || resource.type !== SpotifyResourceType.USER) throw new EolianBotError('Spotify resource is not a user!');
