@@ -1,7 +1,12 @@
 language: nodejs
 
 before_script:
-  - cd ./Eolian && npm run build
+  - cd ./Eolian
+  - npm install
+  - npm run build
+  - cd ..
 
 script:
-  - cd ./Eolian && npm run unit-test-only
+  - cd ./Eolian
+  - npm run unit-test-only
+  - cd ..
