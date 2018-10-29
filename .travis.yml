@@ -1,6 +1,5 @@
 language: nodejs
 node_js:
-  - "iojs"
   - "8"
 
 cache: npm
