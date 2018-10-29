@@ -4,3 +4,4 @@ out
 .vscode
 # Secrets
 Eolian/src/**/env.*.ts
+!Eolian/src/environments/env.unit-test.ts

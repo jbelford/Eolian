@@ -11,7 +11,6 @@ type Environment = {
       clientSecret: string;
     }
   };
-  invite: boolean;
   db: {
     url: string;
     name: string;

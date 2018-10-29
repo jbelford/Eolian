@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "A bot for music enthusiasts",
   "scripts": {
-    "start": "node node_modules/ts-node/dist/bin.js --files src/index.ts"
+    "build": "node_modules/.bin/tsc",
+    "test": "node_modules/.bin/jest NODE_ENV=local",
+    "unit-test-only": "node_modules/.bin/jest --testPathPattern=/unit/.+\\.test\\.ts NODE_ENV=unit-test",
+    "start": "node node_modules/ts-node/dist/bin.js --files src/app.ts"
   },
   "keywords": [
     "music",
@@ -23,16 +26,20 @@
     "node-cleanup": "^2.1.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
+    "rxjs": "^6.3.3",
     "spotify-web-api-node": "^4.0.0",
     "winston": "^3.1.0"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.8",
     "@types/module-alias": "^2.0.0",
     "@types/mongodb": "^3.1.12",
     "@types/node": "^10.11.4",
     "@types/node-cleanup": "^2.1.0",
     "@types/request-promise-native": "^1.0.15",
     "@types/winston": "^2.4.4",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.4",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1"
   }

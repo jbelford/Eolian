@@ -21,6 +21,7 @@ type CommandActionServices = {
   bot: BotService;
   users: import('data/user').EolianUserService;
   queues: import('data/queue').MusicQueueService;
+  playerManager: PlayerManager;
 };
 
 type CommandActionContext = {

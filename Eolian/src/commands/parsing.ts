@@ -5,10 +5,11 @@ import { PERMISSION } from "common/constants";
 import { EolianBotError } from "common/errors";
 import environment from "environments/env";
 
-export class KeywordParsingStrategy implements CommandParsingStrategy {
+export const KeywordParsingStrategy: CommandParsingStrategy = {
+
   messageInvokesBot(message: string): boolean {
     return message.trim().charAt(0) === environment.cmdToken;
-  }
+  },
 
   parseParams(message: string, permission: PERMISSION): [CommandActionParams, string] {
     let text = this.messageInvokesBot(message) ? message.substr(1) : message;
@@ -28,7 +29,8 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
       });
 
     return [params, text];
-  }
+  },
+
   parseCommand(message: string, permission: PERMISSION, commands: CommandAction[]): [CommandAction, EolianBotError] {
     const textSplit = message.toLowerCase().split(/\s+/g);
     const matchedCommands = COMMANDS

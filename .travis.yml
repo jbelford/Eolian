@@ -1,0 +1,7 @@
+language: nodejs
+
+before_script:
+  - cd ./Eolian && npm run build
+
+script:
+  - cd ./Eolian && npm run unit-test-only

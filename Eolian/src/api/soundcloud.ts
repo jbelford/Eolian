@@ -1,7 +1,10 @@
+import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
+import { logger } from 'common/logger';
 import environment from "environments/env";
 import * as querystring from 'querystring';
-import * as request from 'request-promise-native';
+import * as request from 'request';
+import * as requestp from 'request-promise-native';
 
 export namespace SoundCloud {
 
@@ -55,9 +58,30 @@ export namespace SoundCloud {
     }
   }
 
+  export function getStream(track: Track): Promise<StreamData> {
+    if (track.src !== SOURCE.SOUNDCLOUD) {
+      throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
+    }
+    return new Promise<StreamData>((resolve, reject) => {
+      const stream = request(`${track.stream}?client_id=${environment.tokens.soundcloud}`);
+      stream.on('response', resp => {
+        if (resp.statusCode < 200 || resp.statusCode >= 400) {
+          logger.error(`[stream.service.ts] Error occured on request: ${track.stream}`);
+          return reject(resp.statusMessage);
+        }
+
+        const contentLength = parseInt(resp.headers["content-length"]);
+        if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
+
+        const streamData: StreamData = { stream: stream, size: contentLength };
+        resolve(streamData);
+      });
+    });
+  }
+
   async function get(endpoint: string, params: any = {}) {
     params.client_id = environment.tokens.soundcloud;
-    const data = await request(`${API}/${endpoint}?${querystring.stringify(params)}`);
+    const data = await requestp(`${API}/${endpoint}?${querystring.stringify(params)}`);
     return JSON.parse(data);
   }
 

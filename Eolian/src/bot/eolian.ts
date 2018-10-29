@@ -2,17 +2,19 @@ import { COMMANDS } from "commands";
 import { CommandAction } from "commands/command";
 import { MusicQueueService } from "data/queue";
 import { EolianUserService } from "data/user";
+import { DefaultPlayerManager } from "players/default/manager";
 
 export abstract class EolianBot {
 
   protected commands: CommandAction[];
 
   protected constructor(db: Database, private readonly commandParser: CommandParsingStrategy, botService: BotService) {
-    const services = {
+    const services: CommandActionServices = {
       bot: botService,
       queues: new MusicQueueService(db.queuesDao),
-      users: new EolianUserService(db.usersDao)
-    }
+      users: new EolianUserService(db.usersDao),
+      playerManager: new DefaultPlayerManager()
+    };
     this.commands = COMMANDS.map(cmd => new cmd.action(services));
   }
 

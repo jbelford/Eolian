@@ -1,3 +1,7 @@
+/**
+ * Import this script to map node imports to baseDir alias
+ */
+
 import * as fs from 'fs';
 import * as moduleAlias from 'module-alias';
 import { logger } from './common/logger';
@@ -12,6 +16,3 @@ files.filter(filename => fs.statSync(`${__dirname}/${filename}`).isDirectory())
     logger.info(`\t${filename} -> ${path}`);
     moduleAlias.addAlias(filename, path);
   });
-
-// Start app
-require('./app');

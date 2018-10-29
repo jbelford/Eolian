@@ -1,3 +1,5 @@
+require('./module-setup');
+
 import { DiscordEolianBot } from "bot/discord/bot";
 import { EolianBot } from "bot/eolian";
 import { KeywordParsingStrategy } from "commands/parsing";
@@ -8,7 +10,7 @@ import * as nodeCleanup from 'node-cleanup';
 (async () => {
   try {
     const db: Database = await MongoDatabase.connect();
-    const bot: EolianBot = await DiscordEolianBot.connect(db, new KeywordParsingStrategy());
+    const bot: EolianBot = await DiscordEolianBot.connect(db, KeywordParsingStrategy);
 
     // Handler for cleaning up resources on shutdown
     nodeCleanup((exitCode, signal) => {
