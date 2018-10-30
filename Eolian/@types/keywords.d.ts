@@ -28,9 +28,8 @@ type Keyword = {
   readonly details: string;
   readonly permission: import('common/constants').PERMISSION;
   readonly usage: string[];
-  // Indicates that a match could contain matches of other non-complex keywords
-  // As such, any matches should be removed from the text before matching non-complex keywords
-  readonly complex?: boolean;
+  // Higher priority means that this keyword should be parsed and removed from the text before others.
+  readonly priority: number;
 
   /**
    * Check that the given text contains the keyword.

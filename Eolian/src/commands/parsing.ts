@@ -17,8 +17,7 @@ export const KeywordParsingStrategy: CommandParsingStrategy = {
     const params: CommandActionParams = {};
     // Extract complex keywords
     (Object.values(KEYWORDS) as Keyword[])
-      // @ts-ignore // Let these be coerced into numbers so that complex are tested first
-      .sort((a, b) => !!b.complex - !!a.complex)
+      .sort((a, b) => b.priority - a.priority)
       .filter(keyword => keyword.permission <= permission)
       .forEach(keyword => {
         const result = keyword.matchText(text);

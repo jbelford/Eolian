@@ -47,8 +47,8 @@ export namespace Embed {
         },
         description: `${command.details}\n\n`
       };
-      const keywords = command.keywords.filter(keyword => !keyword.complex);
-      const complexKeywords = command.keywords.filter(keywords => keywords.complex);
+      const keywords = command.keywords.filter(keyword => !keyword.priority);
+      const complexKeywords = command.keywords.filter(keywords => keywords.priority);
       if (keywords.length) {
         embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
           + keywords.map(keyword => keyword.name).join('\n') + '```\n';
@@ -66,12 +66,12 @@ export namespace Embed {
       const embed: EmbedMessage = {
         color: COLOR.HELP,
         header: {
-          text: `${keyword.complex ? 'Pattern' : 'Keyword'}: ${keyword.name}`
+          text: `${keyword.priority ? 'Pattern' : 'Keyword'}: ${keyword.name}`
         },
         description: `${keyword.details}\n\n`,
       };
       embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => `${example}`).join('\n') + '```';
-      if (keyword.complex)
+      if (keyword.priority)
         embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
       return embed;
     }
