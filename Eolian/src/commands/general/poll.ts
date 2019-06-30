@@ -1,5 +1,6 @@
 import { GeneralCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 

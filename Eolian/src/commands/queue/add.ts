@@ -1,5 +1,6 @@
 import { QueueCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from 'common/constants';
 
 const info: CommandInfo = {
   name: 'add',

@@ -1,3 +1,4 @@
+import { PERMISSION, SOURCE } from 'common/constants';
 
 export const KEYWORDS: IKeywords = {
   ENABLE: {

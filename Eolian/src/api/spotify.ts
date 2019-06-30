@@ -4,6 +4,14 @@ import environment from 'environments/env';
 import * as fuzz from 'fuzzball';
 import * as SpotifyWebApi from 'spotify-web-api-node';
 
+export const enum SpotifyResourceType {
+  USER = 'user',
+  TRACK = 'track',
+  PLAYLIST = 'playlist',
+  ARTIST = 'artist',
+  ALBUM = 'album'
+}
+
 export namespace Spotify {
 
   const spotify = new SpotifyWebApi({

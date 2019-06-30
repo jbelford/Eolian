@@ -1,6 +1,7 @@
 import { COMMAND_CATEGORIES, GeneralCategory } from "commands/command";
 import { COMMANDS } from "commands/index";
 import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";
 
 const info: CommandInfo = {

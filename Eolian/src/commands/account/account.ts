@@ -2,6 +2,7 @@ import { SoundCloud } from "api/soundcloud";
 import { Spotify } from "api/spotify";
 import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
+import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 

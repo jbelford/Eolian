@@ -2,6 +2,11 @@ import { EolianBotError } from 'common/errors';
 import environment from 'environments/env';
 import { google } from 'googleapis';
 
+export const enum YouTubeResourceType {
+  VIDEO = 0,
+  PLAYLIST
+}
+
 export namespace YouTube {
   const youtube = google.youtube({
     version: 'v3',

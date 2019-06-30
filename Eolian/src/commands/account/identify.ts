@@ -1,8 +1,9 @@
 import { SoundCloud } from "api/soundcloud";
-import { Spotify } from "api/spotify";
-import { YouTube } from "api/youtube";
+import { Spotify, SpotifyResourceType } from "api/spotify";
+import { YouTube, YouTubeResourceType } from "api/youtube";
 import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
+import { IDENTIFIER_TYPE, PERMISSION, SOURCE } from 'common/constants';
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 

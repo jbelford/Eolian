@@ -1,7 +1,7 @@
 type CommandInfo = {
   name: string;
   details: string;
-  permission: PERMISSION;
+  permission: import('common/constants').PERMISSION;
   category: CommandCategory;
   keywords: Keyword[];
   usage: string[];
@@ -59,7 +59,7 @@ type CommandActionParams = {
   BOTTOM?: { start: number; stop: number };
   QUERY?: string;
   IDENTIFIER?: string;
-  URL?: { value: string; source: SOURCE };
+  URL?: { value: string; source: import('common/constants').SOURCE };
   ARG?: string[];
 };
 
@@ -74,12 +74,12 @@ interface CommandParsingStrategy {
   /**
    * Parse params from text and return text with those params removed.
    */
-  parseParams(message: string, permission: PERMISSION): [CommandActionParams, string];
+  parseParams(message: string, permission: import('common/constants').PERMISSION): [CommandActionParams, string];
 
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: PERMISSION, commands: CommandAction[]):
+  parseCommand(message: string, permission: import('common/constants').PERMISSION, commands: CommandAction[]):
     [CommandAction, import('common/errors').EolianBotError];
 
 }

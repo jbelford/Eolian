@@ -1,8 +1,7 @@
 type YouTubeUrlDetails = {
-  type: YouTubeResourceType;
+  type: import('api/youtube').YouTubeResourceType
   id: string;
 }
-
 
 type YoutubePlaylist = {
   id: string;
@@ -10,9 +9,4 @@ type YoutubePlaylist = {
   name: string;
   url: string;
   videos?: number;
-}
-
-declare const enum YouTubeResourceType {
-  VIDEO = 0,
-  PLAYLIST
 }

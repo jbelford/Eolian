@@ -3,7 +3,7 @@ interface ContextUser {
   readonly id: string;
   readonly name: string;
   readonly avatar: string;
-  readonly permission: PERMISSION;
+  readonly permission: import('common/constants').PERMISSION;
 
 }
 

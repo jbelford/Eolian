@@ -32,8 +32,8 @@ type UserDTO = {
 }
 
 type Identifier = {
-  type: IDENTIFIER_TYPE;
-  src: SOURCE;
+  type: import('common/constants').IDENTIFIER_TYPE;
+  src: import('common/constants').SOURCE;
   id: string;
   url: string;
 }

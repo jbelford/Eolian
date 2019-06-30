@@ -4,6 +4,7 @@ import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'bot/
 import { DiscordMessage } from 'bot/discord/message';
 import { DiscordUser } from 'bot/discord/user';
 import { EolianBot } from 'bot/eolian';
+import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import environment from 'environments/env';

@@ -5,7 +5,7 @@ type Track = {
   url: string;
   stream: string;
   artwork?: string;
-  src: SOURCE;
+  src: import('common/constants').SOURCE;
 };
 
 type StreamData = {

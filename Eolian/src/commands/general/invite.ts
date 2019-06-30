@@ -1,4 +1,5 @@
 import { GeneralCategory } from "commands/command";
+import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";
 
 const info: CommandInfo = {
