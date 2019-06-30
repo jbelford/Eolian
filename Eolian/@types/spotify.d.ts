@@ -7,9 +7,17 @@ type SpotifyUser = {
 }
 
 type SpotifyUrlDetails = {
-  type: import('api/spotify').SpotifyResourceType;
+  type: SpotifyResourceType;
   id: string;
 }
+
+declare enum SpotifyResourceType {
+  USER = 'user',
+  TRACK = 'track',
+  PLAYLIST = 'playlist',
+  ARTIST = 'artist',
+  ALBUM = 'album'
+};
 
 type SpotifyPlaylist = {
   id: string;
