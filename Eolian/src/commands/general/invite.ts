@@ -1,14 +1,18 @@
 import { GeneralCategory } from "commands/command";
 import { Embed } from "common/embed";
 
-export default class InviteAction implements ICommandAction {
+const info: CommandInfo = {
+  name: 'invite',
+  category: GeneralCategory,
+  details: 'Create a link to invite the bot to another server',
+  keywords: [],
+  permission: PERMISSION.USER,
+  usage: [''],
+};
 
-  name = 'invite';
-  category = GeneralCategory;
-  details = 'Create a link to invite the bot to another server';
-  keywords = [];
-  permission = PERMISSION.USER;
-  usage = [''];
+class InviteAction implements CommandAction {
+
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -19,3 +23,8 @@ export default class InviteAction implements ICommandAction {
   }
 
 }
+
+export const InviteCommand: Command = {
+  info,
+  action: InviteAction
+};

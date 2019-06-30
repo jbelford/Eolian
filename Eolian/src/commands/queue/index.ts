@@ -1,5 +1,5 @@
-import AddAction from './add';
+import { AddCommand } from './add';
 
-export const QueueCommands: CommandActionConstructor[] = [
-  AddAction
+export const QueueCommands: Command[] = [
+  AddCommand
 ];

@@ -5,14 +5,18 @@ import { KEYWORDS } from "commands/keywords";
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
-export default class LinkAction implements ICommandAction {
+const info: CommandInfo = {
+  name: 'link',
+  category: AccountCategory,
+  details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
+  permission: PERMISSION.USER,
+  keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
+  usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
+};
 
-  name = 'link';
-  category = AccountCategory;
-  details = 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.';
-  permission = PERMISSION.USER;
-  keywords = [KEYWORDS.QUERY, KEYWORDS.URL];
-  usage = ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'];
+class LinkAction implements CommandAction {
+
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -82,4 +86,9 @@ export default class LinkAction implements ICommandAction {
       + ` to use your playlists, favorites, and tracks.`);
   }
 
+}
+
+export const LinkCommand: Command = {
+  info,
+  action: LinkAction
 }

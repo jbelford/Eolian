@@ -8,14 +8,18 @@ const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', 
   '\u0036\u20E3', '\u0037\u20E3', '\u0038\u20E3', '\u0039\u20E3', '\u1F51F'];
 const close = '🚫';
 
-export default class PollAction implements ICommandAction {
+const info: CommandInfo = {
+  name: 'poll',
+  category: GeneralCategory,
+  details: 'Create a poll in the channel. Up to 10 options are allowed.',
+  permission: PERMISSION.USER,
+  keywords: [KEYWORDS.ARG],
+  usage: ['/ What is your favorite color? / Red / Green / Blue /'],
+};
 
-  name = 'poll';
-  category = GeneralCategory;
-  details = 'Create a poll in the channel. Up to 10 options are allowed.';
-  permission = PERMISSION.USER;
-  keywords = [KEYWORDS.ARG];
-  usage = ['/ What is your favorite color? / Red / Green / Blue /'];
+class PollAction implements CommandAction {
+
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -52,3 +56,8 @@ export default class PollAction implements ICommandAction {
   }
 
 }
+
+export const PollCommand: Command = {
+  info,
+  action: PollAction
+};

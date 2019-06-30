@@ -1,26 +1,23 @@
-type Command = {
+type CommandInfo = {
   name: string;
   details: string;
   permission: PERMISSION;
   category: CommandCategory;
   keywords: Keyword[];
   usage: string[];
-  action: CommandActionConstructor;
 };
 
-interface ICommandAction {
-  readonly name: string;
-  readonly details: string;
-  readonly permission: PERMISSION;
-  readonly category: CommandCategory;
-  readonly keywords: Keyword[];
-  readonly usage: string[];
+interface CommandAction {
+  readonly info: CommandInfo;
 
   execute(context: CommandActionContext, params: CommandActionParams): Promise<any>;
 }
 
-interface CommandActionConstructor {
-  new(services: CommandActionServices): ICommandAction;
+interface Command {
+  info: CommandInfo
+  action: {
+    new(services: CommandActionServices): CommandAction;
+  }
 }
 
 type CommandCategory = {
@@ -82,7 +79,7 @@ interface CommandParsingStrategy {
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: PERMISSION, commands: ICommandAction[]):
-    [ICommandAction, import('common/errors').EolianBotError];
+  parseCommand(message: string, permission: PERMISSION, commands: CommandAction[]):
+    [CommandAction, import('common/errors').EolianBotError];
 
 }

@@ -5,7 +5,7 @@ import { DefaultPlayerManager } from "players/default/manager";
 
 export abstract class EolianBot {
 
-  protected commands: ICommandAction[];
+  protected commands: CommandAction[];
 
   protected constructor(db: Database, protected readonly commandParser: CommandParsingStrategy, botService: BotService) {
     const services: CommandActionServices = {
@@ -14,7 +14,7 @@ export abstract class EolianBot {
       users: new EolianUserService(db.usersDao),
       playerManager: new DefaultPlayerManager()
     };
-    this.commands = COMMANDS.map(action => new action(services));
+    this.commands = COMMANDS.map(cmd => new cmd.action(services));
   }
 
   /**

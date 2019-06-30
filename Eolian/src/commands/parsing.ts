@@ -27,16 +27,16 @@ export const KeywordParsingStrategy: CommandParsingStrategy = {
     return [params, text];
   },
 
-  parseCommand(message: string, permission: PERMISSION, commands: ICommandAction[]): [ICommandAction, EolianBotError] {
+  parseCommand(message: string, permission: PERMISSION, commands: CommandAction[]): [CommandAction, EolianBotError] {
     const textSplit = message.toLowerCase().split(/\s+/g);
     const matchedCommands = commands
-      .filter(cmd => cmd.permission <= permission)
-      .filter(cmd => textSplit.some(word => word === cmd.name));
+      .filter(cmd => cmd.info.permission <= permission)
+      .filter(cmd => textSplit.some(word => word === cmd.info.name));
 
     if (matchedCommands.length === 0) {
       return [null, new EolianBotError('No command was specified or you do not have permission to use them.')];
     } else if (matchedCommands.length > 1) {
-      let previewed = matchedCommands.map(cmd => `'${cmd.name}'`).slice(0, 3).join(',');
+      let previewed = matchedCommands.map(cmd => `'${cmd.info.name}'`).slice(0, 3).join(',');
       if (matchedCommands.length > 3) previewed += ', ...';
       return [null, new EolianBotError('More than one command was specified: ' + previewed)];
     }

@@ -5,13 +5,17 @@ import { KEYWORDS } from "commands/keywords";
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 
-export default class AccountAction implements ICommandAction {
-  name = 'me';
-  details= 'Show your account details. Including linked music accounts and identifiers';
-  permission = PERMISSION.USER;
-  category = AccountCategory;
-  keywords = [KEYWORDS.CLEAR];
-  usage = ['', 'clear'];
+const info: CommandInfo = {
+  name: 'me',
+  details: 'Show your account details. Including linked music accounts and identifiers',
+  permission: PERMISSION.USER,
+  category: AccountCategory,
+  keywords: [KEYWORDS.CLEAR],
+  usage: ['', 'clear']
+};
+
+class AccountAction implements CommandAction {
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -42,3 +46,10 @@ export default class AccountAction implements ICommandAction {
   }
 
 }
+
+export const AccountCommand: Command = {
+  info,
+  action: AccountAction
+}
+
+

@@ -3,17 +3,22 @@ import { COMMANDS } from "commands/index";
 import { KEYWORDS } from "commands/keywords";
 import { Embed } from "common/embed";
 
+const info: CommandInfo = {
+  name: 'help',
+  details: 'Shows list of all available categories, commands, keywords, and their details',
+  permission: PERMISSION.USER,
+  category: GeneralCategory,
+  keywords: [KEYWORDS.ARG],
+  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
+};
+
+
 /**
  * Sends a help message for commands and categories based on user arguments.
  */
-export default class HelpAction implements ICommandAction {
+class HelpAction implements CommandAction {
 
-  name = 'help';
-  details = 'Shows list of all available categories, commands, keywords, and their details';
-  permission = PERMISSION.USER;
-  category = GeneralCategory;
-  keywords = [KEYWORDS.ARG];
-  usage = ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',];
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -40,9 +45,9 @@ export default class HelpAction implements ICommandAction {
       return await channel.sendEmbed(commandListEmbed);
     }
 
-    const command = COMMANDS.find(cmd => cmd.name.toLowerCase() === arg);
+    const command = COMMANDS.find(cmd => cmd.info.name.toLowerCase() === arg);
     if (command) {
-      const commandEmbed = Embed.Help.commandDetails(command);
+      const commandEmbed = Embed.Help.commandDetails(command.info);
       return await channel.sendEmbed(commandEmbed);
     }
 
@@ -55,4 +60,9 @@ export default class HelpAction implements ICommandAction {
     await channel.send(`Sorry! I don't think anything is referred to as \`${arg}\``);
   }
 
+}
+
+export const HelpCommand: Command = {
+  info,
+  action: HelpAction
 }

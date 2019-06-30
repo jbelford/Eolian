@@ -33,21 +33,21 @@ export namespace Embed {
         description: `${category.details}\n\n`,
       };
       embed.description += '```\n'
-        + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => cmd.name).join('\n')
+        + COMMANDS.filter(cmd => cmd.info.category.name === category.name).map(cmd => cmd.info.name).join('\n')
         + '```' + `\nUse \`help /<command>/\` to see more information for that command.`
       return embed;
     }
 
-    export function commandDetails(command: Command): EmbedMessage {
+    export function commandDetails(info: CommandInfo): EmbedMessage {
       const embed: EmbedMessage = {
         color: COLOR.HELP,
         header: {
-          text: `Command: ${command.name}`
+          text: `Command: ${info.name}`
         },
-        description: `${command.details}\n\n`
+        description: `${info.details}\n\n`
       };
-      const keywords = command.keywords.filter(keyword => !keyword.priority);
-      const complexKeywords = command.keywords.filter(keywords => keywords.priority);
+      const keywords = info.keywords.filter(keyword => !keyword.priority);
+      const complexKeywords = info.keywords.filter(keywords => keywords.priority);
       if (keywords.length) {
         embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
           + keywords.map(keyword => keyword.name).join('\n') + '```\n';
@@ -57,7 +57,7 @@ export namespace Embed {
           + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
       }
       embed.description += 'Use `help /<name of pattern or keyword>/` to learn more about patterns and keywords. All arguments are based on them!\n\n'
-      embed.description += '**Example Usage:**\n```\n' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
+      embed.description += '**Example Usage:**\n```\n' + info.usage.map(example => `${info.name} ${example}`).join('\n') + '```';
       return embed;
     }
 

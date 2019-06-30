@@ -6,22 +6,27 @@ import { KEYWORDS } from "commands/keywords";
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
+
+const info: CommandInfo = {
+  name: 'identify',
+  category: AccountCategory,
+  details: 'Set a keyword identifier for a playlist from Spotify, SoundCloud, or YouTube',
+  permission: PERMISSION.USER,
+  keywords: [
+    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
+    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM
+  ],
+  usage: ['spotify playlist (retrowave) as [retro]'],
+}
+
 type ResolvedResource = {
   authors: string[];
   name: string;
   identifier: Identifier;
 };
 
-export default class IdentifyAction implements ICommandAction {
-  name = 'identify';
-  category = AccountCategory;
-  details = 'Set a keyword identifier for a playlist from Spotify, SoundCloud, or YouTube';
-  permission = PERMISSION.USER;
-  keywords = [
-    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
-    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM
-  ];
-  usage = ['spotify playlist (retrowave) as [retro]'];
+class IdentifyAction implements CommandAction {
+  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
@@ -255,4 +260,9 @@ export default class IdentifyAction implements ICommandAction {
     };
   }
 
+}
+
+export const IdentifyCommand: Command = {
+  info,
+  action: IdentifyAction
 }
