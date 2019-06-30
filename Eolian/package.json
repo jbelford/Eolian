@@ -20,7 +20,7 @@
   "dependencies": {
     "discord.js": "^11.4.2",
     "fuzzball": "^1.1.6",
-    "googleapis": "^34.0.0",
+    "googleapis": "^40.0.0",
     "module-alias": "^2.1.0",
     "mongodb": "^3.1.8",
     "node-cleanup": "^2.1.2",
@@ -31,15 +31,15 @@
     "winston": "^3.1.0"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.8",
+    "@types/jest": "^24.0.15",
     "@types/module-alias": "^2.0.0",
     "@types/mongodb": "^3.1.12",
     "@types/node": "^10.11.4",
     "@types/node-cleanup": "^2.1.0",
     "@types/request-promise-native": "^1.0.15",
     "@types/winston": "^2.4.4",
-    "jest": "^23.6.0",
-    "ts-jest": "^23.10.4",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1"
   }
