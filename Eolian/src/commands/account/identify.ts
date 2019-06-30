@@ -1,9 +1,8 @@
 import { SoundCloud } from "api/soundcloud";
 import { Spotify, SpotifyResourceType } from "api/spotify";
-import { YouTube, YouTubeResourceType } from "api/youtube";
-import { AccountCategory, CommandAction } from "commands/command";
+import { YouTube } from "api/youtube";
+import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
-import { IDENTIFIER_TYPE, PERMISSION, SOURCE } from "common/constants";
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
@@ -13,7 +12,18 @@ type ResolvedResource = {
   identifier: Identifier;
 };
 
-class IdentifyAction extends CommandAction {
+export default class IdentifyAction implements ICommandAction {
+  name = 'identify';
+  category = AccountCategory;
+  details = 'Set a keyword identifier for a playlist from Spotify, SoundCloud, or YouTube';
+  permission = PERMISSION.USER;
+  keywords = [
+    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
+    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM
+  ];
+  usage = ['spotify playlist (retrowave) as [retro]'];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
     if (!params.IDENTIFIER) {
@@ -246,16 +256,3 @@ class IdentifyAction extends CommandAction {
   }
 
 }
-
-export const IdentifyCommand: Command = {
-  name: 'identify',
-  category: AccountCategory,
-  details: 'Set a keyword identifier for a playlist from Spotify, SoundCloud, or YouTube',
-  permission: PERMISSION.USER,
-  keywords: [
-    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
-    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM
-  ],
-  usage: ['spotify playlist (retrowave) as [retro]'],
-  action: IdentifyAction
-};

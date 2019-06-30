@@ -1,8 +1,16 @@
-import { CommandAction, GeneralCategory } from "commands/command";
-import { PERMISSION } from "common/constants";
+import { GeneralCategory } from "commands/command";
 import { Embed } from "common/embed";
 
-class InviteAction extends CommandAction {
+export default class InviteAction implements ICommandAction {
+
+  name = 'invite';
+  category = GeneralCategory;
+  details = 'Create a link to invite the bot to another server';
+  keywords = [];
+  permission = PERMISSION.USER;
+  usage = [''];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ channel }: CommandActionContext): Promise<void> {
     const inviteLink = await this.services.bot.generateInvite();
@@ -11,13 +19,3 @@ class InviteAction extends CommandAction {
   }
 
 }
-
-export const InviteCommand: Command = {
-  name: 'invite',
-  category: GeneralCategory,
-  details: 'Create a link to invite the bot to another server',
-  keywords: [],
-  permission: PERMISSION.USER,
-  usage: [''],
-  action: InviteAction
-};

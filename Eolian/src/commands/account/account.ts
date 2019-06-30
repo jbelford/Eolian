@@ -1,12 +1,19 @@
 import { SoundCloud } from "api/soundcloud";
 import { Spotify } from "api/spotify";
-import { AccountCategory, CommandAction } from "commands/command";
+import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION } from "common/constants";
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 
-class AccountAction extends CommandAction {
+export default class AccountAction implements ICommandAction {
+  name = 'me';
+  details= 'Show your account details. Including linked music accounts and identifiers';
+  permission = PERMISSION.USER;
+  category = AccountCategory;
+  keywords = [KEYWORDS.CLEAR];
+  usage = ['', 'clear'];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
     if (params.CLEAR) return this.clearUserData(context);
@@ -35,13 +42,3 @@ class AccountAction extends CommandAction {
   }
 
 }
-
-export const AccountCommand: Command = {
-  name: 'me',
-  category: AccountCategory,
-  details: 'Show your account details. Including linked music accounts and identifiers',
-  keywords: [KEYWORDS.CLEAR],
-  permission: PERMISSION.USER,
-  usage: ['', 'clear'],
-  action: AccountAction
-};

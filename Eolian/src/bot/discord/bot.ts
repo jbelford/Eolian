@@ -4,9 +4,8 @@ import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'bot/
 import { DiscordMessage } from 'bot/discord/message';
 import { DiscordUser } from 'bot/discord/user';
 import { EolianBot } from 'bot/eolian';
-import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
-import { Client, GuildMember, Permissions, TextChannel } from 'discord.js';
+import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import environment from 'environments/env';
 
 export class DiscordEolianBot extends EolianBot {
@@ -46,24 +45,26 @@ export class DiscordEolianBot extends EolianBot {
   }
 
 
-  protected onMessage(parseStrategy: CommandParsingStrategy) {
+  protected onMessage() {
     this.client.removeAllListeners(EVENTS.MESSAGE);
     this.client.on(EVENTS.MESSAGE, async (message) => {
       try {
+        if (this.isIgnorable(message)) {
+          return;
+        }
+
         const { author, content, channel } = message;
-        if (author.bot) return;
-        else if (!message.isMentioned(this.client.user) && !parseStrategy.messageInvokesBot(content)) return;
 
         logger.debug(`Message event received: '${content}'`);
 
-        if (channel.type === CHANNEL.TEXT && !this.hasSendPermission(<TextChannel>channel)) {
-          return await author.send(`I do not have permission to send messages to the channel \`#${(<TextChannel>channel).name}\``);
+        if (!this.hasSendPermission(channel)) {
+          return author.send(`I do not have permission to send messages to the channel.`);
         }
 
         const permission = this.getPermissionLevel(message.member);
-        const [params, newText] = parseStrategy.parseParams(content, permission);
+        const [params, newText] = this.commandParser.parseParams(content, permission);
 
-        const [action, err] = parseStrategy.parseCommand(newText, permission, this.commands);
+        const [action, err] = this.commandParser.parseCommand(newText, permission, this.commands);
         if (err) {
           logger.debug(`Failed to get command action: ${err.message}`);
           return await message.reply(err.response);
@@ -81,6 +82,10 @@ export class DiscordEolianBot extends EolianBot {
     });
   }
 
+  private isIgnorable(message: Message) {
+    return message.author.bot || (!message.isMentioned(this.client.user) && !this.commandParser.messageInvokesBot(message.content));
+  }
+
   /**
    * Executed when the connection has been established
    * and operations may begin to be performed
@@ -96,8 +101,8 @@ export class DiscordEolianBot extends EolianBot {
       .catch(err => logger.warn(`Failed to set presence: ${err}`));
   }
 
-  private hasSendPermission(channel: TextChannel) {
-    return channel.permissionsFor(this.client.user).has(Permissions.FLAGS.SEND_MESSAGES);
+  private hasSendPermission(channel: Channel) {
+    return channel.type !== CHANNEL.TEXT || (<TextChannel>channel).permissionsFor(this.client.user).has(Permissions.FLAGS.SEND_MESSAGES);
   }
 
   private getPermissionLevel(member: GuildMember): PERMISSION {

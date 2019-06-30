@@ -1,13 +1,21 @@
-import { CommandAction, COMMAND_CATEGORIES, GeneralCategory } from "commands/command";
+import { COMMAND_CATEGORIES, GeneralCategory } from "commands/command";
 import { COMMANDS } from "commands/index";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION } from "common/constants";
 import { Embed } from "common/embed";
 
 /**
  * Sends a help message for commands and categories based on user arguments.
  */
-class HelpAction extends CommandAction {
+export default class HelpAction implements ICommandAction {
+
+  name = 'help';
+  details = 'Shows list of all available categories, commands, keywords, and their details';
+  permission = PERMISSION.USER;
+  category = GeneralCategory;
+  keywords = [KEYWORDS.ARG];
+  usage = ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ user, channel, message }: CommandActionContext, { ARG }: CommandActionParams): Promise<any> {
     if (!ARG) {
@@ -48,13 +56,3 @@ class HelpAction extends CommandAction {
   }
 
 }
-
-export const HelpCommand: Command = {
-  name: 'help',
-  details: 'Shows list of all available categories, commands, keywords, and their details',
-  permission: PERMISSION.USER,
-  category: GeneralCategory,
-  keywords: [KEYWORDS.ARG],
-  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
-  action: HelpAction
-};

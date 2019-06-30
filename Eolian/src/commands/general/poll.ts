@@ -1,6 +1,5 @@
-import { CommandAction, GeneralCategory } from "commands/command";
+import { GeneralCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION } from "common/constants";
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 
@@ -9,7 +8,16 @@ const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', 
   '\u0036\u20E3', '\u0037\u20E3', '\u0038\u20E3', '\u0039\u20E3', '\u1F51F'];
 const close = '🚫';
 
-class PollAction extends CommandAction {
+export default class PollAction implements ICommandAction {
+
+  name = 'poll';
+  category = GeneralCategory;
+  details = 'Create a poll in the channel. Up to 10 options are allowed.';
+  permission = PERMISSION.USER;
+  keywords = [KEYWORDS.ARG];
+  usage = ['/ What is your favorite color? / Red / Green / Blue /'];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ message, channel, user }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
     if (!ARG) {
@@ -44,13 +52,3 @@ class PollAction extends CommandAction {
   }
 
 }
-
-export const PollCommand: Command = {
-  name: 'poll',
-  category: GeneralCategory,
-  details: 'Create a poll in the channel. Up to 10 options are allowed.',
-  permission: PERMISSION.USER,
-  keywords: [KEYWORDS.ARG],
-  usage: ['/ What is your favorite color? / Red / Green / Blue /'],
-  action: PollAction
-};

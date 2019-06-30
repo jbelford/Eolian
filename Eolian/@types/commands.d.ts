@@ -1,15 +1,26 @@
 type Command = {
   name: string;
   details: string;
-  permission: import('common/constants').PERMISSION;
+  permission: PERMISSION;
   category: CommandCategory;
   keywords: Keyword[];
   usage: string[];
   action: CommandActionConstructor;
 };
 
+interface ICommandAction {
+  readonly name: string;
+  readonly details: string;
+  readonly permission: PERMISSION;
+  readonly category: CommandCategory;
+  readonly keywords: Keyword[];
+  readonly usage: string[];
+
+  execute(context: CommandActionContext, params: CommandActionParams): Promise<any>;
+}
+
 interface CommandActionConstructor {
-  new(services: CommandActionServices): import('commands/command').CommandAction;
+  new(services: CommandActionServices): ICommandAction;
 }
 
 type CommandCategory = {
@@ -51,7 +62,7 @@ type CommandActionParams = {
   BOTTOM?: { start: number; stop: number };
   QUERY?: string;
   IDENTIFIER?: string;
-  URL?: { value: string; source: import('common/constants').SOURCE };
+  URL?: { value: string; source: SOURCE };
   ARG?: string[];
 };
 
@@ -59,19 +70,19 @@ interface CommandParsingStrategy {
 
   /**
    * Verifies that the message received is directed to the bot
-   * @param message 
+   * @param message
    */
   messageInvokesBot(message: string): boolean;
 
   /**
    * Parse params from text and return text with those params removed.
    */
-  parseParams(message: string, permission: import('common/constants').PERMISSION): [CommandActionParams, string];
+  parseParams(message: string, permission: PERMISSION): [CommandActionParams, string];
 
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: import('common/constants').PERMISSION, commands: import('commands/command').CommandAction[]):
-    [import('commands/command').CommandAction, import('common/errors').EolianBotError];
+  parseCommand(message: string, permission: PERMISSION, commands: ICommandAction[]):
+    [ICommandAction, import('common/errors').EolianBotError];
 
 }

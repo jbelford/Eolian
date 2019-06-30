@@ -1,6 +1,5 @@
 import { DiscordMessage } from "bot/discord/message";
 import { DiscordUser } from "bot/discord/user";
-import { PERMISSION } from "common/constants";
 import { Embed } from "common/embed";
 import { logger } from "common/logger";
 import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from "discord.js";

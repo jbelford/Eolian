@@ -1,12 +1,20 @@
 import { SoundCloud } from "api/soundcloud";
 import { Spotify, SpotifyResourceType } from "api/spotify";
-import { AccountCategory, CommandAction } from "commands/command";
+import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION, SOURCE } from "common/constants";
 import { EolianBotError } from "common/errors";
 import { logger } from "common/logger";
 
-class LinkAction extends CommandAction {
+export default class LinkAction implements ICommandAction {
+
+  name = 'link';
+  category = AccountCategory;
+  details = 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.';
+  permission = PERMISSION.USER;
+  keywords = [KEYWORDS.QUERY, KEYWORDS.URL];
+  usage = ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, { QUERY, URL, SPOTIFY }: CommandActionParams): Promise<void> {
     if (QUERY && URL) {
@@ -75,13 +83,3 @@ class LinkAction extends CommandAction {
   }
 
 }
-
-export const LinkCommand: Command = {
-  name: 'link',
-  category: AccountCategory,
-  details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
-  permission: PERMISSION.USER,
-  keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
-  usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
-  action: LinkAction
-};

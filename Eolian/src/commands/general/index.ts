@@ -1,9 +1,9 @@
-import { HelpCommand } from "commands/general/help";
-import { InviteCommand } from "commands/general/invite";
-import { PollCommand } from "commands/general/poll";
+import HelpAction from './help';
+import InviteAction from './invite';
+import PollAction from './poll';
 
-export const GeneralCommands: Command[] = [
-  HelpCommand,
-  InviteCommand,
-  PollCommand
+export const GeneralCommands: CommandActionConstructor[] = [
+  HelpAction,
+  InviteAction,
+  PollAction
 ];

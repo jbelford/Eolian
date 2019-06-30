@@ -1,11 +1,11 @@
-import { LinkCommand } from "commands/account/link";
-import { UnlinkCommand } from "commands/account/unlink";
-import { AccountCommand } from "./account";
-import { IdentifyCommand } from "./identify";
+import AccountAction from './account';
+import IdentifyAction from './identify';
+import LinkAction from './link';
+import UnlinkAction from './unlink';
 
-export const AccountCommands: Command[] = [
-  LinkCommand,
-  UnlinkCommand,
-  IdentifyCommand,
-  AccountCommand
+export const AccountCommands: CommandActionConstructor[] = [
+  AccountAction,
+  IdentifyAction,
+  LinkAction,
+  UnlinkAction
 ];

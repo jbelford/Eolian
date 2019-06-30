@@ -1,9 +1,17 @@
-import { AccountCategory, CommandAction } from "commands/command";
+import { AccountCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION } from "common/constants";
 import { logger } from "common/logger";
 
-class UnlinkAction extends CommandAction {
+export default class UnlinkAction implements ICommandAction {
+
+  name = 'unlink';
+  category = AccountCategory;
+  details = 'Remove a Spotify or SoundCloud account you are linked to.';
+  permission = PERMISSION.USER;
+  keywords = [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY];
+  usage = ['soundcloud', 'spotify', 'soundcloud spotify'];
+
+  constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ message, user }: CommandActionContext, { SOUNDCLOUD, SPOTIFY }: CommandActionParams): Promise<any> {
     let response: string;
@@ -30,14 +38,4 @@ class UnlinkAction extends CommandAction {
       : await message.reply('You need to specify the accounts you want me to unlink!');
   }
 
-}
-
-export const UnlinkCommand: Command = {
-  name: 'unlink',
-  category: AccountCategory,
-  details: 'Remove a Spotify or SoundCloud account you are linked to.',
-  permission: PERMISSION.USER,
-  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
-  usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
-  action: UnlinkAction
 }

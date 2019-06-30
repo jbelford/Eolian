@@ -1,5 +1,4 @@
 import { COMMANDS } from "commands/index";
-import { COLOR } from "common/constants";
 import environment from "environments/env";
 
 /**

@@ -115,7 +115,7 @@ describe('KeywordParsingStrategy', () => {
       }
     ].forEach(arg => {
 
-      test(`$${arg.type} is parsed correctly`, () => {
+      test(`${arg.type} is parsed correctly`, () => {
         const [params, newText] = KeywordParsingStrategy.parseParams(arg.message, PERMISSION.USER);
 
         expect(params.URL).toBeTruthy();
@@ -125,6 +125,16 @@ describe('KeywordParsingStrategy', () => {
 
     });
 
+    test('Args are parsed correctly', () => {
+      const args = ['arg1', 'arg2', ' arg2 ', '  j dkslfjlka klajfdlka ; kdslajf;alk;j fkljdsa; fasjkfaskjsfdlkajf '];
+      const message = '/' + args.join('/') + '/';
+
+      const [params, newText] = KeywordParsingStrategy.parseParams(message, PERMISSION.USER);
+
+      expect(params.ARG).toBeTruthy();
+      args.forEach((arg, i) => expect(params.ARG[i]).toBe(arg.trim()));
+      expect(newText.trim()).toHaveLength(0);
+    });
 
   });
 

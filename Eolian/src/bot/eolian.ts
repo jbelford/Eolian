@@ -1,28 +1,27 @@
 import { COMMANDS } from "commands";
-import { CommandAction } from "commands/command";
 import { MusicQueueService } from "data/queue";
 import { EolianUserService } from "data/user";
 import { DefaultPlayerManager } from "players/default/manager";
 
 export abstract class EolianBot {
 
-  protected commands: CommandAction[];
+  protected commands: ICommandAction[];
 
-  protected constructor(db: Database, private readonly commandParser: CommandParsingStrategy, botService: BotService) {
+  protected constructor(db: Database, protected readonly commandParser: CommandParsingStrategy, botService: BotService) {
     const services: CommandActionServices = {
       bot: botService,
       queues: new MusicQueueService(db.queuesDao),
       users: new EolianUserService(db.usersDao),
       playerManager: new DefaultPlayerManager()
     };
-    this.commands = COMMANDS.map(cmd => new cmd.action(services));
+    this.commands = COMMANDS.map(action => new action(services));
   }
 
   /**
    * Begin communication with the web service
    */
   protected async start(): Promise<void> {
-    this.onMessage(this.commandParser);
+    this.onMessage();
     await this._start();
   }
 
@@ -39,6 +38,6 @@ export abstract class EolianBot {
   /**
    * Implement this method to register handler for incoming messages
    */
-  protected abstract onMessage(commandParser: CommandParsingStrategy);
+  protected abstract onMessage(): void;
 
 }

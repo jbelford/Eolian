@@ -5,7 +5,7 @@ type Track = {
   url: string;
   stream: string;
   artwork?: string;
-  src: import('common/constants').SOURCE;
+  src: SOURCE;
 };
 
 type StreamData = {
@@ -49,7 +49,7 @@ interface Player {
 
   /**
    * Stops the player from streaming.
-   * 
+   *
    * Note: This does not close the player resource.
    */
   stop(): Promise<void>;

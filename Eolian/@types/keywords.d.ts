@@ -26,7 +26,7 @@ interface IKeywords {
 type Keyword = {
   readonly name: string;
   readonly details: string;
-  readonly permission: import('common/constants').PERMISSION;
+  readonly permission: PERMISSION;
   readonly usage: string[];
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
@@ -34,7 +34,7 @@ type Keyword = {
   /**
    * Check that the given text contains the keyword.
    * Removes the keyword information from the text and returns a new string.
-   * 
+   *
    * @param text
    */
   matchText(text: string): { matches: boolean, newText: string, args: { [x: string]: any } };
