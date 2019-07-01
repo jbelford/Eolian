@@ -1,6 +1,6 @@
 # Folders
 node_modules
-out
+dist
 .vscode
 # Secrets
 Eolian/src/**/env.*.ts

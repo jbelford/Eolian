@@ -13,7 +13,7 @@
       "node_modules/@types",
       "./@types"
     ],
-    "outDir": "./out",
+    "outDir": "./dist",
     "baseUrl": "src",
     "paths": {
       "*": [

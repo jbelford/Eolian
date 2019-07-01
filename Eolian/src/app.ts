@@ -1,4 +1,11 @@
-require('./module-setup');
+
+/**
+ * In development environment we need to override the module aliases at runtime.
+ */
+const env = process.env.NODE_ENV || 'local';
+if (env === 'local') {
+  require('./module-setup');
+}
 
 import { DiscordEolianBot } from "bot/discord/bot";
 import { EolianBot } from "bot/eolian";
