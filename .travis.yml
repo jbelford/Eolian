@@ -13,7 +13,7 @@ script:
 before_deploy:
 - cd ./Eolian
 - npm run build
-- ls | grep -v "\(dist\|package\)" | rm -rf
+- ls | grep -v "\(dist\|package\)" | xargs rm -rf
 - cd ..
 deploy:
   provider: gcs
