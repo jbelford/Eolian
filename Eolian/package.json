@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "build": "webpack",
-    "test": "jest --testPathPattern=/test/.+\\.test\\.ts NODE_ENV=local",
-    "unit-test-only": "jest --testPathPattern=/unit/.+\\.test\\.ts NODE_ENV=unit-test",
-    "start-dev": "node node_modules/ts-node/dist/bin.js --files src/app.ts",
-    "start": "node ./dist/bundle.js"
+    "test": "node -r dotenv/config node_modules/jest/bin/jest.js --testPathPattern=/test/.+\\.test\\.ts",
+    "unit-test-only": "node -r dotenv/config node_modules/jest/bin/jest.js --testPathPattern=/unit/.+\\.test\\.ts",
+    "start-dev": "ts-node -r dotenv/config --files src/app.ts",
+    "start": "node -r dotenv/config ./dist/bundle.js"
   },
   "keywords": [
     "music",
@@ -21,6 +21,7 @@
   "license": "GPL-3.0+",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "dotenv": "^8.0.0",
     "fuzzball": "^1.1.6",
     "googleapis": "^40.0.0",
     "module-alias": "^2.1.0",
@@ -33,6 +34,7 @@
     "winston": "^3.1.0"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/jest": "^24.0.15",
     "@types/module-alias": "^2.0.0",
     "@types/mongodb": "^3.1.12",

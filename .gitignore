@@ -3,5 +3,4 @@ node_modules
 dist
 .vscode
 # Secrets
-Eolian/src/**/env.*.ts
-!Eolian/src/environments/env.unit-test.ts
+Eolian/.env

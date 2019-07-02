@@ -1,19 +1,21 @@
-import { logger } from "common/logger";
 
-/**
- * Load the corresponding environment variables
- * Default to local environment if not specified
- */
-
-const env = process.env.NODE_ENV || 'local';
-
-let environment: Environment;
-
-try {
-  environment = require(`./env.${env}`);
-} catch (e) {
-  logger.error(`Failed to resolve environment '${env}'\n${e.stack || e}`);
-  process.exit(1);
-}
+const environment: Environment = {
+  prod: process.env.PROD === 'true',
+  cmdToken: process.env.COMMAND_TOKEN,
+  owners: process.env.OWNERS.split(',').map(s => s.trim()),
+  tokens: {
+    discord: process.env.DISCORD_TOKEN,
+    youtube: process.env.YOUTUBE_TOKEN,
+    soundcloud: process.env.SOUNDCLOUD_TOKEN,
+    spotify: {
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET
+    }
+  },
+  db: {
+    url: process.env.DB_URL,
+    name: process.env.DB_NAME
+  }
+};
 
 export default environment;
