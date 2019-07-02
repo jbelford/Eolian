@@ -14,7 +14,7 @@ script:
 before_deploy:
 - cd ./Eolian
 - npm run build
-- rm -rf "$(ls -l | grep -v \"\(dist\|package\)\")"
+- ls -l | grep -v "\(dist\|package\)" | rm -rf
 deploy:
   provider: gcs
   access_key_id: GOOGM2WIJYXRH3JHSCABGXBX
