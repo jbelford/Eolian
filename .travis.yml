@@ -5,7 +5,6 @@ cache: npm
 install:
 - cd ./Eolian
 - npm install
-- npm run build
 - cd ..
 script:
 - cd ./Eolian
@@ -14,7 +13,8 @@ script:
 before_deploy:
 - cd ./Eolian
 - npm run build
-- ls -l | grep -v "\(dist\|package\)" | rm -rf
+- ls | grep -v "\(dist\|package\)" | rm -rf
+- cd ..
 deploy:
   provider: gcs
   access_key_id: GOOGM2WIJYXRH3JHSCABGXBX
