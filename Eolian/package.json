@@ -7,7 +7,8 @@
     "build": "webpack",
     "test": "jest --testPathPattern=/test/.+\\.test\\.ts NODE_ENV=local",
     "unit-test-only": "jest --testPathPattern=/unit/.+\\.test\\.ts NODE_ENV=unit-test",
-    "start": "node node_modules/ts-node/dist/bin.js --files src/app.ts"
+    "start-dev": "node node_modules/ts-node/dist/bin.js --files src/app.ts",
+    "start": "node ./dist/bundle.js"
   },
   "keywords": [
     "music",
