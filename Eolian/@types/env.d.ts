@@ -9,10 +9,16 @@ type Environment = {
     spotify: {
       clientId: string;
       clientSecret: string;
-    }
+    };
   };
-  db: {
+  mongo: {
     url: string;
     name: string;
-  }
+  },
+  google: {
+    projectId: string;
+    serviceKey: {
+      firestore: string;
+    };
+  };
 };

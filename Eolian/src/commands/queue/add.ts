@@ -17,6 +17,7 @@ const info: CommandInfo = {
     'soundcloud favorites shuffled',
     'https://www.youtube.com/watch?v=HEXWRTEbj1I',
     `playlist [retro]`,
+    `my playlist (cool playlist)`,
     `spotify playlist (awesome music playlist) shuffle next`,
     `artist (deadmau5) top 10`,
     `tracks`,

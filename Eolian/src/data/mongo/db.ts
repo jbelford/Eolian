@@ -10,8 +10,8 @@ export class MongoDatabase implements Database {
   public readonly queuesDao: MusicQueueDAO;
 
   private constructor(private readonly client: MongoClient) {
-    logger.info(`Database set: ${environment.db.name}`);
-    const db = client.db(environment.db.name);
+    logger.info(`Database set: ${environment.mongo.name}`);
+    const db = client.db(environment.mongo.name);
     this.usersDao = new MongoUsers(db);
     this.queuesDao = new MongoQueues(db);
   }
@@ -20,8 +20,8 @@ export class MongoDatabase implements Database {
    * Connects to MongoDB and returns MongoDatabase object
    */
   public static async connect(): Promise<MongoDatabase> {
-    const client = new MongoClient(environment.db.url, { useNewUrlParser: true });
-    logger.info(`Connecting to Mongo: ${environment.db.url}`);
+    const client = new MongoClient(environment.mongo.url, { useNewUrlParser: true });
+    logger.info(`Connecting to Mongo: ${environment.mongo.url}`);
     await client.connect();
     logger.info(`Connection to Mongo established`);
     return new MongoDatabase(client);

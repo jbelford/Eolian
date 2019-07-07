@@ -9,7 +9,7 @@ interface Database {
 
 interface UsersDAO {
 
-  get(id: string): Promise<UserDTO>;
+  get(id: string): Promise<UserDTO | undefined>;
 
   setSoundCloud(id: string, soundcloud: number): Promise<void>;
   removeSoundCloud(id: string): Promise<void>;
@@ -17,7 +17,7 @@ interface UsersDAO {
   setSpotify(id: string, spotify: string): Promise<void>;
   removeSpotify(id: string): Promise<void>;
 
-  setIdentifier(id: string, key: string, identifer: Identifier): Promise<void>;
+  setIdentifier(id: string, key: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string, key: string): Promise<void>;
 
   delete(id: string): Promise<boolean>;

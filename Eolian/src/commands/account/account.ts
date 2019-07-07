@@ -25,9 +25,9 @@ class AccountAction implements CommandAction {
     let embed: EmbedMessage;
     try {
       const user = await this.services.users.getUser(context.user.id);
-      const spotify = user.spotify ? await Spotify.getUser(user.spotify) : null;
-      const soundCloud = user.soundcloud ? await SoundCloud.getUser(user.soundcloud) : null;
-      embed = Embed.userDetails(context.user, spotify, soundCloud, user.identifiers);
+      const spotify = user && user.spotify ? await Spotify.getUser(user.spotify) : null;
+      const soundCloud = user && user.soundcloud ? await SoundCloud.getUser(user.soundcloud) : null;
+      embed = Embed.userDetails(context.user, spotify, soundCloud, user && user.identifiers);
     } catch (e) {
       logger.warn(e.stack || e);
       return await context.message.reply(e.response || 'Sorry. Something went wrong fetching your account details.');

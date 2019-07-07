@@ -19,7 +19,6 @@ fs.readdirSync(dir)
 module.exports = {
   mode: 'production',
   entry: path.join(dir, 'app.ts'),
-  devtool: 'inline-source-map',
   module: {
     rules: [
       {

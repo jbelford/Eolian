@@ -11,12 +11,12 @@ import { DiscordEolianBot } from "bot/discord/bot";
 import { EolianBot } from "bot/eolian";
 import { KeywordParsingStrategy } from "commands/parsing";
 import { logger } from "common/logger";
-import { MongoDatabase } from 'data/mongo/db';
+import { FirestoreDatabase } from 'data/firestore/db';
 import * as nodeCleanup from 'node-cleanup';
 
 (async () => {
   try {
-    const db: Database = await MongoDatabase.connect();
+    const db: Database = new FirestoreDatabase();
     const bot: EolianBot = await DiscordEolianBot.connect(db, KeywordParsingStrategy);
 
     // Handler for cleaning up resources on shutdown
