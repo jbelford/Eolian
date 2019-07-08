@@ -73,7 +73,7 @@ export namespace SoundCloud {
         const contentLength = parseInt(resp.headers["content-length"]);
         if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
 
-        const streamData: StreamData = { stream: stream, size: contentLength };
+        const streamData: StreamData = { readable: stream as any, size: contentLength, details: track };
         resolve(streamData);
       });
     });

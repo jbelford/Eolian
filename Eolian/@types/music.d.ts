@@ -9,8 +9,9 @@ type Track = {
 };
 
 type StreamData = {
-  stream: import('stream').Stream,
+  readable: import('stream').Readable,
   size: number,
+  details: any
 };
 
 interface PlayerManager {

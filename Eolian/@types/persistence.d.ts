@@ -1,9 +1,12 @@
-interface Database {
+interface Database extends Closable {
 
   readonly usersDao: UsersDAO;
-  readonly queuesDao: MusicQueueDAO;
 
-  cleanup(): Promise<void>;
+}
+
+interface MemoryStore extends Closable {
+
+  readonly queueDao: MusicQueueDAO;
 
 }
 
@@ -48,7 +51,7 @@ interface MusicQueueDAO {
 
   clear(guildId: string): Promise<boolean>;
 
-  remove(guildId: string): Promise<Track | null>;
+  pop(guildId: string): Promise<Track | null>;
 
   peek(guildId: string): Promise<Track | null>;
 

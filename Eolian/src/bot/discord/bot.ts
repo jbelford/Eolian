@@ -9,12 +9,18 @@ import { logger } from 'common/logger';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import environment from 'environments/env';
 
+export type DiscordEolianBotArgs = {
+  db: Database,
+  store: MemoryStore,
+  parser: CommandParsingStrategy
+};
+
 export class DiscordEolianBot extends EolianBot {
 
   private static bot: DiscordEolianBot;
 
-  private constructor(db: Database, parseStrategy: CommandParsingStrategy, private readonly client: Client) {
-    super(db, parseStrategy, new DiscordBotService(client));
+  private constructor(args: DiscordEolianBotArgs, private readonly client: Client) {
+    super({ ...args, service: new DiscordBotService(client)});
 
     this.client.once(EVENTS.READY, this.readyEventHandler);
     this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
@@ -27,10 +33,10 @@ export class DiscordEolianBot extends EolianBot {
   /**
    * Creates a bot instance and connects to discord
    */
-  static async connect(db: Database, parseStrategy: CommandParsingStrategy): Promise<EolianBot> {
+  static async connect(args: DiscordEolianBotArgs): Promise<EolianBot> {
     if (!this.bot) {
       const client = new Client(EOLIAN_CLIENT_OPTIONS);
-      this.bot = new DiscordEolianBot(db, parseStrategy, client);
+      this.bot = new DiscordEolianBot(args, client);
       await this.bot.start();
     }
     return this.bot;
@@ -41,7 +47,7 @@ export class DiscordEolianBot extends EolianBot {
       await this.client.login(environment.tokens.discord);
   }
 
-  async stop() {
+  async close() {
     await this.client.destroy();
   }
 
@@ -63,9 +69,9 @@ export class DiscordEolianBot extends EolianBot {
         }
 
         const permission = this.getPermissionLevel(message.member);
-        const [params, newText] = this.commandParser.parseParams(content, permission);
+        const [params, newText] = this.parser.parseParams(content, permission);
 
-        const [action, err] = this.commandParser.parseCommand(newText, permission, this.commands);
+        const [action, err] = this.parser.parseCommand(newText, permission, this.commands);
         if (err) {
           logger.debug(`Failed to get command action: ${err.message}`);
           return await message.reply(err.response);
@@ -84,7 +90,7 @@ export class DiscordEolianBot extends EolianBot {
   }
 
   private isIgnorable(message: Message) {
-    return message.author.bot || (!message.isMentioned(this.client.user) && !this.commandParser.messageInvokesBot(message.content));
+    return message.author.bot || (!message.isMentioned(this.client.user) && !this.parser.messageInvokesBot(message.content));
   }
 
   /**

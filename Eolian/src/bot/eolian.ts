@@ -3,15 +3,24 @@ import { MusicQueueService } from "data/queue";
 import { EolianUserService } from "data/user";
 import { DefaultPlayerManager } from "players/default/manager";
 
-export abstract class EolianBot {
+export type EolianBotArgs = {
+  db: Database,
+  store: MemoryStore,
+  parser: CommandParsingStrategy,
+  service: BotService
+};
+
+export abstract class EolianBot implements Closable {
 
   protected commands: CommandAction[];
+  protected parser: CommandParsingStrategy;
 
-  protected constructor(db: Database, protected readonly commandParser: CommandParsingStrategy, botService: BotService) {
+  protected constructor(args: EolianBotArgs) {
+    this.parser = args.parser;
     const services: CommandActionServices = {
-      bot: botService,
-      queues: new MusicQueueService(db.queuesDao),
-      users: new EolianUserService(db.usersDao),
+      bot: args.service,
+      queues: new MusicQueueService(args.store.queueDao),
+      users: new EolianUserService(args.db.usersDao),
       playerManager: new DefaultPlayerManager()
     };
     this.commands = COMMANDS.map(cmd => new cmd.action(services));
@@ -28,7 +37,7 @@ export abstract class EolianBot {
   /**
    * Close the connection with the web service
    */
-  abstract stop(): Promise<void>;
+  abstract close(): Promise<void>;
 
   /**
    * Provider must implement this method to begin communication with service

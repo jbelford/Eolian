@@ -18,22 +18,31 @@ export class DiscordTextChannel implements ContextTextChannel {
     const embed = Embed.selection(question, options);
     await this.sendEmbed(embed);
 
-    const messages = await this.channel.awaitMessages((message: Message) => {
-      if (message.author.id !== userId) return false;
-      const idx = parseInt(message.content);
-      if (isNaN(idx) || idx < 0 || idx > options.length) return false;
-      return true;
-    }, { maxMatches: 1, time: 60000 });
+    const selection = await this.awaitUserSelection(userId, options);
+    if (!selection) {
+      return null;
+    }
 
-    if (messages.size === 0) return null;
-
-    const idx = parseInt(messages.array()[0].content);
+    const idx = parseInt(selection.content);
     if (idx === 0) {
-      await messages.array()[0].reply('The selection has been cancelled.');
+      await selection.reply('The selection has been cancelled.');
       return null;
     }
 
     return idx - 1;
+  }
+
+  private async awaitUserSelection(userId: string, options: string[]): Promise<Message | undefined> {
+    const messages = await this.channel.awaitMessages((message: Message) => {
+      if (message.author.id !== userId) {
+        return false;
+      }
+
+      const idx = parseInt(message.content);
+      return !isNaN(idx) && idx >= 0 && idx <= options.length
+    }, { maxMatches: 1, time: 60000 });
+
+    return messages.size ? messages.array()[0] : null;
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
@@ -56,16 +65,20 @@ export class DiscordTextChannel implements ContextTextChannel {
       await message.react(button.emoji);
     }
     const collector = message.createReactionCollector((reaction: MessageReaction, user: User) => {
-      if (!reaction.users.some(reactionUser => reactionUser === user)) return false;
+      if (!reaction.users.some(reactionUser => reactionUser === user)) {
+        return false;
+      }
+
       const button = buttons.find(button => button.emoji === reaction.emoji.name);
-      if (!button || !button.onClick) return false;
+      if (!button || !button.onClick) {
+        return false;
+      }
+
       button.onClick(new DiscordMessage(reaction.message), new DiscordUser(user, PERMISSION.UNKNOWN))
         .catch(err => {
           logger.warn(`Button handler threw an unhandled exception: ${err.stack ? err.stack : err}`)
           return true;
-        }).then(destroy => {
-          if (destroy) collector.stop();
-        });
+        }).then(destroy => destroy && collector.stop());
     });
   }
 
