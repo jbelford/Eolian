@@ -11,4 +11,8 @@ export namespace Util {
     return list;
   }
 
+  export function tsum(...values: any[]): number {
+    return values.map(value => +!!value).reduce((prev, curr) => prev + curr, 0);
+  }
+
 }

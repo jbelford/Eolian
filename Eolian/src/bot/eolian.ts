@@ -2,6 +2,7 @@ import { COMMANDS } from "commands";
 import { MusicQueueService } from "data/queue";
 import { EolianUserService } from "data/user";
 import { DefaultPlayerManager } from "players/default/manager";
+import { IdentifiersService } from './identifiers';
 
 export type EolianBotArgs = {
   db: Database,
@@ -17,10 +18,12 @@ export abstract class EolianBot implements Closable {
 
   protected constructor(args: EolianBotArgs) {
     this.parser = args.parser;
+    const users = new EolianUserService(args.db.usersDao);
     const services: CommandActionServices = {
       bot: args.service,
       queues: new MusicQueueService(args.store.queueDao),
-      users: new EolianUserService(args.db.usersDao),
+      users,
+      identifiers: new IdentifiersService(users),
       playerManager: new DefaultPlayerManager()
     };
     this.commands = COMMANDS.map(cmd => new cmd.action(services));

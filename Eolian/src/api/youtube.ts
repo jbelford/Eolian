@@ -24,6 +24,21 @@ export namespace YouTube {
     };
   }
 
+  export async function getVideo(id: string): Promise<YoutubeVideo> {
+    try {
+      const response = await youtube.videos.list({ id: id, maxResults: 1, part: 'id,snippet,contentDetails' });
+      const video = response.data.items[0];
+      return {
+        id: video.id,
+        name: video.snippet.title,
+        channelName: video.snippet.channelTitle,
+        url: `https://www.youtube.com/watch?v=${video.id}`
+      };
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Failed to fetch YouTube playlist');
+    }
+  }
+
   export async function getPlaylist(id: string): Promise<YoutubePlaylist> {
     try {
       const response = await youtube.playlists.list({ id: id, maxResults: 1, part: 'id,snippet,contentDetails' });
@@ -48,6 +63,20 @@ export namespace YouTube {
         name: playlist.snippet.title,
         channelName: playlist.snippet.channelTitle,
         url: `https://www.youtube.com/playlist?list=${playlist.id.playlistId}`
+      }));
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');
+    }
+  }
+
+  export async function searchVideos(query: string): Promise<YoutubeVideo[]> {
+    try {
+      const response = await youtube.search.list({ q: query, maxResults: 5, type: 'video', part: 'id,snippet' });
+      return response.data.items.map(video => ({
+        id: video.id.videoId,
+        name: video.snippet.title,
+        channelName: video.snippet.channelTitle,
+        url: `https://www.youtube.com/watch?v=${video.id.videoId}`
       }));
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');

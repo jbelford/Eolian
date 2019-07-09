@@ -9,9 +9,9 @@ export class FirestoreUsers implements UsersDAO {
     this.users = firestore.collection('users');
   }
 
-  async get(id: string): Promise<UserDTO | undefined> {
+  async get(id: string): Promise<UserDTO> {
     const doc = await this.users.doc(id).get();
-    return <UserDTO> doc.data();
+    return <UserDTO> doc.data() || { id };
   }
 
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {

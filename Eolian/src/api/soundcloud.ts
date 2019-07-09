@@ -6,9 +6,25 @@ import * as querystring from 'querystring';
 import * as request from 'request';
 import * as requestp from 'request-promise-native';
 
+
+export const enum SoundCloudResourceType {
+  USER = 'user',
+  PLAYLIST = 'playlist',
+  TRACK = 'track'
+};
+
 export namespace SoundCloud {
 
   const API = 'https://api.soundcloud.com';
+
+  export async function searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
+    try {
+      const tracks: SoundCloudTrack[] = await get('tracks', { q: query });
+      return tracks.slice(0, limit);
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'I failed to search SoundCloud');
+    }
+  }
 
   export async function searchUser(query: string, limit = 5): Promise<SoundCloudUser[]> {
     try {
@@ -16,6 +32,14 @@ export namespace SoundCloud {
       return users.slice(0, limit);
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'I failed to search SoundCloud');
+    }
+  }
+
+  export async function resolve(url: string): Promise<SoundCloudResource> {
+    try {
+      return await get('resolve', { url: url });
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
     }
   }
 

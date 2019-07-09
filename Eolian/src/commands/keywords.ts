@@ -204,7 +204,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['[my identifier]', '[music playlist #2]'],
     priority: 4,
-    matchText: (text: string) => defaultMatch(text, /\B\[\s*([^\s].+[^\s])\s*\]\B/i, 0),
+    matchText: (text: string) => defaultMatch(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
   },
   QUERY: {
     name: 'QUERY',

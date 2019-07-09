@@ -15,7 +15,11 @@ export const enum COLOR {
 
 export const enum IDENTIFIER_TYPE {
   PLAYLIST = 0,
-  ALBUM
+  ALBUM,
+  FAVORITES,
+  ARTIST,
+  SONG,
+  TRACKS
 }
 
 export const enum SOURCE {

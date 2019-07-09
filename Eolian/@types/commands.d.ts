@@ -29,6 +29,7 @@ type CommandActionServices = {
   bot: BotService;
   users: import('data/user').EolianUserService;
   queues: import('data/queue').MusicQueueService;
+  identifiers: import('bot/identifiers').IdentifiersService;
   playerManager: PlayerManager;
 };
 

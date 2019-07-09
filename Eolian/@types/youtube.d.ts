@@ -3,6 +3,13 @@ type YouTubeUrlDetails = {
   id: string;
 }
 
+type YoutubeVideo = {
+  id: string;
+  channelName: string;
+  name: string;
+  url: string;
+}
+
 type YoutubePlaylist = {
   id: string;
   channelName: string;

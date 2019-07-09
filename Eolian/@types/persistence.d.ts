@@ -12,7 +12,7 @@ interface MemoryStore extends Closable {
 
 interface UsersDAO {
 
-  get(id: string): Promise<UserDTO | undefined>;
+  get(id: string): Promise<UserDTO>;
 
   setSoundCloud(id: string, soundcloud: number): Promise<void>;
   removeSoundCloud(id: string): Promise<void>;
@@ -29,9 +29,9 @@ interface UsersDAO {
 
 type UserDTO = {
   id: string;
-  soundcloud: number;
-  spotify: string;
-  identifiers: { [key: string]: Identifier };
+  soundcloud?: number;
+  spotify?: string;
+  identifiers?: { [key: string]: Identifier };
 }
 
 type Identifier = {

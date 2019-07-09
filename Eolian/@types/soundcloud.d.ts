@@ -1,6 +1,6 @@
 type SoundCloudResource = {
   id: number;
-  kind: 'user' | 'playlist' | 'track';
+  kind: import('api/soundcloud').SoundCloudResourceType;
   permalink_url: string;
 }
 
@@ -23,4 +23,5 @@ interface SoundCloudTrack extends SoundCloudResource {
   stream_url: string;
   artwork_url: string;
   user: SoundCloudUser;
+  title: string;
 }

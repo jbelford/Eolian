@@ -27,8 +27,11 @@ type SpotifyAlbum = {
   artists: SpotifyArtist[];
   images: SpotifyImageObject[];
   name: string;
-  tracks?: SpotifyPagingObject<SpotifyTrack>;
 };
+
+type SpotifyAlbumFull = SpotifyAlbum & {
+  tracks: SpotifyPagingObject<SpotifyTrack>
+}
 
 type SpotifyPagingObject<T> = {
   href: string;

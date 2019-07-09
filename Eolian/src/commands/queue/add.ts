@@ -1,6 +1,7 @@
 import { QueueCategory } from "commands/command";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
+import { Util } from 'common/util';
 
 const info: CommandInfo = {
   name: 'add',
@@ -31,8 +32,13 @@ class AddAction implements CommandAction {
 
   constructor(private readonly services: CommandActionServices) {}
 
-  public execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
-    throw new Error("Method not implemented.");
+  async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
+    if (Util.tsum(params.QUERY, params.URL, params.IDENTIFIER) > 1) {
+      return await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
+    }
+
+
+
   }
 
 }

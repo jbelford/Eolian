@@ -20,7 +20,7 @@ export namespace Spotify {
   });
   let expiration = 0;
 
-  export function getResourceType(uri: string): SpotifyUrlDetails {
+  export function getResourceType(uri: string): SpotifyUrlDetails | undefined {
     const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:\/]([^\?]+)/g
     const regArr = matcher.exec(uri);
     if (!regArr) return null;
@@ -51,15 +51,27 @@ export namespace Spotify {
     }
   }
 
-  export async function getAlbum(id: string): Promise<SpotifyAlbum> {
+  export async function getAlbum(id: string): Promise<SpotifyAlbumFull> {
     try {
       logger.debug(`Getting album: ${id}`);
       await checkAndUpdateToken();
       const response = await spotify.getAlbum(id);
-      const album = <SpotifyAlbum>response.body;
+      const album = <SpotifyAlbumFull>response.body;
       return album;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify playlist.');
+    }
+  }
+
+  export async function getArtist(id: string): Promise<SpotifyArtist> {
+    try {
+      logger.debug(`Getting artist: ${id}`);
+      await checkAndUpdateToken();
+      const response = await spotify.getArtist(id);
+      const artist = <SpotifyArtist>response.body;
+      return artist;
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify artist.');
     }
   }
 
@@ -102,6 +114,17 @@ export namespace Spotify {
       const response = await spotify.searchAlbums(query, { limit: 5 });
       const body = <SpotifySearchResult>response.body;
       return body.albums.items;
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
+    }
+  }
+
+  export async function searchArtists(query: string, limit = 5): Promise<SpotifyArtist[]> {
+    try {
+      await checkAndUpdateToken();
+      const response = await spotify.searchArtists(query, { limit });
+      const body = <SpotifySearchResult>response.body;
+      return body.artists.items;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
     }
