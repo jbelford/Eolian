@@ -1,10 +1,17 @@
+import { LoggingWinston } from '@google-cloud/logging-winston';
 import * as winston from 'winston';
+import environment from '../environments/env';
 
-const env = process.env.NODE_ENV || 'local';
-const isProd = env === 'prod';
+const transports: any[] = [
+  new winston.transports.Console()
+];
+
+if (environment.prod) {
+  transports.push(new LoggingWinston());
+}
 
 export const logger = winston.createLogger({
-  level: isProd ? 'info' : 'debug',
+  level: environment.prod ? 'info' : 'debug',
   exitOnError: false,
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -13,7 +20,5 @@ export const logger = winston.createLogger({
       return `${info.timestamp} ${info.level}: ${info.message}`
     })
   ),
-  transports: [
-    new winston.transports.Console()
-  ]
+  transports
 });

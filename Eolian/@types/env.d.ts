@@ -14,11 +14,5 @@ type Environment = {
   mongo: {
     url: string;
     name: string;
-  },
-  google: {
-    projectId: string;
-    serviceKey: {
-      firestore: string;
-    };
   };
 };

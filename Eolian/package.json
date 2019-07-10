@@ -21,6 +21,7 @@
   "license": "GPL-3.0+",
   "dependencies": {
     "@google-cloud/firestore": "^2.2.3",
+    "@google-cloud/logging-winston": "^1.1.1",
     "discord.js": "^11.4.2",
     "dotenv": "^8.0.0",
     "fuzzball": "^1.1.6",

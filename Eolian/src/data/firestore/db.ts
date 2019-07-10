@@ -1,5 +1,4 @@
 import { Firestore } from '@google-cloud/firestore';
-import environment from 'environments/env';
 import { FirestoreUsers } from './users';
 
 export class FirestoreDatabase implements Database {
@@ -7,10 +6,7 @@ export class FirestoreDatabase implements Database {
   readonly usersDao: UsersDAO;
 
   constructor() {
-    const db = new Firestore({
-      projectId: environment.google.projectId,
-      keyFilename: environment.google.serviceKey.firestore
-    });
+    const db = new Firestore();
     this.usersDao = new FirestoreUsers(db);
   }
 

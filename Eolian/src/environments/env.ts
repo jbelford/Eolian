@@ -15,12 +15,6 @@ const environment: Environment = {
   mongo: {
     url: process.env.DB_URL,
     name: process.env.DB_NAME
-  },
-  google: {
-    projectId: process.env.GOOGLE_PROJECT_ID,
-    serviceKey: {
-      firestore: process.env.GOOGLE_FIRESTORE_KEY_PATH
-    }
   }
 };
 
