@@ -1,5 +1,5 @@
+import environment from 'common/env';
 import { EolianBotError } from 'common/errors';
-import environment from 'environments/env';
 import { google } from 'googleapis';
 
 export const enum YouTubeResourceType {

@@ -1,4 +1,4 @@
-import { COMMAND_CATEGORIES, GeneralCategory } from "commands/command";
+import { COMMAND_CATEGORIES, GeneralCategory } from "commands/category";
 import { COMMANDS } from "commands/index";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';

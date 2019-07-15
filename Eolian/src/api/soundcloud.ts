@@ -1,7 +1,7 @@
 import { SOURCE } from 'common/constants';
+import environment from "common/env";
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
-import environment from "environments/env";
 import * as querystring from 'querystring';
 import * as request from 'request';
 import * as requestp from 'request-promise-native';

@@ -7,12 +7,11 @@ if (env === 'local') {
   require('./module-setup');
 }
 
-import { DiscordEolianBot } from "bot/discord/bot";
-import { EolianBot } from "bot/eolian";
 import { KeywordParsingStrategy } from "commands/parsing";
 import { logger } from "common/logger";
 import { FirestoreDatabase } from 'data/firestore/db';
 import { LocalMemoryStore } from 'data/memory/store';
+import { DiscordEolianBot } from "discord/bot";
 import * as nodeCleanup from 'node-cleanup';
 
 const resources: Closable[] = [];
@@ -21,11 +20,10 @@ const resources: Closable[] = [];
   try {
     const db: Database = new FirestoreDatabase();
     const store: MemoryStore = new LocalMemoryStore();
-    const bot: EolianBot = await DiscordEolianBot.connect({
-      db,
-      store,
-      parser: KeywordParsingStrategy,
-    });
+    const parser: CommandParsingStrategy = new KeywordParsingStrategy();
+    const bot: EolianBot = new DiscordEolianBot({ db, store, parser });
+
+    await bot.start();
 
     resources.push(db, store, bot);
   } catch (e) {

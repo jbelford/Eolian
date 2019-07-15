@@ -1,4 +1,4 @@
-import { GeneralCategory } from "commands/command";
+import { GeneralCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";

@@ -1,6 +1,6 @@
 import { SoundCloud } from "api/soundcloud";
 import { Spotify } from "api/spotify";
-import { AccountCategory } from "commands/command";
+import { AccountCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { Embed } from "common/embed";

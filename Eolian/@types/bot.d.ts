@@ -1,3 +1,11 @@
+
+interface EolianBot extends Closable {
+
+  start(): Promise<void>;
+
+}
+
+
 interface ContextUser {
 
   readonly id: string;

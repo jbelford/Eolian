@@ -1,4 +1,4 @@
-import { QueueCategory } from "commands/command";
+import { QueueCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { Util } from 'common/util';

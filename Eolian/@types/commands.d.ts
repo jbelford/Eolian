@@ -27,9 +27,9 @@ type CommandCategory = {
 
 type CommandActionServices = {
   bot: BotService;
-  users: import('data/user').EolianUserService;
-  queues: import('data/queue').MusicQueueService;
-  identifiers: import('bot/identifiers').IdentifiersService;
+  users: import('services/user').EolianUserService;
+  queues: import('services/queue').MusicQueueService;
+  identifiers: import('services/identifiers').IdentifiersService;
   playerManager: PlayerManager;
 };
 
@@ -80,7 +80,6 @@ interface CommandParsingStrategy {
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: import('common/constants').PERMISSION, commands: CommandAction[]):
-    [CommandAction, import('common/errors').EolianBotError];
+  parseCommand(message: string, permission: import('common/constants').PERMISSION): [Command, import('common/errors').EolianBotError];
 
 }

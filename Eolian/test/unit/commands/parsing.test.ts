@@ -4,14 +4,16 @@ import { PERMISSION, SOURCE } from "common/constants";
 
 describe('KeywordParsingStrategy', () => {
 
+  const parser = new KeywordParsingStrategy();
+
   describe('#messageInvokesBot', () => {
 
     test('Missing token fails', () => {
-      expect(KeywordParsingStrategy.messageInvokesBot('test')).toBe(false);
+      expect(parser.messageInvokesBot('test')).toBe(false);
     });
 
     test('Token present returns true', () => {
-      expect(KeywordParsingStrategy.messageInvokesBot('!test')).toBe(true);
+      expect(parser.messageInvokesBot('!test')).toBe(true);
     });
 
   });
@@ -25,7 +27,7 @@ describe('KeywordParsingStrategy', () => {
 
       let mockMessage = '!' + simpleKeywords.join(' ');
 
-      const [params, newText] = KeywordParsingStrategy.parseParams(mockMessage, PERMISSION.OWNER);
+      const [params, newText] = parser.parseParams(mockMessage, PERMISSION.OWNER);
 
       simpleKeywords.forEach(keyword => expect(params[keyword]).toBe(true));
       expect(newText.trim()).toHaveLength(0);
@@ -33,7 +35,7 @@ describe('KeywordParsingStrategy', () => {
 
     test('Does not flag param if user missing permission', () => {
       const mockMessage = KEYWORDS.ENABLE.name;
-      const [params, newText] = KeywordParsingStrategy.parseParams(mockMessage, PERMISSION.USER);
+      const [params, newText] = parser.parseParams(mockMessage, PERMISSION.USER);
 
       expect(params.ENABLE).toBeFalsy();
       expect(newText).toHaveLength(mockMessage.length);
@@ -41,29 +43,31 @@ describe('KeywordParsingStrategy', () => {
 
     [
       {
-        message: 'bottom 100 top 100',
-        object: { start: 100, stop: null }
+        name: 'bottom 100 top 100',
+        args: { start: 100, stop: null }
       },
       {
-        message: 'bottom 100:200 top 100:200',
-        object: { start: 100, stop: 200 }
+        name: 'bottom 100:200 top 100:200',
+        args: { start: 100, stop: 200 }
       },
       {
-        message: 'bottom 100:-200 top 100:-200',
-        object: { start: 100, stop: -200 }
+        name: 'bottom 100:-200 top 100:-200',
+        args: { start: 100, stop: -200 }
       }
-    ].forEach(arg => {
+    ].forEach(({ name, args }) => {
 
-      test(`Bottom and top keywords are parsed correctly: ${arg.message}`, () => {
-        const [params, newText] = KeywordParsingStrategy.parseParams(arg.message, PERMISSION.USER);
+      const { start, stop } = args;
+
+      test(`Bottom and top keywords are parsed correctly: ${name}`, () => {
+        const [params, newText] = parser.parseParams(name, PERMISSION.USER);
 
         expect(params.TOP).toBeTruthy();
-        expect(params.TOP.start).toBe(arg.object.start);
-        expect(params.TOP.stop).toBe(arg.object.stop);
+        expect(params.TOP.start).toBe(start);
+        expect(params.TOP.stop).toBe(stop);
 
         expect(params.BOTTOM).toBeTruthy();
-        expect(params.BOTTOM.start).toBe(arg.object.start);
-        expect(params.BOTTOM.stop).toBe(arg.object.stop);
+        expect(params.BOTTOM.start).toBe(start);
+        expect(params.BOTTOM.stop).toBe(stop);
 
         expect(newText.trim()).toHaveLength(0);
       });
@@ -72,7 +76,7 @@ describe('KeywordParsingStrategy', () => {
 
     test('Query is parsed correctly', () => {
       const mockMessage = 'ajksdlfkaj ( this is a query ) jadlkfjak';
-      const [params, newText] = KeywordParsingStrategy.parseParams(mockMessage, PERMISSION.USER);
+      const [params, newText] = parser.parseParams(mockMessage, PERMISSION.USER);
 
       expect(params.QUERY).toBe('this is a query');
       expect(newText.includes('( this is a query )')).toBe(false);
@@ -81,7 +85,7 @@ describe('KeywordParsingStrategy', () => {
 
     test('Identifier is parsed correctly', () => {
       const mockMessage = 'dkjlsj [ my identifier] ksdljf';
-      const [params, newText] = KeywordParsingStrategy.parseParams(mockMessage, PERMISSION.USER);
+      const [params, newText] = parser.parseParams(mockMessage, PERMISSION.USER);
 
       expect(params.IDENTIFIER).toBe('my identifier');
       expect(newText.includes('[ my identifier]')).toBe(false);
@@ -113,14 +117,14 @@ describe('KeywordParsingStrategy', () => {
         message: 'https://www.google.com',
         source: SOURCE.UNKNOWN
       }
-    ].forEach(arg => {
+    ].forEach(({ type, message, source }) => {
 
-      test(`${arg.type} is parsed correctly`, () => {
-        const [params, newText] = KeywordParsingStrategy.parseParams(arg.message, PERMISSION.USER);
+      test(`${type} is parsed correctly`, () => {
+        const [params, newText] = parser.parseParams(message, PERMISSION.USER);
 
         expect(params.URL).toBeTruthy();
-        expect(params.URL.value).toBe(arg.message);
-        expect(params.URL.source).toBe(arg.source);
+        expect(params.URL.value).toBe(message);
+        expect(params.URL.source).toBe(source);
       });
 
     });
@@ -129,7 +133,7 @@ describe('KeywordParsingStrategy', () => {
       const args = ['arg1', 'arg2', ' arg2 ', '  j dkslfjlka klajfdlka ; kdslajf;alk;j fkljdsa; fasjkfaskjsfdlkajf '];
       const message = '/' + args.join('/') + '/';
 
-      const [params, newText] = KeywordParsingStrategy.parseParams(message, PERMISSION.USER);
+      const [params, newText] = parser.parseParams(message, PERMISSION.USER);
 
       expect(params.ARG).toBeTruthy();
       args.forEach((arg, i) => expect(params.ARG[i]).toBe(arg.trim()));

@@ -3,7 +3,7 @@ import { Spotify, SpotifyResourceType } from 'api/spotify';
 import { YouTube, YouTubeResourceType } from 'api/youtube';
 import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
-import { EolianUserService } from 'data/user';
+import { EolianUserService } from 'services/user';
 
 export type ResolvedResource = {
   authors: string[];

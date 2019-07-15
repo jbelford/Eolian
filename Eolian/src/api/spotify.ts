@@ -1,6 +1,6 @@
+import environment from 'common/env';
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
-import environment from 'environments/env';
 import * as fuzz from 'fuzzball';
 import * as SpotifyWebApi from 'spotify-web-api-node';
 

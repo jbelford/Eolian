@@ -1,13 +1,16 @@
-import { DiscordTextChannel } from 'bot/discord/channel';
-import { DiscordBotService } from 'bot/discord/client';
-import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'bot/discord/constants';
-import { DiscordMessage } from 'bot/discord/message';
-import { DiscordUser } from 'bot/discord/user';
-import { EolianBot } from 'bot/eolian';
 import { PERMISSION } from 'common/constants';
+import environment from 'common/env';
 import { logger } from 'common/logger';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
-import environment from 'environments/env';
+import { DiscordTextChannel } from 'discord/channel';
+import { DiscordBotService } from 'discord/client';
+import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'discord/constants';
+import { DiscordMessage } from 'discord/message';
+import { DiscordUser } from 'discord/user';
+import { DefaultPlayerManager } from 'players/default/manager';
+import { IdentifiersService } from 'services/identifiers';
+import { MusicQueueService } from 'services/queue';
+import { EolianUserService } from 'services/user';
 
 export type DiscordEolianBotArgs = {
   db: Database,
@@ -15,36 +18,39 @@ export type DiscordEolianBotArgs = {
   parser: CommandParsingStrategy
 };
 
-export class DiscordEolianBot extends EolianBot {
+export class DiscordEolianBot implements EolianBot {
 
-  private static bot: DiscordEolianBot;
+  private client: Client;
+  private parser: CommandParsingStrategy;
 
-  private constructor(args: DiscordEolianBotArgs, private readonly client: Client) {
-    super({ ...args, service: new DiscordBotService(client)});
+  private services: CommandActionServices;
 
+  constructor(args: DiscordEolianBotArgs) {
+    this.parser = args.parser;
+
+    this.client = new Client(EOLIAN_CLIENT_OPTIONS);
     this.client.once(EVENTS.READY, this.readyEventHandler);
     this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
     this.client.on(EVENTS.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
     this.client.on(EVENTS.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
     this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
-  }
 
-  /**
-   * Creates a bot instance and connects to discord
-   */
-  static async connect(args: DiscordEolianBotArgs): Promise<EolianBot> {
-    if (!this.bot) {
-      const client = new Client(EOLIAN_CLIENT_OPTIONS);
-      this.bot = new DiscordEolianBot(args, client);
-      await this.bot.start();
+    const users = new EolianUserService(args.db.usersDao);
+    this.services = {
+      bot: new DiscordBotService(this.client),
+      identifiers: new IdentifiersService(users),
+      playerManager: new DefaultPlayerManager(),
+      queues: new MusicQueueService(args.store.queueDao),
+      users
     }
-    return this.bot;
   }
 
-  protected async _start() {
-    if (!this.client.readyTimestamp)
+  async start() {
+    this.onMessage();
+    if (!this.client.readyTimestamp) {
       await this.client.login(environment.tokens.discord);
+    }
   }
 
   async close() {
@@ -68,10 +74,10 @@ export class DiscordEolianBot extends EolianBot {
           return author.send(`I do not have permission to send messages to the channel.`);
         }
 
-        const permission = this.getPermissionLevel(message.member);
+        const permission = getPermissionLevel(message.member);
         const [params, newText] = this.parser.parseParams(content, permission);
 
-        const [action, err] = this.parser.parseCommand(newText, permission, this.commands);
+        const [cmd, err] = this.parser.parseCommand(newText, permission);
         if (err) {
           logger.debug(`Failed to get command action: ${err.message}`);
           return await message.reply(err.response);
@@ -82,6 +88,9 @@ export class DiscordEolianBot extends EolianBot {
           message: new DiscordMessage(message),
           channel: new DiscordTextChannel(message.channel)
         };
+
+        const action = new cmd.action(this.services);
+
         await action.execute(context, params);
       } catch (e) {
         logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
@@ -112,10 +121,11 @@ export class DiscordEolianBot extends EolianBot {
     return channel.type !== CHANNEL.TEXT || (<TextChannel>channel).permissionsFor(this.client.user).has(Permissions.FLAGS.SEND_MESSAGES);
   }
 
-  private getPermissionLevel(member: GuildMember): PERMISSION {
-    if (environment.owners.includes(member.id)) return PERMISSION.OWNER;
-    else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR))) return PERMISSION.ADMIN;
-    return PERMISSION.USER;
-  }
+}
 
+
+function getPermissionLevel(member: GuildMember): PERMISSION {
+  if (environment.owners.includes(member.id)) return PERMISSION.OWNER;
+  else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR))) return PERMISSION.ADMIN;
+  return PERMISSION.USER;
 }

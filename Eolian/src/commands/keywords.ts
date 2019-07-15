@@ -216,7 +216,13 @@ export const KEYWORDS: IKeywords = {
   },
 };
 
-function defaultMatch(text: string, reg: RegExp, group?: number): { matches: boolean, newText: string, args: any } {
+type MatchResult = {
+  matches: boolean;
+  newText: string;
+  args: any;
+};
+
+function defaultMatch(text: string, reg: RegExp, group?: number): MatchResult {
   const regArr = reg.exec(text);
   const match = { matches: !!regArr, newText: text.replace(reg, ''), args: null };
   if (match.matches) {

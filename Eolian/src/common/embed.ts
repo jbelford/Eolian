@@ -1,5 +1,5 @@
 import { COMMANDS } from "commands/index";
-import environment from "environments/env";
+import environment from "common/env";
 import { COLOR } from './constants';
 
 /**

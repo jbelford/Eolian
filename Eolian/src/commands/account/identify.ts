@@ -1,4 +1,4 @@
-import { AccountCategory } from "commands/command";
+import { AccountCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { logger } from "common/logger";
