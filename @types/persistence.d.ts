@@ -10,6 +10,16 @@ interface MemoryStore extends Closable {
 
 }
 
+interface EolianCache<T> {
+
+  get(id: string): Promise<T | undefined>;
+
+  del(id: string): Promise<boolean>;
+
+  set(id: string, val: T, ttl?: number): Promise<boolean>;
+
+}
+
 interface UsersDAO {
 
   get(id: string): Promise<UserDTO>;
