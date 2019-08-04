@@ -173,42 +173,53 @@ class CachedSpotifyApi implements SpotifyApi {
     this.cache = new InMemoryCache(ttl);
   }
 
-  getUser(id: string): Promise<SpotifyUser> {
-    return this.cache.getOrSet(`getUser:${id}`, () => this.api.getUser(id));
+  async getUser(id: string): Promise<SpotifyUser> {
+    return (await this.cache.getOrSet(`user:${id}`, () => this.api.getUser(id)))[0];
   }
 
-  getPlaylist(id: string): Promise<SpotifyPlaylist> {
-    return this.cache.getOrSet(`getPlaylist:${id}`, () => this.api.getPlaylist(id));
+  async getPlaylist(id: string): Promise<SpotifyPlaylist> {
+    return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
   }
 
-  getAlbum(id: string): Promise<SpotifyAlbumFull> {
-    return this.cache.getOrSet(`getAlbum:${id}`, () => this.api.getAlbum(id));
+  async getAlbum(id: string): Promise<SpotifyAlbumFull> {
+    return (await this.cache.getOrSet(`album:${id}`, () => this.api.getAlbum(id)))[0];
   }
 
-  getAlbumTracks(id: string): Promise<SpotifyAlbumFull> {
-    return this.cache.getOrSet(`getAlbumTracks:${id}`, () => this.api.getAlbumTracks(id));
+  async getAlbumTracks(id: string): Promise<SpotifyAlbumFull> {
+    return (await this.cache.getOrSet(`albumTracks:${id}`, () => this.api.getAlbumTracks(id)))[0];
   }
 
-  getArtist(id: string): Promise<SpotifyArtist> {
-    return this.cache.getOrSet(`getArtist:${id}`, () => this.api.getArtist(id));
+  async getArtist(id: string): Promise<SpotifyArtist> {
+    return (await this.cache.getOrSet(`artist:${id}`, () => this.api.getArtist(id)))[0];
   }
 
-  searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]> {
+  async searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]> {
     let key = `searchPlaylists:${query}`;
     if (userId) key = `${key}:${userId}`;
-    return this.cache.getOrSet(key, () => this.api.searchPlaylists(query));
+    const [playlists, found] = await this.cache.getOrSet(key, () => this.api.searchPlaylists(query));
+    if (!found) {
+      await Promise.all(playlists.map(playlist => this.cache.set(`playlist:${playlist.id}`, playlist)));
+    }
+    return playlists;
   }
 
-  searchAlbums(query: string): Promise<SpotifyAlbum[]> {
-    return this.cache.getOrSet(`searchAlbums:${query}`, () => this.api.searchAlbums(query));
+  async searchAlbums(query: string): Promise<SpotifyAlbum[]> {
+    const [albums, found] = await this.cache.getOrSet(`searchAlbums:${query}`, () => this.api.searchAlbums(query));
+    if (!found) {
+      await Promise.all(albums.map(album => this.cache.set(`album:${album.id}`, album)));
+    }
+    return albums;
   }
 
-  searchArtists(query: string, limit = 5): Promise<SpotifyArtist[]> {
-    return this.cache.getOrSet(`searchArtists:${query}:${limit}`, () => this.api.searchArtists(query, limit));
+  async searchArtists(query: string, limit = 5): Promise<SpotifyArtist[]> {
+    const [artists, found] = await this.cache.getOrSet(`searchArtists:${query}:${limit}`, () => this.api.searchArtists(query, limit));
+    if (!found) {
+      await Promise.all(artists.map(artist => this.cache.set(`artist:${artist.id}`, artist)));
+    }
+    return artists;
   }
 
 }
-
 
 export namespace Spotify {
 

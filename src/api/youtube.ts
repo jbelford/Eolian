@@ -96,17 +96,25 @@ class CachedYouTubeApi implements YouTubeApi {
     this.cache = new InMemoryCache(ttl);
   }
 
-  getVideo(id: string): Promise<YoutubeVideo> {
-    return this.cache.getOrSet(`getVideo:${id}`, () => this.api.getVideo(id));
+  async getVideo(id: string): Promise<YoutubeVideo> {
+    return (await this.cache.getOrSet(`video:${id}`, () => this.api.getVideo(id)))[0];
   }
-  getPlaylist(id: string): Promise<YoutubePlaylist> {
-    return this.cache.getOrSet(`getPlaylist:${id}`, () => this.api.getPlaylist(id));
+  async getPlaylist(id: string): Promise<YoutubePlaylist> {
+    return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
   }
-  searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
-    return this.cache.getOrSet(`searchPlaylists:${query}`, () => this.api.searchPlaylists(query));
+  async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
+    const [playlists, found] = await this.cache.getOrSet(`searchPlaylists:${query}`, () => this.api.searchPlaylists(query));
+    if (!found) {
+      await Promise.all(playlists.map(playlist => this.cache.set(`playlist:${playlist.id}`, playlist)));
+    }
+    return playlists;
   }
-  searchVideos(query: string): Promise<YoutubeVideo[]> {
-    return this.cache.getOrSet(`searchVideos:${query}`, () => this.api.searchVideos(query));
+  async searchVideos(query: string): Promise<YoutubeVideo[]> {
+    const [videos, found] = await this.cache.getOrSet(`searchVideos:${query}`, () => this.api.searchVideos(query));
+    if (!found) {
+      await Promise.all(videos.map(video => this.cache.set(`video:${video.id}`, video)));
+    }
+    return videos;
   }
 
 }

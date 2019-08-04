@@ -137,34 +137,46 @@ class CachedSoundCloudApi implements SoundCloudApi {
     this.cache = new InMemoryCache(ttl);
   }
 
-  searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
-    return this.cache.getOrSet(`searchSongs:${query}:${limit}`, () => this.api.searchSongs(query, limit));
+  async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
+    const [tracks, found] = await this.cache.getOrSet(`searchSongs:${query}:${limit}`, () => this.api.searchSongs(query, limit));
+    if (!found) {
+      await Promise.all(tracks.map(track => this.cache.set(`song:${track.id}`, track)));
+    }
+    return tracks;
   }
 
-  searchUser(query: string, limit = 5): Promise<SoundCloudUser[]> {
-    return this.cache.getOrSet(`searchUser:${query}:${limit}`, () => this.api.searchUser(query, limit));
+  async searchUser(query: string, limit = 5): Promise<SoundCloudUser[]> {
+    const [users, found] = await this.cache.getOrSet(`searchUser:${query}:${limit}`, () => this.api.searchUser(query, limit));
+    if (!found) {
+      await Promise.all(users.map(user => this.cache.set(`user:${user.id}`, user)));
+    }
+    return users;
   }
 
-  searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
+  async searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
     let key = `searchPlaylists:${query}`;
     if (userId) key = `${key}:${userId}`;
-    return this.cache.getOrSet(key, () => this.api.searchPlaylists(query, userId));
+    const [playlists, found] = await this.cache.getOrSet(key, () => this.api.searchPlaylists(query, userId));
+    if (!found) {
+      await Promise.all(playlists.map(playlist => this.cache.set(`playlist:${playlist.id}`, playlist)));
+    }
+    return playlists;
   }
 
-  resolve(url: string): Promise<SoundCloudResource> {
-    return this.cache.getOrSet(`resolve:${url}`, () => this.api.resolve(url));
+  async resolve(url: string): Promise<SoundCloudResource> {
+    return (await this.cache.getOrSet(`resolve:${url}`, () => this.api.resolve(url)))[0];
   }
 
-  resolveUser(url: string): Promise<SoundCloudUser> {
-    return this.cache.getOrSet(`resolveUser:${url}`, () => this.api.resolveUser(url));
+  async resolveUser(url: string): Promise<SoundCloudUser> {
+    return (await this.cache.getOrSet(`resolveUser:${url}`, () => this.api.resolveUser(url)))[0];
   }
 
-  resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
-    return this.cache.getOrSet(`resolvePlaylist:${url}`, () => this.api.resolvePlaylist(url));
+  async resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
+    return (await this.cache.getOrSet(`resolvePlaylist:${url}`, () => this.api.resolvePlaylist(url)))[0];
   }
 
-  getUser(id: number): Promise<SoundCloudUser> {
-    return this.cache.getOrSet(`getUser:${id}`, () => this.api.getUser(id));
+  async getUser(id: number): Promise<SoundCloudUser> {
+    return (await this.cache.getOrSet(`getUser:${id}`, () => this.api.getUser(id)))[0];
   }
 
   getStream(track: Track): Promise<StreamData> {
