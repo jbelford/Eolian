@@ -4,10 +4,12 @@ import { logger } from "common/logger";
 import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from "discord.js";
 import { DiscordMessage } from "discord/message";
 import { DiscordUser } from "discord/user";
+import { EolianUserService } from 'services/user';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
-  constructor(private readonly channel: TextChannel | DMChannel | GroupDMChannel) { }
+  constructor(private readonly channel: TextChannel | DMChannel | GroupDMChannel,
+    private readonly users: EolianUserService) { }
 
   async send(message: string): Promise<ContextMessage> {
     const discordMessage = await this.channel.send(message);
@@ -76,7 +78,7 @@ export class DiscordTextChannel implements ContextTextChannel {
         return false;
       }
 
-      button.onClick(new DiscordMessage(reaction.message), new DiscordUser(user, PERMISSION.UNKNOWN))
+      button.onClick(new DiscordMessage(reaction.message), new DiscordUser(user, this.users, PERMISSION.UNKNOWN))
         .catch(err => {
           logger.warn(`Button handler threw an unhandled exception: ${err.stack ? err.stack : err}`)
           return true;

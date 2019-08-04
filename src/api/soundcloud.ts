@@ -1,4 +1,4 @@
-import { SOURCE } from 'common/constants';
+import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
 import environment from "common/env";
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
@@ -107,6 +107,24 @@ export namespace SoundCloud {
     params.client_id = environment.tokens.soundcloud;
     const data = await requestp(`${API}/${endpoint}?${querystring.stringify(params)}`);
     return JSON.parse(data);
+  }
+
+  export function createIdentifier(resource: SoundCloudResource): Identifier {
+    return {
+      id: resource.id.toString(),
+      src: SOURCE.SOUNDCLOUD,
+      type: getIdentifierType(resource.kind),
+      url: resource.permalink_url
+    };
+  }
+
+  function getIdentifierType(type: SoundCloudResourceType): IDENTIFIER_TYPE {
+    switch (type) {
+      case SoundCloudResourceType.PLAYLIST: return IDENTIFIER_TYPE.PLAYLIST;
+      case SoundCloudResourceType.TRACK: return IDENTIFIER_TYPE.TRACKS;
+      case SoundCloudResourceType.USER: return IDENTIFIER_TYPE.ARTIST;
+      default: return null;
+    }
   }
 
 }

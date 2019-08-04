@@ -59,8 +59,32 @@ export namespace Spotify {
       const album = <SpotifyAlbumFull>response.body;
       return album;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify playlist.');
+      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
     }
+  }
+
+  export async function getAlbumTracks(id: string): Promise<SpotifyAlbumFull> {
+    try {
+      const album = await getAlbum(id);
+      album.tracks.items = await getAllItems(options => spotify.getAlbumTracks(id, options), album.tracks);
+      return album;
+    } catch (e) {
+      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album tracks.');
+    }
+  }
+
+  async function getAllItems<T>(
+      next: (options: any) => Promise<SpotifyResponse<SpotifyPagingObject<T>>>,
+      initial?: SpotifyPagingObject<T>): Promise<T[]> {
+    let limit = 50;
+    let data = initial ? initial : (await next({ limit, offset: 0 })).body;
+    let total = data.total;
+    let items = data.items;
+    while (items.length < total) {
+      const data = await next({ limit, offset: items.length });
+      items = items.concat(data.body.items);
+    }
+    return items;
   }
 
   export async function getArtist(id: string): Promise<SpotifyArtist> {
@@ -89,17 +113,8 @@ export namespace Spotify {
 
   async function searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {
     try {
-      const maxLimit = 50;
-      let playlists: SpotifyPlaylist[] = [];
-      let offset = 0;
-      let morePlaylists = true;
-      while (morePlaylists) {
-        await checkAndUpdateToken();
-        const response = await spotify.getUserPlaylists(userId, { offset: offset, limit: maxLimit });
-        const body = <SpotifyPagingObject<SpotifyPlaylist>>response.body;
-        body.next ? offset += maxLimit : morePlaylists = false;
-        playlists.push(...body.items);
-      }
+      await checkAndUpdateToken();
+      const playlists = await getAllItems<SpotifyPlaylist>(options => spotify.getUserPlaylists(userId, options));
       const results = await fuzz.extractAsPromised(query, playlists.map(playlist => playlist.name),
         { scorer: fuzz.token_sort_ratio, returnObjects: true });
       return results.slice(0, 5).map(result => playlists[result.key]);

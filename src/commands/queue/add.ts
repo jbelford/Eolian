@@ -1,8 +1,9 @@
 import { QueueCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
-import { PERMISSION } from 'common/constants';
+import { getEnumName, IDENTIFIER_TYPE, PERMISSION, SOURCE } from 'common/constants';
+import { logger } from 'common/logger';
 import { Util } from 'common/util';
-import * as identifiers from 'services/identifiers';
+import * as resolvers from 'resolvers';
 
 const info: CommandInfo = {
   name: 'add',
@@ -32,19 +33,38 @@ class AddAction implements CommandAction {
   constructor(private readonly services: CommandActionServices) {}
 
   async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
-    if (Util.tsum(params.QUERY, params.URL, params.IDENTIFIER) > 1) {
+    const sum = Util.tsum(params.QUERY, params.URL, params.IDENTIFIER);
+    if (sum === 0) {
+      return await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
+    } else if (sum > 1) {
       return await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
     }
 
     try {
-      const resource = await identifiers.resolve(context, params);
-      if (resource) {
-
+      if (params.IDENTIFIER) {
+        const user = await context.user.get();
+        const identifier = user.identifiers[params.IDENTIFIER];
+        if (!identifier) {
+          return await context.message.reply(`That identifier is unrecognized!`);
+        }
+      } else {
+        const resource = await resolvers.getSourceResolver(context, params).resolve();
+        if (resource) {
+          await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
+            + `\n(**${getEnumName(IDENTIFIER_TYPE, resource.identifier.type)}**`
+            + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+        }
       }
 
-    } catch (e) {
 
+
+
+    } catch (e) {
+      logger.debug(e.stack || e);
+      return await context.message.reply(e.response || 'Sorry. Something broke real bad.');
     }
+
+    await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
   }
 
 }

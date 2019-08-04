@@ -1,4 +1,8 @@
 
+type SpotifyResponse<T> = {
+  body: T;
+}
+
 type SpotifyUser = {
   id: string;
   display_name: string;

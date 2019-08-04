@@ -1,3 +1,4 @@
+
 export const enum PERMISSION {
   UNKNOWN = 0,
   USER,
@@ -13,7 +14,7 @@ export const enum COLOR {
   PROFILE = 0x4286f4,
 }
 
-export const enum IDENTIFIER_TYPE {
+export enum IDENTIFIER_TYPE {
   PLAYLIST = 0,
   ALBUM,
   FAVORITES,
@@ -22,9 +23,13 @@ export const enum IDENTIFIER_TYPE {
   TRACKS
 }
 
-export const enum SOURCE {
+export enum SOURCE {
   UNKNOWN = 0,
   SPOTIFY,
   YOUTUBE,
   SOUNDCLOUD
+}
+
+export function getEnumName(e, i) {
+  return Object.keys(e).find(k => e[k] === i);
 }

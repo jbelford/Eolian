@@ -97,7 +97,7 @@ export class DiscordEolianBot implements EolianBot {
       const context: CommandActionContext = {
         user: new DiscordUser(author, this.services.users, permission),
         message: new DiscordMessage(message),
-        channel: new DiscordTextChannel(channel)
+        channel: new DiscordTextChannel(channel, this.services.users)
       };
 
       await cmd.createAction(this.services).execute(context, params);

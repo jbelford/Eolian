@@ -2,7 +2,7 @@ import { AccountCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { logger } from "common/logger";
-import * as identifiers from 'services/identifiers';
+import * as resolvers from 'resolvers';
 
 
 const info: CommandInfo = {
@@ -29,7 +29,7 @@ class IdentifyAction implements CommandAction {
     }
 
     try {
-      const resource = await identifiers.resolve(context, params);
+      const resource = await resolvers.getSourceResolver(context, params).resolve();
       if (resource) {
         await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
         const authors = resource.authors.join(',');

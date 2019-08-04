@@ -4,7 +4,7 @@
  */
 const env = process.env.NODE_ENV || 'local';
 if (env === 'local') {
-  require('./module-setup');
+  require('./module_setup');
 }
 
 import { KeywordParsingStrategy } from "commands/parsing";
