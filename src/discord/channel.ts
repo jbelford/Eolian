@@ -47,16 +47,18 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
     const rich: RichEmbed = new RichEmbed();
-    if (embed.color) rich.setColor(embed.color);
-    if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
-    if (embed.title) rich.setTitle(embed.title);
-    if (embed.description) rich.setDescription(embed.description);
-    if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
-    if (embed.image) rich.setImage(embed.image);
-    if (embed.url) rich.setURL(embed.url);
-    if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
+
+    embed.color && rich.setColor(embed.color);
+    embed.header && rich.setAuthor(embed.header.text, embed.header.icon);
+    embed.title && rich.setTitle(embed.title);
+    embed.description && rich.setDescription(embed.description);
+    embed.thumbnail && rich.setThumbnail(embed.thumbnail);
+    embed.image && rich.setImage(embed.image);
+    embed.url && rich.setURL(embed.url);
+    embed.footer && rich.setFooter(embed.footer.text, embed.footer.icon);
+
     const message = await this.channel.send(rich) as Message;
-    if (embed.buttons) await this.addButtons(message, embed.buttons);
+    embed.buttons && await this.addButtons(message, embed.buttons);
     return new DiscordMessage(message);
   }
 

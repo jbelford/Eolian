@@ -229,7 +229,7 @@ function defaultMatch(text: string, reg: RegExp, group?: number): MatchResult {
     if (regArr.length === 1) {
       match.args = true;
     } else {
-      match.args = regArr.slice(1).map(group => group ? group.trim() : group);
+      match.args = regArr.slice(1).map(group => group && group.trim());
       if (typeof group === 'number') {
         match.args = match.args[group];
       }

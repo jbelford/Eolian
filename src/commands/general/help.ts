@@ -19,8 +19,6 @@ const info: CommandInfo = {
  */
 class HelpAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ user, channel, message }: CommandActionContext, { ARG }: CommandActionParams): Promise<any> {
@@ -52,8 +50,8 @@ class HelpAction implements CommandAction {
       return await channel.sendEmbed(commandEmbed);
     }
 
-    const keyword = KEYWORDS[arg.toUpperCase()];
-    if (keyword && (<Keyword>keyword).permission <= user.permission) {
+    const keyword: Keyword = KEYWORDS[arg.toUpperCase()];
+    if (keyword && keyword.permission <= user.permission) {
       const keywordEmbed = Embed.Help.keywordDetails(keyword);
       return await channel.sendEmbed(keywordEmbed);
     }
@@ -65,5 +63,7 @@ class HelpAction implements CommandAction {
 
 export const HelpCommand: Command = {
   info,
-  action: HelpAction
+  createAction(services) {
+    return new HelpAction(services);
+  }
 }

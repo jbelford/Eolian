@@ -2,6 +2,7 @@ import { QueueCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { Util } from 'common/util';
+import * as identifiers from 'services/identifiers';
 
 const info: CommandInfo = {
   name: 'add',
@@ -28,8 +29,6 @@ const info: CommandInfo = {
 
 class AddAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
@@ -37,13 +36,22 @@ class AddAction implements CommandAction {
       return await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
     }
 
+    try {
+      const resource = await identifiers.resolve(context, params);
+      if (resource) {
 
+      }
 
+    } catch (e) {
+
+    }
   }
 
 }
 
 export const AddCommand: Command = {
   info,
-  action: AddAction
+  createAction(services) {
+    return new AddAction(services);
+  }
 };

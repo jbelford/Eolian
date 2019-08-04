@@ -17,8 +17,6 @@ const info: CommandInfo = {
 
 class LinkAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, { QUERY, URL, SPOTIFY }: CommandActionParams): Promise<void> {
@@ -91,5 +89,7 @@ class LinkAction implements CommandAction {
 
 export const LinkCommand: Command = {
   info,
-  action: LinkAction
+  createAction(services) {
+    return new LinkAction(services);
+  }
 }

@@ -14,8 +14,6 @@ const info: CommandInfo = {
 
 class UnlinkAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ message, user }: CommandActionContext, { SOUNDCLOUD, SPOTIFY }: CommandActionParams): Promise<any> {
@@ -47,5 +45,7 @@ class UnlinkAction implements CommandAction {
 
 export const UnlinkCommand: Command = {
   info,
-  action: UnlinkAction
+  createAction(services) {
+    return new UnlinkAction(services);
+  }
 }

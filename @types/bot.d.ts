@@ -13,6 +13,8 @@ interface ContextUser {
   readonly avatar: string;
   readonly permission: import('common/constants').PERMISSION;
 
+  get(): Promise<UserDTO>;
+
 }
 
 interface ContextMessage {

@@ -16,23 +16,23 @@ const info: CommandInfo = {
 };
 
 class AccountAction implements CommandAction {
-  info = info;
 
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
-    if (params.CLEAR) return this.clearUserData(context);
-    let embed: EmbedMessage;
+    if (params.CLEAR) {
+      return this.clearUserData(context);
+    }
     try {
       const user = await this.services.users.getUser(context.user.id);
       const spotify = user && user.spotify ? await Spotify.getUser(user.spotify) : null;
       const soundCloud = user && user.soundcloud ? await SoundCloud.getUser(user.soundcloud) : null;
-      embed = Embed.userDetails(context.user, spotify, soundCloud, user && user.identifiers);
+      const embed = Embed.userDetails(context.user, spotify, soundCloud, user && user.identifiers);
+      await context.channel.sendEmbed(embed);
     } catch (e) {
       logger.warn(e.stack || e);
-      return await context.message.reply(e.response || 'Sorry. Something went wrong fetching your account details.');
+      await context.message.reply(e.response || 'Sorry. Something went wrong fetching your account details.');
     }
-    await context.channel.sendEmbed(embed);
   }
 
   private async clearUserData(context: CommandActionContext) {
@@ -50,7 +50,9 @@ class AccountAction implements CommandAction {
 
 export const AccountCommand: Command = {
   info,
-  action: AccountAction
+  createAction(services) {
+    return new AccountAction(services);
+  }
 }
 
 

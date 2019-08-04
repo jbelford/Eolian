@@ -8,7 +8,6 @@ import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'disc
 import { DiscordMessage } from 'discord/message';
 import { DiscordUser } from 'discord/user';
 import { DefaultPlayerManager } from 'players/default/manager';
-import { IdentifiersService } from 'services/identifiers';
 import { MusicQueueService } from 'services/queue';
 import { EolianUserService } from 'services/user';
 
@@ -29,17 +28,17 @@ export class DiscordEolianBot implements EolianBot {
     this.parser = args.parser;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
-    this.client.once(EVENTS.READY, this.readyEventHandler);
+    this.client.once(EVENTS.READY, () => this.handleReady());
     this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
     this.client.on(EVENTS.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
     this.client.on(EVENTS.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
     this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
+    this.client.on(EVENTS.MESSAGE, (message) => this.handleMessage(message));
 
     const users = new EolianUserService(args.db.usersDao);
     this.services = {
       bot: new DiscordBotService(this.client),
-      identifiers: new IdentifiersService(users),
       playerManager: new DefaultPlayerManager(),
       queues: new MusicQueueService(args.store.queueDao),
       users
@@ -47,7 +46,6 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   async start() {
-    this.onMessage();
     if (!this.client.readyTimestamp) {
       await this.client.login(environment.tokens.discord);
     }
@@ -57,56 +55,11 @@ export class DiscordEolianBot implements EolianBot {
     await this.client.destroy();
   }
 
-
-  protected onMessage() {
-    this.client.removeAllListeners(EVENTS.MESSAGE);
-    this.client.on(EVENTS.MESSAGE, async (message) => {
-      try {
-        if (this.isIgnorable(message)) {
-          return;
-        }
-
-        const { author, content, channel } = message;
-
-        logger.debug(`Message event received: '${content}'`);
-
-        if (!this.hasSendPermission(channel)) {
-          return author.send(`I do not have permission to send messages to the channel.`);
-        }
-
-        const permission = getPermissionLevel(message.member);
-        const [params, newText] = this.parser.parseParams(content, permission);
-
-        const [cmd, err] = this.parser.parseCommand(newText, permission);
-        if (err) {
-          logger.debug(`Failed to get command action: ${err.message}`);
-          return await message.reply(err.response);
-        }
-
-        const context: CommandActionContext = {
-          user: new DiscordUser(author, permission),
-          message: new DiscordMessage(message),
-          channel: new DiscordTextChannel(message.channel)
-        };
-
-        const action = new cmd.action(this.services);
-
-        await action.execute(context, params);
-      } catch (e) {
-        logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
-      }
-    });
-  }
-
-  private isIgnorable(message: Message) {
-    return message.author.bot || (!message.isMentioned(this.client.user) && !this.parser.messageInvokesBot(message.content));
-  }
-
   /**
    * Executed when the connection has been established
    * and operations may begin to be performed
    */
-  private readyEventHandler = () => {
+  private handleReady() {
     logger.info('Discord bot is ready!');
     if (this.client.guilds.size === 0 || process.argv.includes('-gi')) {
       this.client.generateInvite(INVITE_PERMISSIONS)
@@ -115,6 +68,46 @@ export class DiscordEolianBot implements EolianBot {
     }
     this.client.user.setPresence({ game: { name: `${environment.cmdToken}help` } })
       .catch(err => logger.warn(`Failed to set presence: ${err}`));
+  }
+
+
+  private async handleMessage(message: Message) {
+    try {
+      if (this.isIgnorable(message)) {
+        return;
+      }
+
+      const { author, content, channel, member } = message;
+
+      logger.debug(`Message event received: '${content}'`);
+
+      if (!this.hasSendPermission(channel)) {
+        return author.send(`I do not have permission to send messages to the channel.`);
+      }
+
+      const permission = getPermissionLevel(member);
+      const [params, newText] = this.parser.parseParams(content, permission);
+
+      const [cmd, err] = this.parser.parseCommand(newText, permission);
+      if (err) {
+        logger.debug(`Failed to get command action: ${err.message}`);
+        return await message.reply(err.response);
+      }
+
+      const context: CommandActionContext = {
+        user: new DiscordUser(author, this.services.users, permission),
+        message: new DiscordMessage(message),
+        channel: new DiscordTextChannel(channel)
+      };
+
+      await cmd.createAction(this.services).execute(context, params);
+    } catch (e) {
+      logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
+    }
+  }
+
+  private isIgnorable(message: Message) {
+    return message.author.bot || (!message.isMentioned(this.client.user) && !this.parser.messageInvokesBot(message.content));
   }
 
   private hasSendPermission(channel: Channel) {

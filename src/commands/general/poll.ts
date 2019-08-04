@@ -20,8 +20,6 @@ const info: CommandInfo = {
 
 class PollAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ message, channel, user }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
@@ -60,5 +58,7 @@ class PollAction implements CommandAction {
 
 export const PollCommand: Command = {
   info,
-  action: PollAction
+  createAction(services) {
+    return new PollAction(services);
+  }
 };

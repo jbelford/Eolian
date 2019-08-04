@@ -2,6 +2,7 @@ import { AccountCategory } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { logger } from "common/logger";
+import * as identifiers from 'services/identifiers';
 
 
 const info: CommandInfo = {
@@ -18,8 +19,6 @@ const info: CommandInfo = {
 
 class IdentifyAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
@@ -30,7 +29,7 @@ class IdentifyAction implements CommandAction {
     }
 
     try {
-      const resource = await this.services.identifiers.resolve(context, params);
+      const resource = await identifiers.resolve(context, params);
       if (resource) {
         await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
         const authors = resource.authors.join(',');
@@ -49,5 +48,7 @@ class IdentifyAction implements CommandAction {
 
 export const IdentifyCommand: Command = {
   info,
-  action: IdentifyAction
+  createAction(services) {
+    return new IdentifyAction(services);
+  }
 }

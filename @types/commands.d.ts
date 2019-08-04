@@ -8,16 +8,12 @@ type CommandInfo = {
 };
 
 interface CommandAction {
-  readonly info: CommandInfo;
-
   execute(context: CommandActionContext, params: CommandActionParams): Promise<any>;
 }
 
 interface Command {
-  info: CommandInfo
-  action: {
-    new(services: CommandActionServices): CommandAction;
-  }
+  info: CommandInfo,
+  createAction: (services: CommandActionServices) => CommandAction;
 }
 
 type CommandCategory = {
@@ -29,7 +25,6 @@ type CommandActionServices = {
   bot: BotService;
   users: import('services/user').EolianUserService;
   queues: import('services/queue').MusicQueueService;
-  identifiers: import('services/identifiers').IdentifiersService;
   playerManager: PlayerManager;
 };
 

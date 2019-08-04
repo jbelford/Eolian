@@ -13,8 +13,6 @@ const info: CommandInfo = {
 
 class InviteAction implements CommandAction {
 
-  info = info;
-
   constructor(private readonly services: CommandActionServices) {}
 
   public async execute({ channel }: CommandActionContext): Promise<void> {
@@ -27,5 +25,7 @@ class InviteAction implements CommandAction {
 
 export const InviteCommand: Command = {
   info,
-  action: InviteAction
+  createAction(services) {
+    return new InviteAction(services);
+  }
 };
