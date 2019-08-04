@@ -41,7 +41,7 @@ class LinkAction implements CommandAction {
       const resource = Spotify.getResourceType(url);
       if (!resource || resource.type !== SpotifyResourceType.USER) throw new EolianBotError('Spotify resource is not a user!');
 
-      const spotifyUser = await Spotify.getUser(resource.id);
+      const spotifyUser = await Spotify.API.getUser(resource.id);
       await this.services.users.linkSpotifyAccount(context.user.id, spotifyUser.id);
       await context.channel.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
         + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\` keyword to search your playlists.`);
@@ -53,7 +53,7 @@ class LinkAction implements CommandAction {
 
   private async handleSoundCloudUrl(context: CommandActionContext, url: string) {
     try {
-      const soundCloudUser = await SoundCloud.resolveUser(url);
+      const soundCloudUser = await SoundCloud.API.resolveUser(url);
       await this.handleSoundCloud(context, soundCloudUser);
     } catch (e) {
       logger.warn(e.message);
@@ -63,7 +63,7 @@ class LinkAction implements CommandAction {
 
   private async handleSoundCloudQuery(context: CommandActionContext, query: string) {
     try {
-      const soundCloudUsers = await SoundCloud.searchUser(query);
+      const soundCloudUsers = await SoundCloud.API.searchUser(query);
       if (soundCloudUsers.length === 0) return await context.message.reply(`I searched SoundCloud but found nothing for \`${query}\``);
 
       const question = 'Which SoundCloud account do you want me to link?';

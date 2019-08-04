@@ -25,8 +25,8 @@ class AccountAction implements CommandAction {
     }
     try {
       const user = await this.services.users.getUser(context.user.id);
-      const spotify = user && user.spotify ? await Spotify.getUser(user.spotify) : null;
-      const soundCloud = user && user.soundcloud ? await SoundCloud.getUser(user.soundcloud) : null;
+      const spotify = user && user.spotify ? await Spotify.API.getUser(user.spotify) : null;
+      const soundCloud = user && user.soundcloud ? await SoundCloud.API.getUser(user.soundcloud) : null;
       const embed = Embed.userDetails(context.user, spotify, soundCloud, user && user.identifiers);
       await context.channel.sendEmbed(embed);
     } catch (e) {

@@ -18,6 +18,8 @@ interface EolianCache<T> {
 
   set(id: string, val: T, ttl?: number): Promise<boolean>;
 
+  getOrSet(id: string, fn: () => Promise<T> | T): Promise<T>;
+
 }
 
 interface UsersDAO {

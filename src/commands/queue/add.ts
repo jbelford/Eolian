@@ -55,10 +55,6 @@ class AddAction implements CommandAction {
             + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
         }
       }
-
-
-
-
     } catch (e) {
       logger.debug(e.stack || e);
       return await context.message.reply(e.response || 'Sorry. Something broke real bad.');

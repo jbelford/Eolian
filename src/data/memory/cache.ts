@@ -20,4 +20,13 @@ export class InMemoryCache<T> implements EolianCache<T> {
     return this.cache.set(id, val, ttl);
   }
 
+  async getOrSet(id: string, fn: () => PromiseLike<T> | T): Promise<T> {
+    let result = await this.get(id);
+    if (!result) {
+      result = await Promise.resolve(fn());
+      await this.set(id, result);
+    }
+    return result;
+  }
+
 }
