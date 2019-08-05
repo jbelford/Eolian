@@ -11,7 +11,7 @@ export class FirestoreUsers implements UsersDAO {
 
   async get(id: string): Promise<UserDTO> {
     const doc = await this.users.doc(id).get();
-    return <UserDTO> doc.data() || { id };
+    return doc.data() as UserDTO || { id };
   }
 
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {
@@ -31,13 +31,13 @@ export class FirestoreUsers implements UsersDAO {
   }
 
   async setIdentifier(id: string, key: string, identifier: Identifier): Promise<void> {
-    const identifiers = {};
+    const identifiers: { [key: string]: Identifier } = {};
     identifiers[key] = identifier;
     await this.users.doc(id).set({ id, identifiers }, { merge: true });
   }
 
   async removeIdentifier(id: string, key: string): Promise<void> {
-    const data = {};
+    const data: { [key: string]: FieldValue } = {};
     data[`identifiers.${key}`] = FieldValue.delete();
     await this.users.doc(id).update(data);
   }

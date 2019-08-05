@@ -1,8 +1,8 @@
-import { GeneralCategory } from "commands/category";
+import { GENERAL_CATEGORY } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
-import { Embed } from "common/embed";
 import { logger } from "common/logger";
+import * as embed from "embed";
 
 // Have to use explicit unicode
 const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', '\u0035\u20E3',
@@ -11,7 +11,7 @@ const close = '🚫';
 
 const info: CommandInfo = {
   name: 'poll',
-  category: GeneralCategory,
+  category: GENERAL_CATEGORY,
   details: 'Create a poll in the channel. Up to 10 options are allowed.',
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.ARG],
@@ -22,22 +22,25 @@ class PollAction implements CommandAction {
 
   constructor(private readonly services: CommandActionServices) {}
 
-  public async execute({ message, channel, user }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
+  async execute({ message, channel, user }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
     if (!ARG) {
-      return await message.reply('Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`')
+      await message.reply('Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`')
+      return;
     } else if (ARG.length < 3) {
       logger.warn(`Poll action received args of incorrect length. This should not happen. ${ARG}`);
-      return await message.reply('Incorrect number of arguments. Must provide at least 2 options!');
+      await message.reply('Incorrect number of arguments. Must provide at least 2 options!');
+      return;
     } else if (ARG.length > 11) {
-      return await message.reply('Sorry! I only will permit up to 10 options for the poll.');
+      await message.reply('Sorry! I only will permit up to 10 options for the poll.');
+      return;
     }
 
     const question = ARG[0];
-    const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text: text, emoji: emojis[i] }));
-    const embed = Embed.Poll.question(question, options, user.name, user.avatar);
+    const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text, emoji: emojis[i] }));
+    const questionEmbed = embed.poll.question(question, options, user.name, user.avatar);
 
     const closePollHandler = async (message: ContextMessage, reactionUser: ContextUser) => {
-      if (reactionUser.id !== user.id) return;
+      if (reactionUser.id !== user.id) return false;
 
       const buttons = message.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
       const results: PollOptionResult[] = options.map(option => {
@@ -45,18 +48,18 @@ class PollAction implements CommandAction {
         return { option: option.text, count: button ? button.count : 0 };
       });
 
-      const resultEmbed = Embed.Poll.results(question, results, user.name, user.avatar);
+      const resultEmbed = embed.poll.results(question, results, user.name, user.avatar);
       await Promise.all([channel.sendEmbed(resultEmbed), message.delete()]);
       return true;
     };
-    embed.buttons.push({ emoji: close, onClick: closePollHandler });
+    questionEmbed.buttons!.push({ emoji: close, onClick: closePollHandler });
 
-    await channel.sendEmbed(embed);
+    await channel.sendEmbed(questionEmbed);
   }
 
 }
 
-export const PollCommand: Command = {
+export const POLL_COMMAND: Command = {
   info,
   createAction(services) {
     return new PollAction(services);

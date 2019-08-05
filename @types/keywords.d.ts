@@ -1,29 +1,47 @@
 interface IKeywords {
-  ENABLE: Keyword;
-  DISABLE: Keyword;
-  CLEAR: Keyword;
-  MORE: Keyword;
-  LESS: Keyword;
-  MY: Keyword;
-  SOUNDCLOUD: Keyword;
-  SPOTIFY: Keyword;
-  YOUTUBE: Keyword;
-  PLAYLIST: Keyword;
-  ALBUM: Keyword;
-  ARTIST: Keyword;
-  NEXT: Keyword;
-  SHUFFLE: Keyword;
-  FAVORITES: Keyword;
-  TRACKS: Keyword;
-  TOP: Keyword;
-  BOTTOM: Keyword;
-  QUERY: Keyword;
-  IDENTIFIER: Keyword;
-  URL: Keyword;
-  ARG: Keyword;
+  [key: string]: Keyword<unknown> | undefined;
+  ENABLE: Keyword<boolean>;
+  DISABLE: Keyword<boolean>;
+  CLEAR: Keyword<boolean>;
+  MORE: Keyword<boolean>;
+  LESS: Keyword<boolean>;
+  MY: Keyword<boolean>;
+  SOUNDCLOUD: Keyword<boolean>;
+  SPOTIFY: Keyword<boolean>;
+  YOUTUBE: Keyword<boolean>;
+  PLAYLIST: Keyword<boolean>;
+  ALBUM: Keyword<boolean>;
+  ARTIST: Keyword<boolean>;
+  NEXT: Keyword<boolean>;
+  SHUFFLE: Keyword<boolean>;
+  FAVORITES: Keyword<boolean>;
+  TRACKS: Keyword<boolean>;
+  TOP: Keyword<IRangeParam>;
+  BOTTOM: Keyword<IRangeParam>;
+  QUERY: Keyword<string>;
+  IDENTIFIER: Keyword<string>;
+  URL: Keyword<IUrlParam>;
+  ARG: Keyword<string[]>;
 }
 
-type Keyword = {
+
+interface IRangeParam {
+  start: number;
+  stop?: number;
+}
+
+interface IUrlParam {
+  value: string;
+  source: import('common/constants').SOURCE;
+}
+
+interface KeywordMatchResult<T> {
+  matches: boolean;
+  newText: string;
+  args?: T;
+}
+
+type Keyword<T> = {
   readonly name: string;
   readonly details: string;
   readonly permission: import('common/constants').PERMISSION;
@@ -37,5 +55,5 @@ type Keyword = {
    *
    * @param text
    */
-  matchText(text: string): { matches: boolean, newText: string, args: { [x: string]: any } };
+  matchText(text: string): KeywordMatchResult<T>;
 }

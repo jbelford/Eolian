@@ -22,10 +22,10 @@ describe('KeywordParsingStrategy', () => {
 
     test('Correctly parses simple keywords and removes from text', () => {
       const simpleKeywords = Object.values(KEYWORDS)
-        .filter((keyword: Keyword) => !keyword.priority)
-        .map((keyword: Keyword) => keyword.name);
+        .filter(keyword => !keyword!.priority)
+        .map(keyword => keyword!.name);
 
-      let mockMessage = '!' + simpleKeywords.join(' ');
+      const mockMessage = '!' + simpleKeywords.join(' ');
 
       const [params, newText] = parser.parseParams(mockMessage, PERMISSION.OWNER);
 
@@ -44,7 +44,7 @@ describe('KeywordParsingStrategy', () => {
     [
       {
         name: 'bottom 100 top 100',
-        args: { start: 100, stop: null }
+        args: { start: 100, stop: undefined }
       },
       {
         name: 'bottom 100:200 top 100:200',
@@ -62,12 +62,12 @@ describe('KeywordParsingStrategy', () => {
         const [params, newText] = parser.parseParams(name, PERMISSION.USER);
 
         expect(params.TOP).toBeTruthy();
-        expect(params.TOP.start).toBe(start);
-        expect(params.TOP.stop).toBe(stop);
+        expect(params.TOP!.start).toBe(start);
+        expect(params.TOP!.stop).toBe(stop);
 
         expect(params.BOTTOM).toBeTruthy();
-        expect(params.BOTTOM.start).toBe(start);
-        expect(params.BOTTOM.stop).toBe(stop);
+        expect(params.BOTTOM!.start).toBe(start);
+        expect(params.BOTTOM!.stop).toBe(stop);
 
         expect(newText.trim()).toHaveLength(0);
       });
@@ -123,8 +123,8 @@ describe('KeywordParsingStrategy', () => {
         const [params, newText] = parser.parseParams(message, PERMISSION.USER);
 
         expect(params.URL).toBeTruthy();
-        expect(params.URL.value).toBe(message);
-        expect(params.URL.source).toBe(source);
+        expect(params.URL!.value).toBe(message);
+        expect(params.URL!.source).toBe(source);
       });
 
     });
@@ -136,7 +136,7 @@ describe('KeywordParsingStrategy', () => {
       const [params, newText] = parser.parseParams(message, PERMISSION.USER);
 
       expect(params.ARG).toBeTruthy();
-      args.forEach((arg, i) => expect(params.ARG[i]).toBe(arg.trim()));
+      args.forEach((arg, i) => expect(params.ARG![i]).toBe(arg.trim()));
       expect(newText.trim()).toHaveLength(0);
     });
 

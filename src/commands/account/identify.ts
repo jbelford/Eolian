@@ -1,4 +1,4 @@
-import { AccountCategory } from "commands/category";
+import { ACCOUNT_CATEGORY } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
 import { logger } from "common/logger";
@@ -7,7 +7,7 @@ import * as resolvers from 'resolvers';
 
 const info: CommandInfo = {
   name: 'identify',
-  category: AccountCategory,
+  category: ACCOUNT_CATEGORY,
   details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube',
   permission: PERMISSION.USER,
   keywords: [
@@ -21,11 +21,11 @@ class IdentifyAction implements CommandAction {
 
   constructor(private readonly services: CommandActionServices) {}
 
-  public async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
+  async execute(context: CommandActionContext, params: CommandActionParams): Promise<void> {
     if (!params.IDENTIFIER) {
-      return await context.message.reply(`You forgot to specify the key for your identifer.`);
+      return context.message.reply(`You forgot to specify the key for your identifer.`);
     } else if (params.URL && params.QUERY) {
-      return await context.message.reply(`You specified both a url and a query! Please try again with only one of those.`);
+      return context.message.reply(`You specified both a url and a query! Please try again with only one of those.`);
     }
 
     try {
@@ -33,12 +33,12 @@ class IdentifyAction implements CommandAction {
       if (resource) {
         await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
         const authors = resource.authors.join(',');
-        return await context.message
+        return context.message
           .reply(`Awesome! The resource \`${resource.name}\` by \`${authors}\` can now be identified with \`${params.IDENTIFIER}\`.`);
       }
     } catch (e) {
       logger.debug(e.stack || e);
-      return await context.message.reply(e.response || 'Sorry. Something broke real bad.');
+      return context.message.reply(e.response || 'Sorry. Something broke real bad.');
     }
 
     await context.message.reply(`You must provide me something to identify! Please try again with a URL or query.`);
@@ -46,7 +46,7 @@ class IdentifyAction implements CommandAction {
 
 }
 
-export const IdentifyCommand: Command = {
+export const IDENTIFY_COMMAND: Command = {
   info,
   createAction(services) {
     return new IdentifyAction(services);

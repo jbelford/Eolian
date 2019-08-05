@@ -1,14 +1,14 @@
-import { QueueCategory } from "commands/category";
+import { QUEUE_CATEGORY } from "commands/category";
 import { KEYWORDS } from "commands/keywords";
 import { getEnumName, IDENTIFIER_TYPE, PERMISSION, SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import { Util } from 'common/util';
+import * as util from 'common/util';
 import * as resolvers from 'resolvers';
 
 const info: CommandInfo = {
   name: 'add',
   details: 'Add songs to the queue',
-  category: QueueCategory,
+  category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST,
@@ -32,20 +32,22 @@ class AddAction implements CommandAction {
 
   constructor(private readonly services: CommandActionServices) {}
 
-  async execute(context: CommandActionContext, params: CommandActionParams): Promise<any> {
-    const sum = Util.tsum(params.QUERY, params.URL, params.IDENTIFIER);
+  async execute(context: CommandActionContext, params: CommandActionParams): Promise<void> {
+    const sum = util.tsum(params.QUERY, params.URL, params.IDENTIFIER);
     if (sum === 0) {
-      return await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
+      await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
+      return;
     } else if (sum > 1) {
-      return await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
+      await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
+      return;
     }
 
     try {
       if (params.IDENTIFIER) {
         const user = await context.user.get();
-        const identifier = user.identifiers[params.IDENTIFIER];
-        if (!identifier) {
-          return await context.message.reply(`That identifier is unrecognized!`);
+        if (!user.identifiers || !user.identifiers[params.IDENTIFIER]) {
+          await context.message.reply(`That identifier is unrecognized!`);
+          return;
         }
       } else {
         const resource = await resolvers.getSourceResolver(context, params).resolve();
@@ -55,17 +57,16 @@ class AddAction implements CommandAction {
             + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
         }
       }
+      await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
     } catch (e) {
       logger.debug(e.stack || e);
-      return await context.message.reply(e.response || 'Sorry. Something broke real bad.');
+      await context.message.reply(e.response || 'Sorry. Something broke real bad.');
     }
-
-    await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
   }
 
 }
 
-export const AddCommand: Command = {
+export const ADD_COMMAND: Command = {
   info,
   createAction(services) {
     return new AddAction(services);

@@ -4,7 +4,7 @@ import { EolianUserService } from 'services/user';
 
 export class DiscordUser implements ContextUser {
 
-  private dto: UserDTO;
+  private dto?: UserDTO;
 
   constructor(private readonly user: User,
       private readonly users: EolianUserService,

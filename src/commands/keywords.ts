@@ -7,7 +7,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.OWNER,
     usage: ['enable'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\benable\b/i),
+    matchText: (text: string) => simpleMatch(text, /\benable\b/i),
   },
   DISABLE: {
     name: 'DISABLE',
@@ -15,7 +15,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.OWNER,
     usage: ['disable'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bdisable\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bdisable\b/i),
   },
   CLEAR: {
     name: 'CLEAR',
@@ -23,7 +23,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['clear'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bclear\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bclear\b/i),
   },
   MORE: {
     name: 'MORE',
@@ -31,7 +31,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['more'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bmore\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bmore\b/i),
   },
   LESS: {
     name: 'LESS',
@@ -39,7 +39,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['less'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bless\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bless\b/i),
   },
   MY: {
     name: 'MY',
@@ -47,7 +47,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['my'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bmy\b/i)
+    matchText: (text: string) => simpleMatch(text, /\bmy\b/i)
   },
   SOUNDCLOUD: {
     name: 'SOUNDCLOUD',
@@ -55,7 +55,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['soundcloud'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bsoundcloud\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bsoundcloud\b/i),
   },
   SPOTIFY: {
     name: 'SPOTIFY',
@@ -63,7 +63,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['spotify'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bspotify\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bspotify\b/i),
   },
   YOUTUBE: {
     name: 'YOUTUBE',
@@ -71,7 +71,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['youtube'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\byoutube\b/i),
+    matchText: (text: string) => simpleMatch(text, /\byoutube\b/i),
   },
   PLAYLIST: {
     name: 'PLAYLIST',
@@ -79,7 +79,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['playlist'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bplaylist\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bplaylist\b/i),
   },
   ALBUM: {
     name: 'ALBUM',
@@ -87,7 +87,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['album'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\balbum\b/i),
+    matchText: (text: string) => simpleMatch(text, /\balbum\b/i),
   },
   ARTIST: {
     name: 'ARTIST',
@@ -95,7 +95,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['artist'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bartist\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bartist\b/i),
   },
   NEXT: {
     name: 'NEXT',
@@ -103,7 +103,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['next'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bnext\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bnext\b/i),
   },
   SHUFFLE: {
     name: 'SHUFFLE',
@@ -111,7 +111,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['shuffle', 'shuffled'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bshuffled?\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bshuffled?\b/i),
   },
   FAVORITES: {
     name: 'FAVORITES',
@@ -119,7 +119,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['favorites'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\bfavorites\b/i),
+    matchText: (text: string) => simpleMatch(text, /\bfavorites\b/i),
   },
   TRACKS: {
     name: 'TRACKS',
@@ -127,7 +127,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['tracks'],
     priority: 0,
-    matchText: (text: string) => defaultMatch(text, /\btracks\b/i),
+    matchText: (text: string) => simpleMatch(text, /\btracks\b/i),
   },
   TOP: {
     name: 'TOP',
@@ -140,9 +140,13 @@ export const KEYWORDS: IKeywords = {
     ],
     priority: 1,
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\bTOP\s+((\d+)(:(-?\d+))?)\b/i);
-      if (match.matches) match.args = { start: parseInt(match.args[1]), stop: match.args[3] ? parseInt(match.args[3]) : null };
-      return match;
+      const match = matchText(text, /\TOP\s+((\d+)(:(-?\d+))?)\b/i);
+      let args: IRangeParam | undefined;
+      if (match.matches) {
+        args = { start: +match.args![1] };
+        if (match.args![3]) args.stop = +match.args![3];
+      }
+      return { matches: match.matches, newText: match.newText, args };
     },
   },
   BOTTOM: {
@@ -156,9 +160,13 @@ export const KEYWORDS: IKeywords = {
     ],
     priority: 1,
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
-      if (match.matches) match.args = { start: parseInt(match.args[1]), stop: match.args[3] ? parseInt(match.args[3]) : null };
-      return match;
+      const match = matchText(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
+      let args: IRangeParam | undefined;
+      if (match.matches) {
+        args = { start: +match.args![1] };
+        if (match.args![3]) args.stop = +match.args![3];
+      }
+      return { matches: match.matches, newText: match.newText, args };
     },
   },
   ARG: {
@@ -170,9 +178,8 @@ export const KEYWORDS: IKeywords = {
     ],
     priority: 2,
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/i, 0);
-      if (match.matches) match.args = match.args.split(/\s*\/\s*/g);
-      return match;
+      const match = matchGroup(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/i, 0);
+      return { matches: match.matches, newText: match.newText, args: match.matches ? match.args!.split(/\s*\/\s*/g) : undefined};
     },
   },
   URL: {
@@ -187,15 +194,15 @@ export const KEYWORDS: IKeywords = {
     ],
     priority: 3,
     matchText: (text: string) => {
-      const match = defaultMatch(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
+      const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
+      let args: IUrlParam | undefined;
       if (match.matches) {
-        const args = { value: match.args, source: SOURCE.UNKNOWN };
-        if (match.args.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;
-        else if (match.args.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
-        else if (match.args.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
-        match.args = args;
+        args = { value: match.args!, source: SOURCE.UNKNOWN };
+        if (args.value.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;
+        else if (args.value.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
+        else if (args.value.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
       }
-      return match;
+      return { matches: match.matches, newText: match.newText, args };
     },
   },
   IDENTIFIER: {
@@ -204,7 +211,7 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['[my identifier]', '[music playlist #2]'],
     priority: 4,
-    matchText: (text: string) => defaultMatch(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
+    matchText: (text: string) => matchGroup(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
   },
   QUERY: {
     name: 'QUERY',
@@ -212,28 +219,25 @@ export const KEYWORDS: IKeywords = {
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],
     priority: 5,
-    matchText: (text: string) => defaultMatch(text, /\B\(\s*([^\s].+[^\s])\s*\)\B/i, 0),
+    matchText: (text: string) => matchGroup(text, /\B\(\s*([^\s].+[^\s])\s*\)\B/i, 0),
   },
 };
 
-type MatchResult = {
-  matches: boolean;
-  newText: string;
-  args: any;
-};
-
-function defaultMatch(text: string, reg: RegExp, group?: number): MatchResult {
+function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
   const regArr = reg.exec(text);
-  const match = { matches: !!regArr, newText: text.replace(reg, ''), args: null };
-  if (match.matches) {
-    if (regArr.length === 1) {
-      match.args = true;
-    } else {
-      match.args = regArr.slice(1).map(group => group && group.trim());
-      if (typeof group === 'number') {
-        match.args = match.args[group];
-      }
-    }
+  const match: KeywordMatchResult<string[]> = { matches: !!regArr, newText: text.replace(reg, '') };
+  if (!!regArr) {
+    match.args = regArr.slice(1).map(group => group && group.trim());
   }
   return match;
 };
+
+function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResult<string> {
+  const match = matchText(text, reg);
+  return { matches: match.matches, newText: match.newText, args: match.matches ? match.args![group] : undefined };
+}
+
+function simpleMatch(text: string, reg: RegExp): KeywordMatchResult<boolean> {
+  const match = matchText(text, reg);
+  return { matches: match.matches, newText: match.newText, args: !!match.args };
+}

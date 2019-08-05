@@ -1,4 +1,4 @@
-import environment from 'common/env';
+import { environment } from 'common/env';
 import { EolianBotError } from 'common/errors';
 import { InMemoryCache } from 'data/memory/cache';
 import { google, youtube_v3 } from 'googleapis';
@@ -10,8 +10,8 @@ export const enum YouTubeResourceType {
 
 interface YouTubeApi {
 
-  getVideo(id: string): Promise<YoutubeVideo>;
-  getPlaylist(id: string): Promise<YoutubePlaylist>;
+  getVideo(id: string): Promise<YoutubeVideo | undefined>;
+  getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
 
@@ -25,14 +25,16 @@ class YouTubeApiImpl implements YouTubeApi {
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
 
-  async getVideo(id: string): Promise<YoutubeVideo> {
+  async getVideo(id: string): Promise<YoutubeVideo | undefined> {
     try {
-      const response = await this.youtube.videos.list({ id: id, maxResults: 1, part: 'id,snippet,contentDetails' });
+      const response = await this.youtube.videos.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
+      if (!response.data.items) return;
+
       const video = response.data.items[0];
       return {
-        id: video.id,
-        name: video.snippet.title,
-        channelName: video.snippet.channelTitle,
+        id: video.id!,
+        name: video.snippet!.title!,
+        channelName: video.snippet!.channelTitle!,
         url: `https://www.youtube.com/watch?v=${video.id}`
       };
     } catch (e) {
@@ -40,15 +42,17 @@ class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async getPlaylist(id: string): Promise<YoutubePlaylist> {
+  async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
     try {
-      const response = await this.youtube.playlists.list({ id: id, maxResults: 1, part: 'id,snippet,contentDetails' });
+      const response = await this.youtube.playlists.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
+      if (!response.data.items) return;
+
       const playlist = response.data.items[0];
       return {
-        id: playlist.id,
-        name: playlist.snippet.title,
-        channelName: playlist.snippet.channelTitle,
-        videos: playlist.contentDetails.itemCount,
+        id: playlist.id!,
+        name: playlist.snippet!.title!,
+        channelName: playlist.snippet!.channelTitle!,
+        videos: playlist.contentDetails!.itemCount,
         url: `https://www.youtube.com/playlist?list=${playlist.id}`
       };
     } catch (e) {
@@ -59,11 +63,13 @@ class YouTubeApiImpl implements YouTubeApi {
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
     try {
       const response = await this.youtube.search.list({ q: query, maxResults: 5, type: 'playlist', part: 'id,snippet' });
+      if (!response.data.items) return [];
+
       return response.data.items.map(playlist => ({
-        id: playlist.id.playlistId,
-        name: playlist.snippet.title,
-        channelName: playlist.snippet.channelTitle,
-        url: `https://www.youtube.com/playlist?list=${playlist.id.playlistId}`
+        id: playlist.id!.playlistId!,
+        name: playlist.snippet!.title!,
+        channelName: playlist.snippet!.channelTitle!,
+        url: `https://www.youtube.com/playlist?list=${playlist.id!.playlistId}`
       }));
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');
@@ -73,11 +79,13 @@ class YouTubeApiImpl implements YouTubeApi {
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
       const response = await this.youtube.search.list({ q: query, maxResults: 5, type: 'video', part: 'id,snippet' });
+      if (!response.data.items) return [];
+
       return response.data.items.map(video => ({
-        id: video.id.videoId,
-        name: video.snippet.title,
-        channelName: video.snippet.channelTitle,
-        url: `https://www.youtube.com/watch?v=${video.id.videoId}`
+        id: video.id!.videoId!,
+        name: video.snippet!.title!,
+        channelName: video.snippet!.channelTitle!,
+        url: `https://www.youtube.com/watch?v=${video.id!.videoId}`
       }));
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');
@@ -89,17 +97,17 @@ class YouTubeApiImpl implements YouTubeApi {
 class CachedYouTubeApi implements YouTubeApi {
 
   private readonly api: YouTubeApi;
-  private readonly cache: EolianCache<any>;
+  private readonly cache: EolianCache;
 
   constructor(token: string, ttl: number) {
     this.api = new YouTubeApiImpl(token);
     this.cache = new InMemoryCache(ttl);
   }
 
-  async getVideo(id: string): Promise<YoutubeVideo> {
+  async getVideo(id: string): Promise<YoutubeVideo | undefined> {
     return (await this.cache.getOrSet(`video:${id}`, () => this.api.getVideo(id)))[0];
   }
-  async getPlaylist(id: string): Promise<YoutubePlaylist> {
+  async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
     return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
   }
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
@@ -119,19 +127,18 @@ class CachedYouTubeApi implements YouTubeApi {
 
 }
 
-export namespace YouTube {
+const api: YouTubeApi = new CachedYouTubeApi(environment.tokens.youtube, 1000 * 30);
 
-  export const API: YouTubeApi = new CachedYouTubeApi(environment.tokens.youtube, 1000 * 30);
-
-  export function getResourceType(url: string): YouTubeUrlDetails {
+export const youtube = {
+  api,
+  getResourceType(url: string): YouTubeUrlDetails | undefined {
     const matcher = /youtube.com\/(watch\?v=|playlist\?list=)([^\&]+)/g;
     const regArr = matcher.exec(url);
-    if (!regArr) return null;
+    if (!regArr) return;
     return {
       id: regArr[2],
       type: regArr[1].includes('watch') ? YouTubeResourceType.VIDEO
         : YouTubeResourceType.PLAYLIST
     };
   }
-
 }

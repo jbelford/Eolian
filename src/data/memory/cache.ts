@@ -1,6 +1,6 @@
-import * as NodeCache from 'node-cache';
+import NodeCache from 'node-cache';
 
-export class InMemoryCache<T> implements EolianCache<T> {
+export class InMemoryCache implements EolianCache {
 
   private cache: NodeCache;
 
@@ -8,7 +8,7 @@ export class InMemoryCache<T> implements EolianCache<T> {
     this.cache = new NodeCache({ stdTTL: ttl });
   }
 
-  async get(id: string): Promise<T> {
+  async get<T>(id: string): Promise<T | undefined> {
     return this.cache.get<T>(id);
   }
 
@@ -16,12 +16,22 @@ export class InMemoryCache<T> implements EolianCache<T> {
     return this.cache.del(id) > 0;
   }
 
-  async set(id: string, val: T, ttl = this.ttl): Promise<boolean> {
+  async set<T>(id: string, val: T, ttl = this.ttl): Promise<boolean> {
     return this.cache.set(id, val, ttl);
   }
 
-  async getOrSet(id: string, fn: () => PromiseLike<T> | T): Promise<[T, boolean]> {
-    let result = await this.get(id);
+  async mset<T>(pairs: Array<{ id: string, val: T }>): Promise<number> {
+    let count = 0;
+    for (const pair of pairs) {
+      if (this.cache.set(pair.id, pair.val, this.ttl)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  async getOrSet<T>(id: string, fn: () => PromiseLike<T> | T): Promise<[T, boolean]> {
+    let result = await this.get<T>(id);
     let found = true;
     if (!result) {
       result = await Promise.resolve(fn());

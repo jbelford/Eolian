@@ -1,10 +1,10 @@
-import { GeneralCategory } from "commands/category";
+import { GENERAL_CATEGORY } from "commands/category";
 import { PERMISSION } from 'common/constants';
-import { Embed } from "common/embed";
+import * as embed from "embed";
 
 const info: CommandInfo = {
   name: 'invite',
-  category: GeneralCategory,
+  category: GENERAL_CATEGORY,
   details: 'Create a link to invite the bot to another server',
   keywords: [],
   permission: PERMISSION.USER,
@@ -15,15 +15,15 @@ class InviteAction implements CommandAction {
 
   constructor(private readonly services: CommandActionServices) {}
 
-  public async execute({ channel }: CommandActionContext): Promise<void> {
+  async execute({ channel }: CommandActionContext): Promise<void> {
     const inviteLink = await this.services.bot.generateInvite();
-    const inviteEmbed = Embed.invite(inviteLink, this.services.bot.name, this.services.bot.pic);
+    const inviteEmbed = embed.invite(inviteLink, this.services.bot.name, this.services.bot.pic);
     await channel.sendEmbed(inviteEmbed);
   }
 
 }
 
-export const InviteCommand: Command = {
+export const INVITE_COMMAND: Command = {
   info,
   createAction(services) {
     return new InviteAction(services);

@@ -1,7 +1,7 @@
 import { COMMANDS } from 'commands';
 import { KEYWORDS } from "commands/keywords";
 import { PERMISSION } from 'common/constants';
-import environment from "common/env";
+import { environment } from "common/env";
 import { EolianBotError } from "common/errors";
 
 export class KeywordParsingStrategy implements CommandParsingStrategy {
@@ -15,7 +15,7 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
 
     const params: CommandActionParams = {};
     // Extract complex keywords
-    (Object.values(KEYWORDS) as Keyword[])
+    (Object.values(KEYWORDS) as Array<Keyword<unknown>>)
       .sort((a, b) => b.priority - a.priority)
       .filter(keyword => keyword.permission <= permission)
       .forEach(keyword => {
@@ -29,7 +29,7 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
     return [params, text];
   }
 
-  parseCommand(message: string, permission: PERMISSION): [Command, EolianBotError] {
+  parseCommand(message: string, permission: PERMISSION): [Command | null, EolianBotError | null] {
     const textSplit = message.toLowerCase().split(/\s+/g);
     const matchedCommands = COMMANDS
       .filter(cmd => cmd.info.permission <= permission)

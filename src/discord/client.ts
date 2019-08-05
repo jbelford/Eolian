@@ -5,16 +5,16 @@ export class DiscordBotService implements BotService {
 
   constructor(private readonly client: Client) { }
 
-  get name() {
+  get name(): string {
     return this.client.user.username;
   }
 
-  get pic() {
+  get pic(): string {
     return this.client.user.avatarURL;
   }
 
-  public async generateInvite() {
-    return await this.client.generateInvite(INVITE_PERMISSIONS);
+  generateInvite(): Promise<string> {
+    return this.client.generateInvite(INVITE_PERMISSIONS);
   }
 
 }

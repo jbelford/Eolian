@@ -31,7 +31,7 @@ interface ContextTextChannel {
 
   send(message: string): Promise<ContextMessage>;
 
-  sendSelection(question: string, options: string[], userId: string): Promise<number>
+  sendSelection(question: string, options: string[], userId: string): Promise<number | undefined>
 
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
 

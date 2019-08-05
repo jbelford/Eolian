@@ -1,5 +1,5 @@
-import { AddCommand } from './add';
+import { ADD_COMMAND } from './add';
 
-export const QueueCommands: Command[] = [
-  AddCommand
+export const QUEUE_COMMANDS: Command[] = [
+  ADD_COMMAND
 ];

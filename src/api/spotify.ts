@@ -1,9 +1,9 @@
-import environment from 'common/env';
+import { environment } from 'common/env';
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryCache } from 'data/memory/cache';
 import * as fuzz from 'fuzzball';
-import * as SpotifyWebApi from 'spotify-web-api-node';
+import SpotifyWebApi from 'spotify-web-api-node';
 
 export const enum SpotifyResourceType {
   USER = 'user',
@@ -40,7 +40,7 @@ class SpotifyApiImpl implements SpotifyApi {
       logger.debug(`Getting user: ${id}`);
       await this.checkAndUpdateToken();
       const response = await this.spotify.getUser(id);
-      const user = <SpotifyUser>response.body;
+      const user = response.body as SpotifyUser;
       return user;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify user.');
@@ -52,7 +52,7 @@ class SpotifyApiImpl implements SpotifyApi {
       logger.debug(`Getting playlist: ${id}`);
       await this.checkAndUpdateToken();
       const response = await this.spotify.getPlaylist(id, { fields: 'id,name,owner,external_urls' });
-      const playlist = <SpotifyPlaylist>response.body;
+      const playlist = response.body as SpotifyPlaylist;
       return playlist;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify playlist.');
@@ -64,7 +64,7 @@ class SpotifyApiImpl implements SpotifyApi {
       logger.debug(`Getting album: ${id}`);
       await this.checkAndUpdateToken();
       const response = await this.spotify.getAlbum(id);
-      const album = <SpotifyAlbumFull>response.body;
+      const album = response.body as SpotifyAlbumFull;
       return album;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
@@ -86,7 +86,7 @@ class SpotifyApiImpl implements SpotifyApi {
       logger.debug(`Getting artist: ${id}`);
       await this.checkAndUpdateToken();
       const response = await this.spotify.getArtist(id);
-      const artist = <SpotifyArtist>response.body;
+      const artist = response.body as SpotifyArtist;
       return artist;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify artist.');
@@ -98,7 +98,7 @@ class SpotifyApiImpl implements SpotifyApi {
     try {
       await this.checkAndUpdateToken();
       const response = await this.spotify.searchPlaylists(query, { limit: 5 });
-      const body = <SpotifySearchResult>response.body;
+      const body = response.body as unknown as SpotifySearchResult;
       return body.playlists.items;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to search Spotify playlists.');
@@ -109,7 +109,7 @@ class SpotifyApiImpl implements SpotifyApi {
     try {
       await this.checkAndUpdateToken();
       const response = await this.spotify.searchAlbums(query, { limit: 5 });
-      const body = <SpotifySearchResult>response.body;
+      const body = response.body as unknown as SpotifySearchResult;
       return body.albums.items;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
@@ -120,7 +120,7 @@ class SpotifyApiImpl implements SpotifyApi {
     try {
       await this.checkAndUpdateToken();
       const response = await this.spotify.searchArtists(query, { limit });
-      const body = <SpotifySearchResult>response.body;
+      const body = response.body as unknown as SpotifySearchResult;
       return body.artists.items;
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
@@ -130,7 +130,7 @@ class SpotifyApiImpl implements SpotifyApi {
   private async searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {
     try {
       await this.checkAndUpdateToken();
-      const playlists = await this.getAllItems<SpotifyPlaylist>(options => this.spotify.getUserPlaylists(userId, options));
+      const playlists = await this.getAllItems<SpotifyPlaylist>(options => this.spotify.getUserPlaylists(userId, options) as any);
       const results = await fuzz.extractAsPromised(query, playlists.map(playlist => playlist.name),
           { scorer: fuzz.token_sort_ratio, returnObjects: true });
       return results.slice(0, 5).map(result => playlists[result.key]);
@@ -150,13 +150,13 @@ class SpotifyApiImpl implements SpotifyApi {
   private async getAllItems<T>(
       next: (options: any) => Promise<SpotifyResponse<SpotifyPagingObject<T>>>,
       initial?: SpotifyPagingObject<T>): Promise<T[]> {
-    let limit = 50;
+    const limit = 50;
     let data = initial ? initial : (await next({ limit, offset: 0 })).body;
-    let total = data.total;
+    const total = data.total;
     let items = data.items;
     while (items.length < total) {
-      const data = await next({ limit, offset: items.length });
-      items = items.concat(data.body.items);
+      data = (await next({ limit, offset: items.length })).body;
+      items = items.concat(data.items);
     }
     return items;
   }
@@ -166,7 +166,7 @@ class SpotifyApiImpl implements SpotifyApi {
 class CachedSpotifyApi implements SpotifyApi {
 
   private readonly api: SpotifyApi;
-  private readonly cache: EolianCache<any>;
+  private readonly cache: EolianCache;
 
   constructor(clientId: string, clientSecret: string, ttl: number) {
     this.api = new SpotifyApiImpl(clientId, clientSecret);
@@ -221,16 +221,17 @@ class CachedSpotifyApi implements SpotifyApi {
 
 }
 
-export namespace Spotify {
+const api: SpotifyApi = new CachedSpotifyApi(environment.tokens.spotify.clientId,
+    environment.tokens.spotify.clientSecret, 1000 * 30);
 
-  export const API: SpotifyApi = new CachedSpotifyApi(environment.tokens.spotify.clientId,
-      environment.tokens.spotify.clientSecret, 1000 * 30);
+export const spotify = {
+  api,
 
-  export function getResourceType(uri: string): SpotifyUrlDetails | undefined {
+  getResourceType(uri: string): SpotifyUrlDetails | undefined {
     const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:\/]([^\?]+)/g
     const regArr = matcher.exec(uri);
-    if (!regArr) return null;
+    if (!regArr) return;
     return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };
   }
 
-}
+};

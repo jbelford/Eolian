@@ -12,7 +12,7 @@ import { logger } from "common/logger";
 import { FirestoreDatabase } from 'data/firestore/db';
 import { LocalMemoryStore } from 'data/memory/store';
 import { DiscordEolianBot } from "discord/bot";
-import * as nodeCleanup from 'node-cleanup';
+import nodeCleanup from 'node-cleanup';
 
 const resources: Closable[] = [];
 

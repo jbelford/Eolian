@@ -2,9 +2,9 @@
  * Import this script to map node imports to baseDir alias
  */
 
-import * as fs from 'fs';
-import * as moduleAlias from 'module-alias';
-import * as path from 'path';
+import fs from 'fs';
+import moduleAlias from 'module-alias';
+import path from 'path';
 import { logger } from './common/logger';
 
 // Set up module aliases

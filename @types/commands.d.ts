@@ -3,12 +3,12 @@ type CommandInfo = {
   details: string;
   permission: import('common/constants').PERMISSION;
   category: CommandCategory;
-  keywords: Keyword[];
+  keywords: Keyword<unknown>[];
   usage: string[];
 };
 
 interface CommandAction {
-  execute(context: CommandActionContext, params: CommandActionParams): Promise<any>;
+  execute(context: CommandActionContext, params: CommandActionParams): Promise<void>;
 }
 
 interface Command {
@@ -25,7 +25,7 @@ type CommandActionServices = {
   bot: BotService;
   users: import('services/user').EolianUserService;
   queues: import('services/queue').MusicQueueService;
-  playerManager: PlayerManager;
+  // playerManager: PlayerManager;
 };
 
 type CommandActionContext = {
@@ -34,7 +34,8 @@ type CommandActionContext = {
   channel: ContextTextChannel;
 };
 
-type CommandActionParams = {
+interface CommandActionParams {
+  [key: string]: any;
   ENABLE?: boolean;
   DISABLE?: boolean;
   CLEAR?: boolean;
@@ -51,13 +52,13 @@ type CommandActionParams = {
   SHUFFLE?: boolean;
   FAVORITES?: boolean;
   TRACKS?: boolean;
-  TOP?: { start: number; stop: number };
-  BOTTOM?: { start: number; stop: number };
+  TOP?: IRangeParam;
+  BOTTOM?: IRangeParam;
   QUERY?: string;
   IDENTIFIER?: string;
-  URL?: { value: string; source: import('common/constants').SOURCE };
+  URL?: IUrlParam;
   ARG?: string[];
-};
+}
 
 interface CommandParsingStrategy {
 
@@ -75,6 +76,6 @@ interface CommandParsingStrategy {
   /**
    * Parse command from text
    */
-  parseCommand(message: string, permission: import('common/constants').PERMISSION): [Command, import('common/errors').EolianBotError];
+  parseCommand(message: string, permission: import('common/constants').PERMISSION): [Command | null, import('common/errors').EolianBotError | null];
 
 }

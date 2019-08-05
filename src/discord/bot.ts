@@ -1,5 +1,5 @@
 import { PERMISSION } from 'common/constants';
-import environment from 'common/env';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import { DiscordTextChannel } from 'discord/channel';
@@ -7,11 +7,10 @@ import { DiscordBotService } from 'discord/client';
 import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'discord/constants';
 import { DiscordMessage } from 'discord/message';
 import { DiscordUser } from 'discord/user';
-import { DefaultPlayerManager } from 'players/default/manager';
 import { MusicQueueService } from 'services/queue';
 import { EolianUserService } from 'services/user';
 
-export type DiscordEolianBotArgs = {
+export interface DiscordEolianBotArgs {
   db: Database,
   store: MemoryStore,
   parser: CommandParsingStrategy
@@ -19,10 +18,10 @@ export type DiscordEolianBotArgs = {
 
 export class DiscordEolianBot implements EolianBot {
 
-  private client: Client;
-  private parser: CommandParsingStrategy;
+  private readonly client: Client;
+  private readonly parser: CommandParsingStrategy;
 
-  private services: CommandActionServices;
+  private readonly services: CommandActionServices;
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
@@ -39,7 +38,6 @@ export class DiscordEolianBot implements EolianBot {
     const users = new EolianUserService(args.db.usersDao);
     this.services = {
       bot: new DiscordBotService(this.client),
-      playerManager: new DefaultPlayerManager(),
       queues: new MusicQueueService(args.store.queueDao),
       users
     }
@@ -71,7 +69,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
 
-  private async handleMessage(message: Message) {
+  private async handleMessage(message: Message): Promise<void> {
     try {
       if (this.isIgnorable(message)) {
         return;
@@ -82,7 +80,8 @@ export class DiscordEolianBot implements EolianBot {
       logger.debug(`Message event received: '${content}'`);
 
       if (!this.hasSendPermission(channel)) {
-        return author.send(`I do not have permission to send messages to the channel.`);
+        author.send(`I do not have permission to send messages to the channel.`);
+        return;
       }
 
       const permission = getPermissionLevel(member);
@@ -91,7 +90,8 @@ export class DiscordEolianBot implements EolianBot {
       const [cmd, err] = this.parser.parseCommand(newText, permission);
       if (err) {
         logger.debug(`Failed to get command action: ${err.message}`);
-        return await message.reply(err.response);
+        await message.reply(err.response);
+        return;
       }
 
       const context: CommandActionContext = {
@@ -100,7 +100,7 @@ export class DiscordEolianBot implements EolianBot {
         channel: new DiscordTextChannel(channel, this.services.users)
       };
 
-      await cmd.createAction(this.services).execute(context, params);
+      await cmd!.createAction(this.services).execute(context, params);
     } catch (e) {
       logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
     }
@@ -111,7 +111,11 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private hasSendPermission(channel: Channel) {
-    return channel.type !== CHANNEL.TEXT || (<TextChannel>channel).permissionsFor(this.client.user).has(Permissions.FLAGS.SEND_MESSAGES);
+    if (channel.type !== CHANNEL.TEXT) {
+      return false;
+    }
+    const permissions = (channel as TextChannel).permissionsFor(this.client.user);
+    return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
   }
 
 }
@@ -119,6 +123,6 @@ export class DiscordEolianBot implements EolianBot {
 
 function getPermissionLevel(member: GuildMember): PERMISSION {
   if (environment.owners.includes(member.id)) return PERMISSION.OWNER;
-  else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR))) return PERMISSION.ADMIN;
+  else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR as number))) return PERMISSION.ADMIN;
   return PERMISSION.USER;
 }

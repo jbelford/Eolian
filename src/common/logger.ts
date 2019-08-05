@@ -1,6 +1,6 @@
 import { LoggingWinston } from '@google-cloud/logging-winston';
 import * as winston from 'winston';
-import environment from './env';
+import { environment } from './env';
 
 const transports: any[] = [
   new winston.transports.Console()

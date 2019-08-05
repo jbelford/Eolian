@@ -11,8 +11,4 @@ type Environment = {
       clientSecret: string;
     };
   };
-  mongo: {
-    url: string;
-    name: string;
-  };
 };

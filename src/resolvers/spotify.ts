@@ -1,4 +1,4 @@
-import { Spotify, SpotifyResourceType } from 'api/spotify';
+import { spotify, SpotifyResourceType } from 'api/spotify';
 import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
 
@@ -35,12 +35,12 @@ export class SpotifyResolver implements SourceResolver {
       throw new EolianBotError('Missing query for album.');
     }
 
-    const albums = await Spotify.API.searchAlbums(this.params.QUERY);
+    const albums = await spotify.api.searchAlbums(this.params.QUERY);
 
     const options = albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`);
     const idx = await this.context.channel
         .sendSelection(`Select the album you want (resolved via Spotify)`, options, this.context.user.id);
-    if (idx === null) {
+    if (idx === undefined) {
       throw new EolianBotError('Nothing selected. Cancelled request.');
     }
 
@@ -58,7 +58,7 @@ export class SpotifyResolver implements SourceResolver {
     if (playlists.length > 1) {
       const idx = await this.context.channel.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => playlist.name), this.context.user.id);
-      if (idx === null) {
+      if (idx === undefined) {
         throw new EolianBotError('Nothing selected. Cancelled request.');
       }
       playlist = playlists[idx];
@@ -70,15 +70,17 @@ export class SpotifyResolver implements SourceResolver {
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
     let playlists: SpotifyPlaylist[];
 
-    if (this.params.MY) {
-      const user = await this.context.user.get();
-      if (!user.spotify) {
-        throw new EolianBotError(`User has not set Spotify account`,
-          `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
+    if (this.params.QUERY) {
+      if (this.params.MY) {
+        const user = await this.context.user.get();
+        if (!user.spotify) {
+          throw new EolianBotError(`User has not set Spotify account`,
+            `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
+        }
+        playlists = await spotify.api.searchPlaylists(this.params.QUERY, user.spotify);
+      } else {
+        playlists = await spotify.api.searchPlaylists(this.params.QUERY);
       }
-      playlists = await Spotify.API.searchPlaylists(this.params.QUERY, user.spotify);
-    } else if (this.params.QUERY) {
-      playlists = await Spotify.API.searchPlaylists(this.params.QUERY);
     } else {
       throw new EolianBotError('You must specify a query or use the MY keyword.')
     }
@@ -91,10 +93,10 @@ export class SpotifyResolver implements SourceResolver {
       throw new EolianBotError('Missing query for Spotify artist.');
     }
 
-    const artists = await Spotify.API.searchArtists(this.params.QUERY);
+    const artists = await spotify.api.searchArtists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => artist.name), this.context.user.id);
-    if (idx === null) {
+    if (idx === undefined) {
       throw new EolianBotError('Nothing selected. Cancelled request.');
     }
 
@@ -104,20 +106,22 @@ export class SpotifyResolver implements SourceResolver {
 }
 
 async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resourceDetails = Spotify.getResourceType(url);
-  switch (resourceDetails && resourceDetails.type) {
-    case SpotifyResourceType.PLAYLIST:
-      const playlist = await Spotify.API.getPlaylist(resourceDetails.id);
-      return createSpotifyPlaylist(playlist);
-    case SpotifyResourceType.ALBUM:
-      const album = await Spotify.API.getAlbum(resourceDetails.id);
-      return createSpotifyAlbum(album);
-    case SpotifyResourceType.ARTIST:
-      const artist = await Spotify.API.getArtist(resourceDetails.id);
-      return createSpotifyArtist(artist);
-    default:
-      throw new EolianBotError('The Spotify URL is not valid!');
+  const resourceDetails = spotify.getResourceType(url);
+  if (resourceDetails) {
+    switch (resourceDetails.type) {
+      case SpotifyResourceType.PLAYLIST:
+        const playlist = await spotify.api.getPlaylist(resourceDetails.id);
+        return createSpotifyPlaylist(playlist);
+      case SpotifyResourceType.ALBUM:
+        const album = await spotify.api.getAlbum(resourceDetails.id);
+        return createSpotifyAlbum(album);
+      case SpotifyResourceType.ARTIST:
+        const artist = await spotify.api.getArtist(resourceDetails.id);
+        return createSpotifyArtist(artist);
+      default:
+    }
   }
+  throw new EolianBotError('The Spotify URL is not valid!');
 }
 
 function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {

@@ -44,7 +44,7 @@ export class EolianUserService {
     }
   }
 
-  async getUser(userId: string): Promise<UserDTO | undefined> {
+  async getUser(userId: string): Promise<UserDTO> {
     try {
       return await this.users.get(userId);
     } catch (e) {

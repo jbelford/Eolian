@@ -30,6 +30,6 @@ export enum SOURCE {
   SOUNDCLOUD
 }
 
-export function getEnumName(e, i) {
+export function getEnumName(e: any, i: number) {
   return Object.keys(e).find(k => e[k] === i);
 }

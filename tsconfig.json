@@ -1,10 +1,10 @@
 {
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "target": "es2018",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "sourceMap": true,
+    "target": "es2019",
+    "declaration": false,
     "allowJs": true,
+    "esModuleInterop": true,
     "types": [
       "node",
       "jest"
@@ -22,9 +22,9 @@
     }
   },
   "include": [
-    "./@types/**/*.d.ts",
-    "./src/**/*.ts",
-    "./test/**/*.ts"
+    "@types/**/*.d.ts",
+    "src/**/*.ts",
+    "test/**/*.ts"
   ],
   "exclude": [
     "node_modules",

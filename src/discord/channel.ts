@@ -1,9 +1,9 @@
 import { PERMISSION } from 'common/constants';
-import { Embed } from "common/embed";
 import { logger } from "common/logger";
 import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from "discord.js";
 import { DiscordMessage } from "discord/message";
 import { DiscordUser } from "discord/user";
+import * as embed from 'embed';
 import { EolianUserService } from 'services/user';
 
 export class DiscordTextChannel implements ContextTextChannel {
@@ -16,19 +16,19 @@ export class DiscordTextChannel implements ContextTextChannel {
     return new DiscordMessage(discordMessage as Message);
   }
 
-  async sendSelection(question: string, options: string[], userId: string): Promise<number> {
-    const embed = Embed.selection(question, options);
-    await this.sendEmbed(embed);
+  async sendSelection(question: string, options: string[], userId: string): Promise<number | undefined> {
+    const selectEmbed = embed.selection(question, options);
+    await this.sendEmbed(selectEmbed);
 
     const selection = await this.awaitUserSelection(userId, options);
     if (!selection) {
-      return null;
+      return;
     }
 
-    const idx = parseInt(selection.content);
+    const idx = +selection.content;
     if (idx === 0) {
       await selection.reply('The selection has been cancelled.');
-      return null;
+      return;
     }
 
     return idx - 1;
@@ -40,49 +40,54 @@ export class DiscordTextChannel implements ContextTextChannel {
         return false;
       }
 
-      const idx = parseInt(message.content);
+      const idx = +message.content;
       return !isNaN(idx) && idx >= 0 && idx <= options.length
     }, { maxMatches: 1, time: 60000 });
 
-    return messages.size ? messages.array()[0] : null;
+    return messages.size ? messages.array()[0] : undefined;
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
     const rich: RichEmbed = new RichEmbed();
 
-    embed.color && rich.setColor(embed.color);
-    embed.header && rich.setAuthor(embed.header.text, embed.header.icon);
-    embed.title && rich.setTitle(embed.title);
-    embed.description && rich.setDescription(embed.description);
-    embed.thumbnail && rich.setThumbnail(embed.thumbnail);
-    embed.image && rich.setImage(embed.image);
-    embed.url && rich.setURL(embed.url);
-    embed.footer && rich.setFooter(embed.footer.text, embed.footer.icon);
+    if (embed.color) rich.setColor(embed.color);
+    if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
+    if (embed.title) rich.setTitle(embed.title);
+    if (embed.description) rich.setDescription(embed.description);
+    if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
+    if (embed.image) rich.setImage(embed.image);
+    if (embed.url) rich.setURL(embed.url);
+    if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
 
     const message = await this.channel.send(rich) as Message;
-    embed.buttons && await this.addButtons(message, embed.buttons);
+    if (embed.buttons) await this.addButtons(message, embed.buttons);
     return new DiscordMessage(message);
   }
 
-  private async addButtons(message: Message, buttons: MessageButton[]) {
+  private async addButtons(message: Message, buttons: MessageButton[]): Promise<void> {
     for (const button of buttons) {
       await message.react(button.emoji);
     }
-    const collector = message.createReactionCollector((reaction: MessageReaction, user: User) => {
-      if (!reaction.users.some(reactionUser => reactionUser === user)) {
-        return false;
-      }
 
+    const collector = message.createReactionCollector(
+        (reaction: MessageReaction, user: User) => user.id !== message.author.id);
+
+    collector.on('collect', async (reaction: MessageReaction, user: User) => {
       const button = buttons.find(button => button.emoji === reaction.emoji.name);
       if (!button || !button.onClick) {
-        return false;
+        return;
       }
 
-      button.onClick(new DiscordMessage(reaction.message), new DiscordUser(user, this.users, PERMISSION.UNKNOWN))
-        .catch(err => {
-          logger.warn(`Button handler threw an unhandled exception: ${err.stack ? err.stack : err}`)
-          return true;
-        }).then(destroy => destroy && collector.stop());
+      let destroy = false;
+      try {
+        destroy = await button.onClick(new DiscordMessage(reaction.message),
+            new DiscordUser(user, this.users, PERMISSION.UNKNOWN))
+      } catch (e) {
+        logger.warn(`Button handler threw an unhandled exception: ${e.stack || e}`);
+        destroy = true;
+      }
+
+      if (destroy) collector.stop();
     });
   }
 

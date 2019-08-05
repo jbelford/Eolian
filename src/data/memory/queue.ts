@@ -1,4 +1,4 @@
-import { Util } from 'common/util';
+import * as util from 'common/util';
 import { InMemoryCache } from './cache';
 
 /**
@@ -6,28 +6,28 @@ import { InMemoryCache } from './cache';
  */
 export class InMemoryQueues implements MusicQueueDAO {
 
-  private cache: EolianCache<Track[]>;
+  private cache: EolianCache;
 
   constructor(ttl: number) {
     this.cache = new InMemoryCache(ttl);
   }
 
   async get(guildId: string, limit?: number): Promise<Track[]> {
-    const list = await this.cache.get(guildId) || [];
+    const list = await this.cache.get<Track[]>(guildId) || [];
     return limit ? list.slice(0, limit) : list;
   }
 
   async add(guildId: string, tracks: Track[], head?: boolean): Promise<void> {
-    const list = await this.cache.get(guildId) || [];
+    const list = await this.cache.get<Track[]>(guildId) || [];
     const newList = head ? tracks.concat(list) : list.concat(tracks);
     this.cache.set(guildId, newList);
   }
 
   async shuffle(guildId: string): Promise<boolean> {
-    const list = await this.cache.get(guildId);
+    const list = await this.cache.get<Track[]>(guildId);
     if (!list) return false;
 
-    this.cache.set(guildId, Util.shuffle(list));
+    this.cache.set(guildId, util.shuffle(list));
 
     return true;
   }
@@ -36,10 +36,10 @@ export class InMemoryQueues implements MusicQueueDAO {
     return this.cache.del(guildId);
   }
 
-  async pop(guildId: string): Promise<Track> {
-    const list = await this.cache.get(guildId) || [];
+  async pop(guildId: string): Promise<Track | undefined> {
+    const list = await this.cache.get<Track[]>(guildId) || [];
     if (!list.length) {
-      return null;
+      return;
     }
 
     const track = list.pop();
@@ -47,9 +47,9 @@ export class InMemoryQueues implements MusicQueueDAO {
     return track;
   }
 
-  async peek(guildId: string): Promise<Track> {
-    const list = await this.cache.get(guildId) || [];
-    return list.length ? list[0] : null;
+  async peek(guildId: string): Promise<Track | undefined> {
+    const list = await this.cache.get<Track[]>(guildId) || [];
+    return list.length ? list[0] : undefined;
   }
 
 }

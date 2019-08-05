@@ -1,4 +1,4 @@
-import { YouTube, YouTubeResourceType } from 'api/youtube';
+import { youtube, YouTubeResourceType } from 'api/youtube';
 import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
 
@@ -31,10 +31,10 @@ export class YouTubeResolver implements SourceResolver {
       throw new EolianBotError('Missing query for YouTube playlist.');
     }
 
-    const playlists = await YouTube.API.searchPlaylists(this.params.QUERY);
+    const playlists = await youtube.api.searchPlaylists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => playlist.name), this.context.user.id);
-    if (idx === null) throw new EolianBotError('Nothing selected. Cancelled request.');
+    if (idx === undefined) throw new EolianBotError('Nothing selected. Cancelled request.');
 
     const playlist = playlists[idx];
     return createYouTubePlaylist(playlist);
@@ -45,10 +45,10 @@ export class YouTubeResolver implements SourceResolver {
       throw new EolianBotError('Missing query for YouTube song.');
     }
 
-    const videos = await YouTube.API.searchVideos(this.params.QUERY);
+    const videos = await youtube.api.searchVideos(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube video',
       videos.map(video => video.name), this.context.user.id);
-    if (idx === null) {
+    if (idx === undefined) {
       throw new EolianBotError('Nothing selected. Cancelled request.');
     }
 
@@ -58,17 +58,19 @@ export class YouTubeResolver implements SourceResolver {
 }
 
 async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resourceDetails = YouTube.getResourceType(url);
-  switch (resourceDetails && resourceDetails.type) {
-    case YouTubeResourceType.PLAYLIST:
-      const playlist = await YouTube.API.getPlaylist(resourceDetails.id);
-      return createYouTubePlaylist(playlist);
-    case YouTubeResourceType.VIDEO:
-      const video = await YouTube.API.getVideo(resourceDetails.id);
-      return createYouTubeVideo(video);
-    default:
-      throw new EolianBotError('The YouTube URL provided is not valid!');
+  const resourceDetails = youtube.getResourceType(url);
+  if (resourceDetails) {
+    switch (resourceDetails.type) {
+      case YouTubeResourceType.PLAYLIST:
+        const playlist = await youtube.api.getPlaylist(resourceDetails.id);
+        return createYouTubePlaylist(playlist!);
+      case YouTubeResourceType.VIDEO:
+        const video = await youtube.api.getVideo(resourceDetails.id);
+        return createYouTubeVideo(video!);
+      default:
+    }
   }
+  throw new EolianBotError('The YouTube URL provided is not valid!');
 }
 
 function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResource {

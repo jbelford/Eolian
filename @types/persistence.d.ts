@@ -10,15 +10,17 @@ interface MemoryStore extends Closable {
 
 }
 
-interface EolianCache<T> {
+interface EolianCache {
 
-  get(id: string): Promise<T | undefined>;
+  get<T>(id: string): Promise<T | undefined>;
 
   del(id: string): Promise<boolean>;
 
-  set(id: string, val: T, ttl?: number): Promise<boolean>;
+  set<T>(id: string, val: T, ttl?: number): Promise<boolean>;
 
-  getOrSet(id: string, fn: () => Promise<T> | T): Promise<[T, boolean]>;
+  mset<T>(pairs: { id: string, val: T }[]): Promise<number>;
+
+  getOrSet<T>(id: string, fn: () => Promise<T> | T): Promise<[T, boolean]>;
 
 }
 
@@ -63,9 +65,9 @@ interface MusicQueueDAO {
 
   clear(guildId: string): Promise<boolean>;
 
-  pop(guildId: string): Promise<Track | null>;
+  pop(guildId: string): Promise<Track | undefined>;
 
-  peek(guildId: string): Promise<Track | null>;
+  peek(guildId: string): Promise<Track | undefined>;
 
 }
 

@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 
 class QueueStream extends Readable {
 
-  private current: StreamData;
+  private current?: StreamData;
   private fetchLimit: number;
   private destroyed = false;
 
@@ -23,12 +23,12 @@ class QueueStream extends Readable {
     }
   }
 
-  _destroy(err, cb) {
+  _destroy(error: Error | null, callback: (error?: Error | null) => void): void {
     this.destroyed = true;
     if (this.current) {
-      this.current.readable.destroy(err);
+      this.current.readable.destroy(error || undefined);
     }
-    cb();
+    callback();
   }
 
   skip() {
@@ -59,7 +59,7 @@ class QueueStream extends Readable {
 
   private process(data: StreamData): Promise<StreamData | undefined> {
     return new Promise((resolve, reject) => {
-      let nextData: Promise<StreamData>;
+      let nextData: Promise<StreamData | undefined>;
       let fetched = 0;
 
       data.readable.on('data', chunk => {
@@ -85,8 +85,8 @@ class QueueStream extends Readable {
     });
   }
 
-  private emitError = (err?: any) => this.emit('error', err);
-  private emitNext = (details: any) => this.emit('next', details);
+  private emitError = (err?: unknown) => this.emit('error', err);
+  private emitNext = (details: unknown) => this.emit('next', details);
   private emitEnd = () => this.emit('end');
 
 }

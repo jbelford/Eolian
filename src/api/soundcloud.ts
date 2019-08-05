@@ -1,12 +1,12 @@
 import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
-import environment from "common/env";
+import { environment } from "common/env";
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryCache } from 'data/memory/cache';
-import * as querystring from 'querystring';
-import * as request from 'request';
-import * as requestp from 'request-promise-native';
-
+import querystring from 'querystring';
+import request from 'request';
+import requestp from 'request-promise-native';
+import { Readable } from 'stream';
 
 export const enum SoundCloudResourceType {
   USER = 'user',
@@ -27,7 +27,7 @@ interface SoundCloudApi {
 
 }
 
-const API = 'https://api.soundcloud.com';
+const URL = 'https://api.soundcloud.com';
 
 class SoundCloudApiImpl implements SoundCloudApi {
 
@@ -63,7 +63,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
 
   async resolve(url: string): Promise<SoundCloudResource> {
     try {
-      return await this.get('resolve', { url: url });
+      return await this.get('resolve', { url });
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
     }
@@ -71,7 +71,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
 
   async resolveUser(url: string): Promise<SoundCloudUser> {
     try {
-      const resource: SoundCloudResource = await this.get('resolve', { url: url });
+      const resource: SoundCloudResource = await this.get('resolve', { url });
       if (resource.kind !== 'user') throw new EolianBotError('The url provided is not a SoundCloud user');
       return resource as SoundCloudUser;
     } catch (e) {
@@ -81,7 +81,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
 
   async resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
     try {
-      const resource: SoundCloudResource = await this.get('resolve', { url: url, representation: 'compact' });
+      const resource: SoundCloudResource = await this.get('resolve', { url, representation: 'compact' });
       if (resource.kind !== 'playlist') throw new EolianBotError('The url provided is not a SoundCloud playlist');
       return resource as SoundCloudPlaylist;
     } catch (e) {
@@ -110,18 +110,18 @@ class SoundCloudApiImpl implements SoundCloudApi {
           return reject(resp.statusMessage);
         }
 
-        const contentLength = parseInt(resp.headers["content-length"]);
+        const contentLength = Number(resp.headers["content-length"]);
         if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
 
-        const streamData: StreamData = { readable: stream as any, size: contentLength, details: track };
+        const streamData: StreamData = { readable: stream as unknown as Readable, size: contentLength, details: track };
         resolve(streamData);
       });
     });
   }
 
-  private async get(endpoint: string, params: any = {}) {
+  private async get(endpoint: string, params: { [key: string]: string } = {}) {
     params.client_id = this.token;
-    const data = await requestp(`${API}/${endpoint}?${querystring.stringify(params)}`);
+    const data = await requestp(`${URL}/${endpoint}?${querystring.stringify(params)}`);
     return JSON.parse(data);
   }
 
@@ -130,7 +130,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
 class CachedSoundCloudApi implements SoundCloudApi {
 
   private readonly api: SoundCloudApi;
-  private readonly cache: EolianCache<any>;
+  private readonly cache: EolianCache;
 
   constructor(token: string, ttl: number) {
     this.api = new SoundCloudApiImpl(token);
@@ -158,7 +158,7 @@ class CachedSoundCloudApi implements SoundCloudApi {
     if (userId) key = `${key}:${userId}`;
     const [playlists, found] = await this.cache.getOrSet(key, () => this.api.searchPlaylists(query, userId));
     if (!found) {
-      await Promise.all(playlists.map(playlist => this.cache.set(`playlist:${playlist.id}`, playlist)));
+      this.cache.mset(playlists.map(playlist => ({ id: `playlist:${playlist.id}`, val: playlist })));
     }
     return playlists;
   }
@@ -185,11 +185,11 @@ class CachedSoundCloudApi implements SoundCloudApi {
 
 }
 
-export namespace SoundCloud {
+const api: SoundCloudApi = new CachedSoundCloudApi(environment.tokens.soundcloud, 1000 * 30);
 
-  export const API: SoundCloudApi = new CachedSoundCloudApi(environment.tokens.soundcloud, 1000 * 30);
-
-  export function createIdentifier(resource: SoundCloudResource): Identifier {
+export const soundcloud = {
+  api,
+  createIdentifier(resource: SoundCloudResource): Identifier {
     return {
       id: resource.id.toString(),
       src: SOURCE.SOUNDCLOUD,
@@ -197,14 +197,13 @@ export namespace SoundCloud {
       url: resource.permalink_url
     };
   }
+}
 
-  function getIdentifierType(type: SoundCloudResourceType): IDENTIFIER_TYPE {
-    switch (type) {
-      case SoundCloudResourceType.PLAYLIST: return IDENTIFIER_TYPE.PLAYLIST;
-      case SoundCloudResourceType.TRACK: return IDENTIFIER_TYPE.TRACKS;
-      case SoundCloudResourceType.USER: return IDENTIFIER_TYPE.ARTIST;
-      default: return null;
-    }
+function getIdentifierType(type: SoundCloudResourceType): IDENTIFIER_TYPE {
+  switch (type) {
+    case SoundCloudResourceType.PLAYLIST: return IDENTIFIER_TYPE.PLAYLIST;
+    case SoundCloudResourceType.TRACK: return IDENTIFIER_TYPE.TRACKS;
+    case SoundCloudResourceType.USER: return IDENTIFIER_TYPE.ARTIST;
+    default: throw new Error('Unrecognized SoundCloud resource type');
   }
-
 }
