@@ -7,11 +7,14 @@ if (env === 'local') {
   require('./module_setup');
 }
 
-import { KeywordParsingStrategy } from "commands/parsing";
-import { logger } from "common/logger";
-import { FirestoreDatabase } from 'data/firestore/db';
-import { LocalMemoryStore } from 'data/memory/store';
-import { DiscordEolianBot } from "discord/bot";
+import { KeywordParsingStrategy } from 'commands';
+import { CommandParsingStrategy } from 'commands/@types';
+import { Closable } from 'common/@types';
+import { logger } from 'common/logger';
+import { FirestoreDatabase, LocalMemoryStore } from 'data';
+import { Database, MemoryStore } from 'data/@types';
+import { DiscordEolianBot } from 'eolian';
+import { EolianBot } from 'eolian/@types';
 import nodeCleanup from 'node-cleanup';
 
 const resources: Closable[] = [];

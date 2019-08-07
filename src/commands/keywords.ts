@@ -1,6 +1,7 @@
 import { PERMISSION, SOURCE } from 'common/constants';
+import { KeywordMatchResult, Keywords, RangeArgument, UrlArgument } from './@types';
 
-export const KEYWORDS: IKeywords = {
+export const KEYWORDS: Keywords = {
   ENABLE: {
     name: 'ENABLE',
     details: 'Indicates to enable a particular feature',
@@ -141,7 +142,7 @@ export const KEYWORDS: IKeywords = {
     priority: 1,
     matchText: (text: string) => {
       const match = matchText(text, /\TOP\s+((\d+)(:(-?\d+))?)\b/i);
-      let args: IRangeParam | undefined;
+      let args: RangeArgument | undefined;
       if (match.matches) {
         args = { start: +match.args![1] };
         if (match.args![3]) args.stop = +match.args![3];
@@ -161,7 +162,7 @@ export const KEYWORDS: IKeywords = {
     priority: 1,
     matchText: (text: string) => {
       const match = matchText(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
-      let args: IRangeParam | undefined;
+      let args: RangeArgument | undefined;
       if (match.matches) {
         args = { start: +match.args![1] };
         if (match.args![3]) args.stop = +match.args![3];
@@ -195,7 +196,7 @@ export const KEYWORDS: IKeywords = {
     priority: 3,
     matchText: (text: string) => {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
-      let args: IUrlParam | undefined;
+      let args: UrlArgument | undefined;
       if (match.matches) {
         args = { value: match.args!, source: SOURCE.UNKNOWN };
         if (args.value.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;

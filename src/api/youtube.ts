@@ -1,28 +1,58 @@
-import { environment } from 'common/env';
 import { EolianBotError } from 'common/errors';
-import { InMemoryCache } from 'data/memory/cache';
+import { EolianCache } from 'data/@types';
+import { InMemoryCache } from 'data/cache';
 import { google, youtube_v3 } from 'googleapis';
+
+export interface YouTubeApi {
+  getResourceType(url: string): YouTubeUrlDetails | undefined;
+  getVideo(id: string): Promise<YoutubeVideo | undefined>;
+  getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
+  searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
+  searchVideos(query: string): Promise<YoutubeVideo[]>;
+}
+
+export interface YouTubeUrlDetails {
+  type: YouTubeResourceType;
+  id: string;
+}
+
+export interface YoutubeVideo {
+  id: string;
+  channelName: string;
+  name: string;
+  url: string;
+}
+
+export interface YoutubePlaylist {
+  id: string;
+  channelName: string;
+  name: string;
+  url: string;
+  videos?: number;
+}
 
 export const enum YouTubeResourceType {
   VIDEO = 0,
   PLAYLIST
 }
 
-interface YouTubeApi {
-
-  getVideo(id: string): Promise<YoutubeVideo | undefined>;
-  getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
-  searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
-  searchVideos(query: string): Promise<YoutubeVideo[]>;
-
-}
-
-class YouTubeApiImpl implements YouTubeApi {
+export class YouTubeApiImpl implements YouTubeApi {
 
   private readonly youtube: youtube_v3.Youtube;
 
   constructor(token: string) {
     this.youtube = google.youtube({ version: 'v3', auth: token });
+  }
+
+  getResourceType(url: string): YouTubeUrlDetails | undefined {
+    const matcher = /youtube.com\/(watch\?v=|playlist\?list=)([^\&]+)/g;
+    const regArr = matcher.exec(url);
+    if (!regArr) return;
+    return {
+      id: regArr[2],
+      type: regArr[1].includes('watch') ? YouTubeResourceType.VIDEO
+        : YouTubeResourceType.PLAYLIST
+    };
   }
 
   async getVideo(id: string): Promise<YoutubeVideo | undefined> {
@@ -94,7 +124,7 @@ class YouTubeApiImpl implements YouTubeApi {
 
 }
 
-class CachedYouTubeApi implements YouTubeApi {
+export class CachedYouTubeApi implements YouTubeApi {
 
   private readonly api: YouTubeApi;
   private readonly cache: EolianCache;
@@ -102,6 +132,10 @@ class CachedYouTubeApi implements YouTubeApi {
   constructor(token: string, ttl: number) {
     this.api = new YouTubeApiImpl(token);
     this.cache = new InMemoryCache(ttl);
+  }
+
+  getResourceType(url: string): YouTubeUrlDetails | undefined {
+    return this.api.getResourceType(url);
   }
 
   async getVideo(id: string): Promise<YoutubeVideo | undefined> {
@@ -125,20 +159,4 @@ class CachedYouTubeApi implements YouTubeApi {
     return videos;
   }
 
-}
-
-const api: YouTubeApi = new CachedYouTubeApi(environment.tokens.youtube, 1000 * 30);
-
-export const youtube = {
-  api,
-  getResourceType(url: string): YouTubeUrlDetails | undefined {
-    const matcher = /youtube.com\/(watch\?v=|playlist\?list=)([^\&]+)/g;
-    const regArr = matcher.exec(url);
-    if (!regArr) return;
-    return {
-      id: regArr[2],
-      type: regArr[1].includes('watch') ? YouTubeResourceType.VIDEO
-        : YouTubeResourceType.PLAYLIST
-    };
-  }
 }

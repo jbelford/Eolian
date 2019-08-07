@@ -1,33 +1,24 @@
-import { soundcloud } from 'api/soundcloud';
-import { spotify } from 'api/spotify';
-import { ACCOUNT_CATEGORY } from "commands/category";
-import { KEYWORDS } from "commands/keywords";
+import { soundcloud, spotify } from 'api';
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { ACCOUNT_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { logger } from "common/logger";
-import { userDetails } from 'embed';
-
-const info: CommandInfo = {
-  name: 'me',
-  details: 'Show your account details. Including linked music accounts and identifiers',
-  permission: PERMISSION.USER,
-  category: ACCOUNT_CATEGORY,
-  keywords: [KEYWORDS.CLEAR],
-  usage: ['', 'clear']
-};
+import { logger } from 'common/logger';
+import { createUserDetailsEmbed } from 'embed';
 
 class AccountAction implements CommandAction {
 
-  constructor(private readonly services: CommandActionServices) {}
+  constructor(private readonly services: BotServices) {}
 
-  async execute(context: CommandActionContext, params: CommandActionParams): Promise<void> {
+  async execute(context: CommandContext, params: CommandOptions): Promise<void> {
     if (params.CLEAR) {
       return this.clearUserData(context);
     }
     try {
       const user = await this.services.users.getUser(context.user.id);
-      const spotifyAccount = user && user.spotify ? await spotify.api.getUser(user.spotify) : undefined;
-      const soundCloudAccount = user && user.soundcloud ? await soundcloud.api.getUser(user.soundcloud) : undefined;
-      const message = userDetails(context.user, spotifyAccount, soundCloudAccount, user && user.identifiers);
+      const spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
+      const soundCloudAccount = user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
+      const message = createUserDetailsEmbed(context.user, spotifyAccount, soundCloudAccount, user && user.identifiers);
       await context.channel.sendEmbed(message);
     } catch (e) {
       logger.warn(e.stack || e);
@@ -35,7 +26,7 @@ class AccountAction implements CommandAction {
     }
   }
 
-  private async clearUserData(context: CommandActionContext): Promise<void> {
+  private async clearUserData(context: CommandContext): Promise<void> {
     try {
       const removed = await this.services.users.removeUser(context.user.id);
       return context.message.reply(removed ? 'Okay! I have erased my knowledge about you entirely.'
@@ -49,10 +40,13 @@ class AccountAction implements CommandAction {
 }
 
 export const ACCOUNT_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new AccountAction(services);
-  }
-}
+  name: 'me',
+  details: 'Show your account details. Including linked music accounts and identifiers',
+  permission: PERMISSION.USER,
+  category: ACCOUNT_CATEGORY,
+  keywords: [KEYWORDS.CLEAR],
+  usage: ['', 'clear'],
+  createAction: services => new AccountAction(services)
+};
 
 

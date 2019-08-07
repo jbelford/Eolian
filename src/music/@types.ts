@@ -1,20 +1,24 @@
-type Track = {
+import { SOURCE } from 'common/constants';
+import { PartialObserver, Subscription } from 'rxjs';
+import { Readable } from 'stream';
+
+export interface Track {
   id: string;
   title: string;
   poster: string;
   url: string;
   stream: string;
   artwork?: string;
-  src: import('common/constants').SOURCE;
-};
+  src: SOURCE;
+}
 
-type StreamData = {
-  readable: import('stream').Readable,
+export interface StreamData {
+  readable: Readable,
   size: number,
-  details: any
-};
+  details: unknown
+}
 
-interface PlayerManager {
+export interface PlayerManager {
 
   /**
    * Fetches a player in the registry
@@ -28,7 +32,7 @@ interface PlayerManager {
 
 }
 
-interface Player {
+export interface Player {
 
   readonly guildId: string;
 
@@ -41,7 +45,6 @@ interface Player {
    * Tells the player to start streaming.
    */
   play(): Promise<void>;
-
 
   /**
    * Tells the player to skip the song it is streaming.
@@ -74,7 +77,6 @@ interface Player {
    * Returns a subscription to an event which is emitted anytime
    * the current song playing changes to a new song.
    */
-  subscribe(observer: import('rxjs').PartialObserver<Track>): import('rxjs').Subscription;
-
+  subscribe(observer: PartialObserver<Track>): Subscription;
 
 }

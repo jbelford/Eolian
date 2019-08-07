@@ -1,10 +1,14 @@
-import { youtube, YouTubeResourceType } from 'api/youtube';
-import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
+import { youtube } from 'api';
+import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/youtube';
+import { CommandContext, CommandOptions } from 'commands/@types';
+import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
+import { IdentifierType } from 'data/@types';
+import { ResolvedResource, SourceResolver } from './@types';
 
 export class YouTubeResolver implements SourceResolver {
 
-  constructor(private readonly context: CommandActionContext, private readonly params: CommandActionParams) {
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -31,7 +35,7 @@ export class YouTubeResolver implements SourceResolver {
       throw new EolianBotError('Missing query for YouTube playlist.');
     }
 
-    const playlists = await youtube.api.searchPlaylists(this.params.QUERY);
+    const playlists = await youtube.searchPlaylists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => playlist.name), this.context.user.id);
     if (idx === undefined) throw new EolianBotError('Nothing selected. Cancelled request.');
@@ -45,7 +49,7 @@ export class YouTubeResolver implements SourceResolver {
       throw new EolianBotError('Missing query for YouTube song.');
     }
 
-    const videos = await youtube.api.searchVideos(this.params.QUERY);
+    const videos = await youtube.searchVideos(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube video',
       videos.map(video => video.name), this.context.user.id);
     if (idx === undefined) {
@@ -62,10 +66,10 @@ async function resolveUrl(url: string): Promise<ResolvedResource> {
   if (resourceDetails) {
     switch (resourceDetails.type) {
       case YouTubeResourceType.PLAYLIST:
-        const playlist = await youtube.api.getPlaylist(resourceDetails.id);
+        const playlist = await youtube.getPlaylist(resourceDetails.id);
         return createYouTubePlaylist(playlist!);
       case YouTubeResourceType.VIDEO:
-        const video = await youtube.api.getVideo(resourceDetails.id);
+        const video = await youtube.getVideo(resourceDetails.id);
         return createYouTubeVideo(video!);
       default:
     }
@@ -80,7 +84,7 @@ function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResource {
     identifier: {
       id: playlist.id,
       src: SOURCE.YOUTUBE,
-      type: IDENTIFIER_TYPE.PLAYLIST,
+      type: IdentifierType.PLAYLIST,
       url: playlist.url
     }
   };
@@ -93,7 +97,7 @@ function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
     identifier: {
       id: video.id,
       src: SOURCE.YOUTUBE,
-      type: IDENTIFIER_TYPE.SONG,
+      type: IdentifierType.SONG,
       url: video.url
     }
   }

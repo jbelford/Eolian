@@ -1,27 +1,15 @@
-import { ACCOUNT_CATEGORY } from "commands/category";
-import { KEYWORDS } from "commands/keywords";
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { ACCOUNT_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { logger } from "common/logger";
-import * as resolvers from 'resolvers';
-
-
-const info: CommandInfo = {
-  name: 'identify',
-  category: ACCOUNT_CATEGORY,
-  details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube',
-  permission: PERMISSION.USER,
-  keywords: [
-    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
-    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS
-  ],
-  usage: ['spotify playlist (retrowave) as [retro]'],
-}
+import { logger } from 'common/logger';
+import { getSourceResolver } from 'resolvers';
 
 class IdentifyAction implements CommandAction {
 
-  constructor(private readonly services: CommandActionServices) {}
+  constructor(private readonly services: BotServices) {}
 
-  async execute(context: CommandActionContext, params: CommandActionParams): Promise<void> {
+  async execute(context: CommandContext, params: CommandOptions): Promise<void> {
     if (!params.IDENTIFIER) {
       return context.message.reply(`You forgot to specify the key for your identifer.`);
     } else if (params.URL && params.QUERY) {
@@ -29,7 +17,7 @@ class IdentifyAction implements CommandAction {
     }
 
     try {
-      const resource = await resolvers.getSourceResolver(context, params).resolve();
+      const resource = await getSourceResolver(context, params).resolve();
       if (resource) {
         await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
         const authors = resource.authors.join(',');
@@ -47,8 +35,14 @@ class IdentifyAction implements CommandAction {
 }
 
 export const IDENTIFY_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new IdentifyAction(services);
-  }
-}
+  name: 'identify',
+  category: ACCOUNT_CATEGORY,
+  details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube',
+  permission: PERMISSION.USER,
+  keywords: [
+    KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
+    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS
+  ],
+  usage: ['spotify playlist (retrowave) as [retro]'],
+  createAction: services => new IdentifyAction(services)
+};

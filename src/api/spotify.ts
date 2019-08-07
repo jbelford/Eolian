@@ -1,20 +1,12 @@
-import { environment } from 'common/env';
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
-import { InMemoryCache } from 'data/memory/cache';
+import { EolianCache } from 'data/@types';
+import { InMemoryCache } from 'data/cache';
 import * as fuzz from 'fuzzball';
 import SpotifyWebApi from 'spotify-web-api-node';
 
-export const enum SpotifyResourceType {
-  USER = 'user',
-  TRACK = 'track',
-  PLAYLIST = 'playlist',
-  ARTIST = 'artist',
-  ALBUM = 'album'
-}
-
-interface SpotifyApi {
-
+export interface SpotifyApi {
+  resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
@@ -23,16 +15,111 @@ interface SpotifyApi {
   searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]>;
   searchAlbums(query: string): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
-
 }
 
-class SpotifyApiImpl implements SpotifyApi {
+export interface SpotifyResponse<T> {
+  body: T;
+}
+
+export interface SpotifyUser {
+  id: string;
+  display_name: string;
+  uri: string;
+  external_urls: SpotifyExternalUrls;
+}
+
+export interface SpotifyUrlDetails {
+  type: SpotifyResourceType;
+  id: string;
+}
+
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  owner: SpotifyUser;
+  external_urls: SpotifyExternalUrls;
+  images: SpotifyImageObject[];
+  tracks?: SpotifyPagingObject<SpotifyPlaylistTrack>;
+}
+
+export interface SpotifyAlbum {
+  id: string;
+  external_urls: SpotifyExternalUrls;
+  album_type: 'album' | 'single' | 'compilation';
+  artists: SpotifyArtist[];
+  images: SpotifyImageObject[];
+  name: string;
+}
+
+export interface SpotifyAlbumFull extends SpotifyAlbum {
+  tracks: SpotifyPagingObject<SpotifyTrack>
+}
+
+export interface SpotifyPagingObject<T> {
+  href: string;
+  items: T[];
+  limit: number;
+  next: string;
+  offset: number;
+  previous: string;
+  total: number;
+}
+
+export interface SpotifySearchResult {
+  playlists: SpotifyPagingObject<SpotifyPlaylist>;
+  artists: SpotifyPagingObject<SpotifyArtist>;
+  albums: SpotifyPagingObject<SpotifyAlbum>;
+}
+
+export interface SpotifyPlaylistTrack {
+  track: SpotifyTrack;
+}
+
+export interface SpotifyImageObject {
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface SpotifyTrack {
+  id: string;
+  name: string;
+  artists: SpotifyArtist[];
+  duration_ms: number;
+}
+
+export interface SpotifyArtist {
+  href: string;
+  id: string;
+  name: string;
+  external_urls: SpotifyExternalUrls;
+}
+
+export interface SpotifyExternalUrls {
+  spotify: string;
+}
+
+export const enum SpotifyResourceType {
+  USER = 'user',
+  TRACK = 'track',
+  PLAYLIST = 'playlist',
+  ARTIST = 'artist',
+  ALBUM = 'album'
+}
+export class SpotifyApiImpl implements SpotifyApi {
 
   private readonly spotify: SpotifyWebApi;
   private expiration = 0;
 
   constructor(clientId: string, clientSecret: string) {
     this.spotify = new SpotifyWebApi({ clientId, clientSecret });
+  }
+
+  resolve(uri: string): SpotifyUrlDetails | undefined {
+    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:\/]([^\?]+)/g
+    const regArr = matcher.exec(uri);
+    if (!regArr) return;
+    return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };
   }
 
   async getUser(id: string): Promise<SpotifyUser> {
@@ -163,7 +250,7 @@ class SpotifyApiImpl implements SpotifyApi {
 
 }
 
-class CachedSpotifyApi implements SpotifyApi {
+export class CachedSpotifyApi implements SpotifyApi {
 
   private readonly api: SpotifyApi;
   private readonly cache: EolianCache;
@@ -171,6 +258,10 @@ class CachedSpotifyApi implements SpotifyApi {
   constructor(clientId: string, clientSecret: string, ttl: number) {
     this.api = new SpotifyApiImpl(clientId, clientSecret);
     this.cache = new InMemoryCache(ttl);
+  }
+
+  resolve(uri: string): SpotifyUrlDetails | undefined {
+    return this.api.resolve(uri);
   }
 
   async getUser(id: string): Promise<SpotifyUser> {
@@ -220,18 +311,3 @@ class CachedSpotifyApi implements SpotifyApi {
   }
 
 }
-
-const api: SpotifyApi = new CachedSpotifyApi(environment.tokens.spotify.clientId,
-    environment.tokens.spotify.clientSecret, 1000 * 30);
-
-export const spotify = {
-  api,
-
-  getResourceType(uri: string): SpotifyUrlDetails | undefined {
-    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:\/]([^\?]+)/g
-    const regArr = matcher.exec(uri);
-    if (!regArr) return;
-    return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };
-  }
-
-};

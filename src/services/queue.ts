@@ -1,4 +1,6 @@
 import { EolianBotError } from "common/errors";
+import { MusicQueueDAO } from 'data/@types';
+import { Track } from 'music/@types';
 
 export class MusicQueueService {
 

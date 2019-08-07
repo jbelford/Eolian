@@ -1,3 +1,4 @@
+import { CommandCategory } from './@types';
 
 export const ACCOUNT_CATEGORY: CommandCategory = {
   name: 'Account',

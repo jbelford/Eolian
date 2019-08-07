@@ -1,28 +1,20 @@
-import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from "commands/category";
-import { COMMANDS } from "commands/index";
-import { KEYWORDS } from "commands/keywords";
+import { COMMANDS } from 'commands';
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import * as embed from "embed";
-
-const info: CommandInfo = {
-  name: 'help',
-  details: 'Shows list of all available categories, commands, keywords, and their details',
-  permission: PERMISSION.USER,
-  category: GENERAL_CATEGORY,
-  keywords: [KEYWORDS.ARG],
-  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
-};
+import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed } from 'embed';
 
 /**
  * Sends a help message for commands and categories based on user arguments.
  */
 class HelpAction implements CommandAction {
 
-  constructor(private readonly services: CommandActionServices) {}
+  constructor(private readonly services: BotServices) {}
 
-  async execute({ user, channel, message }: CommandActionContext, { ARG }: CommandActionParams): Promise<void> {
+  async execute({ user, channel, message }: CommandContext, { ARG }: CommandOptions): Promise<void> {
     if (!ARG) {
-      const categoryListEmbed = embed.help.categoryList(COMMAND_CATEGORIES);
+      const categoryListEmbed = createCategoryListEmbed(COMMAND_CATEGORIES);
       await channel.sendEmbed(categoryListEmbed);
       return;
     }
@@ -41,21 +33,21 @@ class HelpAction implements CommandAction {
     const category = !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
       ? COMMAND_CATEGORIES[idx] : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
     if (category) {
-      const commandListEmbed = embed.help.commandList(category);
+      const commandListEmbed = createCommandListEmbed(category);
       await channel.sendEmbed(commandListEmbed);
       return;
     }
 
-    const command = COMMANDS.find(cmd => cmd.info.name.toLowerCase() === arg);
+    const command = COMMANDS.find(cmd => cmd.name.toLowerCase() === arg);
     if (command) {
-      const commandEmbed = embed.help.commandDetails(command.info);
+      const commandEmbed = createCommandDetailsEmbed(command);
       await channel.sendEmbed(commandEmbed);
       return;
     }
 
     const keyword = KEYWORDS[arg.toUpperCase()];
     if (keyword && keyword.permission <= user.permission) {
-      const keywordEmbed = embed.help.keywordDetails(keyword);
+      const keywordEmbed = createKeywordDetailsEmbed(keyword);
       await channel.sendEmbed(keywordEmbed);
       return;
     }
@@ -66,8 +58,11 @@ class HelpAction implements CommandAction {
 }
 
 export const HELP_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new HelpAction(services);
-  }
+  name: 'help',
+  details: 'Shows list of all available categories, commands, keywords, and their details',
+  permission: PERMISSION.USER,
+  category: GENERAL_CATEGORY,
+  keywords: [KEYWORDS.ARG],
+  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
+  createAction: services => new HelpAction(services)
 }

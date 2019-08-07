@@ -1,4 +1,5 @@
 import NodeCache from 'node-cache';
+import { EolianCache } from './@types';
 
 export class InMemoryCache implements EolianCache {
 

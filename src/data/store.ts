@@ -1,3 +1,4 @@
+import { MemoryStore, MusicQueueDAO } from './@types';
 import { InMemoryQueues } from './queue';
 
 export class LocalMemoryStore implements MemoryStore {

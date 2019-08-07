@@ -1,43 +1,42 @@
-import { PERMISSION } from 'common/constants';
+import { BotServices, CommandContext, CommandParsingStrategy } from 'commands/@types';
+import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
+import { Database, MemoryStore } from 'data/@types';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
-import { DiscordTextChannel } from 'discord/channel';
-import { DiscordBotService } from 'discord/client';
-import { CHANNEL, EOLIAN_CLIENT_OPTIONS, EVENTS, INVITE_PERMISSIONS } from 'discord/constants';
-import { DiscordMessage } from 'discord/message';
-import { DiscordUser } from 'discord/user';
-import { MusicQueueService } from 'services/queue';
-import { EolianUserService } from 'services/user';
+import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
+import { EolianUserService, MusicQueueService } from 'services';
+import { EolianBot } from './@types';
+import { DiscordUser } from './user';
 
 export interface DiscordEolianBotArgs {
   db: Database,
   store: MemoryStore,
   parser: CommandParsingStrategy
-};
+}
 
 export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
 
-  private readonly services: CommandActionServices;
+  private readonly services: BotServices;
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
-    this.client.once(EVENTS.READY, () => this.handleReady());
-    this.client.on(EVENTS.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
-    this.client.on(EVENTS.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
-    this.client.on(EVENTS.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
-    this.client.on(EVENTS.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
-    this.client.on(EVENTS.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
-    this.client.on(EVENTS.MESSAGE, (message) => this.handleMessage(message));
+    this.client.once(DiscordEvents.READY, () => this.handleReady());
+    this.client.on(DiscordEvents.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
+    this.client.on(DiscordEvents.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
+    this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
+    this.client.on(DiscordEvents.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
+    this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
+    this.client.on(DiscordEvents.MESSAGE, (message) => this.handleMessage(message));
 
-    const users = new EolianUserService(args.db.usersDao);
+    const users = new EolianUserService(args.db.users);
     this.services = {
-      bot: new DiscordBotService(this.client),
+      client: new DiscordClient(this.client),
       queues: new MusicQueueService(args.store.queueDao),
       users
     }
@@ -60,7 +59,7 @@ export class DiscordEolianBot implements EolianBot {
   private handleReady() {
     logger.info('Discord bot is ready!');
     if (this.client.guilds.size === 0 || process.argv.includes('-gi')) {
-      this.client.generateInvite(INVITE_PERMISSIONS)
+      this.client.generateInvite(DISCORD_INVITE_PERMISSIONS)
         .then(link => logger.info(`Bot invite link: ${link}`))
         .catch(err => logger.warn(`Failed to generate invite: ${err}`));
     }
@@ -94,7 +93,7 @@ export class DiscordEolianBot implements EolianBot {
         return;
       }
 
-      const context: CommandActionContext = {
+      const context: CommandContext = {
         user: new DiscordUser(author, this.services.users, permission),
         message: new DiscordMessage(message),
         channel: new DiscordTextChannel(channel, this.services.users)
@@ -111,7 +110,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private hasSendPermission(channel: Channel) {
-    if (channel.type !== CHANNEL.TEXT) {
+    if (channel.type !== DiscordChannel.TEXT) {
       return false;
     }
     const permissions = (channel as TextChannel).permissionsFor(this.client.user);

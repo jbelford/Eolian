@@ -1,20 +1,15 @@
-import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
-import { environment } from "common/env";
+import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
-import { InMemoryCache } from 'data/memory/cache';
+import { EolianCache } from 'data/@types';
+import { InMemoryCache } from 'data/cache';
+import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
 import { Readable } from 'stream';
 
-export const enum SoundCloudResourceType {
-  USER = 'user',
-  PLAYLIST = 'playlist',
-  TRACK = 'track'
-};
-
-interface SoundCloudApi {
+export interface SoundCloudApi {
 
   searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
   searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
@@ -27,9 +22,43 @@ interface SoundCloudApi {
 
 }
 
+export const enum SoundCloudResourceType {
+  USER = 'user',
+  PLAYLIST = 'playlist',
+  TRACK = 'track',
+};
+
+export interface SoundCloudResource {
+  id: number;
+  kind: SoundCloudResourceType;
+  permalink_url: string;
+}
+
+export interface SoundCloudUser extends SoundCloudResource {
+  username: string;
+  avatar_url: string;
+}
+
+export interface SoundCloudPlaylist extends SoundCloudResource {
+  artwork_url: string;
+  tracks?: Track[];
+  track_count: number;
+  title: string;
+  user: SoundCloudUser;
+}
+
+export interface SoundCloudTrack extends SoundCloudResource {
+  streamable: boolean;
+  duration: number;
+  stream_url: string;
+  artwork_url: string;
+  user: SoundCloudUser;
+  title: string;
+}
+
 const URL = 'https://api.soundcloud.com';
 
-class SoundCloudApiImpl implements SoundCloudApi {
+export class SoundCloudApiImpl implements SoundCloudApi {
 
   constructor(private readonly token: string) {}
 
@@ -61,32 +90,37 @@ class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
-  async resolve(url: string): Promise<SoundCloudResource> {
+  private async _resolve(url: string, options = {}): Promise<SoundCloudResource> {
+    let resource: SoundCloudResource | SoundCloudResource[];
     try {
-      return await this.get('resolve', { url });
+      resource = await this.get('resolve', { url, ...options });
     } catch (e) {
       throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
     }
+    if (resource instanceof Array) {
+      throw new EolianBotError('The url provided does not resolve to a specific resource');
+    }
+    return resource;
+  }
+
+  resolve(url: string): Promise<SoundCloudResource> {
+    return this._resolve(url);
   }
 
   async resolveUser(url: string): Promise<SoundCloudUser> {
-    try {
-      const resource: SoundCloudResource = await this.get('resolve', { url });
-      if (resource.kind !== 'user') throw new EolianBotError('The url provided is not a SoundCloud user');
-      return resource as SoundCloudUser;
-    } catch (e) {
-      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
+    const resource = await this._resolve(url);
+    if (resource.kind !== 'user') {
+      throw new EolianBotError('The url provided is not a SoundCloud user');
     }
+    return resource as SoundCloudUser;
   }
 
   async resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
-    try {
-      const resource: SoundCloudResource = await this.get('resolve', { url, representation: 'compact' });
-      if (resource.kind !== 'playlist') throw new EolianBotError('The url provided is not a SoundCloud playlist');
-      return resource as SoundCloudPlaylist;
-    } catch (e) {
-      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
+    const resource = await this._resolve(url, { representation: 'compact '});
+    if (resource.kind !== 'playlist') {
+      throw new EolianBotError('The url provided is not a SoundCloud playlist');
     }
+    return resource as SoundCloudPlaylist;
   }
 
   async getUser(id: number): Promise<SoundCloudUser> {
@@ -119,7 +153,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
     });
   }
 
-  private async get(endpoint: string, params: { [key: string]: string } = {}) {
+  private async get<T>(endpoint: string, params: { [key: string]: string } = {}): Promise<T> {
     params.client_id = this.token;
     const data = await requestp(`${URL}/${endpoint}?${querystring.stringify(params)}`);
     return JSON.parse(data);
@@ -127,7 +161,7 @@ class SoundCloudApiImpl implements SoundCloudApi {
 
 }
 
-class CachedSoundCloudApi implements SoundCloudApi {
+export class CachedSoundCloudApi implements SoundCloudApi {
 
   private readonly api: SoundCloudApi;
   private readonly cache: EolianCache;
@@ -183,27 +217,4 @@ class CachedSoundCloudApi implements SoundCloudApi {
     return this.api.getStream(track);
   }
 
-}
-
-const api: SoundCloudApi = new CachedSoundCloudApi(environment.tokens.soundcloud, 1000 * 30);
-
-export const soundcloud = {
-  api,
-  createIdentifier(resource: SoundCloudResource): Identifier {
-    return {
-      id: resource.id.toString(),
-      src: SOURCE.SOUNDCLOUD,
-      type: getIdentifierType(resource.kind),
-      url: resource.permalink_url
-    };
-  }
-}
-
-function getIdentifierType(type: SoundCloudResourceType): IDENTIFIER_TYPE {
-  switch (type) {
-    case SoundCloudResourceType.PLAYLIST: return IDENTIFIER_TYPE.PLAYLIST;
-    case SoundCloudResourceType.TRACK: return IDENTIFIER_TYPE.TRACKS;
-    case SoundCloudResourceType.USER: return IDENTIFIER_TYPE.ARTIST;
-    default: throw new Error('Unrecognized SoundCloud resource type');
-  }
 }

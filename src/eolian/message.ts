@@ -1,8 +1,13 @@
-import { Message } from "discord.js";
+import { Message } from 'discord.js';
+import { ContextMessage } from './@types';
 
 export class DiscordMessage implements ContextMessage {
 
   constructor(private readonly message: Message) { }
+
+  get text(): string {
+    return this.message.content;
+  }
 
   async reply(message: string): Promise<void> {
     await this.message.reply(message);

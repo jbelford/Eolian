@@ -1,22 +1,14 @@
-import { ACCOUNT_CATEGORY } from "commands/category";
-import { KEYWORDS } from "commands/keywords";
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { ACCOUNT_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { logger } from "common/logger";
-
-const info: CommandInfo = {
-  name: 'unlink',
-  category: ACCOUNT_CATEGORY,
-  details: 'Remove a Spotify or SoundCloud account you are linked to.',
-  permission: PERMISSION.USER,
-  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
-  usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
-};
+import { logger } from 'common/logger';
 
 class UnlinkAction implements CommandAction {
 
-  constructor(private readonly services: CommandActionServices) {}
+  constructor(private readonly services: BotServices) {}
 
-  async execute({ message, user }: CommandActionContext, { SOUNDCLOUD, SPOTIFY }: CommandActionParams): Promise<void> {
+  async execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
     let response: string | undefined;
 
     if (SOUNDCLOUD) {
@@ -46,8 +38,11 @@ class UnlinkAction implements CommandAction {
 }
 
 export const UNLINK_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new UnlinkAction(services);
-  }
-}
+  name: 'unlink',
+  category: ACCOUNT_CATEGORY,
+  details: 'Remove a Spotify or SoundCloud account you are linked to.',
+  permission: PERMISSION.USER,
+  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
+  usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
+  createAction: services => new UnlinkAction(services)
+};

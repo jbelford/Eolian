@@ -1,6 +1,8 @@
 import { PERMISSION } from 'common/constants';
-import { User } from "discord.js";
-import { EolianUserService } from 'services/user';
+import { UserDTO } from 'data/@types';
+import { User } from 'discord.js';
+import { EolianUserService } from 'services';
+import { ContextUser } from './@types';
 
 export class DiscordUser implements ContextUser {
 

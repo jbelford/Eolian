@@ -1,10 +1,11 @@
 import { PERMISSION } from 'common/constants';
-import { logger } from "common/logger";
-import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from "discord.js";
-import { DiscordMessage } from "discord/message";
-import { DiscordUser } from "discord/user";
-import * as embed from 'embed';
-import { EolianUserService } from 'services/user';
+import { logger } from 'common/logger';
+import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from 'discord.js';
+import { createSelectionEmbed } from 'embed';
+import { DiscordMessage } from 'eolian';
+import { EolianUserService } from 'services';
+import { ContextMessage, ContextTextChannel, EmbedMessage, MessageButton } from './@types';
+import { DiscordUser } from './user';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
@@ -17,7 +18,7 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   async sendSelection(question: string, options: string[], userId: string): Promise<number | undefined> {
-    const selectEmbed = embed.selection(question, options);
+    const selectEmbed = createSelectionEmbed(question, options);
     await this.sendEmbed(selectEmbed);
 
     const selection = await this.awaitUserSelection(userId, options);

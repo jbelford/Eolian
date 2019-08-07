@@ -1,4 +1,5 @@
 import { EolianBotError } from "common/errors";
+import { Identifier, UserDTO, UsersDAO } from 'data/@types';
 
 export class EolianUserService {
 

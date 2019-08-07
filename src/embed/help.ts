@@ -1,8 +1,10 @@
 import { COMMANDS } from 'commands';
+import { Command, CommandCategory, Keyword } from 'commands/@types';
 import { COLOR } from 'common/constants';
 import { environment } from 'common/env';
+import { EmbedMessage } from 'eolian/@types';
 
-export function categoryList(categories: CommandCategory[]): EmbedMessage {
+export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -18,7 +20,7 @@ export function categoryList(categories: CommandCategory[]): EmbedMessage {
   return embed;
 }
 
-export function commandList(category: CommandCategory): EmbedMessage {
+export function createCommandListEmbed(category: CommandCategory): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -27,21 +29,21 @@ export function commandList(category: CommandCategory): EmbedMessage {
     description: `${category.details}\n\n`,
   };
   embed.description += '```\n'
-    + COMMANDS.filter(cmd => cmd.info.category.name === category.name).map(cmd => cmd.info.name).join('\n')
+    + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => cmd.name).join('\n')
     + '```' + `\nUse \`help /<command>/\` to see more information for that command.`
   return embed;
 }
 
-export function commandDetails(info: CommandInfo): EmbedMessage {
+export function createCommandDetailsEmbed(command: Command): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
-      text: `Command: ${info.name}`
+      text: `Command: ${command.name}`
     },
-    description: `${info.details}\n\n`
+    description: `${command.details}\n\n`
   };
-  const keywords = info.keywords.filter(keyword => !keyword.priority);
-  const complexKeywords = info.keywords.filter(keywords => keywords.priority);
+  const keywords = command.keywords.filter(keyword => !keyword.priority);
+  const complexKeywords = command.keywords.filter(keywords => keywords.priority);
   if (keywords.length) {
     embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
       + keywords.map(keyword => keyword.name).join('\n') + '```\n';
@@ -51,11 +53,11 @@ export function commandDetails(info: CommandInfo): EmbedMessage {
       + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
   }
   embed.description += 'Use `help /<name of pattern or keyword>/` to learn more about patterns and keywords. All arguments are based on them!\n\n'
-  embed.description += '**Example Usage:**\n```\n' + info.usage.map(example => `${info.name} ${example}`).join('\n') + '```';
+  embed.description += '**Example Usage:**\n```\n' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
   return embed;
 }
 
-export function keywordDetails(keyword: Keyword<unknown>): EmbedMessage {
+export function createKeywordDetailsEmbed(keyword: Keyword<unknown>): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {

@@ -1,5 +1,7 @@
+import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
+import { SourceResolver } from './@types';
 import { SoundCloudResolver } from './soundcloud';
 import { SpotifyResolver } from './spotify';
 import { YouTubeResolver } from './youtube';
@@ -10,7 +12,7 @@ const UNKNOWN_RESOLVER: SourceResolver = {
   }
 }
 
-function getBySource(source: SOURCE, context: CommandActionContext, params: CommandActionParams) {
+function getBySource(source: SOURCE, context: CommandContext, params: CommandOptions) {
   switch (source) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudResolver(context, params);
     case SOURCE.YOUTUBE: return new YouTubeResolver(context, params);
@@ -19,7 +21,7 @@ function getBySource(source: SOURCE, context: CommandActionContext, params: Comm
   }
 }
 
-function getByQuery(context: CommandActionContext, params: CommandActionParams) {
+function getByQuery(context: CommandContext, params: CommandOptions) {
   if (params.ALBUM) {
     return getAlbumResolver(context, params);
   } else if (params.PLAYLIST) {
@@ -34,7 +36,7 @@ function getByQuery(context: CommandActionContext, params: CommandActionParams) 
   return getSongResolver(params, context);
 }
 
-function getSongResolver(params: CommandActionParams, context: CommandActionContext) {
+function getSongResolver(params: CommandOptions, context: CommandContext) {
   if (params.SOUNDCLOUD) {
     return new SoundCloudResolver(context, params);
   } else if (params.SPOTIFY) {
@@ -43,21 +45,21 @@ function getSongResolver(params: CommandActionParams, context: CommandActionCont
   return new YouTubeResolver(context, params);
 }
 
-function getTracksResolver(context: CommandActionContext, params: CommandActionParams) {
+function getTracksResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
     context.channel.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
   }
   return new SoundCloudResolver(context, params);
 }
 
-function getFavoritesResolver(context: CommandActionContext, params: CommandActionParams) {
+function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
     context.channel.send('(Psst.. The FAVORITES keyword is only for SoundCloud.)');
   }
   return new SoundCloudResolver(context, params);
 }
 
-function getArtistResolver(context: CommandActionContext, params: CommandActionParams) {
+function getArtistResolver(context: CommandContext, params: CommandOptions) {
   if (params.YOUTUBE) {
     context.channel.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
   } else if (params.SOUNDCLOUD) {
@@ -66,14 +68,14 @@ function getArtistResolver(context: CommandActionContext, params: CommandActionP
   return new SpotifyResolver(context, params);
 }
 
-function getAlbumResolver(context: CommandActionContext, params: CommandActionParams) {
+function getAlbumResolver(context: CommandContext, params: CommandOptions) {
   if (params.SOUNDCLOUD || params.YOUTUBE) {
     context.channel.send('I only support Spotify regarding albums.');
   }
   return new SpotifyResolver(context, params);
 }
 
-function getPlaylistResolver(context: CommandActionContext, params: CommandActionParams) {
+function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY) {
     return new SpotifyResolver(context, params);
   } else if (params.SOUNDCLOUD) {
@@ -81,8 +83,7 @@ function getPlaylistResolver(context: CommandActionContext, params: CommandActio
   }
   return new YouTubeResolver(context, params);
 }
-
-export function getSourceResolver(context: CommandActionContext, params: CommandActionParams): SourceResolver {
+export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
   if (params.URL && (params.QUERY || params.MY)) {
     throw new EolianBotError('You must specify only an URL, QUERY or MY.');
   }

@@ -1,11 +1,51 @@
-import { QUEUE_CATEGORY } from "commands/category";
-import { KEYWORDS } from "commands/keywords";
-import { getEnumName, IDENTIFIER_TYPE, PERMISSION, SOURCE } from 'common/constants';
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { QUEUE_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
+import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import * as util from 'common/util';
-import * as resolvers from 'resolvers';
+import { truthySum } from 'common/util';
+import { IdentifierType } from 'data/@types';
+import { getSourceResolver } from 'resolvers';
 
-const info: CommandInfo = {
+class AddAction implements CommandAction {
+
+  constructor(private readonly services: BotServices) {}
+
+  async execute(context: CommandContext, params: CommandOptions): Promise<void> {
+    const sum = truthySum(params.QUERY, params.URL, params.IDENTIFIER);
+    if (sum === 0) {
+      await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
+      return;
+    } else if (sum > 1) {
+      await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
+      return;
+    }
+
+    try {
+      if (params.IDENTIFIER) {
+        const user = await context.user.get();
+        if (!user.identifiers || !user.identifiers[params.IDENTIFIER]) {
+          await context.message.reply(`That identifier is unrecognized!`);
+          return;
+        }
+      } else {
+        const resource = await getSourceResolver(context, params).resolve();
+        if (resource) {
+          await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
+            + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
+            + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+        }
+      }
+      await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
+    } catch (e) {
+      logger.debug(e.stack || e);
+      await context.message.reply(e.response || 'Sorry. Something broke real bad.');
+    }
+  }
+
+}
+
+export const ADD_COMMAND: Command = {
   name: 'add',
   details: 'Add songs to the queue',
   category: QUEUE_CATEGORY,
@@ -26,49 +66,5 @@ const info: CommandInfo = {
     `tracks`,
     `album (the life of pablo)`
   ],
-};
-
-class AddAction implements CommandAction {
-
-  constructor(private readonly services: CommandActionServices) {}
-
-  async execute(context: CommandActionContext, params: CommandActionParams): Promise<void> {
-    const sum = util.tsum(params.QUERY, params.URL, params.IDENTIFIER);
-    if (sum === 0) {
-      await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
-      return;
-    } else if (sum > 1) {
-      await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
-      return;
-    }
-
-    try {
-      if (params.IDENTIFIER) {
-        const user = await context.user.get();
-        if (!user.identifiers || !user.identifiers[params.IDENTIFIER]) {
-          await context.message.reply(`That identifier is unrecognized!`);
-          return;
-        }
-      } else {
-        const resource = await resolvers.getSourceResolver(context, params).resolve();
-        if (resource) {
-          await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
-            + `\n(**${getEnumName(IDENTIFIER_TYPE, resource.identifier.type)}**`
-            + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
-        }
-      }
-      await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
-    } catch (e) {
-      logger.debug(e.stack || e);
-      await context.message.reply(e.response || 'Sorry. Something broke real bad.');
-    }
-  }
-
-}
-
-export const ADD_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new AddAction(services);
-  }
+  createAction: services => new AddAction(services)
 };

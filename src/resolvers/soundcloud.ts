@@ -1,10 +1,14 @@
-import { soundcloud, SoundCloudResourceType } from 'api/soundcloud';
-import { IDENTIFIER_TYPE } from 'common/constants';
+import { soundcloud } from 'api';
+import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/soundcloud';
+import { CommandContext, CommandOptions } from 'commands/@types';
+import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
+import { Identifier, IdentifierType } from 'data/@types';
+import { ResolvedResource, SourceResolver } from './@types';
 
 export class SoundCloudResolver implements SourceResolver {
 
-  constructor(private readonly context: CommandActionContext, private readonly params: CommandActionParams) {
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -61,9 +65,9 @@ export class SoundCloudResolver implements SourceResolver {
           throw new EolianBotError('User has not set SoundCloud account.',
             `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
         }
-        playlists = await soundcloud.api.searchPlaylists(this.params.QUERY, user.soundcloud);
+        playlists = await soundcloud.searchPlaylists(this.params.QUERY, user.soundcloud);
       } else {
-        playlists = await soundcloud.api.searchPlaylists(this.params.QUERY);
+        playlists = await soundcloud.searchPlaylists(this.params.QUERY);
       }
     } else {
       throw new EolianBotError('You must specify a query or use the MY keyword.');
@@ -74,14 +78,14 @@ export class SoundCloudResolver implements SourceResolver {
 
   private async resolveTracks(): Promise<ResolvedResource> {
     const resource = await this.resolveArtist();
-    resource.identifier.type = IDENTIFIER_TYPE.TRACKS;
+    resource.identifier.type = IdentifierType.TRACKS;
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;
   }
 
   private async resolveFavorites(): Promise<ResolvedResource> {
     const resource = await this.resolveArtist();
-    resource.identifier.type = IDENTIFIER_TYPE.FAVORITES;
+    resource.identifier.type = IdentifierType.FAVORITES;
     resource.identifier.url = `${resource.identifier.url}/likes`;
     return resource;
   }
@@ -96,7 +100,7 @@ export class SoundCloudResolver implements SourceResolver {
   }
 
   private async resolveArtistQuery(query: string): Promise<ResolvedResource> {
-    const users = await soundcloud.api.searchUser(query);
+    const users = await soundcloud.searchUser(query);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud user',
       users.map(user => user.username), this.context.user.id);
     if (idx === undefined) {
@@ -111,7 +115,7 @@ export class SoundCloudResolver implements SourceResolver {
     if (!user.soundcloud) {
       throw new EolianBotError('You have not set your SoundCloud account yet!');
     }
-    const scUser = await soundcloud.api.getUser(user.soundcloud);
+    const scUser = await soundcloud.getUser(user.soundcloud);
     return createSoundCloudUser(scUser);
   }
 
@@ -120,7 +124,7 @@ export class SoundCloudResolver implements SourceResolver {
       throw new EolianBotError('Missing query for SoundCloud song.');
     }
 
-    const songs = await soundcloud.api.searchSongs(this.params.QUERY);
+    const songs = await soundcloud.searchSongs(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud track',
       songs.map(song => `${song.title} --- ${song.user.username}`), this.context.user.id);
     if (idx === undefined) {
@@ -133,7 +137,7 @@ export class SoundCloudResolver implements SourceResolver {
 }
 
 async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resource = await soundcloud.api.resolve(url);
+  const resource = await soundcloud.resolve(url);
   switch (resource.kind) {
     case SoundCloudResourceType.PLAYLIST:
       return createSoundCloudPlaylist(resource as SoundCloudPlaylist);
@@ -150,7 +154,7 @@ function createSoundCloudPlaylist(playlist: SoundCloudPlaylist): ResolvedResourc
   return {
     name: playlist.title,
     authors: [playlist.user.username],
-    identifier: soundcloud.createIdentifier(playlist)
+    identifier: createIdentifier(playlist)
   };
 }
 
@@ -158,7 +162,7 @@ function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
   return {
     name: track.title,
     authors: [track.user.username],
-    identifier: soundcloud.createIdentifier(track)
+    identifier: createIdentifier(track)
   }
 }
 
@@ -166,6 +170,24 @@ function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
   return {
     name: user.username,
     authors: [user.username],
-    identifier: soundcloud.createIdentifier(user)
+    identifier: createIdentifier(user)
+  }
+}
+
+function createIdentifier(resource: SoundCloudResource): Identifier {
+  return {
+    id: resource.id.toString(),
+    src: SOURCE.SOUNDCLOUD,
+    type: soundCloudTypeToIdentifier(resource.kind),
+    url: resource.permalink_url
+  };
+}
+
+function soundCloudTypeToIdentifier(type: SoundCloudResourceType): IdentifierType {
+  switch (type) {
+    case SoundCloudResourceType.PLAYLIST: return IdentifierType.PLAYLIST;
+    case SoundCloudResourceType.TRACK: return IdentifierType.SONG;
+    case SoundCloudResourceType.USER: return IdentifierType.ARTIST;
+    default: throw new Error('Unrecognized SoundCloud resource type');
   }
 }

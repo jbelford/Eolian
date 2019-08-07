@@ -1,6 +1,7 @@
+import { StreamData } from 'music/@types';
 import { Readable } from 'stream';
 
-class QueueStream extends Readable {
+export class QueueStream extends Readable {
 
   private current?: StreamData;
   private fetchLimit: number;

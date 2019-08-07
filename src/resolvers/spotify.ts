@@ -1,10 +1,14 @@
-import { spotify, SpotifyResourceType } from 'api/spotify';
-import { IDENTIFIER_TYPE, SOURCE } from 'common/constants';
+import { spotify } from 'api';
+import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType } from 'api/spotify';
+import { CommandContext, CommandOptions } from 'commands/@types';
+import { SOURCE } from 'common/constants';
 import { EolianBotError } from 'common/errors';
+import { IdentifierType } from 'data/@types';
+import { ResolvedResource, SourceResolver } from './@types';
 
 export class SpotifyResolver implements SourceResolver {
 
-  constructor(private readonly context: CommandActionContext, private readonly params: CommandActionParams) {
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -35,7 +39,7 @@ export class SpotifyResolver implements SourceResolver {
       throw new EolianBotError('Missing query for album.');
     }
 
-    const albums = await spotify.api.searchAlbums(this.params.QUERY);
+    const albums = await spotify.searchAlbums(this.params.QUERY);
 
     const options = albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`);
     const idx = await this.context.channel
@@ -77,9 +81,9 @@ export class SpotifyResolver implements SourceResolver {
           throw new EolianBotError(`User has not set Spotify account`,
             `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
         }
-        playlists = await spotify.api.searchPlaylists(this.params.QUERY, user.spotify);
+        playlists = await spotify.searchPlaylists(this.params.QUERY, user.spotify);
       } else {
-        playlists = await spotify.api.searchPlaylists(this.params.QUERY);
+        playlists = await spotify.searchPlaylists(this.params.QUERY);
       }
     } else {
       throw new EolianBotError('You must specify a query or use the MY keyword.')
@@ -93,7 +97,7 @@ export class SpotifyResolver implements SourceResolver {
       throw new EolianBotError('Missing query for Spotify artist.');
     }
 
-    const artists = await spotify.api.searchArtists(this.params.QUERY);
+    const artists = await spotify.searchArtists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => artist.name), this.context.user.id);
     if (idx === undefined) {
@@ -106,17 +110,17 @@ export class SpotifyResolver implements SourceResolver {
 }
 
 async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resourceDetails = spotify.getResourceType(url);
+  const resourceDetails = spotify.resolve(url);
   if (resourceDetails) {
     switch (resourceDetails.type) {
       case SpotifyResourceType.PLAYLIST:
-        const playlist = await spotify.api.getPlaylist(resourceDetails.id);
+        const playlist = await spotify.getPlaylist(resourceDetails.id);
         return createSpotifyPlaylist(playlist);
       case SpotifyResourceType.ALBUM:
-        const album = await spotify.api.getAlbum(resourceDetails.id);
+        const album = await spotify.getAlbum(resourceDetails.id);
         return createSpotifyAlbum(album);
       case SpotifyResourceType.ARTIST:
-        const artist = await spotify.api.getArtist(resourceDetails.id);
+        const artist = await spotify.getArtist(resourceDetails.id);
         return createSpotifyArtist(artist);
       default:
     }
@@ -131,7 +135,7 @@ function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {
     identifier: {
       id: playlist.id,
       src: SOURCE.SPOTIFY,
-      type: IDENTIFIER_TYPE.PLAYLIST,
+      type: IdentifierType.PLAYLIST,
       url: playlist.external_urls.spotify
     }
   };
@@ -144,7 +148,7 @@ function createSpotifyAlbum(album: SpotifyAlbum): ResolvedResource {
     identifier: {
       id: album.id,
       src: SOURCE.SPOTIFY,
-      type: IDENTIFIER_TYPE.ALBUM,
+      type: IdentifierType.ALBUM,
       url: album.external_urls.spotify
     }
   };
@@ -157,7 +161,7 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
     identifier: {
       id: artist.id,
       src: SOURCE.SPOTIFY,
-      type: IDENTIFIER_TYPE.ARTIST,
+      type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
     }
   };

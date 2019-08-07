@@ -1,25 +1,18 @@
-import { soundcloud } from 'api/soundcloud';
-import { spotify, SpotifyResourceType } from 'api/spotify';
-import { ACCOUNT_CATEGORY } from "commands/category";
-import { KEYWORDS } from "commands/keywords";
+import { soundcloud, spotify } from 'api';
+import { SoundCloudUser } from 'api/soundcloud';
+import { SpotifyResourceType } from 'api/spotify';
+import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { ACCOUNT_CATEGORY } from 'commands/category';
+import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { EolianBotError } from "common/errors";
-import { logger } from "common/logger";
-
-const info: CommandInfo = {
-  name: 'link',
-  category: ACCOUNT_CATEGORY,
-  details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
-  permission: PERMISSION.USER,
-  keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
-  usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
-};
+import { EolianBotError } from 'common/errors';
+import { logger } from 'common/logger';
 
 class LinkAction implements CommandAction {
 
-  constructor(private readonly services: CommandActionServices) {}
+  constructor(private readonly services: BotServices) {}
 
-  async execute(context: CommandActionContext, { QUERY, URL, SPOTIFY }: CommandActionParams): Promise<void> {
+  async execute(context: CommandContext, { QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
     if (QUERY && URL) {
       return context.message.reply(`You provided both a query and a url. Please provide just one of those items.`);
     } else if (URL) {
@@ -41,12 +34,12 @@ class LinkAction implements CommandAction {
     await context.message.reply('You must provide valid url or a query for me to link your account to!');
   }
 
-  private async handleSpotifyUrl(context: CommandActionContext, url: string) {
+  private async handleSpotifyUrl(context: CommandContext, url: string) {
     try {
-      const resource = spotify.getResourceType(url);
+      const resource = spotify.resolve(url);
       if (!resource || resource.type !== SpotifyResourceType.USER) throw new EolianBotError('Spotify resource is not a user!');
 
-      const spotifyUser = await spotify.api.getUser(resource.id);
+      const spotifyUser = await spotify.getUser(resource.id);
       await this.services.users.linkSpotifyAccount(context.user.id, spotifyUser.id);
       await context.channel.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
         + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\` keyword to search your playlists.`);
@@ -56,9 +49,9 @@ class LinkAction implements CommandAction {
     }
   }
 
-  private async handleSoundCloudUrl(context: CommandActionContext, url: string) {
+  private async handleSoundCloudUrl(context: CommandContext, url: string) {
     try {
-      const soundCloudUser = await soundcloud.api.resolveUser(url);
+      const soundCloudUser = await soundcloud.resolveUser(url);
       await this.handleSoundCloud(context, soundCloudUser);
     } catch (e) {
       logger.warn(e.message);
@@ -66,9 +59,9 @@ class LinkAction implements CommandAction {
     }
   }
 
-  private async handleSoundCloudQuery(context: CommandActionContext, query: string) {
+  private async handleSoundCloudQuery(context: CommandContext, query: string) {
     try {
-      const soundCloudUsers = await soundcloud.api.searchUser(query);
+      const soundCloudUsers = await soundcloud.searchUser(query);
       if (soundCloudUsers.length === 0) return await context.message.reply(`I searched SoundCloud but found nothing for \`${query}\``);
 
       const question = 'Which SoundCloud account do you want me to link?';
@@ -83,7 +76,7 @@ class LinkAction implements CommandAction {
     }
   }
 
-  private async handleSoundCloud(context: CommandActionContext, soundCloudUser: SoundCloudUser) {
+  private async handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser) {
     await this.services.users.linkSoundCloudAccount(context.user.id, soundCloudUser.id);
     await context.channel.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
       + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
@@ -93,8 +86,11 @@ class LinkAction implements CommandAction {
 }
 
 export const LINK_COMMAND: Command = {
-  info,
-  createAction(services) {
-    return new LinkAction(services);
-  }
+  name: 'link',
+  category: ACCOUNT_CATEGORY,
+  details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
+  permission: PERMISSION.USER,
+  keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
+  usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
+  createAction: services => new LinkAction(services)
 }

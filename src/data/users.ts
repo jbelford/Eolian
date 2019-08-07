@@ -1,5 +1,5 @@
 import { CollectionReference, FieldValue, Firestore } from '@google-cloud/firestore';
-
+import { Identifier, UserDTO, UsersDAO } from './@types';
 
 export class FirestoreUsers implements UsersDAO {
 
@@ -45,6 +45,5 @@ export class FirestoreUsers implements UsersDAO {
   delete(id: string): Promise<boolean> {
     return this.users.doc(id).delete().then(() => true, () => false);
   }
-
 
 }

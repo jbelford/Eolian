@@ -1,4 +1,6 @@
-import * as util from 'common/util';
+import { shuffleList } from 'common/util';
+import { Track } from 'music/@types';
+import { EolianCache, MusicQueueDAO } from './@types';
 import { InMemoryCache } from './cache';
 
 /**
@@ -27,7 +29,7 @@ export class InMemoryQueues implements MusicQueueDAO {
     const list = await this.cache.get<Track[]>(guildId);
     if (!list) return false;
 
-    this.cache.set(guildId, util.shuffle(list));
+    this.cache.set(guildId, shuffleList(list));
 
     return true;
   }
