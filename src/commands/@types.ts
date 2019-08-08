@@ -1,5 +1,4 @@
 import { PERMISSION, SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
 import { ClientService, ContextMessage, ContextTextChannel, ContextUser } from 'eolian/@types';
 import { EolianUserService, MusicQueueService } from 'services';
 
@@ -23,23 +22,13 @@ export interface CommandAction {
 }
 
 export interface CommandParsingStrategy {
-
-  /**
-   * Verifies that the message received is directed to the bot
-   * @param message
-   */
   messageInvokesBot(message: string): boolean;
+  parseCommand(message: string, permission: PERMISSION): ParsedCommand;
+}
 
-  /**
-   * Parse params from text and return text with those params removed.
-   */
-  parseParams(message: string, permission: PERMISSION): [CommandOptions, string];
-
-  /**
-   * Parse command from text
-   */
-  parseCommand(message: string, permission: PERMISSION): [Command | null, EolianBotError | null];
-
+export interface ParsedCommand {
+  command: Command;
+  options: CommandOptions;
 }
 
 export interface BotServices {

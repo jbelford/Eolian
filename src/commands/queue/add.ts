@@ -2,7 +2,7 @@ import { BotServices, Command, CommandAction, CommandContext, CommandOptions } f
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
-import { logger } from 'common/logger';
+import { EolianUserError } from 'common/errors';
 import { truthySum } from 'common/util';
 import { IdentifierType } from 'data/@types';
 import { getSourceResolver } from 'resolvers';
@@ -11,36 +11,29 @@ class AddAction implements CommandAction {
 
   constructor(private readonly services: BotServices) {}
 
-  async execute(context: CommandContext, params: CommandOptions): Promise<void> {
-    const sum = truthySum(params.QUERY, params.URL, params.IDENTIFIER);
+  async execute(context: CommandContext, options: CommandOptions): Promise<void> {
+    const sum = truthySum(options.QUERY, options.URL, options.IDENTIFIER);
     if (sum === 0) {
-      await context.message.reply('You must provide me a query, url, or identifier. Please try again.');
-      return;
+      throw new EolianUserError('You must provide me a query, url, or identifier. Please try again.');
     } else if (sum > 1) {
-      await context.message.reply('You must only include 1 query, url, or identifier. Please try again.');
-      return;
+      throw new EolianUserError('You must only include 1 query, url, or identifier. Please try again.');
     }
 
-    try {
-      if (params.IDENTIFIER) {
-        const user = await context.user.get();
-        if (!user.identifiers || !user.identifiers[params.IDENTIFIER]) {
-          await context.message.reply(`That identifier is unrecognized!`);
-          return;
-        }
-      } else {
-        const resource = await getSourceResolver(context, params).resolve();
-        if (resource) {
-          await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
-            + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
-            + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
-        }
+    if (options.IDENTIFIER) {
+      const user = await context.user.get();
+      if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
+        throw new EolianUserError(`That identifier is unrecognized!`);
       }
-      await context.message.reply(`Could not find any tracks to add to the queue! Please try again.`);
-    } catch (e) {
-      logger.debug(e.stack || e);
-      await context.message.reply(e.response || 'Sorry. Something broke real bad.');
+    } else {
+      const resource = await getSourceResolver(context, options).resolve();
+      if (resource) {
+        await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
+          + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
+          + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+      }
     }
+
+    throw new EolianUserError(`Could not find any tracks to add to the queue! Please try again.`);
   }
 
 }

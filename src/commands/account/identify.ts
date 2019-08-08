@@ -2,35 +2,30 @@ import { BotServices, Command, CommandAction, CommandContext, CommandOptions } f
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { logger } from 'common/logger';
+import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
 
 class IdentifyAction implements CommandAction {
 
   constructor(private readonly services: BotServices) {}
 
-  async execute(context: CommandContext, params: CommandOptions): Promise<void> {
-    if (!params.IDENTIFIER) {
-      return context.message.reply(`You forgot to specify the key for your identifer.`);
-    } else if (params.URL && params.QUERY) {
-      return context.message.reply(`You specified both a url and a query! Please try again with only one of those.`);
+  async execute(context: CommandContext, options: CommandOptions): Promise<void> {
+    if (!options.IDENTIFIER) {
+      throw new EolianUserError(`You forgot to specify the key for your identifer.`);
+    } else if (options.URL && options.QUERY) {
+      throw new EolianUserError(`You specified both a url and a query! Please try again with only one of those.`);
     }
 
-    try {
-      const resource = await getSourceResolver(context, params).resolve();
-      if (resource) {
-        await this.services.users.addResourceIdentifier(context.user.id, params.IDENTIFIER, resource.identifier);
-        const authors = resource.authors.join(',');
-        return context.message
-          .reply(`Awesome! The resource \`${resource.name}\` by \`${authors}\` can now be identified with \`${params.IDENTIFIER}\`.`);
-      }
-    } catch (e) {
-      logger.debug(e.stack || e);
-      return context.message.reply(e.response || 'Sorry. Something broke real bad.');
+    const resource = await getSourceResolver(context, options).resolve();
+    if (!resource) {
+      throw new EolianUserError(`You must provide me something to identify! Please try again with a URL or query.`);
     }
 
-    await context.message.reply(`You must provide me something to identify! Please try again with a URL or query.`);
-  }
+    await this.services.users.addResourceIdentifier(context.user.id, options.IDENTIFIER, resource.identifier);
+    const response = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
+        + ` can now be identified with \`${options.IDENTIFIER}\`.`;
+    await context.message.reply(response);
+   }
 
 }
 

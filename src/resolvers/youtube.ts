@@ -2,7 +2,7 @@ import { youtube } from 'api';
 import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
+import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ResolvedResource, SourceResolver } from './@types';
 
@@ -32,13 +32,13 @@ export class YouTubeResolver implements SourceResolver {
 
   private async resolvePlaylist(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
-      throw new EolianBotError('Missing query for YouTube playlist.');
+      throw new EolianUserError('Missing query for YouTube playlist.');
     }
 
     const playlists = await youtube.searchPlaylists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => playlist.name), this.context.user.id);
-    if (idx === undefined) throw new EolianBotError('Nothing selected. Cancelled request.');
+    if (idx === undefined) throw new EolianUserError('Nothing selected. Cancelled request.');
 
     const playlist = playlists[idx];
     return createYouTubePlaylist(playlist);
@@ -46,14 +46,14 @@ export class YouTubeResolver implements SourceResolver {
 
   private async resolveSong(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
-      throw new EolianBotError('Missing query for YouTube song.');
+      throw new EolianUserError('Missing query for YouTube song.');
     }
 
     const videos = await youtube.searchVideos(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube video',
       videos.map(video => video.name), this.context.user.id);
     if (idx === undefined) {
-      throw new EolianBotError('Nothing selected. Cancelled request.');
+      throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
     return createYouTubeVideo(videos[idx]);
@@ -74,7 +74,7 @@ async function resolveUrl(url: string): Promise<ResolvedResource> {
       default:
     }
   }
-  throw new EolianBotError('The YouTube URL provided is not valid!');
+  throw new EolianUserError('The YouTube URL provided is not valid!');
 }
 
 function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResource {

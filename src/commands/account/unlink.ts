@@ -2,7 +2,6 @@ import { BotServices, Command, CommandAction, CommandContext, CommandOptions } f
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { logger } from 'common/logger';
 
 class UnlinkAction implements CommandAction {
 
@@ -12,23 +11,16 @@ class UnlinkAction implements CommandAction {
     let response: string | undefined;
 
     if (SOUNDCLOUD) {
-      try {
-        await this.services.users.unlinkSoundCloudAccount(user.id);
-        response = 'I have unlinked any SoundCloud account if you had one';
-      } catch (e) {
-        logger.warn(e.message);
-        return message.reply(e.response);
-      }
+      await this.services.users.unlinkSoundCloudAccount(user.id);
+      response = 'I have unlinked any SoundCloud account if you had one';
     }
 
     if (SPOTIFY) {
-      try {
-        await this.services.users.unlinkSpotifyAccount(user.id);
-        if (response) response += ' and I also unlinked your Spotify account if you had one';
-        else response = 'I have unlinked any Spotify account if you had one';
-      } catch (e) {
-        logger.warn(e.message);
-        return message.reply(e.response);
+      await this.services.users.unlinkSpotifyAccount(user.id);
+      if (response) {
+        response += ' and I also unlinked your Spotify account if you had one';
+      } else {
+        response = 'I have unlinked any Spotify account if you had one';
       }
     }
 

@@ -2,7 +2,7 @@ import { spotify } from 'api';
 import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
+import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ResolvedResource, SourceResolver } from './@types';
 
@@ -36,7 +36,7 @@ export class SpotifyResolver implements SourceResolver {
 
   private async resolveAlbum(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
-      throw new EolianBotError('Missing query for album.');
+      throw new EolianUserError('Missing query for album.');
     }
 
     const albums = await spotify.searchAlbums(this.params.QUERY);
@@ -45,7 +45,7 @@ export class SpotifyResolver implements SourceResolver {
     const idx = await this.context.channel
         .sendSelection(`Select the album you want (resolved via Spotify)`, options, this.context.user.id);
     if (idx === undefined) {
-      throw new EolianBotError('Nothing selected. Cancelled request.');
+      throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
     const album = albums[idx];
@@ -55,7 +55,7 @@ export class SpotifyResolver implements SourceResolver {
   private async resolvePlaylist(): Promise<ResolvedResource> {
     const playlists = await this.searchSpotifyPlaylists();
     if (playlists.length === 0) {
-      throw new EolianBotError(`No Spotify playlists were found.`);
+      throw new EolianUserError(`No Spotify playlists were found.`);
     }
 
     let playlist = playlists[0];
@@ -63,7 +63,7 @@ export class SpotifyResolver implements SourceResolver {
       const idx = await this.context.channel.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => playlist.name), this.context.user.id);
       if (idx === undefined) {
-        throw new EolianBotError('Nothing selected. Cancelled request.');
+        throw new EolianUserError('Nothing selected. Cancelled request.');
       }
       playlist = playlists[idx];
     }
@@ -72,21 +72,20 @@ export class SpotifyResolver implements SourceResolver {
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
+    if (!this.params.QUERY) {
+      throw new EolianUserError('You must specify a query.');
+    }
+
     let playlists: SpotifyPlaylist[];
 
-    if (this.params.QUERY) {
-      if (this.params.MY) {
-        const user = await this.context.user.get();
-        if (!user.spotify) {
-          throw new EolianBotError(`User has not set Spotify account`,
-            `I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
-        }
-        playlists = await spotify.searchPlaylists(this.params.QUERY, user.spotify);
-      } else {
-        playlists = await spotify.searchPlaylists(this.params.QUERY);
+    if (this.params.MY) {
+      const user = await this.context.user.get();
+      if (!user.spotify) {
+        throw new EolianUserError(`I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
       }
+      playlists = await spotify.searchPlaylists(this.params.QUERY, user.spotify);
     } else {
-      throw new EolianBotError('You must specify a query or use the MY keyword.')
+      playlists = await spotify.searchPlaylists(this.params.QUERY);
     }
 
     return playlists;
@@ -94,14 +93,14 @@ export class SpotifyResolver implements SourceResolver {
 
   private async resolveArtist(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
-      throw new EolianBotError('Missing query for Spotify artist.');
+      throw new EolianUserError('Missing query for Spotify artist.');
     }
 
     const artists = await spotify.searchArtists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => artist.name), this.context.user.id);
     if (idx === undefined) {
-      throw new EolianBotError('Nothing selected. Cancelled request.');
+      throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
     return createSpotifyArtist(artists[idx]);
@@ -125,7 +124,7 @@ async function resolveUrl(url: string): Promise<ResolvedResource> {
       default:
     }
   }
-  throw new EolianBotError('The Spotify URL is not valid!');
+  throw new EolianUserError('The Spotify URL is not valid!');
 }
 
 function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {

@@ -1,5 +1,5 @@
 import { SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
+import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { EolianCache } from 'data/@types';
 import { InMemoryCache } from 'data/cache';
@@ -10,7 +10,6 @@ import requestp from 'request-promise-native';
 import { Readable } from 'stream';
 
 export interface SoundCloudApi {
-
   searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
   searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
   searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]>;
@@ -19,14 +18,13 @@ export interface SoundCloudApi {
   resolvePlaylist(url: string): Promise<SoundCloudPlaylist>;
   getUser(id: number): Promise<SoundCloudUser>;
   getStream(track: Track): Promise<StreamData>;
-
 }
 
 export const enum SoundCloudResourceType {
   USER = 'user',
   PLAYLIST = 'playlist',
   TRACK = 'track',
-};
+}
 
 export interface SoundCloudResource {
   id: number;
@@ -67,7 +65,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const tracks: SoundCloudTrack[] = await this.get('tracks', { q: query });
       return tracks.slice(0, limit);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'I failed to search SoundCloud');
+      logger.warn(`Failed to search SoundCloud songs: '${query}' limit: '${limit}'`);
+      throw e;
     }
   }
 
@@ -76,7 +75,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const users: SoundCloudUser[] = await this.get('users', { q: query });
       return users.slice(0, limit);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'I failed to search SoundCloud');
+      logger.warn(`Failed to search SoundCloud users: query: '${query}' limit: '${limit}'`);
+      throw e;
     }
   }
 
@@ -86,7 +86,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
         { q: query, representation: 'compact' });
       return playlists.slice(0, 5);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, `Failed to search SoundCloud playlists.`);
+      logger.warn(`Failed to search SoundCloud playlists: query: '${query}', userId: '${userId}'`);
+      throw e;
     }
   }
 
@@ -95,10 +96,11 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       resource = await this.get('resolve', { url, ...options });
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'I failed to resolve the URL from SoundCloud');
+      logger.warn(`Failed to resolve URL from SoundCloud: url: ${url} options: ${JSON.stringify(options)}`);
+      throw e;
     }
     if (resource instanceof Array) {
-      throw new EolianBotError('The url provided does not resolve to a specific resource');
+      throw new EolianUserError('The url provided does not resolve to a specific resource');
     }
     return resource;
   }
@@ -110,7 +112,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   async resolveUser(url: string): Promise<SoundCloudUser> {
     const resource = await this._resolve(url);
     if (resource.kind !== 'user') {
-      throw new EolianBotError('The url provided is not a SoundCloud user');
+      throw new EolianUserError('The url provided is not a SoundCloud user');
     }
     return resource as SoundCloudUser;
   }
@@ -118,7 +120,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   async resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
     const resource = await this._resolve(url, { representation: 'compact '});
     if (resource.kind !== 'playlist') {
-      throw new EolianBotError('The url provided is not a SoundCloud playlist');
+      throw new EolianUserError('The url provided is not a SoundCloud playlist');
     }
     return resource as SoundCloudPlaylist;
   }
@@ -128,7 +130,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const user: SoundCloudUser = await this.get(`users/${id}`);
       return user;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, `Failed to fetch SoundCloud user profile.`);
+      logger.warn(`Failed to fetch SoundCloud user profile: id: ${id}`);
+      throw e;
     }
   }
 
@@ -140,7 +143,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const stream = request(`${track.stream}?client_id=${this.token}`);
       stream.on('response', resp => {
         if (resp.statusCode < 200 || resp.statusCode >= 400) {
-          logger.error(`[stream.service.ts] Error occured on request: ${track.stream}`);
+          logger.error(`Error occured on request: ${track.stream}`);
           return reject(resp.statusMessage);
         }
 

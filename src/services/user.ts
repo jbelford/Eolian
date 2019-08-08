@@ -1,4 +1,4 @@
-import { EolianBotError } from "common/errors";
+import { logger } from 'common/logger';
 import { Identifier, UserDTO, UsersDAO } from 'data/@types';
 
 export class EolianUserService {
@@ -9,7 +9,8 @@ export class EolianUserService {
     try {
       await this.users.setSpotify(userId, spotifyId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to link Spotify.');
+      logger.warn(`Failed to link Spotify: userId: ${userId} spotifyId: ${spotifyId}`);
+      throw e;
     }
   }
 
@@ -17,7 +18,8 @@ export class EolianUserService {
     try {
       await this.users.setSoundCloud(userId, scId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to link SoundCloud.');
+      logger.warn(`Failed to link SoundCloud: userId: ${userId} scId: ${scId}`);
+      throw e;
     }
   }
 
@@ -25,7 +27,8 @@ export class EolianUserService {
     try {
       await this.users.removeSpotify(userId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to unlink Spotify.');
+      logger.warn(`Failed to unlink Spotify: userId: ${userId}`);
+      throw e;
     }
   }
 
@@ -33,7 +36,8 @@ export class EolianUserService {
     try {
       await this.users.removeSoundCloud(userId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to unlink SoundCloud.');
+      logger.warn(`Failed to unlink SoundCloud: userId: ${userId}`);
+      throw e;
     }
   }
 
@@ -41,7 +45,8 @@ export class EolianUserService {
     try {
       await this.users.setIdentifier(userId, key, identifier);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to set the identifier.');
+      logger.warn(`Failed to add identifier: userId: ${userId} key: ${key} identifier: ${JSON.stringify(identifier)}`);
+      throw e;
     }
   }
 
@@ -49,7 +54,8 @@ export class EolianUserService {
     try {
       return await this.users.get(userId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to fetch user information.');
+      logger.warn(`Failed to get user: userId: ${userId}`);
+      throw e;
     }
   }
 
@@ -57,7 +63,8 @@ export class EolianUserService {
     try {
       return await this.users.delete(userId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to remove user information.');
+      logger.warn(`Failed to remove user: userId: ${userId}`);
+      throw e;
     }
   }
 

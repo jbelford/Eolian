@@ -1,4 +1,4 @@
-import { EolianBotError } from "common/errors";
+import { logger } from 'common/logger';
 import { MusicQueueDAO } from 'data/@types';
 import { Track } from 'music/@types';
 
@@ -10,7 +10,8 @@ export class MusicQueueService {
     try {
       return await this.queues.get(guildId, limit);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to fetch the queue.');
+      logger.warn(`Failed to get tracks from queue: guildId: ${guildId} limit: ${limit}`);
+      throw e;
     }
   }
 
@@ -18,7 +19,8 @@ export class MusicQueueService {
     try {
       return await this.queues.add(guildId, tracks, head);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to add tracks to the queue.');
+      logger.warn(`Failed to add tracks to queue: guildId: ${guildId} tracks: ${tracks} head: ${head}`);
+      throw e;
     }
   }
 
@@ -26,7 +28,8 @@ export class MusicQueueService {
     try {
       return await this.queues.shuffle(guildId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to shuffle the queue.');
+      logger.warn(`Failed to shuffle the queue: guildId: ${guildId}`);
+      throw e;
     }
   }
 
@@ -34,7 +37,8 @@ export class MusicQueueService {
     try {
       return await this.queues.clear(guildId);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Something went wrong. Failed to clear the queue.');
+      logger.warn(`Failed to clear the queue: guildId: ${guildId}`);
+      throw e;
     }
   }
 

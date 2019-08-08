@@ -2,6 +2,7 @@ import { BotServices, Command, CommandAction, CommandContext, CommandOptions } f
 import { GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption, PollOptionResult } from 'embed/@types';
@@ -16,17 +17,14 @@ class PollAction implements CommandAction {
 
   constructor(private readonly services: BotServices) {}
 
-  async execute({ message, channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+  async execute({ channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
     if (!ARG) {
-      await message.reply('Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`')
-      return;
+      throw new EolianUserError('Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`');
     } else if (ARG.length < 3) {
       logger.warn(`Poll action received args of incorrect length. This should not happen. ${ARG}`);
-      await message.reply('Incorrect number of arguments. Must provide at least 2 options!');
-      return;
+      throw new EolianUserError('Incorrect number of arguments. Must provide at least 2 options!');
     } else if (ARG.length > 11) {
-      await message.reply('Sorry! I only will permit up to 10 options for the poll.');
-      return;
+      throw new EolianUserError('Sorry! I only will permit up to 10 options for the poll.');
     }
 
     const question = ARG[0];
@@ -46,6 +44,7 @@ class PollAction implements CommandAction {
       await Promise.all([channel.sendEmbed(resultEmbed), message.delete()]);
       return true;
     };
+
     questionEmbed.buttons!.push({ emoji: close, onClick: closePollHandler });
 
     await channel.sendEmbed(questionEmbed);

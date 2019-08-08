@@ -1,6 +1,7 @@
 import { BotServices, CommandContext, CommandParsingStrategy } from 'commands/@types';
 import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
+import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { Database, MemoryStore } from 'data/@types';
 import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
@@ -67,7 +68,6 @@ export class DiscordEolianBot implements EolianBot {
       .catch(err => logger.warn(`Failed to set presence: ${err}`));
   }
 
-
   private async handleMessage(message: Message): Promise<void> {
     try {
       if (this.isIgnorable(message)) {
@@ -84,14 +84,7 @@ export class DiscordEolianBot implements EolianBot {
       }
 
       const permission = getPermissionLevel(member);
-      const [params, newText] = this.parser.parseParams(content, permission);
-
-      const [cmd, err] = this.parser.parseCommand(newText, permission);
-      if (err) {
-        logger.debug(`Failed to get command action: ${err.message}`);
-        await message.reply(err.response);
-        return;
-      }
+      const { command, options } = this.parser.parseCommand(content, permission);
 
       const context: CommandContext = {
         user: new DiscordUser(author, this.services.users, permission),
@@ -99,9 +92,14 @@ export class DiscordEolianBot implements EolianBot {
         channel: new DiscordTextChannel(channel, this.services.users)
       };
 
-      await cmd!.createAction(this.services).execute(context, params);
+      await command.createAction(this.services).execute(context, options);
     } catch (e) {
-      logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
+      if (e instanceof EolianUserError) {
+        await message.reply(e.message);
+      } else {
+        logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
+        await message.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
+      }
     }
   }
 

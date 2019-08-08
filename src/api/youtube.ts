@@ -1,4 +1,4 @@
-import { EolianBotError } from 'common/errors';
+import { logger } from 'common/logger';
 import { EolianCache } from 'data/@types';
 import { InMemoryCache } from 'data/cache';
 import { google, youtube_v3 } from 'googleapis';
@@ -68,7 +68,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         url: `https://www.youtube.com/watch?v=${video.id}`
       };
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch YouTube playlist');
+      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      throw e;
     }
   }
 
@@ -86,7 +87,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         url: `https://www.youtube.com/playlist?list=${playlist.id}`
       };
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch YouTube playlist');
+      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      throw e;
     }
   }
 
@@ -102,7 +104,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         url: `https://www.youtube.com/playlist?list=${playlist.id!.playlistId}`
       }));
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');
+      logger.warn(`Failed to search YouTube playlists: query: ${query}`);
+      throw e;
     }
   }
 
@@ -118,7 +121,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         url: `https://www.youtube.com/watch?v=${video.id!.videoId}`
       }));
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to search YouTube playlists.');
+      logger.warn(`Failed to search YouTube videos: query: ${query}`);
+      throw e;
     }
   }
 

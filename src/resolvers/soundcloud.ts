@@ -2,7 +2,7 @@ import { soundcloud } from 'api';
 import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
+import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
 import { ResolvedResource, SourceResolver } from './@types';
 
@@ -39,7 +39,7 @@ export class SoundCloudResolver implements SourceResolver {
   private async resolvePlaylist(): Promise<ResolvedResource> {
     const playlists = await this.searchSoundCloudPlaylists();
     if (playlists.length === 0) {
-      throw new EolianBotError(`No SoundCloud playlists were found.`);
+      throw new EolianUserError(`No SoundCloud playlists were found.`);
     }
 
     let playlist = playlists[0];
@@ -47,7 +47,7 @@ export class SoundCloudResolver implements SourceResolver {
       const idx = await this.context.channel.sendSelection('Choose a SoundCloud playlist',
         playlists.map(playlist => playlist.title), this.context.user.id);
       if (idx === undefined) {
-        throw new EolianBotError('Nothing selected. Cancelled request.');
+        throw new EolianUserError('Nothing selected. Cancelled request.');
       }
       playlist = playlists[idx];
     }
@@ -56,21 +56,20 @@ export class SoundCloudResolver implements SourceResolver {
   }
 
   private async searchSoundCloudPlaylists(): Promise<SoundCloudPlaylist[]> {
+    if (!this.params.QUERY) {
+      throw new EolianUserError('You must specify a query.');
+    }
+
     let playlists: SoundCloudPlaylist[];
 
-    if (this.params.QUERY) {
-      if (this.params.MY) {
-        const user = await this.context.user.get();
-        if (!user.soundcloud) {
-          throw new EolianBotError('User has not set SoundCloud account.',
-            `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
-        }
-        playlists = await soundcloud.searchPlaylists(this.params.QUERY, user.soundcloud);
-      } else {
-        playlists = await soundcloud.searchPlaylists(this.params.QUERY);
+    if (this.params.MY) {
+      const user = await this.context.user.get();
+      if (!user.soundcloud) {
+        throw new EolianUserError(`I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
       }
+      playlists = await soundcloud.searchPlaylists(this.params.QUERY, user.soundcloud);
     } else {
-      throw new EolianBotError('You must specify a query or use the MY keyword.');
+      playlists = await soundcloud.searchPlaylists(this.params.QUERY);
     }
 
     return playlists;
@@ -96,7 +95,7 @@ export class SoundCloudResolver implements SourceResolver {
     } else if (this.params.MY) {
       return this.resolveUser();
     }
-    throw new EolianBotError('Missing query for SoundCloud artist.');
+    throw new EolianUserError('Missing query for SoundCloud artist.');
   }
 
   private async resolveArtistQuery(query: string): Promise<ResolvedResource> {
@@ -104,7 +103,7 @@ export class SoundCloudResolver implements SourceResolver {
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud user',
       users.map(user => user.username), this.context.user.id);
     if (idx === undefined) {
-      throw new EolianBotError('Nothing selected. Cancelled request.');
+      throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
     return createSoundCloudUser(users[idx]);
@@ -113,7 +112,7 @@ export class SoundCloudResolver implements SourceResolver {
   private async resolveUser(): Promise<ResolvedResource> {
     const user = await this.context.user.get();
     if (!user.soundcloud) {
-      throw new EolianBotError('You have not set your SoundCloud account yet!');
+      throw new EolianUserError('You have not set your SoundCloud account yet!');
     }
     const scUser = await soundcloud.getUser(user.soundcloud);
     return createSoundCloudUser(scUser);
@@ -121,14 +120,14 @@ export class SoundCloudResolver implements SourceResolver {
 
   private async resolveSong(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
-      throw new EolianBotError('Missing query for SoundCloud song.');
+      throw new EolianUserError('Missing query for SoundCloud song.');
     }
 
     const songs = await soundcloud.searchSongs(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud track',
       songs.map(song => `${song.title} --- ${song.user.username}`), this.context.user.id);
     if (idx === undefined) {
-      throw new EolianBotError('Nothing selected. Cancelled request.');
+      throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
     return createSoundCloudSong(songs[idx]);
@@ -146,7 +145,7 @@ async function resolveUrl(url: string): Promise<ResolvedResource> {
     case SoundCloudResourceType.USER:
       return createSoundCloudUser(resource as SoundCloudUser);
     default:
-      throw new EolianBotError('The SoundCloud URL is not valid!');
+      throw new EolianUserError('The SoundCloud URL is not valid!');
   }
 }
 

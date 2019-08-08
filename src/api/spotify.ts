@@ -1,4 +1,3 @@
-import { EolianBotError } from 'common/errors';
 import { logger } from 'common/logger';
 import { EolianCache } from 'data/@types';
 import { InMemoryCache } from 'data/cache';
@@ -130,7 +129,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       const user = response.body as SpotifyUser;
       return user;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify user.');
+      logger.warn(`Failed to fetch Spotify user: id: ${id}`);
+      throw e;
     }
   }
 
@@ -142,7 +142,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       const playlist = response.body as SpotifyPlaylist;
       return playlist;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify playlist.');
+      logger.warn(`Failed to fetch Spotify playlist: id: ${id}`);
+      throw e;
     }
   }
 
@@ -154,7 +155,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       const album = response.body as SpotifyAlbumFull;
       return album;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
+      logger.warn(`Failed to fetch Spotify album: id: ${id}`);
+      throw e;
     }
   }
 
@@ -164,7 +166,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       album.tracks.items = await this.getAllItems(options => this.spotify.getAlbumTracks(id, options), album.tracks);
       return album;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album tracks.');
+      logger.warn(`Failed to fetch Spotify album tracks: id: ${id}`);
+      throw e;
     }
   }
 
@@ -176,19 +179,24 @@ export class SpotifyApiImpl implements SpotifyApi {
       const artist = response.body as SpotifyArtist;
       return artist;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify artist.');
+      logger.warn(`Failed to fetch Spotify artist: id: ${id}`);
+      throw e;
     }
   }
 
   async searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]> {
-    if (userId) return this.searchUserPlaylists(query, userId);
+    if (userId) {
+      return this.searchUserPlaylists(query, userId);
+    }
+
     try {
       await this.checkAndUpdateToken();
       const response = await this.spotify.searchPlaylists(query, { limit: 5 });
       const body = response.body as unknown as SpotifySearchResult;
       return body.playlists.items;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to search Spotify playlists.');
+      logger.warn(`Failed to search Spotify playlists: query: ${query} userId: ${userId}`);
+      throw e;
     }
   }
 
@@ -199,7 +207,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       const body = response.body as unknown as SpotifySearchResult;
       return body.albums.items;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
+      logger.warn(`Failed to fetch Spotify album: query: ${query}`);
+      throw e;
     }
   }
 
@@ -210,7 +219,8 @@ export class SpotifyApiImpl implements SpotifyApi {
       const body = response.body as unknown as SpotifySearchResult;
       return body.artists.items;
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify album.');
+      logger.warn(`Failed to fetch Spotify artists: query: ${query} limit: ${limit}`);
+      throw e;
     }
   }
 
@@ -222,7 +232,8 @@ export class SpotifyApiImpl implements SpotifyApi {
           { scorer: fuzz.token_sort_ratio, returnObjects: true });
       return results.slice(0, 5).map(result => playlists[result.key]);
     } catch (e) {
-      throw new EolianBotError(e.stack || e, 'Failed to fetch Spotify user playlists.');
+      logger.warn(`Failed to fetch Spotify user playlists: query: ${query} userId: ${userId}`);
+      throw e;
     }
   }
 

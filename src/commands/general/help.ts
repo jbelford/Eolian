@@ -3,6 +3,7 @@ import { BotServices, Command, CommandAction, CommandContext, CommandOptions } f
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed } from 'embed';
 
 /**
@@ -24,14 +25,14 @@ class HelpAction implements CommandAction {
     let idx = +arg;
     if (!isNaN(idx)) {
       if (idx < 1 || idx > COMMAND_CATEGORIES.length) {
-        await message.reply('No category at that index! Please try again.');
-        return;
+        throw new EolianUserError('No category at that index! Please try again.');
       }
       idx--;
     }
 
     const category = !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
-      ? COMMAND_CATEGORIES[idx] : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
+        ? COMMAND_CATEGORIES[idx]
+        : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
     if (category) {
       const commandListEmbed = createCommandListEmbed(category);
       await channel.sendEmbed(commandListEmbed);
@@ -52,7 +53,7 @@ class HelpAction implements CommandAction {
       return;
     }
 
-    await channel.send(`Sorry! I don't think anything is referred to as \`${arg}\``);
+    throw new EolianUserError(`Sorry! I don't think anything is referred to as \`${arg}\``);
   }
 
 }

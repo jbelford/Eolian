@@ -1,6 +1,6 @@
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
-import { EolianBotError } from 'common/errors';
+import { EolianUserError } from 'common/errors';
 import { SourceResolver } from './@types';
 import { SoundCloudResolver } from './soundcloud';
 import { SpotifyResolver } from './spotify';
@@ -8,7 +8,7 @@ import { YouTubeResolver } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
   resolve: async () => {
-    throw new EolianBotError('Could not find unknown resource.');
+    throw new EolianUserError('Could not find unknown resource.');
   }
 }
 
@@ -85,7 +85,7 @@ function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
 }
 export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
   if (params.URL && (params.QUERY || params.MY)) {
-    throw new EolianBotError('You must specify only an URL, QUERY or MY.');
+    throw new EolianUserError('You must specify only an URL, QUERY or MY.');
   }
 
   return params.URL

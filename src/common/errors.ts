@@ -1,10 +1,7 @@
-export class EolianBotError extends Error {
+export class EolianUserError extends Error {
 
-  readonly response: string;
-
-  constructor(message: string, response?: string) {
+  constructor(message: string) {
     super(message);
-    this.response = response || message;
   }
 
 }
