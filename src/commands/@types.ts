@@ -9,7 +9,7 @@ export interface Command {
   category: CommandCategory;
   keywords: Array<Keyword<unknown>>;
   usage: string[];
-  createAction: (services: BotServices) => CommandAction;
+  createAction(services: BotServices): CommandAction;
 }
 
 export interface CommandCategory {
