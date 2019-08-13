@@ -14,7 +14,7 @@ import { DiscordUser } from './user';
 export interface DiscordEolianBotArgs {
   db: Database,
   store: MemoryStore,
-  parser: CommandParsingStrategy
+  parser: CommandParsingStrategy,
 }
 
 export class DiscordEolianBot implements EolianBot {
@@ -22,6 +22,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
   private readonly services: BotServices;
+  private readonly users: EolianUserService;
   private readonly actions: { [name: string]: CommandAction | undefined };
 
   constructor(args: DiscordEolianBotArgs) {
@@ -36,10 +37,10 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
     this.client.on(DiscordEvents.MESSAGE, (message) => this.handleMessage(message));
 
-    const users = new EolianUserService(args.db.users);
+    this.users = new EolianUserService(args.db.users);
     const queues = new MusicQueueService(args.store.queueDao);
     const client = new DiscordClient(this.client);
-    this.services = { client, queues, users };
+    this.services = { client, queues };
 
     this.actions = {};
     for (const command of COMMANDS) {
@@ -91,9 +92,9 @@ export class DiscordEolianBot implements EolianBot {
       const { command, options } = this.parser.parseCommand(content, permission);
 
       const context: CommandContext = {
-        user: new DiscordUser(author, this.services.users, permission),
+        user: new DiscordUser(author, this.users, permission),
         message: new DiscordMessage(message),
-        channel: new DiscordTextChannel(channel, this.services.users)
+        channel: new DiscordTextChannel(channel, this.users)
       };
 
       await this.actions[command.name]!.execute(context, options);
