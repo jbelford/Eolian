@@ -13,7 +13,7 @@ class AccountAction implements CommandAction {
     if (options.CLEAR) {
       await this.clearUserData(context);
     } else {
-      const user = await this.services.users.getUser(context.user.id);
+      const user = await context.user.get();
       const spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
       const soundCloudAccount = user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
 
@@ -23,7 +23,7 @@ class AccountAction implements CommandAction {
   }
 
   private async clearUserData(context: CommandContext): Promise<void> {
-    const removed = await this.services.users.removeUser(context.user.id);
+    const removed = await context.user.clearData();
     const response = removed ? 'Okay! I have erased my knowledge about you entirely.'
         : `I already don't know anything about you`;
     await context.message.reply(response);

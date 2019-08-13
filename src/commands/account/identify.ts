@@ -21,7 +21,7 @@ class IdentifyAction implements CommandAction {
       throw new EolianUserError(`You must provide me something to identify! Please try again with a URL or query.`);
     }
 
-    await this.services.users.addResourceIdentifier(context.user.id, options.IDENTIFIER, resource.identifier);
+    await context.user.setIdentifier(options.IDENTIFIER, resource.identifier);
     const response = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
         + ` can now be identified with \`${options.IDENTIFIER}\`.`;
     await context.message.reply(response);

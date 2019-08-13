@@ -50,7 +50,7 @@ class LinkAction implements CommandAction {
     }
 
     const spotifyUser = await spotify.getUser(resource.id);
-    await this.services.users.linkSpotifyAccount(context.user.id, spotifyUser.id);
+    await context.user.setSpotify(spotifyUser.id);
     await context.channel.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
       + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
       + ` keyword to search your playlists.`);
@@ -76,7 +76,7 @@ class LinkAction implements CommandAction {
   }
 
   private async handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser) {
-    await this.services.users.linkSoundCloudAccount(context.user.id, soundCloudUser.id);
+    await context.user.setSoundCloud(soundCloudUser.id);
     await context.channel.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
       + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
       + ` to use your playlists, favorites, and tracks.`);

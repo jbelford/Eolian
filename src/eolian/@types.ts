@@ -1,6 +1,6 @@
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
-import { UserDTO } from 'data/@types';
+import { Identifier, UserDTO } from 'data/@types';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -32,6 +32,10 @@ export interface ContextUser {
   readonly avatar: string;
   readonly permission: PERMISSION;
   get(): Promise<UserDTO>;
+  clearData(): Promise<boolean>;
+  setIdentifier(id: string, identifier: Identifier): Promise<void>;
+  setSpotify(id: string | null): Promise<void>;
+  setSoundCloud(id: number | null): Promise<void>;
 }
 
 export interface EmbedMessage {

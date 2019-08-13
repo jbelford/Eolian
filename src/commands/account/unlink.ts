@@ -11,12 +11,12 @@ class UnlinkAction implements CommandAction {
     let response: string | undefined;
 
     if (SOUNDCLOUD) {
-      await this.services.users.unlinkSoundCloudAccount(user.id);
+      await user.setSoundCloud(null);
       response = 'I have unlinked any SoundCloud account if you had one';
     }
 
     if (SPOTIFY) {
-      await this.services.users.unlinkSpotifyAccount(user.id);
+      await user.setSpotify(null);
       if (response) {
         response += ' and I also unlinked your Spotify account if you had one';
       } else {

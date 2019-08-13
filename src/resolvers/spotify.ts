@@ -130,7 +130,7 @@ async function resolveUrl(url: string): Promise<ResolvedResource> {
 function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {
   return {
     name: playlist.name,
-    authors: [playlist.owner.display_name],
+    authors: [playlist.owner.display_name || '<unknown>'],
     identifier: {
       id: playlist.id,
       src: SOURCE.SPOTIFY,

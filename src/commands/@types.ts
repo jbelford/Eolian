@@ -1,6 +1,6 @@
 import { PERMISSION, SOURCE } from 'common/constants';
 import { ClientService, ContextMessage, ContextTextChannel, ContextUser } from 'eolian/@types';
-import { EolianUserService, MusicQueueService } from 'services';
+import { MusicQueueService } from 'services';
 
 export interface Command {
   name: string;
@@ -33,7 +33,6 @@ export interface ParsedCommand {
 
 export interface BotServices {
   client: ClientService;
-  users: EolianUserService;
   queues: MusicQueueService;
 }
 
