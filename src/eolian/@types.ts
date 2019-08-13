@@ -12,7 +12,7 @@ export interface ContextTextChannel {
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
 }
 
-export interface ClientService {
+export interface ContextClient {
   readonly name: string;
   readonly pic: string;
   generateInvite(): Promise<string>;
@@ -36,6 +36,10 @@ export interface ContextUser {
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
   setSpotify(id: string | null): Promise<void>;
   setSoundCloud(id: number | null): Promise<void>;
+}
+
+export interface ContextQueue {
+
 }
 
 export interface EmbedMessage {

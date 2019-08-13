@@ -1,4 +1,4 @@
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
@@ -14,8 +14,6 @@ const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', 
 const close = '🚫';
 
 class PollAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute({ channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
     if (!ARG) {
@@ -59,5 +57,5 @@ export const POLL_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.ARG],
   usage: ['/ What is your favorite color? / Red / Green / Blue /'],
-  createAction: services => new PollAction(services)
+  createAction: () => new PollAction()
 };

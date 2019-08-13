@@ -1,11 +1,9 @@
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 
 class UnlinkAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
     let response: string | undefined;
@@ -36,5 +34,5 @@ export const UNLINK_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
   usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
-  createAction: services => new UnlinkAction(services)
+  createAction: () => new UnlinkAction()
 };

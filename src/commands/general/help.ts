@@ -1,5 +1,5 @@
 import { COMMANDS } from 'commands';
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
@@ -10,8 +10,6 @@ import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEm
  * Sends a help message for commands and categories based on user arguments.
  */
 class HelpAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute({ user, channel, message }: CommandContext, { ARG }: CommandOptions): Promise<void> {
     if (!ARG) {
@@ -65,5 +63,5 @@ export const HELP_COMMAND: Command = {
   category: GENERAL_CATEGORY,
   keywords: [KEYWORDS.ARG],
   usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
-  createAction: services => new HelpAction(services)
+  createAction: () => new HelpAction()
 }

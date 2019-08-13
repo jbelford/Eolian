@@ -1,7 +1,7 @@
 import { soundcloud, spotify } from 'api';
 import { SoundCloudUser } from 'api/soundcloud';
 import { SpotifyResourceType } from 'api/spotify';
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION, SOURCE } from 'common/constants';
@@ -9,8 +9,6 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 
 class LinkAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute(context: CommandContext, { QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
     if (QUERY && URL) {
@@ -91,5 +89,5 @@ export const LINK_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
   usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
-  createAction: services => new LinkAction(services)
+  createAction: () => new LinkAction()
 }

@@ -1,8 +1,8 @@
 import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
 import { Client } from 'discord.js';
-import { ClientService } from './@types';
+import { ContextClient } from './@types';
 
-export class DiscordClient implements ClientService {
+export class DiscordClient implements ContextClient {
 
   constructor(private readonly client: Client) { }
 

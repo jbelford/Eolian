@@ -1,16 +1,14 @@
-import { BotServices, Command, CommandAction, CommandContext } from 'commands/@types';
+import { Command, CommandAction, CommandContext } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
 import { PERMISSION } from 'common/constants';
 import { createInviteEmbed } from 'embed';
 
 class InviteAction implements CommandAction {
 
-  constructor(private readonly services: BotServices) {}
-
-  async execute({ channel }: CommandContext): Promise<void> {
-    const inviteLink = await this.services.client.generateInvite();
-    const inviteEmbed = createInviteEmbed(inviteLink, this.services.client.name, this.services.client.pic);
-    await channel.sendEmbed(inviteEmbed);
+  async execute(context: CommandContext): Promise<void> {
+    const inviteLink = await context.client.generateInvite();
+    const inviteEmbed = createInviteEmbed(inviteLink, context.client.name, context.client.pic);
+    await context.channel.sendEmbed(inviteEmbed);
   }
 
 }
@@ -22,5 +20,5 @@ export const INVITE_COMMAND: Command = {
   keywords: [],
   permission: PERMISSION.USER,
   usage: [''],
-  createAction: services => new InviteAction(services)
+  createAction: () => new InviteAction()
 };

@@ -1,13 +1,11 @@
 import { soundcloud, spotify } from 'api';
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { createUserDetailsEmbed } from 'embed';
 
 class AccountAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute(context: CommandContext, options: CommandOptions): Promise<void> {
     if (options.CLEAR) {
@@ -38,7 +36,7 @@ export const ACCOUNT_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   keywords: [KEYWORDS.CLEAR],
   usage: ['', 'clear'],
-  createAction: services => new AccountAction(services)
+  createAction: () => new AccountAction()
 };
 
 

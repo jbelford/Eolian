@@ -1,4 +1,4 @@
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
@@ -8,8 +8,6 @@ import { IdentifierType } from 'data/@types';
 import { getSourceResolver } from 'resolvers';
 
 class AddAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute(context: CommandContext, options: CommandOptions): Promise<void> {
     const sum = truthySum(options.QUERY, options.URL, options.IDENTIFIER);
@@ -59,5 +57,5 @@ export const ADD_COMMAND: Command = {
     `tracks`,
     `album (the life of pablo)`
   ],
-  createAction: services => new AddAction(services)
+  createAction: () => new AddAction()
 };

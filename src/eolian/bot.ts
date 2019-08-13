@@ -1,5 +1,5 @@
 import { COMMANDS } from 'commands';
-import { BotServices, CommandAction, CommandContext, CommandParsingStrategy } from 'commands/@types';
+import { CommandAction, CommandContext, CommandParsingStrategy } from 'commands/@types';
 import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -9,6 +9,7 @@ import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { EolianUserService, MusicQueueService } from 'services';
 import { EolianBot } from './@types';
+import { GuildQueue } from './queue';
 import { DiscordUser } from './user';
 
 export interface DiscordEolianBotArgs {
@@ -21,8 +22,10 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
-  private readonly services: BotServices;
+
   private readonly users: EolianUserService;
+  private readonly queues: MusicQueueService;
+
   private readonly actions: { [name: string]: CommandAction | undefined };
 
   constructor(args: DiscordEolianBotArgs) {
@@ -38,13 +41,11 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(DiscordEvents.MESSAGE, (message) => this.handleMessage(message));
 
     this.users = new EolianUserService(args.db.users);
-    const queues = new MusicQueueService(args.store.queueDao);
-    const client = new DiscordClient(this.client);
-    this.services = { client, queues };
+    this.queues = new MusicQueueService(args.store.queueDao);
 
     this.actions = {};
     for (const command of COMMANDS) {
-      this.actions[command.name] = command.createAction(this.services);
+      this.actions[command.name] = command.createAction();
     }
   }
 
@@ -92,9 +93,11 @@ export class DiscordEolianBot implements EolianBot {
       const { command, options } = this.parser.parseCommand(content, permission);
 
       const context: CommandContext = {
+        client: new DiscordClient(this.client),
         user: new DiscordUser(author, this.users, permission),
         message: new DiscordMessage(message),
-        channel: new DiscordTextChannel(channel, this.users)
+        channel: new DiscordTextChannel(channel, this.users),
+        queue: new GuildQueue()
       };
 
       await this.actions[command.name]!.execute(context, options);

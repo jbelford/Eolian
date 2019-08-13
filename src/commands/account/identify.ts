@@ -1,4 +1,4 @@
-import { BotServices, Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
@@ -6,8 +6,6 @@ import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
 
 class IdentifyAction implements CommandAction {
-
-  constructor(private readonly services: BotServices) {}
 
   async execute(context: CommandContext, options: CommandOptions): Promise<void> {
     if (!options.IDENTIFIER) {
@@ -39,5 +37,5 @@ export const IDENTIFY_COMMAND: Command = {
     KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS
   ],
   usage: ['spotify playlist (retrowave) as [retro]'],
-  createAction: services => new IdentifyAction(services)
+  createAction: () => new IdentifyAction()
 };

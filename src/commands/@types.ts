@@ -1,6 +1,5 @@
 import { PERMISSION, SOURCE } from 'common/constants';
-import { ClientService, ContextMessage, ContextTextChannel, ContextUser } from 'eolian/@types';
-import { MusicQueueService } from 'services';
+import { ContextClient, ContextMessage, ContextQueue, ContextTextChannel, ContextUser } from 'eolian/@types';
 
 export interface Command {
   name: string;
@@ -9,7 +8,7 @@ export interface Command {
   category: CommandCategory;
   keywords: Array<Keyword<unknown>>;
   usage: string[];
-  createAction(services: BotServices): CommandAction;
+  createAction(): CommandAction;
 }
 
 export interface CommandCategory {
@@ -31,15 +30,12 @@ export interface ParsedCommand {
   options: CommandOptions;
 }
 
-export interface BotServices {
-  client: ClientService;
-  queues: MusicQueueService;
-}
-
 export interface CommandContext {
+  client: ContextClient;
   user: ContextUser;
   message: ContextMessage;
   channel: ContextTextChannel;
+  queue: ContextQueue;
 }
 
 export interface CommandOptions {
