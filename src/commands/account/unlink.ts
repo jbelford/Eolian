@@ -1,30 +1,26 @@
-import { Command, CommandAction, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 
-class UnlinkAction implements CommandAction {
+async function execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
+  let response: string | undefined;
 
-  async execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
-    let response: string | undefined;
-
-    if (SOUNDCLOUD) {
-      await user.setSoundCloud(null);
-      response = 'I have unlinked any SoundCloud account if you had one';
-    }
-
-    if (SPOTIFY) {
-      await user.setSpotify(null);
-      if (response) {
-        response += ' and I also unlinked your Spotify account if you had one';
-      } else {
-        response = 'I have unlinked any Spotify account if you had one';
-      }
-    }
-
-    await message.reply(response || 'You need to specify the accounts you want me to unlink!');
+  if (SOUNDCLOUD) {
+    await user.setSoundCloud(null);
+    response = 'I have unlinked any SoundCloud account if you had one';
   }
 
+  if (SPOTIFY) {
+    await user.setSpotify(null);
+    if (response) {
+      response += ' and I also unlinked your Spotify account if you had one';
+    } else {
+      response = 'I have unlinked any Spotify account if you had one';
+    }
+  }
+
+  await message.reply(response || 'You need to specify the accounts you want me to unlink!');
 }
 
 export const UNLINK_COMMAND: Command = {
@@ -34,5 +30,5 @@ export const UNLINK_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
   usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
-  createAction: () => new UnlinkAction()
+  execute
 };

@@ -1,5 +1,4 @@
-import { COMMANDS } from 'commands';
-import { CommandAction, CommandContext, CommandParsingStrategy } from 'commands/@types';
+import { CommandContext, CommandParsingStrategy } from 'commands/@types';
 import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -26,8 +25,6 @@ export class DiscordEolianBot implements EolianBot {
   private readonly users: EolianUserService;
   private readonly queues: MusicQueueService;
 
-  private readonly actions: { [name: string]: CommandAction | undefined };
-
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
 
@@ -42,11 +39,6 @@ export class DiscordEolianBot implements EolianBot {
 
     this.users = new EolianUserService(args.db.users);
     this.queues = new MusicQueueService(args.store.queueDao);
-
-    this.actions = {};
-    for (const command of COMMANDS) {
-      this.actions[command.name] = command.createAction();
-    }
   }
 
   async start() {
@@ -100,7 +92,7 @@ export class DiscordEolianBot implements EolianBot {
         queue: new GuildQueue()
       };
 
-      await this.actions[command.name]!.execute(context, options);
+      await command.execute(context, options);
     } catch (e) {
       if (e instanceof EolianUserError) {
         await message.reply(e.message);

@@ -8,16 +8,12 @@ export interface Command {
   category: CommandCategory;
   keywords: Array<Keyword<unknown>>;
   usage: string[];
-  createAction(): CommandAction;
+  execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
 
 export interface CommandCategory {
   name: string;
   details: string;
-}
-
-export interface CommandAction {
-  execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
 
 export interface CommandParsingStrategy {
