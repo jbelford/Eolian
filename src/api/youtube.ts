@@ -2,41 +2,7 @@ import { logger } from 'common/logger';
 import { EolianCache } from 'data/@types';
 import { InMemoryCache } from 'data/cache';
 import { google, youtube_v3 } from 'googleapis';
-
-export interface YouTubeApi {
-  getResourceType(url: string): YouTubeUrlDetails | undefined;
-  getVideo(id: string): Promise<YoutubeVideo>;
-  getPlaylist(id: string): Promise<YoutubePlaylist>;
-  getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
-  searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
-  searchVideos(query: string): Promise<YoutubeVideo[]>;
-}
-
-export interface YouTubeUrlDetails {
-  type: YouTubeResourceType;
-  id: string;
-}
-
-export interface YoutubeVideo {
-  id: string;
-  channelName: string;
-  name: string;
-  url: string;
-  artwork: string;
-}
-
-export interface YoutubePlaylist {
-  id: string;
-  channelName: string;
-  name: string;
-  url: string;
-  videos?: number;
-}
-
-export const enum YouTubeResourceType {
-  VIDEO = 0,
-  PLAYLIST
-}
+import { YouTubeApi, YoutubePlaylist, YouTubeResourceType, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 export class YouTubeApiImpl implements YouTubeApi {
 

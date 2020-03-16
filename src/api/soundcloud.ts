@@ -8,54 +8,7 @@ import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
 import { Readable } from 'stream';
-
-export interface SoundCloudApi {
-  searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
-  searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
-  searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]>;
-  resolve(url: string): Promise<SoundCloudResource>;
-  resolveUser(url: string): Promise<SoundCloudUser>;
-  resolvePlaylist(url: string): Promise<SoundCloudPlaylist>;
-  getUser(id: number): Promise<SoundCloudUser>;
-  getTrack(id: number): Promise<SoundCloudTrack>;
-  getPlaylist(id: number): Promise<SoundCloudPlaylist>;
-  getUserTracks(id: number): Promise<SoundCloudTrack[]>;
-  getStream(track: Track): Promise<StreamData>;
-}
-
-export const enum SoundCloudResourceType {
-  USER = 'user',
-  PLAYLIST = 'playlist',
-  TRACK = 'track',
-}
-
-export interface SoundCloudResource {
-  id: number;
-  kind: SoundCloudResourceType;
-  permalink_url: string;
-}
-
-export interface SoundCloudUser extends SoundCloudResource {
-  username: string;
-  avatar_url: string;
-}
-
-export interface SoundCloudPlaylist extends SoundCloudResource {
-  artwork_url: string;
-  tracks?: SoundCloudTrack[];
-  track_count: number;
-  title: string;
-  user: SoundCloudUser;
-}
-
-export interface SoundCloudTrack extends SoundCloudResource {
-  streamable: boolean;
-  duration: number;
-  stream_url: string;
-  artwork_url: string;
-  user: SoundCloudUser;
-  title: string;
-}
+import { SoundCloudApi, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
 
 const URL = 'https://api.soundcloud.com';
 

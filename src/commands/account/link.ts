@@ -1,6 +1,5 @@
 import { soundcloud, spotify } from 'api';
-import { SoundCloudUser } from 'api/soundcloud';
-import { SpotifyResourceType } from 'api/spotify';
+import { SoundCloudUser, SpotifyResourceType } from 'api/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
