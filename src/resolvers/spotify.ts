@@ -1,14 +1,46 @@
 import { spotify } from 'api';
-import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType } from 'api/spotify';
+import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType, SpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { Identifier, IdentifierType } from 'data/@types';
+import { Track } from 'music/@types';
 import { ResolvedResource, SourceResolver } from './@types';
 
 export class SpotifyResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  }
+
+
+  async fetch(identifier: Identifier): Promise<Track[]> {
+    if (identifier.src !== SOURCE.SPOTIFY) {
+      throw new Error('Attempted to fetch tracks for incorrect source type');
+    }
+
+    switch (identifier.type) {
+      case IdentifierType.PLAYLIST: return this.fetchPlaylist(identifier.id);
+      case IdentifierType.ALBUM: return this.fetchAlbum(identifier.id);
+      case IdentifierType.ARTIST: return this.fetchArtistTracks(identifier.id);
+      default: throw new Error(`Identifier type is unrecognized ${identifier.type}`);
+    }
+  }
+
+  async fetchPlaylist(id: string): Promise<Track[]> {
+    const playlist = await spotify.getPlaylistTracks(id);
+    const artwork = playlist.images.length ? playlist.images[0].url : undefined;
+    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track, artwork));
+  }
+
+  async fetchAlbum(id: string): Promise<Track[]> {
+    const album = await spotify.getAlbumTracks(id);
+    const artwork = album.images.length ? album.images[0].url : undefined;
+    return album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
+  }
+
+  async fetchArtistTracks(id: string): Promise<Track[]> {
+    const tracks = await spotify.getArtistTracks(id);
+    return tracks.map(track => mapSpotifyTrack(track, track.album.images.length ? track.album.images[0].url : undefined))
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -163,5 +195,17 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
       type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
     }
+  };
+}
+
+function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
+  return {
+    id: track.id,
+    poster: track.artists.map(artist => artist.name).join(', '),
+    title: track.name,
+    src: SOURCE.SPOTIFY,
+    stream: track.uri,
+    url: track.uri,
+    artwork
   };
 }

@@ -7,6 +7,9 @@ import { SpotifyResolver } from './spotify';
 import { YouTubeResolver } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
+  fetch: async () => {
+    throw new EolianUserError('could not fetch unknown resource.');
+  },
   resolve: async () => {
     throw new EolianUserError('Could not find unknown resource.');
   }
