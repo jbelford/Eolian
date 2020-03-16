@@ -17,6 +17,9 @@ export interface SoundCloudApi {
   resolveUser(url: string): Promise<SoundCloudUser>;
   resolvePlaylist(url: string): Promise<SoundCloudPlaylist>;
   getUser(id: number): Promise<SoundCloudUser>;
+  getTrack(id: number): Promise<SoundCloudTrack>;
+  getPlaylist(id: number): Promise<SoundCloudPlaylist>;
+  getUserTracks(id: number): Promise<SoundCloudTrack[]>;
   getStream(track: Track): Promise<StreamData>;
 }
 
@@ -39,7 +42,7 @@ export interface SoundCloudUser extends SoundCloudResource {
 
 export interface SoundCloudPlaylist extends SoundCloudResource {
   artwork_url: string;
-  tracks?: Track[];
+  tracks?: SoundCloudTrack[];
   track_count: number;
   title: string;
   user: SoundCloudUser;
@@ -135,6 +138,34 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
+
+  async getTrack(id: number): Promise<SoundCloudTrack> {
+    try {
+      return await this.get<SoundCloudTrack>(`tracks/${id}`);
+    } catch (e) {
+      logger.warn(`Failed to fetch SoundCloud track: id: ${id}`);
+      throw e;
+    }
+  }
+
+  async getPlaylist(id: number): Promise<SoundCloudPlaylist> {
+    try {
+      return await this.get<SoundCloudPlaylist>(`playlists/${id}`);
+    } catch (e) {
+      logger.warn(`Failed to fetch SoundCloud playlist: id: ${id}`);
+      throw e;
+    }
+  }
+
+  async getUserTracks(id: number): Promise<SoundCloudTrack[]> {
+    try {
+      return await this.get<SoundCloudTrack[]>(`users/${id}/tracks`);
+    } catch (e) {
+      logger.warn(`Failed to fetch SoundCloud user's track: id: ${id}`);
+      throw e;
+    }
+  }
+
   getStream(track: Track): Promise<StreamData> {
     if (track.src !== SOURCE.SOUNDCLOUD) {
       throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
@@ -214,6 +245,22 @@ export class CachedSoundCloudApi implements SoundCloudApi {
 
   async getUser(id: number): Promise<SoundCloudUser> {
     return (await this.cache.getOrSet(`getUser:${id}`, () => this.api.getUser(id)))[0];
+  }
+
+  async getTrack(id: number): Promise<SoundCloudTrack> {
+    return (await this.cache.getOrSet(`song:${id}`, () => this.api.getTrack(id)))[0];
+  }
+
+  async getPlaylist(id: number): Promise<SoundCloudPlaylist> {
+    return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
+  }
+
+  async getUserTracks(id: number): Promise<SoundCloudTrack[]> {
+    const [tracks, found] = await this.cache.getOrSet(`getUserTracks:${id}`, () => this.api.getUserTracks(id));
+    if (found) {
+      this.cache.mset(tracks.map(track => ({ id: `song:${track.id}`, val: track })));
+    }
+    return tracks;
   }
 
   getStream(track: Track): Promise<StreamData> {

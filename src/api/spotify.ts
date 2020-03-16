@@ -8,9 +8,11 @@ export interface SpotifyApi {
   resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
+  getPlaylistTracks(id: string): Promise<SpotifyPlaylistFull>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
+  getArtistTracks(id: string): Promise<SpotifyTrack[]>;
   searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]>;
   searchAlbums(query: string): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
@@ -38,10 +40,14 @@ export interface SpotifyPlaylist {
   owner: SpotifyUser;
   external_urls: SpotifyExternalUrls;
   images: SpotifyImageObject[];
-  tracks: {
-    href: string,
-    total: number
-  };
+}
+
+export interface SpotifyPlaylistFull extends SpotifyPlaylist {
+  tracks: SpotifyPagingObject<SpotifyPlaylistTrack>;
+}
+
+export interface SpotifyPlaylistTrack {
+  track: SpotifyTrack
 }
 
 export interface SpotifyAlbum {
@@ -87,8 +93,10 @@ export interface SpotifyImageObject {
 export interface SpotifyTrack {
   id: string;
   name: string;
+  album: SpotifyAlbum;
   artists: SpotifyArtist[];
   duration_ms: number;
+  uri: string;
 }
 
 export interface SpotifyArtist {
@@ -138,14 +146,26 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getPlaylist(id: string): Promise<SpotifyPlaylist> {
+  async getPlaylist(id: string): Promise<SpotifyPlaylistFull> {
     try {
       logger.debug(`Getting playlist: ${id}`);
       await this.checkAndUpdateToken();
-      const response = await this.spotify.getPlaylist(id, { fields: 'id,name,owner,external_urls' });
-      return response.body;
+      const response = await this.spotify.getPlaylist(id);
+      return response.body as unknown as SpotifyPlaylistFull;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify playlist: id: ${id}`);
+      throw e;
+    }
+  }
+
+  async getPlaylistTracks(id: string): Promise<SpotifyPlaylistFull> {
+    try {
+      logger.debug(`Getting playlist tracks: ${id}`);
+      const playlist = await this.getPlaylist(id);
+      playlist.tracks.items = await this.getAllItems(options => this.spotify.getPlaylistTracks(id, options) as any, playlist.tracks);
+      return playlist;
+    } catch (e) {
+      logger.warn(`Failed to fetch Spotify playlist tracks: id: ${id}`);
       throw e;
     }
   }
@@ -155,7 +175,7 @@ export class SpotifyApiImpl implements SpotifyApi {
       logger.debug(`Getting album: ${id}`);
       await this.checkAndUpdateToken();
       const response = await this.spotify.getAlbum(id);
-      return response.body as SpotifyAlbumFull;
+      return response.body as unknown as SpotifyAlbumFull;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album: id: ${id}`);
       throw e;
@@ -165,7 +185,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   async getAlbumTracks(id: string): Promise<SpotifyAlbumFull> {
     try {
       const album = await this.getAlbum(id);
-      album.tracks.items = await this.getAllItems(options => this.spotify.getAlbumTracks(id, options), album.tracks);
+      album.tracks.items = await this.getAllItems(options => this.spotify.getAlbumTracks(id, options) as any, album.tracks);
       return album;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album tracks: id: ${id}`);
@@ -181,6 +201,18 @@ export class SpotifyApiImpl implements SpotifyApi {
       return response.body;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify artist: id: ${id}`);
+      throw e;
+    }
+  }
+
+  async getArtistTracks(id: string): Promise<SpotifyTrack[]> {
+    try {
+      logger.debug(`Getting artist: ${id}`);
+      await this.checkAndUpdateToken();
+      const { body } = await this.spotify.getArtistTopTracks(id, 'from_token');
+      return body.tracks as unknown as SpotifyTrack[];
+    } catch (e) {
+      logger.warn(`Failed to fetch Spotify artist tracks: id: ${id}`);
       throw e;
     }
   }
@@ -281,6 +313,10 @@ export class CachedSpotifyApi implements SpotifyApi {
     return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
   }
 
+  async getPlaylistTracks(id: string): Promise<SpotifyPlaylistFull> {
+    return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylistTracks(id)))[0];
+  }
+
   async getAlbum(id: string): Promise<SpotifyAlbumFull> {
     return (await this.cache.getOrSet(`album:${id}`, () => this.api.getAlbum(id)))[0];
   }
@@ -291,6 +327,10 @@ export class CachedSpotifyApi implements SpotifyApi {
 
   async getArtist(id: string): Promise<SpotifyArtist> {
     return (await this.cache.getOrSet(`artist:${id}`, () => this.api.getArtist(id)))[0];
+  }
+
+  async getArtistTracks(id: string): Promise<SpotifyTrack[]> {
+    return (await this.cache.getOrSet(`artist:${id}:tracks`, () => this.api.getArtistTracks(id)))[0];
   }
 
   async searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]> {
