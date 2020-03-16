@@ -1,8 +1,8 @@
 import { environment } from 'common/env';
-import { CachedSoundCloudApi, SoundCloudApi } from './soundcloud';
-import { CachedSpotifyApi, SpotifyApi } from './spotify';
-import { CachedYouTubeApi, YouTubeApi } from './youtube';
+import { SoundCloudApi, SoundCloudApiImpl } from './soundcloud';
+import { SpotifyApi, SpotifyApiImpl } from './spotify';
+import { YouTubeApi, YouTubeApiImpl } from './youtube';
 
-export const soundcloud: SoundCloudApi = new CachedSoundCloudApi(environment.tokens.soundcloud, 1000 * 30);
-export const spotify: SpotifyApi = new CachedSpotifyApi(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret, 1000 * 30);
-export const youtube: YouTubeApi = new CachedYouTubeApi(environment.tokens.youtube, 1000 * 30);
+export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud);
+export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret);
+export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube);

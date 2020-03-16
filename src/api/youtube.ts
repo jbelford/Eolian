@@ -5,8 +5,9 @@ import { google, youtube_v3 } from 'googleapis';
 
 export interface YouTubeApi {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
-  getVideo(id: string): Promise<YoutubeVideo | undefined>;
-  getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
+  getVideo(id: string): Promise<YoutubeVideo>;
+  getPlaylist(id: string): Promise<YoutubePlaylist>;
+  getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
 }
@@ -21,6 +22,7 @@ export interface YoutubeVideo {
   channelName: string;
   name: string;
   url: string;
+  artwork: string;
 }
 
 export interface YoutubePlaylist {
@@ -55,17 +57,18 @@ export class YouTubeApiImpl implements YouTubeApi {
     };
   }
 
-  async getVideo(id: string): Promise<YoutubeVideo | undefined> {
+  async getVideo(id: string): Promise<YoutubeVideo> {
     try {
       const response = await this.youtube.videos.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
-      if (!response.data.items) return;
+      if (!response.data.items) throw new Error('No results from YouTube');
 
       const video = response.data.items[0];
       return {
         id: video.id!,
         name: video.snippet!.title!,
         channelName: video.snippet!.channelTitle!,
-        url: `https://www.youtube.com/watch?v=${video.id}`
+        url: `https://www.youtube.com/watch?v=${video.id}`,
+        artwork: video.snippet!.thumbnails!.high!.url!
       };
     } catch (e) {
       logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
@@ -73,10 +76,10 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
+  async getPlaylist(id: string): Promise<YoutubePlaylist> {
     try {
       const response = await this.youtube.playlists.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
-      if (!response.data.items) return;
+      if (!response.data.items) throw new Error('No results from YouTube');
 
       const playlist = response.data.items[0];
       return {
@@ -90,6 +93,31 @@ export class YouTubeApiImpl implements YouTubeApi {
       logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
       throw e;
     }
+  }
+
+  async getPlaylistVideos(id: string): Promise<YoutubeVideo[]> {
+    let items = [];
+
+    try {
+      let response = await this.youtube.playlistItems.list({ playlistId: id, part: 'id,snippet,contentDetails' });
+      items = response.data.items || [];
+      while (response.data.nextPageToken) {
+        const params = { playlistId: id, part: 'id,snippet,contentDetails', pageToken: response.data.nextPageToken };
+        response = await this.youtube.playlistItems.list(params);
+        items = items.concat(response.data.items || []);
+      }
+    } catch (e) {
+      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      throw e;
+    }
+
+    return items.map(item => ({
+      id: item.id!,
+      name: item.snippet!.title!,
+      channelName: item.snippet!.channelTitle!,
+      url: `https://www.youtube.com/watch?v=${item.id}`,
+      artwork: item.snippet?.thumbnails?.default?.url!
+    }));
   }
 
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
@@ -118,7 +146,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         id: video.id!.videoId!,
         name: video.snippet!.title!,
         channelName: video.snippet!.channelTitle!,
-        url: `https://www.youtube.com/watch?v=${video.id!.videoId}`
+        url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
+        artwork: video.snippet?.thumbnails?.default?.url!
       }));
     } catch (e) {
       logger.warn(`Failed to search YouTube videos: query: ${query}`);
@@ -142,12 +171,18 @@ export class CachedYouTubeApi implements YouTubeApi {
     return this.api.getResourceType(url);
   }
 
-  async getVideo(id: string): Promise<YoutubeVideo | undefined> {
+  async getVideo(id: string): Promise<YoutubeVideo> {
     return (await this.cache.getOrSet(`video:${id}`, () => this.api.getVideo(id)))[0];
   }
-  async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
+
+  async getPlaylist(id: string): Promise<YoutubePlaylist> {
     return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
   }
+
+  async getPlaylistVideos(id: string): Promise<YoutubeVideo[]> {
+    return (await this.cache.getOrSet(`playlist:${id}:tracks`, () => this.api.getPlaylistVideos(id)))[0];
+  }
+
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
     const [playlists, found] = await this.cache.getOrSet(`searchPlaylists:${query}`, () => this.api.searchPlaylists(query));
     if (!found) {

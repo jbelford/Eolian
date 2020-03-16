@@ -86,6 +86,7 @@ function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
   }
   return new YouTubeResolver(context, params);
 }
+
 export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
   if (params.URL && (params.QUERY || params.MY)) {
     throw new EolianUserError('You must specify only an URL, QUERY or MY.');
