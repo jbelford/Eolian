@@ -1,17 +1,21 @@
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { SourceResolver } from './@types';
-import { SoundCloudResolver } from './soundcloud';
-import { SpotifyResolver } from './spotify';
-import { YouTubeResolver } from './youtube';
+import { Identifier } from 'data/@types';
+import { SourceFetcher, SourceResolver } from './@types';
+import { SoundCloudFetcher, SoundCloudResolver } from './soundcloud';
+import { SpotifyFetcher, SpotifyResolver } from './spotify';
+import { YouTubeFetcher, YouTubeResolver } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
-  fetch: async () => {
-    throw new EolianUserError('could not fetch unknown resource.');
-  },
   resolve: async () => {
     throw new EolianUserError('Could not find unknown resource.');
+  }
+}
+
+const UNKNOWN_FETCHER: SourceFetcher = {
+  fetch: async () => {
+    throw new EolianUserError('Could not fetch unknown resource.');
   }
 }
 
@@ -95,4 +99,13 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
   return params.URL
     ? getBySource(params.URL.source, context, params)
     : getByQuery(context, params);
+}
+
+export function getSourceFetcher(identifier: Identifier): SourceFetcher {
+  switch (identifier.src) {
+    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier);
+    case SOURCE.YOUTUBE: return new YouTubeFetcher(identifier);
+    case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier);
+    default: return UNKNOWN_FETCHER;
+  }
 }

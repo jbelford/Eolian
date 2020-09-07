@@ -82,7 +82,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       name: item.snippet!.title!,
       channelName: item.snippet!.channelTitle!,
       url: `https://www.youtube.com/watch?v=${item.id}`,
-      artwork: item.snippet?.thumbnails?.default?.url!
+      artwork: item.snippet!.thumbnails!.default!.url!
     }));
   }
 
@@ -113,7 +113,7 @@ export class YouTubeApiImpl implements YouTubeApi {
         name: video.snippet!.title!,
         channelName: video.snippet!.channelTitle!,
         url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
-        artwork: video.snippet?.thumbnails?.default?.url!
+        artwork: video.snippet!.thumbnails!.default!.url!
       }));
     } catch (e) {
       logger.warn(`Failed to search YouTube videos: query: ${query}`);

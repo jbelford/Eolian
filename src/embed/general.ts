@@ -1,5 +1,4 @@
-import { SoundCloudUser } from 'api/soundcloud';
-import { SpotifyUser } from 'api/spotify';
+import { SoundCloudUser, SpotifyUser } from 'api/@types';
 import { COLOR } from 'common/constants';
 import { Identifier } from 'data/@types';
 import { ContextUser, EmbedMessage } from 'eolian/@types';

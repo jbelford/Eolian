@@ -1,44 +1,15 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/soundcloud';
+import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
-import { ResolvedResource, SourceResolver } from './@types';
+import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class SoundCloudResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
-  }
-
-  async fetch(identifier: Identifier): Promise<Track[]> {
-    if (identifier.src !== SOURCE.SOUNDCLOUD) {
-      throw new Error('Attempted to fetch tracks for incorrect source type');
-    }
-
-    switch (identifier.type) {
-      case IdentifierType.PLAYLIST: return this.fetchPlaylist(identifier.id);
-      case IdentifierType.SONG: return [await this.fetchTrack(identifier.id)];
-      case IdentifierType.TRACKS:
-      case IdentifierType.ARTIST: return this.fetchUserTracks(identifier.id);
-      case IdentifierType.FAVORITES:
-      default: throw new Error(`Identifier type is unrecognized ${identifier.type}`);
-    }
-  }
-
-  async fetchPlaylist(id: string): Promise<Track[]> {
-    const playlist = await soundcloud.getPlaylist(+id);
-    return playlist.tracks!.map(mapSoundCloudTrack);
-  }
-
-  async fetchTrack(id: string): Promise<Track> {
-    return mapSoundCloudTrack(await soundcloud.getTrack(+id));
-  }
-
-  async fetchUserTracks(id: string): Promise<Track[]> {
-    const tracks = await soundcloud.getUserTracks(+id);
-    return tracks.map(mapSoundCloudTrack);
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -232,4 +203,39 @@ function mapSoundCloudTrack(track: SoundCloudTrack): Track {
     title: track.title,
     artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500')
   };
+}
+
+export class SoundCloudFetcher implements SourceFetcher {
+
+  constructor(private readonly identifier: Identifier) {}
+
+  async fetch(): Promise<Track[]> {
+    if (this.identifier.src !== SOURCE.SOUNDCLOUD) {
+      throw new Error('Attempted to fetch tracks for incorrect source type');
+    }
+
+    switch (this.identifier.type) {
+      case IdentifierType.PLAYLIST: return this.fetchPlaylist(this.identifier.id);
+      case IdentifierType.SONG: return [await this.fetchTrack(this.identifier.id)];
+      case IdentifierType.TRACKS:
+      case IdentifierType.ARTIST: return this.fetchUserTracks(this.identifier.id);
+      case IdentifierType.FAVORITES:
+      default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
+    }
+  }
+
+  async fetchPlaylist(id: string): Promise<Track[]> {
+    const playlist = await soundcloud.getPlaylist(+id);
+    return playlist.tracks!.map(mapSoundCloudTrack);
+  }
+
+  async fetchTrack(id: string): Promise<Track> {
+    return mapSoundCloudTrack(await soundcloud.getTrack(+id));
+  }
+
+  async fetchUserTracks(id: string): Promise<Track[]> {
+    const tracks = await soundcloud.getUserTracks(+id);
+    return tracks.map(mapSoundCloudTrack);
+  }
+
 }

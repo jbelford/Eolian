@@ -1,37 +1,15 @@
 import { youtube } from 'api';
-import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/youtube';
+import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
-import { ResolvedResource, SourceResolver } from './@types';
+import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class YouTubeResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
-  }
-
-  async fetch(identifier: Identifier): Promise<Track[]> {
-    if (identifier.src !== SOURCE.YOUTUBE) {
-      throw new Error('Attempted to fetch tracks for incorrect source type');
-    }
-
-    switch (identifier.type) {
-      case IdentifierType.PLAYLIST: return this.fetchPlaylist(identifier.id);
-      case IdentifierType.SONG: return [await this.fetchVideo(identifier.id)];
-      default: throw new Error(`Identifier type is unrecognized ${identifier.type}`);
-    }
-  }
-
-  async fetchPlaylist(id: string): Promise<Track[]> {
-    const videos = await youtube.getPlaylistVideos(id);
-    return videos.map(mapYouTubeVideo);
-  }
-
-  async fetchVideo(id: string): Promise<Track> {
-    const video = await youtube.getVideo(id);
-    return mapYouTubeVideo(video);
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -136,4 +114,32 @@ function mapYouTubeVideo(video: YoutubeVideo): Track {
     stream: video.url,
     artwork: video.artwork
   };
+}
+
+export class YouTubeFetcher implements SourceFetcher {
+
+  constructor(private readonly identifier: Identifier) {}
+
+  async fetch(): Promise<Track[]> {
+    if (this.identifier.src !== SOURCE.YOUTUBE) {
+      throw new Error('Attempted to fetch tracks for incorrect source type');
+    }
+
+    switch (this.identifier.type) {
+      case IdentifierType.PLAYLIST: return this.fetchPlaylist(this.identifier.id);
+      case IdentifierType.SONG: return [await this.fetchVideo(this.identifier.id)];
+      default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
+    }
+  }
+
+  async fetchPlaylist(id: string): Promise<Track[]> {
+    const videos = await youtube.getPlaylistVideos(id);
+    return videos.map(mapYouTubeVideo);
+  }
+
+  async fetchVideo(id: string): Promise<Track> {
+    const video = await youtube.getVideo(id);
+    return mapYouTubeVideo(video);
+  }
+
 }

@@ -1,5 +1,6 @@
+import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { KeywordMatchResult, Keywords, RangeArgument, UrlArgument } from './@types';
+import { KeywordMatchResult, Keywords, UrlArgument } from './@types';
 
 export const KEYWORDS: Keywords = {
   ENABLE: {

@@ -3,9 +3,9 @@ import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { truthySum } from 'common/util';
-import { IdentifierType } from 'data/@types';
-import { getSourceResolver } from 'resolvers';
+import { applyRangeToList, applyRangeToListReverse, shuffleList, truthySum } from 'common/util';
+import { Identifier, IdentifierType } from 'data/@types';
+import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -16,17 +16,46 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError('You must only include 1 query, url, or identifier. Please try again.');
   }
 
+  let identifier: Identifier | null = null;
   if (options.IDENTIFIER) {
     const user = await context.user.get();
     if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
+    identifier = user.identifiers[options.IDENTIFIER];
+    await context.channel.send(`🔎 Resolved identifier ${identifier.url}`
+      + `\n(**${getEnumName(IdentifierType, identifier.type)}** from **${getEnumName(SOURCE, identifier.src)}**)`);
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      await context.channel.send(`Selected **${resource.name}** by **${resource.authors.join(',')}**`
+      await context.channel.send(`📍 Selected **${resource.name}** by **${resource.authors.join(',')}**`
         + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
         + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+      identifier = resource.identifier;
+    }
+  }
+
+  if (identifier) {
+    let tracks = await getSourceFetcher(identifier).fetch();
+    if (tracks.length > 0) {
+      if (options.TOP) {
+        tracks = applyRangeToList(options.TOP, tracks);
+      } else if (options.BOTTOM) {
+        tracks = applyRangeToListReverse(options.BOTTOM, tracks);
+      }
+
+      if (options.SHUFFLE) {
+        shuffleList(tracks);
+      }
+
+      await context.queue.add(tracks, options.NEXT);
+
+      const bodyText = tracks.length > 1 ? `Successfully added ${tracks.length} songs`
+        : `Successfully added **${tracks[0].title}**`;
+      const endText = options.NEXT ? 'to be played next!' : 'to the queue!';
+      await context.channel.send(`✨ ${bodyText} ${endText}`);
+
+      return;
     }
   }
 

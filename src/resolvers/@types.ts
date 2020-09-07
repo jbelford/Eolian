@@ -10,5 +10,8 @@ export interface ResolvedResource {
 
 export interface SourceResolver {
   resolve(): Promise<ResolvedResource>;
-  fetch(identifier: Identifier): Promise<Track[]>;
+}
+
+export interface SourceFetcher {
+  fetch(): Promise<Track[]>;
 }

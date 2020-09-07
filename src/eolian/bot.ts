@@ -72,7 +72,7 @@ export class DiscordEolianBot implements EolianBot {
         return;
       }
 
-      const { author, content, channel, member } = message;
+      const { author, content, channel, member, guild } = message;
 
       logger.debug(`Message event received: '${content}'`);
 
@@ -89,7 +89,7 @@ export class DiscordEolianBot implements EolianBot {
         user: new DiscordUser(author, this.users, permission),
         message: new DiscordMessage(message),
         channel: new DiscordTextChannel(channel, this.users),
-        queue: new GuildQueue()
+        queue: new GuildQueue(this.queues, guild.id)
       };
 
       await command.execute(context, options);

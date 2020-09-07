@@ -1,6 +1,7 @@
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, UserDTO } from 'data/@types';
+import { Track } from 'music/@types';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -39,7 +40,12 @@ export interface ContextUser {
 }
 
 export interface ContextQueue {
-
+  get(limit?: number): Promise<Track[]>;
+  add(tracks: Track[], head?: boolean): Promise<void>;
+  shuffle(): Promise<boolean>;
+  clear(): Promise<boolean>;
+  pop(): Promise<Track | undefined>;
+  peek(): Promise<Track | undefined>;
 }
 
 export interface EmbedMessage {

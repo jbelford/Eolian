@@ -17,3 +17,8 @@ export interface Environment {
     };
   };
 }
+
+export interface RangeArgument {
+  start: number;
+  stop?: number;
+}

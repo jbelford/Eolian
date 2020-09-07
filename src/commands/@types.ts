@@ -1,3 +1,4 @@
+import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
 import { ContextClient, ContextMessage, ContextQueue, ContextTextChannel, ContextUser } from 'eolian/@types';
 
@@ -58,11 +59,6 @@ export interface CommandOptions {
   IDENTIFIER?: string;
   URL?: UrlArgument;
   ARG?: string[];
-}
-
-export interface RangeArgument {
-  start: number;
-  stop?: number;
 }
 
 export interface UrlArgument {

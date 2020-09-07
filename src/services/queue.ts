@@ -42,4 +42,22 @@ export class MusicQueueService {
     }
   }
 
+  async pop(guildId: string): Promise<Track | undefined> {
+    try {
+      return await this.queues.pop(guildId);
+    } catch (e) {
+      logger.warn(`Failed to pop the queue: guildId: ${guildId}`);
+      throw e;
+    }
+  }
+
+  async peek(guildId: string): Promise<Track | undefined> {
+    try {
+      return await this.queues.peek(guildId);
+    } catch (e) {
+      logger.warn(`Failed to pop the queue: guildId: ${guildId}`);
+      throw e;
+    }
+  }
+
 }
