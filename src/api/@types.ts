@@ -62,10 +62,6 @@ export interface SpotifyApi {
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }
 
-export interface SpotifyResponse<T> {
-  body: T;
-}
-
 export interface SpotifyUser {
   id: string;
   display_name?: string;
