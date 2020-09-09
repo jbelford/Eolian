@@ -15,7 +15,7 @@ export interface ContextTextChannel {
 
 export interface ContextClient {
   readonly name: string;
-  readonly pic: string;
+  readonly pic?: string;
   generateInvite(): Promise<string>;
 }
 
@@ -30,7 +30,7 @@ export interface ContextMessage {
 export interface ContextUser {
   readonly id: string;
   readonly name: string;
-  readonly avatar: string;
+  readonly avatar?: string;
   readonly permission: PERMISSION;
   get(): Promise<UserDTO>;
   clearData(): Promise<boolean>;

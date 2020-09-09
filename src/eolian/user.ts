@@ -21,7 +21,7 @@ export class DiscordUser implements ContextUser {
   }
 
   get avatar() {
-    return this.user.avatarURL;
+    return this.user.avatarURL({ dynamic: true }) || undefined;
   }
 
   async get(): Promise<UserDTO> {

@@ -4,7 +4,7 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { Database, MemoryStore } from 'data/@types';
-import { Channel, Client, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
+import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { EolianUserService, MusicQueueService } from 'services';
 import { EolianBot } from './@types';
@@ -48,7 +48,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   async close() {
-    await this.client.destroy();
+    this.client.destroy();
   }
 
   /**
@@ -57,12 +57,14 @@ export class DiscordEolianBot implements EolianBot {
    */
   private handleReady() {
     logger.info('Discord bot is ready!');
-    if (this.client.guilds.size === 0 || process.argv.includes('-gi')) {
+    if (this.client.guilds.cache.size === 0 || process.argv.includes('-gi')) {
       this.client.generateInvite(DISCORD_INVITE_PERMISSIONS)
         .then(link => logger.info(`Bot invite link: ${link}`))
         .catch(err => logger.warn(`Failed to generate invite: ${err}`));
     }
-    this.client.user.setPresence({ game: { name: `${environment.cmdToken}help` } })
+    this.client.user!.setPresence({
+        activity: { name: `${environment.cmdToken}help`, }
+      })
       .catch(err => logger.warn(`Failed to set presence: ${err}`));
   }
 
@@ -73,6 +75,10 @@ export class DiscordEolianBot implements EolianBot {
       }
 
       const { author, content, channel, member, guild } = message;
+      if (!member || !guild) {
+        logger.debug(`Ignoring strange message: '${content}'`);
+        return;
+      }
 
       logger.debug(`Message event received: '${content}'`);
 
@@ -88,7 +94,7 @@ export class DiscordEolianBot implements EolianBot {
         client: new DiscordClient(this.client),
         user: new DiscordUser(author, this.users, permission),
         message: new DiscordMessage(message),
-        channel: new DiscordTextChannel(channel, this.users),
+        channel: new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users),
         queue: new GuildQueue(this.queues, guild.id)
       };
 
@@ -104,22 +110,26 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private isIgnorable(message: Message) {
-    return message.author.bot || (!message.isMentioned(this.client.user) && !this.parser.messageInvokesBot(message.content));
+    return message.author.bot
+      || message.channel.type === 'news'
+      || (!message.mentions.has(this.client.user!) && !this.parser.messageInvokesBot(message.content));
   }
 
   private hasSendPermission(channel: Channel) {
     if (channel.type !== DiscordChannel.TEXT) {
       return false;
     }
-    const permissions = (channel as TextChannel).permissionsFor(this.client.user);
+    const permissions = (channel as TextChannel).permissionsFor(this.client.user!);
     return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
   }
 
 }
 
-
 function getPermissionLevel(member: GuildMember): PERMISSION {
-  if (environment.owners.includes(member.id)) return PERMISSION.OWNER;
-  else if (member.roles.some(role => role.hasPermission(Permissions.FLAGS.ADMINISTRATOR as number))) return PERMISSION.ADMIN;
+  if (environment.owners.includes(member.id)) {
+    return PERMISSION.OWNER;
+  } else if (member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
+    return PERMISSION.ADMIN;
+  }
   return PERMISSION.USER;
 }

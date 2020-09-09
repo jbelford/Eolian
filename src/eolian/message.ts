@@ -1,3 +1,4 @@
+import { logger } from 'common/logger';
 import { Message } from 'discord.js';
 import { ContextMessage } from './@types';
 
@@ -14,10 +15,16 @@ export class DiscordMessage implements ContextMessage {
   };
 
   getButtons() {
-    return this.message.reactions.map(reaction => ({
-      emoji: reaction.emoji.name,
-      count: reaction.me ? reaction.count - 1 : reaction.count
-    }));
+    return this.message.reactions.cache.map(reaction => {
+      let count = 0;
+      if (reaction.count === null) {
+        logger.error('[DiscordMessage::getButtons] Discord.js devs think making everything nullable is good design!');
+      } else {
+        count = reaction.me ? reaction.count - 1 : reaction.count;
+      }
+
+      return { emoji: reaction.emoji.name, count };
+    });
   }
 
   async delete(): Promise<void> {

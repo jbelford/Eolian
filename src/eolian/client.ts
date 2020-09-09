@@ -7,11 +7,11 @@ export class DiscordClient implements ContextClient {
   constructor(private readonly client: Client) { }
 
   get name(): string {
-    return this.client.user.username;
+    return this.client.user!.username;
   }
 
-  get pic(): string {
-    return this.client.user.avatarURL;
+  get pic(): string | undefined {
+    return this.client.user!.avatarURL({ dynamic: true }) || undefined;
   }
 
   generateInvite(): Promise<string> {

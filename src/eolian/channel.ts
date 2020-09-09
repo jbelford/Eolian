@@ -1,6 +1,6 @@
 import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
-import { DMChannel, GroupDMChannel, Message, MessageReaction, RichEmbed, TextChannel, User } from 'discord.js';
+import { DMChannel, Message, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { DiscordMessage } from 'eolian';
 import { EolianUserService } from 'services';
@@ -9,7 +9,7 @@ import { DiscordUser } from './user';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
-  constructor(private readonly channel: TextChannel | DMChannel | GroupDMChannel,
+  constructor(private readonly channel: TextChannel | DMChannel,
     private readonly users: EolianUserService) { }
 
   async send(message: string): Promise<ContextMessage> {
@@ -43,13 +43,13 @@ export class DiscordTextChannel implements ContextTextChannel {
 
       const idx = +message.content;
       return !isNaN(idx) && idx >= 0 && idx <= options.length
-    }, { maxMatches: 1, time: 60000 });
+    }, { max: 1, time: 60000 });
 
     return messages.size ? messages.array()[0] : undefined;
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
-    const rich: RichEmbed = new RichEmbed();
+    const rich = new MessageEmbed();
 
     if (embed.color) rich.setColor(embed.color);
     if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);

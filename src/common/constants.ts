@@ -1,4 +1,4 @@
-import { ClientOptions, PermissionResolvable, WSEventType } from 'discord.js';
+import { ClientOptions, Intents, PermissionResolvable } from 'discord.js';
 
 export const enum PERMISSION {
   UNKNOWN = 0,
@@ -26,44 +26,23 @@ export function getEnumName(e: any, i: number) {
   return Object.keys(e).find(k => e[k] === i);
 }
 
-
-const DISCORD_DISABLED_EVENTS: WSEventType[] = [
-  // 'READY',
-  // 'RESUMED',
-  // 'GUILD_SYNC',
-  // 'GUILD_CREATE',
-  // 'GUILD_DELETE',
-  // 'GUILD_UPDATE',
-  'GUILD_MEMBER_ADD',
-  'GUILD_MEMBER_REMOVE',
-  'GUILD_MEMBER_UPDATE',
-  'GUILD_MEMBERS_CHUNK',
-  'GUILD_ROLE_CREATE',
-  'GUILD_ROLE_DELETE',
-  'GUILD_ROLE_UPDATE',
-  'GUILD_BAN_ADD',
-  'GUILD_BAN_REMOVE',
-  'CHANNEL_CREATE',
-  'CHANNEL_DELETE',
-  'CHANNEL_UPDATE',
-  'CHANNEL_PINS_UPDATE',
-  // 'MESSAGE_CREATE',
-  'MESSAGE_DELETE',
-  'MESSAGE_UPDATE',
-  'MESSAGE_DELETE_BULK',
-  // 'MESSAGE_REACTION_ADD',
-  'MESSAGE_REACTION_REMOVE',
-  'MESSAGE_REACTION_REMOVE_ALL',
-  'USER_UPDATE',
-  'USER_NOTE_UPDATE',
-  'USER_SETTINGS_UPDATE',
-  'PRESENCE_UPDATE',
-  // 'VOICE_STATE_UPDATE',
-  'TYPING_START',
-  // 'VOICE_SERVER_UPDATE',
-  'RELATIONSHIP_ADD',
-  'RELATIONSHIP_REMOVE',
-];
+// https://discord.com/developers/docs/topics/gateway#list-of-intents
+const DISCORD_ENABLED_INTENTS = new Intents();
+DISCORD_ENABLED_INTENTS.add(
+  'GUILDS',
+  // 'GUILD_MEMBERS',
+  // 'GUILD_EMOJIS',
+  // 'GUILD_INTEGRATIONS',
+  // 'GUILD_WEBHOOKS',
+  'GUILD_INVITES',
+  'GUILD_VOICE_STATES',
+  // 'GUILD_PRESENCES',
+  'GUILD_MESSAGES',
+  'GUILD_MESSAGE_REACTIONS',
+  // 'GUILD_MESSAGE_TYPING',
+  // 'DIRECT_MESSAGE_TYPING',
+  'DIRECT_MESSAGES',
+  'DIRECT_MESSAGE_REACTIONS');
 
 export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
   'ADD_REACTIONS',
@@ -99,5 +78,5 @@ export const enum DiscordChannel {
 };
 
 export const EOLIAN_CLIENT_OPTIONS: ClientOptions = {
-  disabledEvents: DISCORD_DISABLED_EVENTS
+  ws: { intents: DISCORD_ENABLED_INTENTS }
 };

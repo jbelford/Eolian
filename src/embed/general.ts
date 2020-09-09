@@ -3,7 +3,7 @@ import { COLOR } from 'common/constants';
 import { Identifier } from 'data/@types';
 import { ContextUser, EmbedMessage } from 'eolian/@types';
 
-export function createInviteEmbed(link: string, username: string, pic: string): EmbedMessage {
+export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {
   return {
     title: `**Invite: ${username}**`,
     description: 'Click to invite bot to server',
