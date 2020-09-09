@@ -3,7 +3,7 @@ import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { applyRangeToList, applyRangeToListReverse, shuffleList, truthySum } from 'common/util';
+import { applyRangeToList, shuffleList, truthySum } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
@@ -41,7 +41,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       if (options.TOP) {
         tracks = applyRangeToList(options.TOP, tracks);
       } else if (options.BOTTOM) {
-        tracks = applyRangeToListReverse(options.BOTTOM, tracks);
+        tracks = applyRangeToList(options.BOTTOM, tracks, true);
       }
 
       if (options.SHUFFLE) {

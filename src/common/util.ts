@@ -1,4 +1,4 @@
-import { RangeArgument } from './@types';
+import { AbsRangeArgument, RangeArgument } from './@types';
 
 export function shuffleList<T>(list: T[]): T[] {
   for (let i = 0; i < list.length; i++) {
@@ -14,22 +14,32 @@ export function truthySum(...values: unknown[]): number {
   return values.map(value => +!!value).reduce((prev, curr) => prev + curr, 0);
 }
 
-export function applyRangeToList<T>(range: RangeArgument, list: T[]): T[] {
+export function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boolean): AbsRangeArgument {
+  let newStart = 0;
+  let newStop = max;
+
   if (range.stop) {
-    const absStart = Math.max(1, range.start) - 1;
-    const absStop = range.stop < 0 ? list.length + range.stop : Math.max(1, range.stop) - 1;
-    return list.slice(Math.min(absStart, absStop), Math.max(absStart, absStop));
+    newStart = Math.min(max - 1, Math.max(1, range.start) - 1);
+    newStop = (range.stop < 0)
+      ? max + range.stop + 1
+      : Math.min(max - 1, Math.max(1, range.stop) - 1);
+
+    if (reverse) {
+      newStart = max - newStart;
+      if (range.stop) {
+        newStop = max - newStop;
+      }
+    }
+  } else if (reverse) {
+    newStart = max - Math.min(max, Math.max(1, range.start));
+  } else {
+    newStop = range.start;
   }
 
-  return list.slice(Math.max(1, range.start) - 1);
+  return { start: Math.min(newStart, newStop), stop: Math.max(newStart, newStop) };
 }
 
-export function applyRangeToListReverse<T>(range: RangeArgument, list: T[]): T[] {
-  if (range.stop) {
-    const absStart = list.length - Math.max(1, range.start);
-    const absStop = range.stop < 0 ? Math.abs(range.stop) - 1 : list.length - Math.max(1, range.stop);
-    return list.slice(Math.min(absStart, absStop), Math.max(absStart, absStop));
-  }
-
-  return list.slice(list.length - Math.max(1, range.start));
+export function applyRangeToList<T>(range: RangeArgument, list: T[], reverse?: boolean): T[] {
+  const absRange = convertRangeToAbsolute(range, list.length, reverse);
+  return list.slice(absRange.start, absRange.stop);
 }

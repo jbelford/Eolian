@@ -22,3 +22,8 @@ export interface RangeArgument {
   start: number;
   stop?: number;
 }
+
+export interface AbsRangeArgument {
+  start: number;
+  stop: number;
+}
