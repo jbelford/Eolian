@@ -7,11 +7,11 @@ if (env === 'local') {
   require('./module_setup');
 }
 
-import { KeywordParsingStrategy } from 'commands';
+import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { logger } from 'common/logger';
-import { FirestoreDatabase, LocalMemoryStore } from 'data';
+import { createDatabase, createMemoryStore } from 'data';
 import { Database, MemoryStore } from 'data/@types';
 import { DiscordEolianBot } from 'eolian';
 import { EolianBot } from 'eolian/@types';
@@ -21,9 +21,9 @@ const resources: Closable[] = [];
 
 (async () => {
   try {
-    const db: Database = new FirestoreDatabase();
-    const store: MemoryStore = new LocalMemoryStore();
-    const parser: CommandParsingStrategy = new KeywordParsingStrategy();
+    const db: Database = await createDatabase();
+    const store: MemoryStore = await createMemoryStore();
+    const parser: CommandParsingStrategy = createCommandParsingStrategy();
     const bot: EolianBot = new DiscordEolianBot({ db, store, parser });
 
     await bot.start();

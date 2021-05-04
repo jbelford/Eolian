@@ -16,6 +16,10 @@ export interface AppEnv {
       clientSecret: string;
     };
   };
+  mongo: {
+    uri: string;
+    db_name: string;
+  }
 }
 
 export interface RangeArgument {

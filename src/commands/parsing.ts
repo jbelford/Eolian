@@ -5,7 +5,7 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { CommandOptions, CommandParsingStrategy, ParsedCommand } from './@types';
 
-export class KeywordParsingStrategy implements CommandParsingStrategy {
+class KeywordParsingStrategy implements CommandParsingStrategy {
 
   messageInvokesBot(message: string): boolean {
     return message.trim().charAt(0) === environment.cmdToken;
@@ -40,4 +40,8 @@ export class KeywordParsingStrategy implements CommandParsingStrategy {
     return { command, options };
   }
 
+}
+
+export function createCommandParsingStrategy(): CommandParsingStrategy {
+  return new KeywordParsingStrategy();
 }

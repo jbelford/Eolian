@@ -1,49 +1,66 @@
-import { CollectionReference, FieldValue, Firestore } from '@google-cloud/firestore';
+import { Collection } from 'mongodb';
 import { Identifier, UserDTO, UsersDAO } from './@types';
 
-export class FirestoreUsers implements UsersDAO {
+export class MongoUsers implements UsersDAO {
 
-  private readonly users: CollectionReference;
-
-  constructor(firestore: Firestore) {
-    this.users = firestore.collection('users');
+  constructor(private readonly collection: Collection<UserDTO>) {
   }
 
   async get(id: string): Promise<UserDTO> {
-    const doc = await this.users.doc(id).get();
-    return doc.data() as UserDTO || { id };
+    const user = await this.collection.findOne({ _id: id });
+    return user || { id };
   }
 
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {
-    await this.users.doc(id).set({ id, soundcloud }, { merge: true });
+    await this.collection.updateOne(
+      { _id: id },
+      { $set: { soundcloud }, $setOnInsert: { _id: id, id } },
+      { upsert: true });
   }
 
   async removeSoundCloud(id: string): Promise<void> {
-    await this.users.doc(id).update({ soundcloud: FieldValue.delete() });
+    await this.collection.updateOne(
+      { _id: id },
+      { $unset: { soundcloud: true } });
   }
 
   async setSpotify(id: string, spotify: string): Promise<void> {
-    await this.users.doc(id).set({ id, spotify }, { merge: true });
+    await this.collection.updateOne(
+      { _id: id },
+      { $set: { spotify }, $setOnInsert: { _id: id, id } },
+      { upsert: true });
   }
 
   async removeSpotify(id: string): Promise<void> {
-    await this.users.doc(id).update({ spotify: FieldValue.delete() });
+    await this.collection.updateOne(
+      { _id: id },
+      { $unset: { spotify: true } });
   }
 
   async setIdentifier(id: string, key: string, identifier: Identifier): Promise<void> {
-    const identifiers: { [key: string]: Identifier } = {};
-    identifiers[key] = identifier;
-    await this.users.doc(id).set({ id, identifiers }, { merge: true });
+    const set: any = {};
+    set[`identifiers.${key}`] = identifier;
+
+    await this.collection.updateOne(
+      { _id: id },
+      { $set: set, $setOnInsert: { _id: id, id } },
+      { upsert: true });
   }
 
   async removeIdentifier(id: string, key: string): Promise<void> {
-    const data: { [key: string]: FieldValue } = {};
-    data[`identifiers.${key}`] = FieldValue.delete();
-    await this.users.doc(id).update(data);
+    const unset: any = {};
+    unset[`identifiers.${key}`] = true;
+
+    await this.collection.updateOne(
+      { _id: id },
+      { $unset: unset },
+      { upsert: true });
   }
 
-  delete(id: string): Promise<boolean> {
-    return this.users.doc(id).delete().then(() => true, () => false);
+  async delete(id: string): Promise<boolean> {
+    const result = await this.collection.deleteOne({ _id: id });
+    return !!result.deletedCount;
   }
 
 }
+

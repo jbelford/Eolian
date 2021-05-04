@@ -5,7 +5,7 @@ export class QueueStream extends Readable {
 
   private current?: StreamData;
   private fetchLimit: number;
-  private destroyed = false;
+  private isDestroyed = false;
 
   /**
    * @param supplier a function which returns the next stream of data to be processed
@@ -25,7 +25,7 @@ export class QueueStream extends Readable {
   }
 
   _destroy(error: Error | null, callback: (error?: Error | null) => void): void {
-    this.destroyed = true;
+    this.isDestroyed = true;
     if (this.current) {
       this.current.readable.destroy(error || undefined);
     }
@@ -44,7 +44,7 @@ export class QueueStream extends Readable {
       if (this.current) {
         for (;;) {
           this.current = await this.process(this.current);
-          if (!this.current || this.destroyed) {
+          if (!this.current || this.isDestroyed) {
             if (this.current) this.current.readable.destroy();
             break;
           }
@@ -80,7 +80,7 @@ export class QueueStream extends Readable {
         if (nextData) {
           nextData.then(resolve, reject);
         } else {
-          resolve();
+          resolve(undefined);
         }
       });
     });

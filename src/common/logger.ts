@@ -1,4 +1,3 @@
-import { LoggingWinston } from '@google-cloud/logging-winston';
 import * as winston from 'winston';
 import { environment } from './env';
 
@@ -7,7 +6,7 @@ const transports: any[] = [
 ];
 
 if (environment.prod) {
-  transports.push(new LoggingWinston());
+  // transports.push(new LoggingWinston());
 }
 
 export const logger = winston.createLogger({

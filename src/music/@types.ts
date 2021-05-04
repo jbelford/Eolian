@@ -1,5 +1,4 @@
 import { SOURCE } from 'common/constants';
-import { PartialObserver, Subscription } from 'rxjs';
 import { Readable } from 'stream';
 
 export interface Track {
@@ -72,11 +71,5 @@ export interface Player {
    * Close any resources or connections used by the player
    */
   close(): Promise<void>
-
-  /**
-   * Returns a subscription to an event which is emitted anytime
-   * the current song playing changes to a new song.
-   */
-  subscribe(observer: PartialObserver<Track>): Subscription;
 
 }

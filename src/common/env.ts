@@ -26,5 +26,9 @@ export const environment: AppEnv = {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET')
     }
+  },
+  mongo: {
+    uri: getEnv('MONGO_URI'),
+    db_name: getEnv('MONGO_DB_NAME')
   }
 };

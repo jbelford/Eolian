@@ -1,7 +1,7 @@
 import { MemoryStore, MusicQueueDAO } from './@types';
 import { InMemoryQueues } from './queue';
 
-export class LocalMemoryStore implements MemoryStore {
+class LocalMemoryStore implements MemoryStore {
 
   readonly queueDao: MusicQueueDAO;
 
@@ -13,4 +13,8 @@ export class LocalMemoryStore implements MemoryStore {
     return; // Do nothing
   }
 
+}
+
+export async function createMemoryStore(): Promise<MemoryStore> {
+  return new LocalMemoryStore();
 }
