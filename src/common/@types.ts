@@ -3,7 +3,7 @@ export interface Closable {
   close(): Promise<void>;
 }
 
-export interface Environment {
+export interface AppEnv {
   prod: boolean;
   cmdToken: string;
   owners: string[];
