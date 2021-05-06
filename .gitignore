@@ -1,7 +1,6 @@
 # Folders
 node_modules
 dist
-.vscode
 .vs
 # Secrets
 .env
