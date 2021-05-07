@@ -1,5 +1,5 @@
 # Eolian
 
-[![Build Status](https://travis-ci.com/jbelford/Eolian.svg?branch=master)](https://travis-ci.com/jbelford/Eolian)
+![Deployment](https://github.com/jbelford/Eolian/actions/workflows/master_eolian-webapp.yml/badge.svg)
 
 More details coming soon
