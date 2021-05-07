@@ -8,7 +8,7 @@ export function createQueueEmbed(tracks: Track[], total: number) : EmbedMessage 
     header: {
       text: 'Music Queue'
     },
-    description: tracks.map(t => `[${t.title}](${t.url})`).join('\n'),
+    description: tracks.map(t => `[${clampSong(t.title)}](${t.url})`).join('\n'),
     thumbnail: tracks.find(t => t.artwork)?.artwork,
     footer: {
       text: total > 1 ? `There are ${total} songs in the queue total`
@@ -16,4 +16,12 @@ export function createQueueEmbed(tracks: Track[], total: number) : EmbedMessage 
     }
   };
   return embed;
+}
+
+function clampSong(str: string) {
+  if (str.length > 100) {
+    str = str.substring(0, 120);
+    str += '...';
+  }
+  return str;
 }
