@@ -71,5 +71,7 @@ export interface MessageButton {
   /**
    * Return true if message is to be destroyed after.
    */
-  onClick?: (message: ContextMessage, user: ContextUser) => Promise<boolean>;
+  onClick?: MessageButtonOnClickHandler;
 }
+
+export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser) => Promise<boolean>;
