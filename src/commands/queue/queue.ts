@@ -26,6 +26,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
+  if (options.SHUFFLE) {
+    await context.queue.shuffle();
+    return;
+  }
+
   const total = tracks.length;
   if (options.TOP) {
     tracks = applyRangeToList(options.TOP, tracks);
@@ -48,10 +53,10 @@ export const QUEUE_COMMAND: Command = {
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
-    KEYWORDS.TOP, KEYWORDS.BOTTOM, KEYWORDS.CLEAR
+    KEYWORDS.TOP, KEYWORDS.BOTTOM, KEYWORDS.CLEAR, KEYWORDS.SHUFFLE
   ],
   usage: [
-    '', 'clear', 'top 10', 'bottom 10'
+    '', 'clear', 'top 10', 'bottom 10', 'shuffle'
   ],
   execute
 };
