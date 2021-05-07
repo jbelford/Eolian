@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "build": "webpack",
-    "start-dev": "ts-node -r dotenv/config --files src/app.ts",
-    "start": "node -r dotenv/config ./dist/bundle.js",
+    "start-dev": "ts-node -r dotenv/config --files src/app.ts -gi",
+    "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "check": "gts check"
   },
   "keywords": [
