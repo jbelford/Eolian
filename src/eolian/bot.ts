@@ -88,7 +88,7 @@ export class DiscordEolianBot implements EolianBot {
       }
 
       const permission = getPermissionLevel(member);
-      const { command, options } = this.parser.parseCommand(content, permission);
+      const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
 
       const context: CommandContext = {
         client: new DiscordClient(this.client),
@@ -132,4 +132,8 @@ function getPermissionLevel(member: GuildMember): PERMISSION {
     return PERMISSION.ADMIN;
   }
   return PERMISSION.USER;
+}
+
+function removeMentions(text: string): string {
+  return text.replace(/<(@[!&]?|#)\d+>/g, '').trim();
 }
