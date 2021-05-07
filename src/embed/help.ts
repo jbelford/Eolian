@@ -16,7 +16,7 @@ export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMes
     }
   }
   embed.description += '```\n' + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') + '```'
-    + `\nUse \`help /help/\` to see more details about using this command`
+    + `\nUse \`help help\` to see more details about using this command`
   return embed;
 }
 
@@ -42,18 +42,23 @@ export function createCommandDetailsEmbed(command: Command): EmbedMessage {
     },
     description: `${command.details}\n\n`
   };
-  const keywords = command.keywords.filter(keyword => !keyword.priority);
-  const complexKeywords = command.keywords.filter(keywords => keywords.priority);
-  if (keywords.length) {
-    embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
-      + keywords.map(keyword => keyword.name).join('\n') + '```\n';
+
+  if (command.keywords) {
+    const keywords = command.keywords.filter(keyword => !keyword.priority);
+    const complexKeywords = command.keywords.filter(keywords => keywords.priority);
+    if (keywords.length) {
+      embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
+        + keywords.map(keyword => keyword.name).join('\n') + '```\n';
+    }
+    if (complexKeywords.length) {
+      embed.description += '**Patterns:** Special patterns for taking inputs.\n```\n'
+        + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
+    }
   }
-  if (complexKeywords.length) {
-    embed.description += '**Patterns:** Special patterns for taking inputs.\n```\n'
-      + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
-  }
-  embed.description += 'Use `help /<name of pattern or keyword>/` to learn more about patterns and keywords. All arguments are based on them!\n\n'
+
+  embed.description += 'Use `help <name of pattern or keyword>` to learn more about patterns and keywords. Most arguments are based on them!\n\n'
   embed.description += '**Example Usage:**\n```\n' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
+
   return embed;
 }
 

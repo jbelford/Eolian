@@ -54,7 +54,6 @@ export const HELP_COMMAND: Command = {
   details: 'Shows list of all available categories, commands, keywords, and their details',
   permission: PERMISSION.USER,
   category: GENERAL_CATEGORY,
-  keywords: [KEYWORDS.ARG],
-  usage: ['', '/General/', '/poll/', '/spotify/', '/arg/', '/ARG/  # Everything is case insensitive',],
+  usage: ['', '1', 'General', 'poll', 'spotify', 'arg', 'ARG  # Everything is case insensitive',],
   execute
 }

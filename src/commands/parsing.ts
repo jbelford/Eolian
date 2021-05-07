@@ -3,7 +3,37 @@ import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { CommandOptions, CommandParsingStrategy, ParsedCommand } from './@types';
+import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand } from './@types';
+
+function simpleOptionsStrategy(text: string, permission: PERMISSION): CommandOptions {
+  const options: CommandOptions = {};
+  if (text.trim().length > 0) {
+    options.ARG = text.trim().split(' ');
+  }
+  return options;
+}
+
+function keywordOptionsStrategy(text: string, permission: PERMISSION): CommandOptions {
+  const options: CommandOptions = {};
+
+  // Extract complex keywords
+  Object.values(KEYWORDS)
+    .sort((a, b) => b!.priority - a!.priority)
+    .filter(keyword => keyword!.permission <= permission)
+    .forEach(keyword => {
+      const result = keyword!.matchText(text);
+      if (!result.matches) return;
+
+      options[keyword!.name] = result.args;
+      text = result.newText;
+    });
+
+  return options;
+}
+
+function getCommandOptionParsingStrategy(command: Command): CommandOptionsParsingStrategy {
+  return command.keywords ? keywordOptionsStrategy : simpleOptionsStrategy;
+}
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
 
@@ -24,18 +54,8 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
       throw new EolianUserError(`There is no command \`${commandName}\``);
     }
 
-    const options: CommandOptions = {};
-    // Extract complex keywords
-    Object.values(KEYWORDS)
-      .sort((a, b) => b!.priority - a!.priority)
-      .filter(keyword => keyword!.permission <= permission)
-      .forEach(keyword => {
-        const result = keyword!.matchText(text);
-        if (!result.matches) return;
-
-        options[keyword!.name] = result.args;
-        text = result.newText;
-      });
+    const optionParsingFn = getCommandOptionParsingStrategy(command);
+    const options = optionParsingFn(text, permission);
 
     return { command, options };
   }
@@ -45,3 +65,4 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 export function createCommandParsingStrategy(): CommandParsingStrategy {
   return new KeywordParsingStrategy();
 }
+

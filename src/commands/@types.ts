@@ -7,7 +7,8 @@ export interface Command {
   details: string;
   permission: PERMISSION;
   category: CommandCategory;
-  keywords: Array<Keyword<unknown>>;
+  // If using keyword parsing
+  keywords?: Array<Keyword<unknown>>;
   usage: string[];
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
@@ -21,6 +22,8 @@ export interface CommandParsingStrategy {
   messageInvokesBot(message: string): boolean;
   parseCommand(message: string, permission: PERMISSION): ParsedCommand;
 }
+
+export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION) => CommandOptions;
 
 export interface ParsedCommand {
   command: Command;
