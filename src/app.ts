@@ -15,6 +15,7 @@ import { createDatabase, createMemoryStore } from 'data';
 import { Database, MemoryStore } from 'data/@types';
 import { DiscordEolianBot } from 'eolian';
 import { EolianBot } from 'eolian/@types';
+import { WebServer } from 'eolian/server';
 import nodeCleanup from 'node-cleanup';
 
 const resources: Closable[] = [];
@@ -28,7 +29,10 @@ const resources: Closable[] = [];
 
     await bot.start();
 
-    resources.push(db, store, bot);
+    const server = new WebServer();
+    server.start();
+
+    resources.push(db, store, bot, server);
   } catch (e) {
     logger.error(`Something went horribly wrong: ${e.stack || e}`);
   }
