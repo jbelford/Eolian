@@ -28,6 +28,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (options.SHUFFLE) {
     await context.queue.shuffle();
+    await context.channel.send('🔀 I have shuffled the queue!');
     return;
   }
 
