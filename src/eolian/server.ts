@@ -1,5 +1,5 @@
 import { Closable } from 'common/@types';
-import { createServer, Server } from 'node:http';
+import { createServer, Server } from 'http';
 
 export class WebServer implements Closable {
 
