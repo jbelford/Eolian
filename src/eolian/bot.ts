@@ -58,7 +58,7 @@ export class DiscordEolianBot implements EolianBot {
   private handleReady() {
     logger.info('Discord bot is ready!');
     if (this.client.guilds.cache.size === 0 || process.argv.includes('-gi')) {
-      this.client.generateInvite(DISCORD_INVITE_PERMISSIONS)
+      this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS })
         .then(link => logger.info(`Bot invite link: ${link}`))
         .catch(err => logger.warn(`Failed to generate invite: ${err}`));
     }
