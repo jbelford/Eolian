@@ -15,7 +15,8 @@
       "sourceMaps": true,
       "envFile": "${workspaceFolder}/.env",
       "args": [
-        "${workspaceFolder}/src/app.ts"
+        "${workspaceFolder}/src/app.ts",
+        "-gi"
       ],
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
