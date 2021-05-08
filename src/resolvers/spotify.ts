@@ -7,35 +7,38 @@ import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
-export class SpotifyResolver implements SourceResolver {
+export class SpotifyUrlResolver implements SourceResolver {
+
+  constructor(private readonly url: string) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
+    const resourceDetails = spotify.resolve(this.url);
+    if (resourceDetails) {
+      switch (resourceDetails.type) {
+        case SpotifyResourceType.PLAYLIST:
+          const playlist = await spotify.getPlaylist(resourceDetails.id);
+          return createSpotifyPlaylist(playlist);
+        case SpotifyResourceType.ALBUM:
+          const album = await spotify.getAlbum(resourceDetails.id);
+          return createSpotifyAlbum(album);
+        case SpotifyResourceType.ARTIST:
+          const artist = await spotify.getArtist(resourceDetails.id);
+          return createSpotifyArtist(artist);
+        default:
+      }
+    }
+    throw new EolianUserError('The Spotify URL is not valid!');
+  }
+
+}
+
+export class SpotifyAlbumResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    let resource: ResolvedResource;
-
-    if (this.params.URL) {
-      resource = await resolveUrl(this.params.URL.value);
-    } else {
-      resource = await this.resolveTarget();
-    }
-
-    return resource;
-  }
-
-  private resolveTarget(): Promise<ResolvedResource> {
-    if (this.params.ALBUM) {
-      return this.resolveAlbum();
-    } else if (this.params.PLAYLIST) {
-      return this.resolvePlaylist();
-    } else if (this.params.ARTIST) {
-      return this.resolveArtist();
-    }
-    throw new Error('Attempted to resolve a Spotify resource without specifying the type.');
-  }
-
-  private async resolveAlbum(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
       throw new EolianUserError('Missing query for album.');
     }
@@ -43,8 +46,8 @@ export class SpotifyResolver implements SourceResolver {
     const albums = await spotify.searchAlbums(this.params.QUERY);
 
     const options = albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`);
-    const idx = await this.context.channel
-        .sendSelection(`Select the album you want (resolved via Spotify)`, options, this.context.user.id);
+    const idx = await this.context.channel.sendSelection(
+      `Select the album you want (resolved via Spotify)`, options, this.context.user.id);
     if (idx === undefined) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
@@ -52,8 +55,14 @@ export class SpotifyResolver implements SourceResolver {
     const album = albums[idx];
     return createSpotifyAlbum(album);
   }
+}
 
-  private async resolvePlaylist(): Promise<ResolvedResource> {
+export class SpotifyPlaylistResolver implements SourceResolver {
+
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
     const playlists = await this.searchSpotifyPlaylists();
     if (playlists.length === 0) {
       throw new EolianUserError(`No Spotify playlists were found.`);
@@ -92,7 +101,14 @@ export class SpotifyResolver implements SourceResolver {
     return playlists;
   }
 
-  private async resolveArtist(): Promise<ResolvedResource> {
+}
+
+export class SpotifyArtistResolver implements SourceResolver {
+
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
       throw new EolianUserError('Missing query for Spotify artist.');
     }
@@ -106,27 +122,8 @@ export class SpotifyResolver implements SourceResolver {
 
     return createSpotifyArtist(artists[idx]);
   }
-
 }
 
-async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resourceDetails = spotify.resolve(url);
-  if (resourceDetails) {
-    switch (resourceDetails.type) {
-      case SpotifyResourceType.PLAYLIST:
-        const playlist = await spotify.getPlaylist(resourceDetails.id);
-        return createSpotifyPlaylist(playlist);
-      case SpotifyResourceType.ALBUM:
-        const album = await spotify.getAlbum(resourceDetails.id);
-        return createSpotifyAlbum(album);
-      case SpotifyResourceType.ARTIST:
-        const artist = await spotify.getArtist(resourceDetails.id);
-        return createSpotifyArtist(artist);
-      default:
-    }
-  }
-  throw new EolianUserError('The Spotify URL is not valid!');
-}
 
 function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {
   return {

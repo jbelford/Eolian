@@ -7,31 +7,33 @@ import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
-export class YouTubeResolver implements SourceResolver {
+export class YouTubeUrlResolver implements SourceResolver {
+  constructor(private readonly url: string) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
+    const resourceDetails = youtube.getResourceType(this.url);
+    if (resourceDetails) {
+      switch (resourceDetails.type) {
+        case YouTubeResourceType.PLAYLIST:
+          const playlist = await youtube.getPlaylist(resourceDetails.id);
+          return createYouTubePlaylist(playlist!);
+        case YouTubeResourceType.VIDEO:
+          const video = await youtube.getVideo(resourceDetails.id);
+          return createYouTubeVideo(video!);
+        default:
+      }
+    }
+    throw new EolianUserError('The YouTube URL provided is not valid!');
+  }
+}
+
+export class YouTubePlaylistResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    let resource: ResolvedResource;
-
-    if (this.params.URL) {
-      resource = await resolveUrl(this.params.URL.value);
-    } else {
-      resource = await this.resolveTarget();
-    }
-
-    return resource;
-  }
-
-  private resolveTarget(): Promise<ResolvedResource> {
-    if (this.params.PLAYLIST) {
-      return this.resolvePlaylist();
-    }
-    return this.resolveSong();
-  }
-
-  private async resolvePlaylist(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
       throw new EolianUserError('Missing query for YouTube playlist.');
     }
@@ -44,8 +46,14 @@ export class YouTubeResolver implements SourceResolver {
     const playlist = playlists[idx];
     return createYouTubePlaylist(playlist);
   }
+}
 
-  private async resolveSong(): Promise<ResolvedResource> {
+export class YouTubeVideoResolver implements SourceResolver {
+
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
       throw new EolianUserError('Missing query for YouTube song.');
     }
@@ -60,22 +68,6 @@ export class YouTubeResolver implements SourceResolver {
     return createYouTubeVideo(videos[idx]);
   }
 
-}
-
-async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resourceDetails = youtube.getResourceType(url);
-  if (resourceDetails) {
-    switch (resourceDetails.type) {
-      case YouTubeResourceType.PLAYLIST:
-        const playlist = await youtube.getPlaylist(resourceDetails.id);
-        return createYouTubePlaylist(playlist!);
-      case YouTubeResourceType.VIDEO:
-        const video = await youtube.getVideo(resourceDetails.id);
-        return createYouTubeVideo(video!);
-      default:
-    }
-  }
-  throw new EolianUserError('The YouTube URL provided is not valid!');
 }
 
 function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResource {

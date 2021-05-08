@@ -1,11 +1,11 @@
-import { CommandContext, CommandOptions } from 'commands/@types';
+import { CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
 import { SourceFetcher, SourceResolver } from './@types';
-import { SoundCloudFetcher, SoundCloudResolver } from './soundcloud';
-import { SpotifyFetcher, SpotifyResolver } from './spotify';
-import { YouTubeFetcher, YouTubeResolver } from './youtube';
+import { SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudFetcher, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
+import { SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyFetcher, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
+import { YouTubeFetcher, YouTubePlaylistResolver, YouTubeUrlResolver, YouTubeVideoResolver } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
   resolve: async () => {
@@ -19,11 +19,11 @@ const UNKNOWN_FETCHER: SourceFetcher = {
   }
 }
 
-function getBySource(source: SOURCE, context: CommandContext, params: CommandOptions) {
-  switch (source) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudResolver(context, params);
-    case SOURCE.YOUTUBE: return new YouTubeResolver(context, params);
-    case SOURCE.SPOTIFY: return new SpotifyResolver(context, params);
+function getBySource(url: UrlArgument) {
+  switch (url.source) {
+    case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(url.value);
+    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(url.value);
+    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(url.value);
     default: return UNKNOWN_RESOLVER;
   }
 }
@@ -45,50 +45,50 @@ function getByQuery(context: CommandContext, params: CommandOptions) {
 
 function getSongResolver(params: CommandOptions, context: CommandContext) {
   if (params.SOUNDCLOUD) {
-    return new SoundCloudResolver(context, params);
+    return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
     context.channel.send(`Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`);
   }
-  return new YouTubeResolver(context, params);
+  return new YouTubeVideoResolver(context, params);
 }
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
     context.channel.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
   }
-  return new SoundCloudResolver(context, params);
+  return new SoundCloudTracksResolver(context, params);
 }
 
 function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
     context.channel.send('(Psst.. The FAVORITES keyword is only for SoundCloud.)');
   }
-  return new SoundCloudResolver(context, params);
+  return new SoundCloudFavoritesResolver(context, params);
 }
 
 function getArtistResolver(context: CommandContext, params: CommandOptions) {
   if (params.YOUTUBE) {
     context.channel.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
   } else if (params.SOUNDCLOUD) {
-    return new SoundCloudResolver(context, params);
+    return new SoundCloudArtistResolver(context, params);
   }
-  return new SpotifyResolver(context, params);
+  return new SpotifyArtistResolver(context, params);
 }
 
 function getAlbumResolver(context: CommandContext, params: CommandOptions) {
   if (params.SOUNDCLOUD || params.YOUTUBE) {
     context.channel.send('I only support Spotify regarding albums.');
   }
-  return new SpotifyResolver(context, params);
+  return new SpotifyAlbumResolver(context, params);
 }
 
 function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY) {
-    return new SpotifyResolver(context, params);
+    return new SpotifyPlaylistResolver(context, params);
   } else if (params.SOUNDCLOUD) {
-    return new SoundCloudResolver(context, params);
+    return new SoundCloudPlaylistResolver(context, params);
   }
-  return new YouTubeResolver(context, params);
+  return new YouTubePlaylistResolver(context, params);
 }
 
 export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
@@ -97,7 +97,7 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
   }
 
   return params.URL
-    ? getBySource(params.URL.source, context, params)
+    ? getBySource(params.URL)
     : getByQuery(context, params);
 }
 

@@ -7,37 +7,32 @@ import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
-export class SoundCloudResolver implements SourceResolver {
+export class SoundCloudUrlResolver implements SourceResolver {
+
+  constructor(private readonly url: string) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
+    const resource = await soundcloud.resolve(this.url);
+    switch (resource.kind) {
+      case SoundCloudResourceType.PLAYLIST:
+        return createSoundCloudPlaylist(resource as SoundCloudPlaylist);
+      case SoundCloudResourceType.TRACK:
+        return createSoundCloudSong(resource as SoundCloudTrack);
+      case SoundCloudResourceType.USER:
+        return createSoundCloudUser(resource as SoundCloudUser);
+      default:
+        throw new EolianUserError('The SoundCloud URL is not valid!');
+    }
+  }
+}
+
+export class SoundCloudPlaylistResolver implements SourceResolver {
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    let resource: ResolvedResource;
-
-    if (this.params.URL) {
-      resource = await resolveUrl(this.params.URL.value);
-    } else {
-      resource = await this.resolveTarget();
-    }
-
-    return resource;
-  }
-
-  private resolveTarget(): Promise<ResolvedResource> {
-    if (this.params.PLAYLIST) {
-      return this.resolvePlaylist();
-    } else if (this.params.TRACKS) {
-      return this.resolveTracks();
-    } else if (this.params.FAVORITES) {
-      return this.resolveFavorites();
-    } else if (this.params.ARTIST) {
-      return this.resolveArtist();
-    }
-    return this.resolveSong();
-  }
-
-  private async resolvePlaylist(): Promise<ResolvedResource> {
     const playlists = await this.searchSoundCloudPlaylists();
     if (playlists.length === 0) {
       throw new EolianUserError(`No SoundCloud playlists were found.`);
@@ -75,22 +70,14 @@ export class SoundCloudResolver implements SourceResolver {
 
     return playlists;
   }
+}
 
-  private async resolveTracks(): Promise<ResolvedResource> {
-    const resource = await this.resolveArtist();
-    resource.identifier.type = IdentifierType.TRACKS;
-    resource.identifier.url = `${resource.identifier.url}/tracks`;
-    return resource;
+export class SoundCloudArtistResolver implements SourceResolver {
+
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
   }
 
-  private async resolveFavorites(): Promise<ResolvedResource> {
-    const resource = await this.resolveArtist();
-    resource.identifier.type = IdentifierType.FAVORITES;
-    resource.identifier.url = `${resource.identifier.url}/likes`;
-    return resource;
-  }
-
-  private resolveArtist(): Promise<ResolvedResource> {
+  async resolve(): Promise<ResolvedResource> {
     if (this.params.QUERY) {
       return this.resolveArtistQuery(this.params.QUERY);
     } else if (this.params.MY) {
@@ -118,8 +105,31 @@ export class SoundCloudResolver implements SourceResolver {
     const scUser = await soundcloud.getUser(user.soundcloud);
     return createSoundCloudUser(scUser);
   }
+}
 
-  private async resolveSong(): Promise<ResolvedResource> {
+export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
+  async resolve(): Promise<ResolvedResource> {
+    const resource = await super.resolve();
+    resource.identifier.type = IdentifierType.TRACKS;
+    resource.identifier.url = `${resource.identifier.url}/tracks`;
+    return resource;
+  }
+}
+
+export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
+  async resolve(): Promise<ResolvedResource> {
+    const resource = await super.resolve();
+    resource.identifier.type = IdentifierType.FAVORITES;
+    resource.identifier.url = `${resource.identifier.url}/likes`;
+    return resource;
+  }
+}
+
+export class SoundCloudSongResolver implements SourceResolver {
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  }
+
+  async resolve(): Promise<ResolvedResource> {
     if (!this.params.QUERY) {
       throw new EolianUserError('Missing query for SoundCloud song.');
     }
@@ -132,21 +142,6 @@ export class SoundCloudResolver implements SourceResolver {
     }
 
     return createSoundCloudSong(songs[idx]);
-  }
-
-}
-
-async function resolveUrl(url: string): Promise<ResolvedResource> {
-  const resource = await soundcloud.resolve(url);
-  switch (resource.kind) {
-    case SoundCloudResourceType.PLAYLIST:
-      return createSoundCloudPlaylist(resource as SoundCloudPlaylist);
-    case SoundCloudResourceType.TRACK:
-      return createSoundCloudSong(resource as SoundCloudTrack);
-    case SoundCloudResourceType.USER:
-      return createSoundCloudUser(resource as SoundCloudUser);
-    default:
-      throw new EolianUserError('The SoundCloud URL is not valid!');
   }
 }
 
