@@ -1,6 +1,10 @@
 import { StreamData, Track } from 'music/@types';
 
-export interface SoundCloudApi {
+interface StreamFetcher {
+  getStream(track: Track): Promise<StreamData | undefined>;
+}
+
+export interface SoundCloudApi extends StreamFetcher {
   searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
   searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
   searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]>;
@@ -11,7 +15,6 @@ export interface SoundCloudApi {
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
   getUserTracks(id: number): Promise<SoundCloudTrack[]>;
-  getStream(track: Track): Promise<StreamData>;
 }
 
 export const enum SoundCloudResourceType {
@@ -48,7 +51,7 @@ export interface SoundCloudTrack extends SoundCloudResource {
   title: string;
 }
 
-export interface SpotifyApi {
+export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
@@ -154,7 +157,7 @@ export const enum SpotifyResourceType {
 }
 
 
-export interface YouTubeApi {
+export interface YouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
   getVideo(id: string): Promise<YoutubeVideo>;
   getPlaylist(id: string): Promise<YoutubePlaylist>;

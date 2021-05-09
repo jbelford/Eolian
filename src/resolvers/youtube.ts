@@ -96,7 +96,7 @@ function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
   }
 }
 
-function mapYouTubeVideo(video: YoutubeVideo): Track {
+export function mapYouTubeVideo(video: YoutubeVideo): Track {
   return {
     id: video.id,
     poster: video.channelName,

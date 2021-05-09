@@ -1,7 +1,8 @@
+import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import { EolianCache } from 'data/@types';
-import { InMemoryCache } from 'data/cache';
 import { google, youtube_v3 } from 'googleapis';
+import { StreamData, Track } from 'music/@types';
+import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeResourceType, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 export class YouTubeApiImpl implements YouTubeApi {
@@ -127,47 +128,22 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-}
-
-export class CachedYouTubeApi implements YouTubeApi {
-
-  private readonly api: YouTubeApi;
-  private readonly cache: EolianCache;
-
-  constructor(token: string, ttl: number) {
-    this.api = new YouTubeApiImpl(token);
-    this.cache = new InMemoryCache(ttl);
-  }
-
-  getResourceType(url: string): YouTubeUrlDetails | undefined {
-    return this.api.getResourceType(url);
-  }
-
-  async getVideo(id: string): Promise<YoutubeVideo> {
-    return (await this.cache.getOrSet(`video:${id}`, () => this.api.getVideo(id)))[0];
-  }
-
-  async getPlaylist(id: string): Promise<YoutubePlaylist> {
-    return (await this.cache.getOrSet(`playlist:${id}`, () => this.api.getPlaylist(id)))[0];
-  }
-
-  async getPlaylistVideos(id: string): Promise<YoutubeVideo[]> {
-    return (await this.cache.getOrSet(`playlist:${id}:tracks`, () => this.api.getPlaylistVideos(id)))[0];
-  }
-
-  async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
-    const [playlists, found] = await this.cache.getOrSet(`searchPlaylists:${query}`, () => this.api.searchPlaylists(query));
-    if (!found) {
-      await Promise.all(playlists.map(playlist => this.cache.set(`playlist:${playlist.id}`, playlist)));
+  getStream(track: Track): Promise<StreamData | undefined> {
+    if (track.src !== SOURCE.YOUTUBE) {
+      throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
-    return playlists;
-  }
-  async searchVideos(query: string): Promise<YoutubeVideo[]> {
-    const [videos, found] = await this.cache.getOrSet(`searchVideos:${query}`, () => this.api.searchVideos(query));
-    if (!found) {
-      await Promise.all(videos.map(video => this.cache.set(`video:${video.id}`, video)));
-    }
-    return videos;
+
+    return new Promise<StreamData>((resolve, reject) => {
+      const stream = ytdl(track.url, { filter : 'audioonly' });
+      stream.once('info', (info, format) => {
+        const contentLength = Number(format['contentLength']);
+        if (isNaN(contentLength)) {
+          return reject('Could not parse content-length from YouTube stream');
+        }
+
+        resolve({ readable: stream, size: contentLength, details: track });
+      });
+    });
   }
 
 }

@@ -14,31 +14,12 @@ export interface Track {
 export interface StreamData {
   readable: Readable,
   size: number,
-  details: unknown
-}
-
-export interface PlayerManager {
-
-  /**
-   * Fetches a player in the registry
-   */
-  getPlayer(guildId: string): Player;
-
-  /**
-   * Creates a new player and returns it
-   */
-  createPlayer(guildId: string): Promise<Player>;
-
+  details: Track
 }
 
 export interface Player {
 
-  readonly guildId: string;
-
-  /**
-   * The ID of the message which is associated with this player.
-   */
-  messageId: string;
+  volume: number;
 
   /**
    * Tells the player to start streaming.
