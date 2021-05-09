@@ -10,7 +10,7 @@ import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.QUERY, options.URL, options.IDENTIFIER);
-  if (sum === 0) {
+  if (sum === 0 && !options.MY) {
     throw new EolianUserError('You must provide me a query, url, or identifier. Please try again.');
   } else if (sum > 1) {
     throw new EolianUserError('You must only include 1 query, url, or identifier. Please try again.');
