@@ -4,18 +4,28 @@ import { Readable } from 'stream';
 export class QueueStream extends Readable {
 
   private current?: StreamData;
+  // @ts-ignore
   private fetchLimit: number;
   private isDestroyed = false;
 
   /**
-   * @param supplier a function which returns the next stream of data to be processed
-   * @param kBps expected bitrate of consumer (default: 16 kBps)
-   * @param prefetch buffer time to fetch next stream (default: 15 seconds)
+   * @param peekNext a function which returns the next stream of data to be processed
+   * @param popNext a function which is called after the data has begun processing
+   * @param kBps expected bitrate of consumer
+   * @param prefetch buffer time to fetch next stream in seconds
    */
-  constructor(private readonly supplier: () => Promise<StreamData | undefined>, kBps = 16, prefetch = 15) {
+  constructor(
+    private readonly peekNext: () => Promise<StreamData | undefined>,
+    private readonly popNext: () => Promise<void>,
+    kBps = 16,
+    private readonly prefetch = 5) {
     super();
-    this.fetchLimit = 1000 * kBps * prefetch;
+    this.setBitrate(kBps);
     this.startReadLoop();
+  }
+
+  setBitrate(kBps: number) {
+    this.fetchLimit = 1000 * kBps * this.prefetch;
   }
 
   _read() {
@@ -40,15 +50,19 @@ export class QueueStream extends Readable {
 
   private async startReadLoop() {
     try {
-      this.current = await this.supplier();
+      this.current = await this.peekNext();
+      await this.popNext();
       if (this.current) {
         for (;;) {
           this.current = await this.process(this.current);
-          if (!this.current || this.isDestroyed) {
-            if (this.current) this.current.readable.destroy();
+          if (!this.current) {
+            await this.popNext();
+            break;
+          } else if (this.isDestroyed) {
+            this.current.readable.destroy();
             break;
           }
-          this.emitNext(this.current.details);
+          await this.popNext();
         }
       }
     } catch (err) {
@@ -70,24 +84,25 @@ export class QueueStream extends Readable {
         }
 
         if (!nextData && data.size - fetched <= this.fetchLimit) {
-          nextData = this.supplier();
+          nextData = this.peekNext();
         }
       });
 
       data.readable.on('error', this.emitError);
 
       data.readable.on('end', () => {
-        if (nextData) {
-          nextData.then(resolve, reject);
-        } else {
-          resolve(undefined);
+        if (!nextData) {
+          nextData = this.peekNext();
         }
+        nextData.then(resolve, reject);
       });
+
+      data.readable.resume();
     });
+
   }
 
   private emitError = (err?: unknown) => this.emit('error', err);
-  private emitNext = (details: unknown) => this.emit('next', details);
   private emitEnd = () => this.emit('end');
 
 }

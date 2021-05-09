@@ -44,7 +44,7 @@ export class InMemoryQueues implements MusicQueueDAO {
       return;
     }
 
-    const track = list.pop();
+    const track = list.shift();
     this.cache.set(guildId, list);
     return track;
   }

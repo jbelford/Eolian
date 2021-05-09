@@ -1,6 +1,6 @@
 import { Closable } from 'common/@types';
 import { SOURCE } from 'common/constants';
-import { Track } from 'music/@types';
+import { Player, Track } from 'music/@types';
 
 export interface EolianCache {
   get<T>(id: string): Promise<T | undefined>;
@@ -50,6 +50,7 @@ export enum IdentifierType {
 
 export interface MemoryStore extends Closable {
   readonly queueDao: MusicQueueDAO;
+  readonly playerStore: PlayerStore;
 }
 
 export interface MusicQueueDAO {
@@ -59,4 +60,9 @@ export interface MusicQueueDAO {
   clear(guildId: string): Promise<boolean>;
   pop(guildId: string): Promise<Track | undefined>;
   peek(guildId: string): Promise<Track | undefined>;
+}
+
+export interface PlayerStore {
+  get(guildId: string): Player | undefined;
+  store(guildId: string, player: Player): void;
 }

@@ -5,7 +5,6 @@ import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { Readable } from 'stream';
 import { SoundCloudApi, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
 
 const URL = 'https://api.soundcloud.com';
@@ -123,7 +122,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
     return new Promise<StreamData>((resolve, reject) => {
       const stream = request(`${track.stream}?client_id=${this.token}`);
-      stream.on('response', resp => {
+      stream.once('response', resp => {
         if (resp.statusCode < 200 || resp.statusCode >= 400) {
           logger.error(`Error occured on request: ${track.stream}`);
           return reject(resp.statusMessage);
@@ -132,8 +131,9 @@ export class SoundCloudApiImpl implements SoundCloudApi {
         const contentLength = Number(resp.headers["content-length"]);
         if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
 
-        const streamData: StreamData = { readable: stream as unknown as Readable, size: contentLength, details: track };
-        resolve(streamData);
+        resp.pause();
+
+        resolve({ readable: resp, size: contentLength, details: track });
       });
     });
   }

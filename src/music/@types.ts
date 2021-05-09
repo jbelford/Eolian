@@ -19,7 +19,7 @@ export interface StreamData {
 
 export interface Player {
 
-  volume: number;
+  setVolume(value: number): void;
 
   /**
    * Tells the player to start streaming.
@@ -47,10 +47,5 @@ export interface Player {
    * Tells the player to resume the stream.
    */
   resume(): Promise<void>;
-
-  /**
-   * Close any resources or connections used by the player
-   */
-  close(): Promise<void>
 
 }

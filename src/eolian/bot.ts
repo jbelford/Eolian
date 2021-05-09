@@ -3,7 +3,7 @@ import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIEN
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { Database, MemoryStore } from 'data/@types';
+import { Database, MemoryStore, PlayerStore } from 'data/@types';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { EolianUserService, MusicQueueService } from 'services';
@@ -24,6 +24,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly users: EolianUserService;
   private readonly queues: MusicQueueService;
+  private readonly players: PlayerStore;
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
@@ -39,6 +40,7 @@ export class DiscordEolianBot implements EolianBot {
 
     this.users = new EolianUserService(args.db.users);
     this.queues = new MusicQueueService(args.store.queueDao);
+    this.players = args.store.playerStore;
   }
 
   async start() {
@@ -90,12 +92,14 @@ export class DiscordEolianBot implements EolianBot {
       const permission = getPermissionLevel(member);
       const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
 
+      const queue = new GuildQueue(this.queues, guild.id);
+
       const context: CommandContext = {
-        client: new DiscordClient(this.client),
-        user: new DiscordUser(author, this.users, permission),
+        client: new DiscordClient(this.client, guild.id, queue, this.players),
+        user: new DiscordUser(author, this.users, permission, member),
         message: new DiscordMessage(message),
         channel: new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users),
-        queue: new GuildQueue(this.queues, guild.id)
+        queue,
       };
 
       await command.execute(context, options);

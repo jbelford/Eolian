@@ -141,6 +141,8 @@ export class YouTubeApiImpl implements YouTubeApi {
           return reject('Could not parse content-length from YouTube stream');
         }
 
+        stream.pause();
+
         resolve({ readable: stream, size: contentLength, details: track });
       });
     });

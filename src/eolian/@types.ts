@@ -1,7 +1,7 @@
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, UserDTO } from 'data/@types';
-import { Track } from 'music/@types';
+import { Player, Track } from 'music/@types';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -16,6 +16,7 @@ export interface ContextTextChannel {
 export interface ContextClient {
   readonly name: string;
   readonly pic?: string;
+  readonly voice?: ContextVoiceConnection;
   generateInvite(): Promise<string>;
 }
 
@@ -26,12 +27,23 @@ export interface ContextMessage {
   delete(): Promise<void>;
 }
 
+export interface ContextVoiceChannel {
+  readonly id: string;
+  join(): Promise<void>;
+}
+
+export interface ContextVoiceConnection {
+  readonly channelId: string;
+  readonly player: Player;
+  disconnect(): Promise<void>;
+}
 
 export interface ContextUser {
   readonly id: string;
   readonly name: string;
   readonly avatar?: string;
   readonly permission: PERMISSION;
+  readonly voice?: ContextVoiceChannel;
   get(): Promise<UserDTO>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
