@@ -6,19 +6,24 @@ import { PERMISSION } from 'common/constants';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const voice = context.user.voice;
-  if (voice) {
-    await voice.join();
+  if (!voice) {
+    await context.message.reply('You need to be in a voice channel!');
+    return;
+  }
 
-    const currentVoice = context.client.voice;
-    if (currentVoice) {
-      currentVoice.player.play();
-    }
+  await voice.join();
+  const reaction = context.message.react('👋');
+
+  const currentVoice = context.client.voice;
+  if (currentVoice) {
+    await currentVoice.player.play();
+    await reaction.then(() => context.message.react('🎵'));
   }
 }
 
 export const PLAY_COMMAND: Command = {
   name: 'play',
-  details: 'Start playing music',
+  details: 'Start playing music OR join the current channel (if already playing)',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
