@@ -87,10 +87,18 @@ export class DiscordPlayer implements Player {
         }
         this.stream = undefined;
       });
-      this.connection.dispatcher.once('finish', () => {
+      this.connection.dispatcher.once('finish', async () => {
         if (this.stream && !this.stream.destroyed) {
           this.stream.destroy();
         }
+
+        // Start stream again if there are still items in the queue
+        if (await this.queue.peek()) {
+          this.stream = undefined;
+          await this.play();
+          return;
+        }
+
         this.connection.disconnect();
       });
     }
@@ -98,7 +106,7 @@ export class DiscordPlayer implements Player {
 
   async skip(): Promise<void> {
     if (this.stream) {
-      this.stream.skip();
+      this.connection.dispatcher.end();
     }
   }
 

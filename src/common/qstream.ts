@@ -42,12 +42,6 @@ export class QueueStream extends Readable {
     callback();
   }
 
-  skip() {
-    if (this.current) {
-      this.current.readable.destroy();
-    }
-  }
-
   private async startReadLoop() {
     try {
       this.current = await this.peekNext();
