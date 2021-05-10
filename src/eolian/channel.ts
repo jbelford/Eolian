@@ -17,21 +17,16 @@ export class DiscordTextChannel implements ContextTextChannel {
     return new DiscordMessage(discordMessage as Message);
   }
 
-  async sendSelection(question: string, options: string[], userId: string): Promise<number | undefined> {
+  async sendSelection(question: string, options: string[], userId: string): Promise<number> {
     const selectEmbed = createSelectionEmbed(question, options);
     await this.sendEmbed(selectEmbed);
 
     const selection = await this.awaitUserSelection(userId, options);
     if (!selection) {
-      return;
+      return -1;
     }
 
     const idx = +selection.content;
-    if (idx === 0) {
-      await selection.reply('The selection has been cancelled.');
-      return;
-    }
-
     return idx - 1;
   }
 

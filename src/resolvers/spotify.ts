@@ -48,7 +48,7 @@ export class SpotifyAlbumResolver implements SourceResolver {
     const options = albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`);
     const idx = await this.context.channel.sendSelection(
       `Select the album you want (resolved via Spotify)`, options, this.context.user.id);
-    if (idx === undefined) {
+    if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
@@ -72,7 +72,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
     if (playlists.length > 1) {
       const idx = await this.context.channel.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => playlist.name), this.context.user.id);
-      if (idx === undefined) {
+      if (idx < 0) {
         throw new EolianUserError('Nothing selected. Cancelled request.');
       }
       playlist = playlists[idx];
@@ -116,7 +116,7 @@ export class SpotifyArtistResolver implements SourceResolver {
     const artists = await spotify.searchArtists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => artist.name), this.context.user.id);
-    if (idx === undefined) {
+    if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 

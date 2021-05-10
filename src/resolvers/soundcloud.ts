@@ -42,7 +42,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
     if (playlists.length > 1) {
       const idx = await this.context.channel.sendSelection('Choose a SoundCloud playlist',
         playlists.map(playlist => playlist.title), this.context.user.id);
-      if (idx === undefined) {
+      if (idx < 0) {
         throw new EolianUserError('Nothing selected. Cancelled request.');
       }
       playlist = playlists[idx];
@@ -90,7 +90,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
     const users = await soundcloud.searchUser(query);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud user',
       users.map(user => user.username), this.context.user.id);
-    if (idx === undefined) {
+    if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 
@@ -137,7 +137,7 @@ export class SoundCloudSongResolver implements SourceResolver {
     const songs = await soundcloud.searchSongs(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud track',
       songs.map(song => `${song.title} --- ${song.user.username}`), this.context.user.id);
-    if (idx === undefined) {
+    if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
 

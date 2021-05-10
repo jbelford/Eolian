@@ -65,9 +65,12 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
   const question = 'Which SoundCloud account do you want me to link?';
   const options = soundCloudUsers.map(user => `${user.username} - ${user.permalink_url}`);
   const idx = await context.channel.sendSelection(question, options, context.user.id);
-  if (idx != null) {
-    await handleSoundCloud(context, soundCloudUsers[idx]);
+  if (idx < 0) {
+    context.message.reply('The selection has been cancelled');
+    return;
   }
+
+  await handleSoundCloud(context, soundCloudUsers[idx]);
 }
 
 async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser) {
