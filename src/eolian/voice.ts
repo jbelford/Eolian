@@ -2,6 +2,7 @@ import { getTrackStream } from 'api';
 import { QueueStream } from 'common/qstream';
 import { PlayerStore } from 'data/@types';
 import { VoiceChannel, VoiceConnection } from 'discord.js';
+import EventEmitter from 'events';
 import { Player, StreamData } from 'music/@types';
 import { ContextQueue, ContextVoiceChannel, ContextVoiceConnection } from './@types';
 
@@ -49,7 +50,7 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
 
 }
 
-export class DiscordPlayer implements Player {
+export class DiscordPlayer extends EventEmitter implements Player {
 
   private volume: number = 0.5;
   private stream?: QueueStream;
@@ -57,6 +58,11 @@ export class DiscordPlayer implements Player {
   constructor(
     private connection: VoiceConnection,
     private readonly queue: ContextQueue) {
+      super();
+  }
+
+  get isStreaming() {
+    return !!this.stream;
   }
 
   setConnection(connection: VoiceConnection) {
@@ -74,34 +80,42 @@ export class DiscordPlayer implements Player {
   }
 
   async play(): Promise<void> {
-    if (!this.stream) {
-      this.stream = new QueueStream(
-        () => this.getNextStream(),
-        () => this.popNext(),
-        this.connection.channel.bitrate);
-
-      this.connection.play(this.stream, { seek: 0, volume: this.volume });
-      this.connection.dispatcher.once('close', () => {
-        if (this.stream && !this.stream.destroyed) {
-          this.stream.destroy();
-        }
-        this.stream = undefined;
-      });
-      this.connection.dispatcher.once('finish', async () => {
-        if (this.stream && !this.stream.destroyed) {
-          this.stream.destroy();
-        }
-
-        // Start stream again if there are still items in the queue
-        if (await this.queue.peek()) {
-          this.stream = undefined;
-          await this.play();
-          return;
-        }
-
-        this.connection.disconnect();
-      });
+    if (this.stream) {
+      return;
     }
+
+    this.stream = new QueueStream(
+      () => this.getNextStream(),
+      () => this.popNext(),
+      this.connection.channel.bitrate);
+
+    this.connection.play(this.stream, { seek: 0, volume: this.volume });
+
+    this.connection.on('disconnect', () => {
+      this.emitDone();
+    });
+
+    this.connection.dispatcher.once('close', () => {
+      if (this.stream && !this.stream.destroyed) {
+        this.stream.destroy();
+      }
+      this.stream = undefined;
+    });
+
+    this.connection.dispatcher.once('finish', async () => {
+      if (this.stream && !this.stream.destroyed) {
+        this.stream.destroy();
+      }
+
+      // Start stream again if there are still items in the queue
+      if (await this.queue.peek()) {
+        this.stream = undefined;
+        await this.play();
+        return;
+      }
+
+      this.connection.disconnect();
+    });
   }
 
   async skip(): Promise<void> {
@@ -134,6 +148,12 @@ export class DiscordPlayer implements Player {
   }
 
   private async popNext(): Promise<void> {
-    await this.queue.pop();
+    const track = await this.queue.pop();
+    this.emit('next', track);
+  }
+
+  private emitDone() {
+    this.emit('done');
+    this.removeAllListeners();
   }
 }

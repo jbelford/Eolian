@@ -1,4 +1,4 @@
-import { COLOR } from 'common/constants';
+import { COLOR, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'eolian/@types';
 import { Track } from 'music/@types';
 
@@ -17,6 +17,19 @@ export function createQueueEmbed(tracks: Track[], total: number) : EmbedMessage 
   };
   return embed;
 }
+
+export function createPlayingEmbed(track: Track) : EmbedMessage {
+  const embed: EmbedMessage = {
+    color: mapSourceToColor(track.src),
+    header: {
+      text: '🔊 Now Playing 🔊'
+    },
+    description: `[**${track.title}**](${track.url})\n${track.poster}`,
+    thumbnail: track.artwork
+  };
+  return embed;
+}
+
 
 function clampLength(str: string, length: number) {
   if (str.length > length) {

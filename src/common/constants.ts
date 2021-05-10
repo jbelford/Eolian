@@ -13,6 +13,21 @@ export const enum COLOR {
   POLL = 0x46DBC0,
   SELECTION = 0xe4ff1c,
   PROFILE = 0x4286f4,
+  SPOTIFY = 0x1DB954,
+  SOUNDCLOUD = 0xFF7700,
+  YOUTUBE = 0xFF0000
+}
+
+export function mapSourceToColor(src: SOURCE): COLOR {
+  switch (src) {
+    case SOURCE.SOUNDCLOUD:
+      return COLOR.SOUNDCLOUD;
+    case SOURCE.SPOTIFY:
+      return COLOR.SPOTIFY;
+    case SOURCE.YOUTUBE:
+    default:
+      return COLOR.YOUTUBE;
+  }
 }
 
 export enum SOURCE {

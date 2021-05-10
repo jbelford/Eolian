@@ -1,4 +1,5 @@
 import { SOURCE } from 'common/constants';
+import EventEmitter from 'events';
 import { Readable } from 'stream';
 
 export interface Track {
@@ -17,7 +18,9 @@ export interface StreamData {
   details: Track
 }
 
-export interface Player {
+export interface Player extends EventEmitter {
+
+  isStreaming: boolean;
 
   setVolume(value: number): void;
 

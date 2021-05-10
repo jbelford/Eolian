@@ -43,3 +43,7 @@ export function applyRangeToList<T>(range: RangeArgument, list: T[], reverse?: b
   const absRange = convertRangeToAbsolute(range, list.length, reverse);
   return list.slice(absRange.start, absRange.stop);
 }
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
