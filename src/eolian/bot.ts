@@ -65,7 +65,7 @@ export class DiscordEolianBot implements EolianBot {
         .catch(err => logger.warn(`Failed to generate invite: ${err}`));
     }
     this.client.user!.setPresence({
-        activity: { name: `${environment.cmdToken}help`, }
+        activity: { name: `${environment.cmdToken}help`, type: 'LISTENING' }
       })
       .catch(err => logger.warn(`Failed to set presence: ${err}`));
   }
