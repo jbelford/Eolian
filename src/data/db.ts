@@ -1,10 +1,10 @@
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { MongoClient } from 'mongodb';
-import { Database, UsersDAO } from './@types';
+import { AppDatabase, UsersDAO } from './@types';
 import { MongoUsers } from './users';
 
-class MongoDatabase implements Database {
+class MongoDatabase implements AppDatabase {
 
   readonly users: UsersDAO;
 
@@ -18,7 +18,7 @@ class MongoDatabase implements Database {
   }
 }
 
-export async function createDatabase() : Promise<Database> {
+export async function createDatabase() : Promise<AppDatabase> {
   const client = new MongoClient(environment.mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true });
   try {
     await client.connect();

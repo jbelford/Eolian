@@ -12,7 +12,7 @@ import { CommandParsingStrategy } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { logger } from 'common/logger';
 import { createDatabase, createMemoryStore } from 'data';
-import { Database, MemoryStore } from 'data/@types';
+import { AppDatabase, MemoryStore } from 'data/@types';
 import { DiscordEolianBot } from 'eolian';
 import { EolianBot } from 'eolian/@types';
 import { WebServer } from 'eolian/server';
@@ -22,7 +22,7 @@ const resources: Closable[] = [];
 
 (async () => {
   try {
-    const db: Database = await createDatabase();
+    const db: AppDatabase = await createDatabase();
     const store: MemoryStore = await createMemoryStore();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
     const bot: EolianBot = new DiscordEolianBot({ db, store, parser });

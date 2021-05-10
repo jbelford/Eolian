@@ -10,7 +10,7 @@ export interface EolianCache {
   getOrSet<T>(id: string, fn: () => Promise<T> | T): Promise<[T, boolean]>;
 }
 
-export interface Database extends Closable {
+export interface AppDatabase extends Closable {
   readonly users: UsersDAO;
 }
 

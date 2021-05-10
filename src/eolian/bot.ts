@@ -3,7 +3,7 @@ import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIEN
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { Database, MemoryStore, PlayerStore } from 'data/@types';
+import { AppDatabase, MemoryStore, PlayerStore } from 'data/@types';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { EolianUserService, MusicQueueService } from 'services';
@@ -12,7 +12,7 @@ import { GuildQueue } from './queue';
 import { DiscordUser } from './user';
 
 export interface DiscordEolianBotArgs {
-  db: Database,
+  db: AppDatabase,
   store: MemoryStore,
   parser: CommandParsingStrategy,
 }

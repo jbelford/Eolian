@@ -1,5 +1,5 @@
 import { MemoryStore, MusicQueueDAO, PlayerStore } from './@types';
-import { InMemoryPlayerStore } from './player';
+import { InMemoryPlayerStore } from './playerstore';
 import { InMemoryQueues } from './queue';
 
 class LocalMemoryStore implements MemoryStore {
