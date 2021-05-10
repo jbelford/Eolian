@@ -28,6 +28,7 @@ export const UNLINK_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   details: 'Remove a Spotify or SoundCloud account you are linked to.',
   permission: PERMISSION.USER,
+  dmAllowed: true,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
   usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
   execute

@@ -48,7 +48,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         shuffleList(tracks);
       }
 
-      await context.queue.add(tracks, options.NEXT);
+      await context.queue!.add(tracks, options.NEXT);
 
       const bodyText = tracks.length > 1 ? `Successfully added ${tracks.length} songs`
         : `Successfully added **${tracks[0].title}**`;

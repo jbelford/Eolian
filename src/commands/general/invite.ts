@@ -15,6 +15,7 @@ export const INVITE_COMMAND: Command = {
   details: 'Create a link to invite the bot to another server',
   keywords: [],
   permission: PERMISSION.USER,
+  dmAllowed: true,
   usage: [''],
   execute
 };

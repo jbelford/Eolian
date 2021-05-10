@@ -26,7 +26,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
       const tracks = await getSourceFetcher(resource.identifier).fetch();
       if (tracks.length > 0) {
-        await context.queue.add(tracks, true);
+        await context.queue!.add(tracks, true);
         added = true;
       }
     }

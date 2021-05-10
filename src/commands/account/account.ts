@@ -26,6 +26,7 @@ export const ACCOUNT_COMMAND: Command = {
   details: 'Show your account details. Including linked music accounts and identifiers',
   permission: PERMISSION.USER,
   category: ACCOUNT_CATEGORY,
+  dmAllowed: true,
   keywords: [KEYWORDS.CLEAR],
   usage: ['', 'clear'],
   execute

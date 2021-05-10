@@ -4,10 +4,11 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { AppDatabase, MemoryStore, PlayerStore } from 'data/@types';
-import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel } from 'discord.js';
+import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { EolianUserService, MusicQueueService } from 'services';
 import { EolianBot } from './@types';
+import { DiscordGuildClient } from './client';
 import { GuildQueue } from './queue';
 import { DiscordUser } from './user';
 
@@ -77,10 +78,6 @@ export class DiscordEolianBot implements EolianBot {
       }
 
       const { author, content, channel, member, guild } = message;
-      if (!member || !guild) {
-        logger.debug(`Ignoring strange message: '${content}'`);
-        return;
-      }
 
       logger.debug(`Message event received: '${content}'`);
 
@@ -89,18 +86,26 @@ export class DiscordEolianBot implements EolianBot {
         return;
       }
 
-      const permission = getPermissionLevel(member);
+      const permission = getPermissionLevel(author, member);
       const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
 
-      const queue = new GuildQueue(this.queues, guild.id);
+      // @ts-ignore
+      const context: CommandContext = {};
 
-      const context: CommandContext = {
-        client: new DiscordClient(this.client, guild.id, queue, this.players),
-        user: new DiscordUser(author, this.users, permission, member),
-        message: new DiscordMessage(message),
-        channel: new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users),
-        queue,
-      };
+      if (channel instanceof DMChannel) {
+        if (!command.dmAllowed) {
+          author.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
+          return;
+        }
+        context.client = new DiscordClient(this.client);
+      } else {
+        context.queue = new GuildQueue(this.queues, guild!.id);
+        context.client = new DiscordGuildClient(this.client, guild!.id, context.queue, this.players);
+      }
+
+      context.user = new DiscordUser(author, this.users, permission, member);
+      context.message = new DiscordMessage(message);
+      context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users);
 
       await command.execute(context, options);
     } catch (e) {
@@ -120,19 +125,23 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private hasSendPermission(channel: Channel) {
-    if (channel.type !== DiscordChannel.TEXT) {
-      return false;
+    switch (channel.type) {
+      case DiscordChannel.TEXT:
+        const permissions = (channel as TextChannel).permissionsFor(this.client.user!);
+        return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
+      case DiscordChannel.DM:
+        return true;
+      default:
+        return false;
     }
-    const permissions = (channel as TextChannel).permissionsFor(this.client.user!);
-    return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
   }
 
 }
 
-function getPermissionLevel(member: GuildMember): PERMISSION {
-  if (environment.owners.includes(member.id)) {
+function getPermissionLevel(user: User, member?: GuildMember | null): PERMISSION {
+  if (environment.owners.includes(user.id)) {
     return PERMISSION.OWNER;
-  } else if (member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
+  } else if (member && member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
     return PERMISSION.ADMIN;
   }
   return PERMISSION.USER;

@@ -9,6 +9,7 @@ export interface Command {
   category: CommandCategory;
   // If using keyword parsing
   keywords?: Array<Keyword<unknown>>;
+  dmAllowed?: boolean;
   usage: string[];
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
@@ -35,7 +36,7 @@ export interface CommandContext {
   user: ContextUser;
   message: ContextMessage;
   channel: ContextTextChannel;
-  queue: ContextQueue;
+  queue?: ContextQueue;
 }
 
 export interface CommandOptions {

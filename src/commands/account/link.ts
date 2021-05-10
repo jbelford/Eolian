@@ -85,6 +85,7 @@ export const LINK_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
   permission: PERMISSION.USER,
+  dmAllowed: true,
   keywords: [KEYWORDS.QUERY, KEYWORDS.URL],
   usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
   execute

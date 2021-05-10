@@ -89,6 +89,7 @@ export const enum DiscordEvents {
 
 export const enum DiscordChannel {
   TEXT = 'text',
+  DM = 'dm',
   VOICE = 'voice'
 };
 

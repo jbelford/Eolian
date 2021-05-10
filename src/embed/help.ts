@@ -40,7 +40,10 @@ export function createCommandDetailsEmbed(command: Command): EmbedMessage {
     header: {
       text: `Command: ${command.name}`
     },
-    description: `${command.details}\n\n`
+    description: `${command.details}\n\n`,
+    footer: {
+      text: `Can be used in direct message? ${command.dmAllowed ? 'Yes': 'No' }`
+    }
   };
 
   if (command.keywords) {

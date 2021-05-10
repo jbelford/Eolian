@@ -12,7 +12,7 @@ export class DiscordUser implements ContextUser {
   constructor(private readonly user: User,
       private readonly users: EolianUserService,
       readonly permission: PERMISSION,
-      private readonly guildUser?: GuildMember) {}
+      private readonly guildUser?: GuildMember | null) {}
 
   get id() {
     return this.user.id;

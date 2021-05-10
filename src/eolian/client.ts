@@ -8,20 +8,7 @@ import { DiscordVoiceConnection } from './voice';
 
 export class DiscordClient implements ContextClient {
 
-  private readonly player: Player;
-  private readonly connectionProvider: VoiceConnectionProvider;
-
-  constructor(private readonly client: Client,
-      private readonly guildId: string,
-      private readonly queue: ContextQueue,
-      private readonly players: PlayerStore) {
-    this.connectionProvider = new VoiceConnectionProvider(this.client, this.guildId);
-    let player = this.players.get(this.guildId);
-    if (!player) {
-      player = new DiscordPlayer(this.connectionProvider, this.queue);
-      players.store(this.guildId, player);
-    }
-    this.player = player;
+  constructor(protected readonly client: Client) {
   }
 
   get name(): string {
@@ -33,11 +20,36 @@ export class DiscordClient implements ContextClient {
   }
 
   getVoice(): ContextVoiceConnection | undefined {
-    return this.connectionProvider.has() ? new DiscordVoiceConnection(this.connectionProvider.get()!, this.player) : undefined;
+    return undefined;
   }
 
   generateInvite(): Promise<string> {
     return this.client.generateInvite(DISCORD_INVITE_PERMISSIONS);
+  }
+
+}
+
+export class DiscordGuildClient extends DiscordClient {
+
+  private readonly player: Player;
+  private readonly connectionProvider: VoiceConnectionProvider;
+
+  constructor(readonly client: Client,
+      private readonly guildId: string,
+      private readonly queue: ContextQueue,
+      private readonly players: PlayerStore) {
+    super(client);
+    this.connectionProvider = new VoiceConnectionProvider(this.client, this.guildId);
+    let player = this.players.get(this.guildId);
+    if (!player) {
+      player = new DiscordPlayer(this.connectionProvider, this.queue);
+      players.store(this.guildId, player);
+    }
+    this.player = player;
+  }
+
+  getVoice(): ContextVoiceConnection | undefined {
+    return this.connectionProvider.has() ? new DiscordVoiceConnection(this.connectionProvider.get()!, this.player) : undefined;
   }
 
 }

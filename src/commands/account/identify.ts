@@ -28,6 +28,7 @@ export const IDENTIFY_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube',
   permission: PERMISSION.USER,
+  dmAllowed: true,
   keywords: [
     KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
     KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS
