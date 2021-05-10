@@ -9,7 +9,7 @@ export interface EolianBot extends Closable {
 
 export interface ContextTextChannel {
   send(message: string): Promise<ContextMessage>;
-  sendSelection(question: string, options: string[], userId: string): Promise<number>
+  sendSelection(question: string, options: string[], user: ContextUser): Promise<number>
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
 }
 
@@ -25,6 +25,7 @@ export interface ContextMessage {
   reply(message: string): Promise<void>;
   react(emoji: string): Promise<void>;
   getButtons(): Array<{ emoji: string, count: number }>;
+  releaseButtons(): void;
   delete(): Promise<void>;
 }
 
@@ -87,4 +88,4 @@ export interface MessageButton {
   onClick?: MessageButtonOnClickHandler;
 }
 
-export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser) => Promise<boolean>;
+export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser, emoji: string) => Promise<boolean>;

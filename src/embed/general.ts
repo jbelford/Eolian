@@ -13,7 +13,7 @@ export function createInviteEmbed(link: string, username: string, pic?: string):
   }
 }
 
-export function createSelectionEmbed(question: string, options: string[]): EmbedMessage {
+export function createSelectionEmbed(question: string, options: string[], username: string, pic?: string): EmbedMessage {
   return {
     header: {
       text: '👈🏻 Select one 👉🏻'
@@ -22,7 +22,8 @@ export function createSelectionEmbed(question: string, options: string[]): Embed
     color: COLOR.SELECTION,
     description: options.map((option, i) => `${i + 1}: ${option}`).join('\n') + '\n0: Cancel',
     footer: {
-      text: `Enter the number of your selection in chat`
+      icon: pic,
+      text: `${username}, enter the number of your selection in chat or click emoji`
     }
   };
 }

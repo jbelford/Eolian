@@ -1,11 +1,20 @@
 import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
-import { DMChannel, Message, MessageEmbed, MessageReaction, TextChannel, User } from 'discord.js';
+import { DMChannel, Message, MessageCollector, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { DiscordMessage } from 'eolian';
 import { EolianUserService } from 'services';
-import { ContextMessage, ContextTextChannel, EmbedMessage, MessageButton } from './@types';
+import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
 import { DiscordUser } from './user';
+
+const numberToEmoji = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
+
+const emojiToNumber: { [key: string]: number } = {};
+for (let i = 0; i < numberToEmoji.length; ++i) {
+  emojiToNumber[numberToEmoji[i]] = i;
+}
+
+const STOP_EMOJI = '🚫';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
@@ -17,30 +26,66 @@ export class DiscordTextChannel implements ContextTextChannel {
     return new DiscordMessage(discordMessage as Message);
   }
 
-  async sendSelection(question: string, options: string[], userId: string): Promise<number> {
-    const selectEmbed = createSelectionEmbed(question, options);
-    await this.sendEmbed(selectEmbed);
+  // Simutaneously need to accept a text input OR emoji reaction so this is a mess
+  async sendSelection(question: string, options: string[], user: ContextUser): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let sentEmbedPromise: Promise<ContextMessage>;
+      let resolved = false;
 
-    const selection = await this.awaitUserSelection(userId, options);
-    if (!selection) {
-      return -1;
-    }
+      const collector = this.awaitUserSelection(user.id, options, async (msg) => {
+        if (!resolved) {
+          try {
+            resolved = true;
+            const sentEmbed = await sentEmbedPromise;
+            await sentEmbed.delete();
+            if (!msg) {
+              resolve(-1);
+            } else {
+              await msg.delete();
+              const idx = +msg.content;
+              resolve(idx - 1);
+            }
+          } catch (e) {
+            reject(e);
+          }
+        }
+      });
 
-    const idx = +selection.content;
-    return idx - 1;
+      const onClick: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+        if (!resolved) {
+          resolved = true;
+          collector.stop();
+          await msg.delete();
+          resolve(emoji === STOP_EMOJI ? -1 : emojiToNumber[emoji] - 1);
+        }
+        return true;
+      };
+
+      const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
+      if (options.length <= numberToEmoji.length) {
+        selectEmbed.buttons = options.map((o, i) => ({ emoji: numberToEmoji[i + 1], onClick }));
+        selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
+      }
+
+      sentEmbedPromise = this.sendEmbed(selectEmbed);
+      sentEmbedPromise.catch(reject);
+    });
   }
 
-  private async awaitUserSelection(userId: string, options: string[]): Promise<Message | undefined> {
-    const messages = await this.channel.awaitMessages((message: Message) => {
+  private awaitUserSelection(userId: string, options: string[], cb: (message: Message | undefined) => void): MessageCollector {
+    const collector = this.channel.createMessageCollector((message: Message) => {
       if (message.author.id !== userId) {
         return false;
       }
-
       const idx = +message.content;
-      return !isNaN(idx) && idx >= 0 && idx <= options.length
+      return !isNaN(idx) && idx >= 0 && idx <= options.length;
     }, { max: 1, time: 60000 });
 
-    return messages.size ? messages.array()[0] : undefined;
+    collector.on('end', (collected) => {
+      cb(collected.first());
+    });
+
+    return collector;
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
@@ -56,15 +101,11 @@ export class DiscordTextChannel implements ContextTextChannel {
     if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
 
     const message = await this.channel.send(rich) as Message;
-    if (embed.buttons) await this.addButtons(message, embed.buttons);
-    return new DiscordMessage(message);
+    const collector = embed.buttons ? this.addButtons(message, embed.buttons) : undefined;
+    return new DiscordMessage(message, collector);
   }
 
-  private async addButtons(message: Message, buttons: MessageButton[]): Promise<void> {
-    for (const button of buttons) {
-      await message.react(button.emoji);
-    }
-
+  private addButtons(message: Message, buttons: MessageButton[]): ReactionCollector {
     const collector = message.createReactionCollector(
         (reaction: MessageReaction, user: User) => user.id !== message.author.id);
 
@@ -77,7 +118,8 @@ export class DiscordTextChannel implements ContextTextChannel {
       let destroy = false;
       try {
         destroy = await button.onClick(new DiscordMessage(reaction.message),
-            new DiscordUser(user, this.users, PERMISSION.UNKNOWN))
+            new DiscordUser(user, this.users, PERMISSION.UNKNOWN),
+            button.emoji);
       } catch (e) {
         logger.warn(`Button handler threw an unhandled exception: ${e.stack || e}`);
         destroy = true;
@@ -85,6 +127,18 @@ export class DiscordTextChannel implements ContextTextChannel {
 
       if (destroy) collector.stop();
     });
+
+    (async () => {
+      try {
+        for (const button of buttons) {
+          await message.react(button.emoji);
+        }
+      } catch (e) {
+        logger.error(`Failed to add button reaction to selection: ${e}`);
+      }
+    })();
+
+    return collector;
   }
 
 }

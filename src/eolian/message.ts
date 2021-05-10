@@ -1,10 +1,10 @@
 import { logger } from 'common/logger';
-import { Message } from 'discord.js';
+import { Message, ReactionCollector } from 'discord.js';
 import { ContextMessage } from './@types';
 
 export class DiscordMessage implements ContextMessage {
 
-  constructor(private readonly message: Message) { }
+  constructor(private readonly message: Message, private readonly collector?: ReactionCollector) { }
 
   get text(): string {
     return this.message.content;
@@ -29,6 +29,12 @@ export class DiscordMessage implements ContextMessage {
 
       return { emoji: reaction.emoji.name, count };
     });
+  }
+
+  releaseButtons() {
+    if (this.collector) {
+      this.collector.stop();
+    }
   }
 
   async delete(): Promise<void> {

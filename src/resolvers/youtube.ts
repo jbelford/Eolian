@@ -40,7 +40,7 @@ export class YouTubePlaylistResolver implements SourceResolver {
 
     const playlists = await youtube.searchPlaylists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
-      playlists.map(playlist => playlist.name), this.context.user.id);
+      playlists.map(playlist => playlist.name), this.context.user);
     if (idx < 0) throw new EolianUserError('Nothing selected. Cancelled request.');
 
     const playlist = playlists[idx];
@@ -60,7 +60,7 @@ export class YouTubeVideoResolver implements SourceResolver {
 
     const videos = await youtube.searchVideos(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a YouTube video',
-      videos.map(video => video.name), this.context.user.id);
+      videos.map(video => video.name), this.context.user);
     if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }
