@@ -1,10 +1,12 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
+import { IdentifierType } from 'data/@types';
 import { createPlayingEmbed } from 'embed';
 import { ContextMessage } from 'eolian/@types';
 import { Track } from 'music/@types';
+import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -14,10 +16,31 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  await userVoice.join();
-  let reaction = context.message.react('👋');
+  let added = false;
+  if (options.QUERY || options.URL) {
+    const resource = await getSourceResolver(context, options).resolve();
+    if (resource) {
+      await context.channel.send(`📍 Selected **${resource.name}** by **${resource.authors.join(',')}**`
+        + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
+        + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
 
-  const voice = context.client.getVoice();
+      const tracks = await getSourceFetcher(resource.identifier).fetch();
+      if (tracks.length > 0) {
+        await context.queue.add(tracks, true);
+        added = true;
+      }
+    }
+  }
+
+  let reactionChain = Promise.resolve();
+
+  let voice = context.client.getVoice();
+  if (!voice || voice.channelId !== userVoice.id) {
+    await userVoice.join();
+    reactionChain = reactionChain.then(() => context.message.react('👋'));
+    voice = context.client.getVoice();
+  }
+
   if (voice) {
     if (!voice.player.isStreaming) {
       let messageCache: ContextMessage;
@@ -38,17 +61,20 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       });
 
       await voice.player.play();
-
-      reaction = reaction.then(() => context.message.react('🎵'));
+      reactionChain = reactionChain.then(() => context.message.react('🎵'));
+    } else if (added) {
+      await voice.player.skip();
     }
   }
 
-  await reaction;
+  await reactionChain;
 }
 
 export const PLAY_COMMAND: Command = {
   name: 'play',
-  details: 'Start playing music OR join the current channel (if already playing)',
+  details: `Start playing music OR join the current channel (if already playing).
+You may optionally provide a query OR url to play that song right away.
+If query OR url is provided and currently streaming. The current song will be skipped and the requested song will be played.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
