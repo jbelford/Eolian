@@ -16,7 +16,7 @@ export interface ContextTextChannel {
 export interface ContextClient {
   readonly name: string;
   readonly pic?: string;
-  readonly voice?: ContextVoiceConnection;
+  getVoice(): ContextVoiceConnection | undefined;
   generateInvite(): Promise<string>;
 }
 
@@ -44,7 +44,7 @@ export interface ContextUser {
   readonly name: string;
   readonly avatar?: string;
   readonly permission: PERMISSION;
-  readonly voice?: ContextVoiceChannel;
+  getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;

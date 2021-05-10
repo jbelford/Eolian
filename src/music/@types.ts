@@ -20,7 +20,9 @@ export interface StreamData {
 
 export interface Player extends EventEmitter {
 
-  isStreaming: boolean;
+  readonly isStreaming: boolean;
+
+  readonly paused: boolean;
 
   setVolume(value: number): void;
 

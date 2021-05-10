@@ -8,22 +8,21 @@ import { Track } from 'music/@types';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
-  const voice = context.user.voice;
-  if (!voice) {
+  const userVoice = context.user.getVoice();
+  if (!userVoice) {
     await context.message.reply('You need to be in a voice channel!');
     return;
   }
 
-  await voice.join();
+  await userVoice.join();
   let reaction = context.message.react('👋');
 
-  const currentVoice = context.client.voice;
-  if (currentVoice) {
-    const player = currentVoice.player;
-    if (!player.isStreaming) {
+  const voice = context.client.getVoice();
+  if (voice) {
+    if (!voice.player.isStreaming) {
       let messageCache: ContextMessage;
 
-      player.on('next', async (track: Track) => {
+      voice.player.on('next', async (track: Track) => {
         if (messageCache) {
           await messageCache.delete();
         }
@@ -32,13 +31,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         messageCache = await context.channel.sendEmbed(embed);
       });
 
-      player.once('done', () => {
+      voice.player.once('done', () => {
         if (messageCache) {
           messageCache.delete();
         }
       });
 
-      await player.play();
+      await voice.player.play();
 
       reaction = reaction.then(() => context.message.react('🎵'));
     }
