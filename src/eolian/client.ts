@@ -2,8 +2,9 @@ import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
 import { PlayerStore } from 'data/@types';
 import { Client } from 'discord.js';
 import { Player } from 'music/@types';
+import { DiscordPlayer, VoiceConnectionProvider } from "../music/player";
 import { ContextClient, ContextQueue, ContextVoiceConnection } from './@types';
-import { DiscordPlayer, DiscordVoiceConnection, VoiceConnectionProvider } from './voice';
+import { DiscordVoiceConnection } from './voice';
 
 export class DiscordClient implements ContextClient {
 

@@ -30,7 +30,7 @@ export function createCommandListEmbed(category: CommandCategory): EmbedMessage 
   };
   embed.description += '```\n'
     + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => cmd.name).join('\n')
-    + '```' + `\nUse \`help /<command>/\` to see more information for that command.`
+    + '```' + `\nUse \`help <command>\` to see more information for that command.`
   return embed;
 }
 

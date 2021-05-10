@@ -15,10 +15,10 @@ export class QueueStream extends Readable {
    * @param prefetch buffer time to fetch next stream in seconds
    */
   constructor(
-    private readonly peekNext: () => Promise<StreamData | undefined>,
-    private readonly popNext: () => Promise<void>,
-    kBps = 16,
-    private readonly prefetch = 5) {
+      private readonly peekNext: () => Promise<StreamData | undefined>,
+      private readonly popNext: () => Promise<void>,
+      kBps = 16,
+      private readonly prefetch = 5) {
     super();
     this.setBitrate(kBps);
     this.startReadLoop();
