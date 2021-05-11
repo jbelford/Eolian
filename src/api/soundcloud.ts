@@ -1,3 +1,4 @@
+import { youtube } from 'api';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
@@ -5,7 +6,7 @@ import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudFavorites, SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
+import { SoundCloudApi, SoundCloudFavoritesCallback, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
 
 const URL = 'https://api.soundcloud.com';
 
@@ -15,7 +16,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
-      const tracks: SoundCloudTrack[] = await this.get('tracks', { q: query });
+      const tracks: SoundCloudTrack[] = await this.get('tracks', { q: query, access: 'playable,blocked', limit });
       return tracks.slice(0, limit);
     } catch (e) {
       logger.warn(`Failed to search SoundCloud songs: '${query}' limit: '${limit}'`);
@@ -25,7 +26,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async searchUser(query: string, limit = 5): Promise<SoundCloudUser[]> {
     try {
-      const users: SoundCloudUser[] = await this.get('users', { q: query });
+      const users: SoundCloudUser[] = await this.get('users', { q: query, limit });
       return users.slice(0, limit);
     } catch (e) {
       logger.warn(`Failed to search SoundCloud users: query: '${query}' limit: '${limit}'`);
@@ -36,7 +37,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   async searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
     try {
       const playlists: SoundCloudPlaylist[] = await this.get(userId ? `users/${userId}/playlists` : 'playlists',
-        { q: query, representation: 'compact' });
+        { q: query, limit: 5 });
       return playlists.slice(0, 5);
     } catch (e) {
       logger.warn(`Failed to search SoundCloud playlists: query: '${query}', userId: '${userId}'`);
@@ -100,7 +101,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getPlaylist(id: number): Promise<SoundCloudPlaylist> {
     try {
-      return await this.get<SoundCloudPlaylist>(`playlists/${id}`);
+      return await this.get<SoundCloudPlaylist>(`playlists/${id}`, { access: 'playable,blocked' });
     } catch (e) {
       logger.warn(`Failed to fetch SoundCloud playlist: id: ${id}`);
       throw e;
@@ -109,7 +110,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getUserTracks(id: number): Promise<SoundCloudTrack[]> {
     try {
-      return await this.get<SoundCloudTrack[]>(`users/${id}/tracks`);
+      return await this.get<SoundCloudTrack[]>(`users/${id}/tracks`, { access: 'playable,blocked' });
     } catch (e) {
       logger.warn(`Failed to fetch SoundCloud user's track: id: ${id}`);
       throw e;
@@ -121,7 +122,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       let progressPromise = Promise.resolve();
       let tracks: SoundCloudTrack[] = [];
 
-      let result = await this.get<SoundCloudFavorites>(`users/${id}/likes/tracks`, { access: 'playable', linked_partitioning: true, limit: 200 });
+      let result = await this.get<SoundCloudPaginatedTracks>(`users/${id}/likes/tracks`, { access: 'playable,blocked', linked_partitioning: true, limit: 200 });
       tracks = tracks.concat(result.collection);
 
       if (progressCb) {
@@ -130,7 +131,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       }
 
       while (result.next_href && (!max || tracks.length < max)) {
-        result = await this.getUri<SoundCloudFavorites>(`${result.next_href}&client_id=${this.token}`);
+        result = await this.getUri<SoundCloudPaginatedTracks>(`${result.next_href}&client_id=${this.token}`);
         tracks = tracks.concat(result.collection);
         if (progressCb) {
           let curr = tracks.length;
@@ -147,10 +148,16 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
-  getStream(track: Track): Promise<StreamData> {
+  getStream(track: Track): Promise<StreamData | undefined> {
     if (track.src !== SOURCE.SOUNDCLOUD) {
       throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
     }
+
+    // Use youtube for premium songs
+    if (!track.stream) {
+      return youtube.searchStream(track);
+    }
+
     return new Promise<StreamData>((resolve, reject) => {
       const stream = request(`${track.stream}?client_id=${this.token}`);
       stream.once('response', resp => {

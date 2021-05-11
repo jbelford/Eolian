@@ -55,7 +55,7 @@ export interface SoundCloudTrack extends SoundCloudResource {
   title: string;
 }
 
-export interface SoundCloudFavorites {
+export interface SoundCloudPaginatedTracks {
   collection: SoundCloudTrack[];
   next_href: string;
 }
@@ -173,6 +173,7 @@ export interface YouTubeApi extends StreamFetcher {
   getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
+  searchStream(track: Track): Promise<StreamData | undefined>;
 }
 
 export interface YouTubeUrlDetails {

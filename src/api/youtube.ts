@@ -128,6 +128,17 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
+  async searchStream(track: Track): Promise<StreamData | undefined> {
+    const query = `${track.title} ${track.poster}`;
+    const videos = await this.searchVideos(query);
+    if (videos.length > 0) {
+      const youtubeTrack = mapYouTubeVideo(videos[0]);
+      return this.getStream(youtubeTrack);
+    }
+    logger.warn(`Failed to fetch YouTube track for query: ${query}`);
+    return undefined;
+  }
+
   getStream(track: Track): Promise<StreamData | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
@@ -148,4 +159,16 @@ export class YouTubeApiImpl implements YouTubeApi {
     });
   }
 
+}
+
+export function mapYouTubeVideo(video: YoutubeVideo): Track {
+  return {
+    id: video.id,
+    poster: video.channelName,
+    src: SOURCE.YOUTUBE,
+    url: video.url,
+    title: video.name,
+    stream: video.url,
+    artwork: video.artwork
+  };
 }

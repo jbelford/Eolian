@@ -1,5 +1,6 @@
 import { youtube } from 'api';
 import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/@types';
+import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
@@ -94,18 +95,6 @@ function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
       url: video.url
     }
   }
-}
-
-export function mapYouTubeVideo(video: YoutubeVideo): Track {
-  return {
-    id: video.id,
-    poster: video.channelName,
-    src: SOURCE.YOUTUBE,
-    url: video.url,
-    title: video.name,
-    stream: video.url,
-    artwork: video.artwork
-  };
 }
 
 export class YouTubeFetcher implements SourceFetcher {

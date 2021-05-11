@@ -4,7 +4,6 @@ import { logger } from 'common/logger';
 import * as fuzz from 'fuzzball';
 import { StreamData, Track } from 'music/@types';
 import requestPromise from 'request-promise-native';
-import { mapYouTubeVideo } from 'resolvers/youtube';
 import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser } from './@types';
 
 interface PaginationOptions {
@@ -156,15 +155,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     if (track.src !== SOURCE.SPOTIFY) {
       throw new Error(`Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`);
     }
-
-    const query = `${track.title} ${track.poster}`;
-    const videos = await youtube.searchVideos(query);
-    if (videos.length > 0) {
-      const youtubeTrack = mapYouTubeVideo(videos[0]);
-      return youtube.getStream(youtubeTrack);
-    }
-    logger.warn(`Failed to fetch YouTube track for spotify query: ${query}`);
-    return undefined;
+    return youtube.searchStream(track);
   }
 
   private async searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {
