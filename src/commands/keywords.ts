@@ -117,7 +117,8 @@ export const KEYWORDS: Keywords = {
   },
   FAVORITES: {
     name: 'FAVORITES',
-    details: 'Indicates to fetch SoundCloud favorites',
+    details: `Indicates to fetch SoundCloud favorites.
+Fetching using TOP likes will execute much faster.`,
     permission: PERMISSION.USER,
     usage: ['favorites'],
     priority: 0,

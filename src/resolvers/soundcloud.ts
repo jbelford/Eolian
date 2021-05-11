@@ -3,6 +3,7 @@ import { SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, So
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
+import { convertRangeToAbsolute } from 'common/util';
 import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
 import { ContextMessage, ContextTextChannel } from 'eolian/@types';
 import { Track } from 'music/@types';
@@ -208,6 +209,7 @@ function mapSoundCloudTrack(track: SoundCloudTrack): Track {
 export class SoundCloudFetcher implements SourceFetcher {
 
   constructor(private readonly identifier: Identifier,
+    private readonly params: CommandOptions,
     private readonly channel?: ContextTextChannel) {}
 
   async fetch(): Promise<Track[]> {
@@ -247,17 +249,22 @@ export class SoundCloudFetcher implements SourceFetcher {
   private async fetchUserFavorites(): Promise<Track[]> {
     let cb: SoundCloudFavoritesCallback | undefined;
     let messageCache: ContextMessage | undefined;
+    let max = (this.identifier as SoundCloudUserIdentifier).favorites;
 
-    if (this.channel) {
+    if (this.params.TOP) {
+      max = convertRangeToAbsolute(this.params.TOP, max).stop;
+    } else if (this.params.BOTTOM) {
+      max = convertRangeToAbsolute(this.params.BOTTOM, max, true).stop;
+    }
+
+    if (this.channel && max > 300) {
       messageCache = await this.channel!.send(`Fetching favorites: 0%`);
-
-      const total = (this.identifier as SoundCloudUserIdentifier).favorites;
       cb = async (count: number) => {
-        await messageCache!.edit(`Fetching favorites: ${Math.round(100 * count / total)}%`);
+        await messageCache!.edit(`Fetching favorites: ${Math.round(100 * count / max)}%`);
       };
     }
 
-    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, cb);
+    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, cb);
 
     if (messageCache) {
       await messageCache.edit(`Fetching favorites: 100%`);

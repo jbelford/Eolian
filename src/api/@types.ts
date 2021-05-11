@@ -15,7 +15,7 @@ export interface SoundCloudApi extends StreamFetcher {
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
   getUserTracks(id: number): Promise<SoundCloudTrack[]>;
-  getUserFavorites(id: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]>;
+  getUserFavorites(id: number, max?: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]>;
 }
 
 export type SoundCloudFavoritesCallback = (count: number) => Promise<void>;

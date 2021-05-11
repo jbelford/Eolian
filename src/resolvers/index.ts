@@ -102,9 +102,9 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
     : getByQuery(context, params);
 }
 
-export function getSourceFetcher(identifier: Identifier, channel?: ContextTextChannel): SourceFetcher {
+export function getSourceFetcher(identifier: Identifier, params: CommandOptions, channel?: ContextTextChannel): SourceFetcher {
   switch (identifier.src) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier, channel);
+    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier, params, channel);
     case SOURCE.YOUTUBE: return new YouTubeFetcher(identifier);
     case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier);
     default: return UNKNOWN_FETCHER;

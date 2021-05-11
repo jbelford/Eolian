@@ -116,7 +116,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
-  async getUserFavorites(id: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]> {
+  async getUserFavorites(id: number, max?: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]> {
     try {
       let progressPromise = Promise.resolve();
       let tracks: SoundCloudTrack[] = [];
@@ -129,7 +129,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
         progressPromise = progressPromise.then(() => progressCb(curr));
       }
 
-      while (result.next_href) {
+      while (result.next_href && (!max || tracks.length < max)) {
         result = await this.getUri<SoundCloudFavorites>(`${result.next_href}&client_id=${this.token}`);
         tracks = tracks.concat(result.collection);
         if (progressCb) {

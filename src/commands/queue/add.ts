@@ -36,7 +36,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (identifier) {
-    let tracks = await getSourceFetcher(identifier, context.channel).fetch();
+    let tracks = await getSourceFetcher(identifier, options, context.channel).fetch();
     if (tracks.length > 0) {
       if (options.TOP) {
         tracks = applyRangeToList(options.TOP, tracks);

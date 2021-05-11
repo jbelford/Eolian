@@ -24,7 +24,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
         + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
 
-      const tracks = await getSourceFetcher(resource.identifier).fetch();
+      const tracks = await getSourceFetcher(resource.identifier, options, context.channel).fetch();
       if (tracks.length > 0) {
         await context.queue!.add(tracks, true);
         added = true;
