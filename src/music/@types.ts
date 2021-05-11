@@ -1,4 +1,5 @@
 import { SOURCE } from 'common/constants';
+import { ContextQueue } from 'eolian/@types';
 import EventEmitter from 'events';
 import { Readable } from 'stream';
 
@@ -21,8 +22,8 @@ export interface StreamData {
 export interface Player extends EventEmitter {
 
   readonly isStreaming: boolean;
-
   readonly paused: boolean;
+  readonly queue: ContextQueue;
 
   setVolume(value: number): void;
 

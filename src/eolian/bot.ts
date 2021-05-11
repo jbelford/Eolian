@@ -6,6 +6,7 @@ import { logger } from 'common/logger';
 import { AppDatabase, MemoryStore, PlayerStore } from 'data/@types';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
+import { DiscordPlayer, VoiceConnectionProvider } from 'music/player';
 import { EolianUserService, MusicQueueService } from 'services';
 import { EolianBot } from './@types';
 import { DiscordGuildClient } from './client';
@@ -98,9 +99,19 @@ export class DiscordEolianBot implements EolianBot {
           return;
         }
         context.client = new DiscordClient(this.client);
+      } else if (guild) {
+        let player = this.players.get(guild.id);
+        if (!player) {
+          player = new DiscordPlayer(
+            new VoiceConnectionProvider(this.client, guild.id),
+            new GuildQueue(this.queues, guild.id));
+          this.players.store(guild.id, player);
+        }
+
+        context.queue = player.queue;
+        context.client = new DiscordGuildClient(this.client, player as DiscordPlayer);
       } else {
-        context.queue = new GuildQueue(this.queues, guild!.id);
-        context.client = new DiscordGuildClient(this.client, guild!.id, context.queue, this.players);
+        throw new Error('Guild is missing from text message');
       }
 
       context.user = new DiscordUser(author, this.users, permission, member);

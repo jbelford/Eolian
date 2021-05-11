@@ -1,9 +1,7 @@
 import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
-import { PlayerStore } from 'data/@types';
 import { Client } from 'discord.js';
-import { Player } from 'music/@types';
-import { DiscordPlayer, VoiceConnectionProvider } from "../music/player";
-import { ContextClient, ContextQueue, ContextVoiceConnection } from './@types';
+import { DiscordPlayer } from "../music/player";
+import { ContextClient, ContextVoiceConnection } from './@types';
 import { DiscordVoiceConnection } from './voice';
 
 export class DiscordClient implements ContextClient {
@@ -31,25 +29,13 @@ export class DiscordClient implements ContextClient {
 
 export class DiscordGuildClient extends DiscordClient {
 
-  private readonly player: Player;
-  private readonly connectionProvider: VoiceConnectionProvider;
-
   constructor(readonly client: Client,
-      private readonly guildId: string,
-      private readonly queue: ContextQueue,
-      private readonly players: PlayerStore) {
+      private readonly player: DiscordPlayer) {
     super(client);
-    this.connectionProvider = new VoiceConnectionProvider(this.client, this.guildId);
-    let player = this.players.get(this.guildId);
-    if (!player) {
-      player = new DiscordPlayer(this.connectionProvider, this.queue);
-      players.store(this.guildId, player);
-    }
-    this.player = player;
   }
 
   getVoice(): ContextVoiceConnection | undefined {
-    return this.connectionProvider.has() ? new DiscordVoiceConnection(this.connectionProvider.get()!, this.player) : undefined;
+    return this.player.connectionProvider.has() ? new DiscordVoiceConnection(this.player.connectionProvider.get()!, this.player) : undefined;
   }
 
 }

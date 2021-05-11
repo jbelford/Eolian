@@ -30,8 +30,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private stream?: QueueStream;
 
   constructor(
-    private connectionProvider: VoiceConnectionProvider,
-    private readonly queue: ContextQueue) {
+    readonly connectionProvider: VoiceConnectionProvider,
+    readonly queue: ContextQueue) {
     super();
   }
 
