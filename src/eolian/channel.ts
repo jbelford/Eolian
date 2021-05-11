@@ -65,6 +65,7 @@ export class DiscordTextChannel implements ContextTextChannel {
       if (options.length <= numberToEmoji.length) {
         selectEmbed.buttons = options.map((o, i) => ({ emoji: numberToEmoji[i + 1], onClick }));
         selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
+        selectEmbed.buttonUserId = user.id;
       }
 
       sentEmbedPromise = this.sendEmbed(selectEmbed);
@@ -101,23 +102,27 @@ export class DiscordTextChannel implements ContextTextChannel {
     if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
 
     const message = await this.channel.send(rich) as Message;
-    const collector = embed.buttons ? this.addButtons(message, embed.buttons) : undefined;
+    const collector = embed.buttons ? this.addButtons(message, embed.buttons, embed.buttonUserId) : undefined;
     return new DiscordMessage(message, collector);
   }
 
-  private addButtons(message: Message, buttons: MessageButton[]): ReactionCollector {
-    const collector = message.createReactionCollector(
-        (reaction: MessageReaction, user: User) => user.id !== message.author.id);
+  private addButtons(message: Message, buttons: MessageButton[], userId?: string): ReactionCollector {
+    const buttonMap: { [key:string]: MessageButton } = {};
+    buttons.forEach(button => buttonMap[button.emoji] = button);
+
+    const collector = message.createReactionCollector((reaction: MessageReaction, user: User) =>
+      user.id !== message.author.id
+      && (!userId || userId === user.id)
+      && reaction.emoji.name in buttonMap
+      && !!buttonMap[reaction.emoji.name].onClick,
+      { idle: 60000 * 15 });
 
     collector.on('collect', async (reaction: MessageReaction, user: User) => {
-      const button = buttons.find(button => button.emoji === reaction.emoji.name);
-      if (!button || !button.onClick) {
-        return;
-      }
+      const button = buttons.find(button => button.emoji === reaction.emoji.name)!;
 
       let destroy = false;
       try {
-        destroy = await button.onClick(new DiscordMessage(reaction.message),
+        destroy = await button.onClick!(new DiscordMessage(reaction.message),
             new DiscordUser(user, this.users, PERMISSION.UNKNOWN),
             button.emoji);
       } catch (e) {
@@ -134,7 +139,7 @@ export class DiscordTextChannel implements ContextTextChannel {
           await message.react(button.emoji);
         }
       } catch (e) {
-        logger.error(`Failed to add button reaction to selection: ${e}`);
+        logger.warn(`Failed to add button reaction to selection: ${e}`);
       }
     })();
 

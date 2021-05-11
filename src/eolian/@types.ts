@@ -79,6 +79,7 @@ export interface EmbedMessage {
     text: string;
   };
   buttons?: MessageButton[];
+  buttonUserId?: string;
 }
 
 export interface MessageButton {
