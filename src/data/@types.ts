@@ -39,6 +39,10 @@ export interface Identifier {
   url: string;
 }
 
+export interface SoundCloudUserIdentifier extends Identifier {
+  favorites: number;
+}
+
 export enum IdentifierType {
   PLAYLIST = 0,
   ALBUM,

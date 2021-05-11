@@ -1,9 +1,10 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
+import { SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { Identifier, IdentifierType } from 'data/@types';
+import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
+import { ContextMessage, ContextTextChannel } from 'eolian/@types';
 import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
@@ -163,10 +164,14 @@ function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
 }
 
 function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
+  // @ts-ignore
+  const identifier: SoundCloudUserIdentifier = createIdentifier(user);
+  identifier.favorites = user.public_favorites_count;
+
   return {
     name: user.username,
     authors: [user.username],
-    identifier: createIdentifier(user)
+    identifier
   }
 }
 
@@ -202,7 +207,8 @@ function mapSoundCloudTrack(track: SoundCloudTrack): Track {
 
 export class SoundCloudFetcher implements SourceFetcher {
 
-  constructor(private readonly identifier: Identifier) {}
+  constructor(private readonly identifier: Identifier,
+    private readonly channel?: ContextTextChannel) {}
 
   async fetch(): Promise<Track[]> {
     if (this.identifier.src !== SOURCE.SOUNDCLOUD) {
@@ -210,26 +216,53 @@ export class SoundCloudFetcher implements SourceFetcher {
     }
 
     switch (this.identifier.type) {
-      case IdentifierType.PLAYLIST: return this.fetchPlaylist(this.identifier.id);
-      case IdentifierType.SONG: return [await this.fetchTrack(this.identifier.id)];
+      case IdentifierType.PLAYLIST:
+        return this.fetchPlaylist();
+      case IdentifierType.SONG:
+        return [await this.fetchTrack()];
       case IdentifierType.TRACKS:
-      case IdentifierType.ARTIST: return this.fetchUserTracks(this.identifier.id);
+      case IdentifierType.ARTIST:
+        return this.fetchUserTracks();
       case IdentifierType.FAVORITES:
-      default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
+        return this.fetchUserFavorites();
+      default:
+        throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
     }
   }
 
-  async fetchPlaylist(id: string): Promise<Track[]> {
-    const playlist = await soundcloud.getPlaylist(+id);
+  private async fetchPlaylist(): Promise<Track[]> {
+    const playlist = await soundcloud.getPlaylist(+this.identifier.id);
     return playlist.tracks!.map(mapSoundCloudTrack);
   }
 
-  async fetchTrack(id: string): Promise<Track> {
-    return mapSoundCloudTrack(await soundcloud.getTrack(+id));
+  private async fetchTrack(): Promise<Track> {
+    return mapSoundCloudTrack(await soundcloud.getTrack(+this.identifier.id));
   }
 
-  async fetchUserTracks(id: string): Promise<Track[]> {
-    const tracks = await soundcloud.getUserTracks(+id);
+  private async fetchUserTracks(): Promise<Track[]> {
+    const tracks = await soundcloud.getUserTracks(+this.identifier.id);
+    return tracks.map(mapSoundCloudTrack);
+  }
+
+  private async fetchUserFavorites(): Promise<Track[]> {
+    let cb: SoundCloudFavoritesCallback | undefined;
+    let messageCache: ContextMessage | undefined;
+
+    if (this.channel) {
+      messageCache = await this.channel!.send(`Fetching favorites: 0%`);
+
+      const total = (this.identifier as SoundCloudUserIdentifier).favorites;
+      cb = async (count: number) => {
+        await messageCache!.edit(`Fetching favorites: ${Math.round(100 * count / total)}%`);
+      };
+    }
+
+    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, cb);
+
+    if (messageCache) {
+      await messageCache.edit(`Fetching favorites: 100%`);
+    }
+
     return tracks.map(mapSoundCloudTrack);
   }
 

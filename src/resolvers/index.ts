@@ -2,6 +2,7 @@ import { CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
+import { ContextTextChannel } from 'eolian/@types';
 import { SourceFetcher, SourceResolver } from './@types';
 import { SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudFetcher, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
 import { SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyFetcher, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
@@ -101,9 +102,9 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
     : getByQuery(context, params);
 }
 
-export function getSourceFetcher(identifier: Identifier): SourceFetcher {
+export function getSourceFetcher(identifier: Identifier, channel?: ContextTextChannel): SourceFetcher {
   switch (identifier.src) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier);
+    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier, channel);
     case SOURCE.YOUTUBE: return new YouTubeFetcher(identifier);
     case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier);
     default: return UNKNOWN_FETCHER;

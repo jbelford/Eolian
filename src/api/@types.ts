@@ -15,7 +15,10 @@ export interface SoundCloudApi extends StreamFetcher {
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
   getUserTracks(id: number): Promise<SoundCloudTrack[]>;
+  getUserFavorites(id: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]>;
 }
+
+export type SoundCloudFavoritesCallback = (count: number) => Promise<void>;
 
 export const enum SoundCloudResourceType {
   USER = 'user',
@@ -32,6 +35,7 @@ export interface SoundCloudResource {
 export interface SoundCloudUser extends SoundCloudResource {
   username: string;
   avatar_url: string;
+  public_favorites_count: number;
 }
 
 export interface SoundCloudPlaylist extends SoundCloudResource {
@@ -49,6 +53,11 @@ export interface SoundCloudTrack extends SoundCloudResource {
   artwork_url: string;
   user: SoundCloudUser;
   title: string;
+}
+
+export interface SoundCloudFavorites {
+  collection: SoundCloudTrack[];
+  next_href: string;
 }
 
 export interface SpotifyApi extends StreamFetcher {

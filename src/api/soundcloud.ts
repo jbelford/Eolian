@@ -5,7 +5,7 @@ import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
+import { SoundCloudApi, SoundCloudFavorites, SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
 
 const URL = 'https://api.soundcloud.com';
 
@@ -116,6 +116,37 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
+  async getUserFavorites(id: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]> {
+    try {
+      let progressPromise = Promise.resolve();
+      let tracks: SoundCloudTrack[] = [];
+
+      let result = await this.get<SoundCloudFavorites>(`users/${id}/likes/tracks`, { access: 'playable', linked_partitioning: true, limit: 200 });
+      tracks = tracks.concat(result.collection);
+
+      if (progressCb) {
+        let curr = tracks.length;
+        progressPromise = progressPromise.then(() => progressCb(curr));
+      }
+
+      while (result.next_href) {
+        result = await this.getUri<SoundCloudFavorites>(`${result.next_href}&client_id=${this.token}`);
+        tracks = tracks.concat(result.collection);
+        if (progressCb) {
+          let curr = tracks.length;
+          progressPromise = progressPromise.then(() => progressCb(curr));
+        }
+      }
+
+      await progressPromise;
+
+      return tracks;
+    } catch (e) {
+      logger.warn(`Failed to fetch SoundCloud user's liked tracks: ${id}`);
+      throw e;
+    }
+  }
+
   getStream(track: Track): Promise<StreamData> {
     if (track.src !== SOURCE.SOUNDCLOUD) {
       throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
@@ -138,9 +169,14 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     });
   }
 
-  private async get<T>(endpoint: string, params: { [key: string]: string } = {}): Promise<T> {
+  private async get<T>(endpoint: string, params: { [key: string]: any } = {}): Promise<T> {
     params.client_id = this.token;
-    const data = await requestp(`${URL}/${endpoint}?${querystring.stringify(params)}`);
+    return this.getUri<T>(`${URL}/${endpoint}?${querystring.stringify(params)}`);
+  }
+
+  private async getUri<T>(uri: string): Promise<T> {
+    logger.debug(`SoundCloud HTTP: ${uri}`);
+    const data = await requestp(uri);
     return JSON.parse(data);
   }
 

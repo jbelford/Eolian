@@ -22,6 +22,7 @@ export interface ContextClient {
 
 export interface ContextMessage {
   readonly text: string;
+  edit(message: string): Promise<void>;
   reply(message: string): Promise<void>;
   react(emoji: string): Promise<void>;
   getButtons(): Array<{ emoji: string, count: number }>;

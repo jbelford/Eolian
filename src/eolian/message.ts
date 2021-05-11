@@ -18,6 +18,10 @@ export class DiscordMessage implements ContextMessage {
     await this.message.react(emoji);
   }
 
+  async edit(message: string): Promise<void> {
+    await this.message.edit(message);
+  }
+
   getButtons() {
     return this.message.reactions.cache.map(reaction => {
       let count = 0;
