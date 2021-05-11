@@ -1,4 +1,4 @@
-import { Closable } from 'common/@types';
+import { AbsRangeArgument, Closable } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { Player, Track } from 'music/@types';
 
@@ -55,6 +55,7 @@ export interface MemoryStore extends Closable {
 
 export interface MusicQueueDAO {
   get(guildId: string, limit?: number): Promise<Track[]>;
+  remove(guildId: string, range: AbsRangeArgument): Promise<number>
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;
   clear(guildId: string): Promise<boolean>;

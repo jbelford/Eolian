@@ -1,3 +1,4 @@
+import { AbsRangeArgument } from 'common/@types';
 import { logger } from 'common/logger';
 import { MusicQueueDAO } from 'data/@types';
 import { Track } from 'music/@types';
@@ -11,6 +12,15 @@ export class MusicQueueService {
       return await this.queues.get(guildId, limit);
     } catch (e) {
       logger.warn(`Failed to get tracks from queue: guildId: ${guildId} limit: ${limit}`);
+      throw e;
+    }
+  }
+
+  async removeTracks(guildId: string, range: AbsRangeArgument): Promise<number> {
+    try {
+      return await this.queues.remove(guildId, range);
+    } catch (e) {
+      logger.warn(`Failed to remove tracks from queue: guildId: ${guildId} range: ${range.start} ${range.stop}`);
       throw e;
     }
   }

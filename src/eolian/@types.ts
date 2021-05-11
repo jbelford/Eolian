@@ -1,4 +1,4 @@
-import { Closable } from 'common/@types';
+import { AbsRangeArgument, Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, UserDTO } from 'data/@types';
 import { Player, Track } from 'music/@types';
@@ -55,6 +55,7 @@ export interface ContextUser {
 
 export interface ContextQueue {
   get(limit?: number): Promise<Track[]>;
+  remove(range: AbsRangeArgument): Promise<number>;
   add(tracks: Track[], head?: boolean): Promise<void>;
   shuffle(): Promise<boolean>;
   clear(): Promise<boolean>;

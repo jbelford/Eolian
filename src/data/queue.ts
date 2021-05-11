@@ -1,3 +1,4 @@
+import { AbsRangeArgument } from 'common/@types';
 import { shuffleList } from 'common/util';
 import { Track } from 'music/@types';
 import { EolianCache, MusicQueueDAO } from './@types';
@@ -17,6 +18,13 @@ export class InMemoryQueues implements MusicQueueDAO {
   async get(guildId: string, limit?: number): Promise<Track[]> {
     const list = await this.cache.get<Track[]>(guildId) || [];
     return limit ? list.slice(0, limit) : list;
+  }
+
+  async remove(guildId: string, range: AbsRangeArgument): Promise<number> {
+    const list = await this.cache.get<Track[]>(guildId) || [];
+    const newList = list.slice(0, range.start).concat(list.slice(range.stop));
+    this.cache.set(guildId, newList);
+    return range.stop - range.start;
   }
 
   async add(guildId: string, tracks: Track[], head?: boolean): Promise<void> {
