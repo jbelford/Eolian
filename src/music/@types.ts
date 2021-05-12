@@ -25,6 +25,8 @@ export interface Player extends EventEmitter {
   readonly paused: boolean;
   readonly queue: ServerQueue;
 
+  readonly volume: number;
+
   setVolume(value: number): void;
 
   /**

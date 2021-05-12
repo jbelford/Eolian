@@ -4,7 +4,7 @@ import { ServerQueue } from 'data/@types';
 import { Client, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player, StreamData } from 'music/@types';
-import prism from 'prism-media';
+import prism, { VolumeTransformer } from 'prism-media';
 import { PassThrough } from 'stream';
 
 
@@ -30,8 +30,9 @@ const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 
 export class DiscordPlayer extends EventEmitter implements Player {
 
-  private volume: number = 0.5;
+  private _volume: number = 0.5;
   private stream?: StreamData;
+  private volumeTransform?: VolumeTransformer;
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
@@ -47,10 +48,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return this.isStreaming && this.getConnection().dispatcher.paused;
   }
 
+  get volume(): number {
+    return this._volume;
+  }
+
   setVolume(value: number): void {
-    this.volume = Math.max(0, Math.min(1, value));
-    if (this.isStreaming) {
-      this.getConnection().dispatcher.setVolume(this.volume);
+    this._volume = Math.max(0, Math.min(1, value));
+    if (this.volumeTransform) {
+      this.volumeTransform.setVolume(this._volume);
     }
   }
 
@@ -67,7 +72,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
     await this.popNext();
 
+
     const passthrough = new PassThrough();
+
     const endHandler = async () => {
       try {
         this.stream = await this.getNextStream();
@@ -87,8 +94,12 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stream.readable.pipe(passthrough, { end: false });
     this.stream.readable.once('end', endHandler);
 
+    this.volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume: this._volume });
+    const opusStream = passthrough.pipe(this.volumeTransform)
+      .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
+
     // We manage volume directly so set false
-    connection.play(passthrough, { seek: 0, volume: false, type: 'opus' });
+    connection.play(opusStream, { seek: 0, volume: false, type: 'opus' });
 
     const disconnectHandler = () => this.emitDone();
     connection.once('disconnect', disconnectHandler);
@@ -100,6 +111,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         this.stream.readable.destroy();
       }
       this.stream = undefined;
+      this.volumeTransform = undefined;
     });
 
     connection.dispatcher.once('finish', async () => {
@@ -155,11 +167,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (nextTrack) {
       const stream = await getTrackStream(nextTrack);
       if (stream) {
-        // Need to decode to a PCM stream in order to apply volume tranform
-        const decoder = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
-        stream.readable = stream.readable.pipe(decoder)
-          .pipe(new prism.VolumeTransformer({ type: 's16le', volume: this.volume }))
-          .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
+        const pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+        stream.readable = stream.readable.pipe(pcmTransform);
         return stream;
       }
     }
