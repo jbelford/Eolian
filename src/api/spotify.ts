@@ -182,6 +182,8 @@ export class SpotifyApiImpl implements SpotifyApi {
   private async getToken(): Promise<{ access_token: string, expires_in: number }> {
     const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
+    logger.debug(`Spotify HTTP: https://accounts.spotify.com/api/token`);
+
     const resp = await requestPromise('https://accounts.spotify.com/api/token',
       { method: 'post', body: 'grant_type=client_credentials', json: true, headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }});
 
@@ -193,6 +195,9 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   private getUrl<T>(url: string, params = {}) : Promise<T> {
+    if (logger.isDebugEnabled()) {
+      logger.debug(`Spotify HTTP: ${url} - ${JSON.stringify(params)}`);
+    }
     return requestPromise(url, { qs: params, json: true, auth: { bearer: this.accessToken } }) as unknown as Promise<T>;
   }
 

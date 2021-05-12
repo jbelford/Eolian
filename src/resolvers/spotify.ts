@@ -171,7 +171,7 @@ function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
     title: track.name,
     src: SOURCE.SPOTIFY,
     stream: track.uri,
-    url: track.href,
+    url: track.external_urls.spotify,
     artwork
   };
 }

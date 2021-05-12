@@ -144,7 +144,7 @@ export interface SpotifyTrack {
   artists: SpotifyArtist[];
   duration_ms: number;
   uri: string;
-  href: string;
+  external_urls: SpotifyExternalUrls;
 }
 
 export interface SpotifyArtist {
