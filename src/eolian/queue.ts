@@ -1,9 +1,9 @@
 import { AbsRangeArgument } from 'common/@types';
+import { ServerQueue } from 'data/@types';
 import { Track } from 'music/@types';
 import { MusicQueueService } from 'services';
-import { ContextQueue } from './@types';
 
-export class GuildQueue implements ContextQueue {
+export class GuildQueue implements ServerQueue {
 
   constructor(
     private readonly queue: MusicQueueService,

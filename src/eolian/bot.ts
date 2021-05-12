@@ -3,7 +3,8 @@ import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIEN
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { AppDatabase, MemoryStore, PlayerStore } from 'data/@types';
+import { AppDatabase, MemoryStore, ServerState, ServerStateStore } from 'data/@types';
+import { InMemoryServerStateStore } from 'data/playerstore';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { DiscordPlayer, VoiceConnectionProvider } from 'music/player';
@@ -26,7 +27,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly users: EolianUserService;
   private readonly queues: MusicQueueService;
-  private readonly players: PlayerStore;
+  private readonly servers: ServerStateStore;
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
@@ -42,7 +43,7 @@ export class DiscordEolianBot implements EolianBot {
 
     this.users = new EolianUserService(args.db.users);
     this.queues = new MusicQueueService(args.store.queueDao);
-    this.players = args.store.playerStore;
+    this.servers = new InMemoryServerStateStore();
   }
 
   async start() {
@@ -100,16 +101,8 @@ export class DiscordEolianBot implements EolianBot {
         }
         context.client = new DiscordClient(this.client);
       } else if (guild) {
-        let player = this.players.get(guild.id);
-        if (!player) {
-          player = new DiscordPlayer(
-            new VoiceConnectionProvider(this.client, guild.id),
-            new GuildQueue(this.queues, guild.id));
-          this.players.store(guild.id, player);
-        }
-
-        context.queue = player.queue;
-        context.client = new DiscordGuildClient(this.client, player as DiscordPlayer);
+        context.server = this.getGuildState(guild.id);
+        context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
       } else {
         throw new Error('Guild is missing from text message');
       }
@@ -145,6 +138,18 @@ export class DiscordEolianBot implements EolianBot {
       default:
         return false;
     }
+  }
+
+  private getGuildState(guildId: string): ServerState {
+    let state = this.servers.get(guildId);
+    if (!state) {
+      const connectionProvider = new VoiceConnectionProvider(this.client, guildId);
+      const queue = new GuildQueue(this.queues, guildId);
+      const player = new DiscordPlayer(connectionProvider, queue);
+      state = { player, queue };
+      this.servers.set(guildId, state);
+    }
+    return state;
   }
 
 }

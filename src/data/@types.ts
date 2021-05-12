@@ -54,7 +54,6 @@ export enum IdentifierType {
 
 export interface MemoryStore extends Closable {
   readonly queueDao: MusicQueueDAO;
-  readonly playerStore: PlayerStore;
 }
 
 export interface MusicQueueDAO {
@@ -67,7 +66,22 @@ export interface MusicQueueDAO {
   peek(guildId: string): Promise<Track | undefined>;
 }
 
-export interface PlayerStore {
-  get(guildId: string): Player | undefined;
-  store(guildId: string, player: Player): void;
+export interface ServerQueue {
+  get(limit?: number): Promise<Track[]>;
+  remove(range: AbsRangeArgument): Promise<number>;
+  add(tracks: Track[], head?: boolean): Promise<void>;
+  shuffle(): Promise<boolean>;
+  clear(): Promise<boolean>;
+  pop(): Promise<Track | undefined>;
+  peek(): Promise<Track | undefined>;
+}
+
+export interface ServerStateStore {
+  get(id: string): ServerState | undefined;
+  set(id: string, context: ServerState): void;
+}
+
+export interface ServerState {
+  player: Player;
+  queue: ServerQueue;
 }

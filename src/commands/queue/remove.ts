@@ -17,15 +17,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   await context.message.react('🌪');
 
   if (options.NEXT) {
-    await context.queue!.pop();
+    await context.server!.queue.pop();
     await context.message.reply('Removed next song from the queue!');
     return;
   }
 
-  const queueLength = (await context.queue!.get()).length;
+  const queueLength = (await context.server!.queue.get()).length;
   const range = getRangeOption(options, queueLength)!;
 
-  const removed = await context.queue!.remove(range);
+  const removed = await context.server!.queue.remove(range);
   await context.message.reply(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);
 }
 

@@ -1,17 +1,16 @@
-import { Player } from 'music/@types';
-import { PlayerStore } from './@types';
+import { ServerState, ServerStateStore } from './@types';
 
 
-export class InMemoryPlayerStore implements PlayerStore {
+export class InMemoryServerStateStore implements ServerStateStore {
 
-  private readonly players: { [key: string]: Player } = {};
+  private readonly state: { [key: string]: ServerState } = {};
 
-  get(guildId: string): Player | undefined {
-    return this.players[guildId];
+  get(guildId: string): ServerState | undefined {
+    return this.state[guildId];
   }
 
-  store(guildId: string, player: Player): void {
-    this.players[guildId] = player;
+  set(guildId: string, player: ServerState): void {
+    this.state[guildId] = player;
   }
 
 }

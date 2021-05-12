@@ -1,9 +1,9 @@
 import { getTrackStream } from 'api';
+import { ServerQueue } from 'data/@types';
 import { Client, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player, StreamData } from 'music/@types';
 import { QueueStream } from 'music/qstream';
-import { ContextQueue } from '../eolian/@types';
 
 
 export class VoiceConnectionProvider {
@@ -31,7 +31,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
-    readonly queue: ContextQueue) {
+    readonly queue: ServerQueue) {
     super();
   }
 

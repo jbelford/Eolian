@@ -8,7 +8,7 @@ import { MessageButtonOnClickHandler } from 'eolian/@types';
 import { Track } from 'music/@types';
 
 async function executeClearQueue(context: CommandContext, options: CommandOptions): Promise<void> {
-  const cleared = await context.queue!.clear();
+  const cleared = await context.server!.queue.clear();
   if (cleared) {
     await context.channel.send('💨 I have cleared the queue!');
   } else {
@@ -25,8 +25,8 @@ async function sendQueueEmbed(tracks: Track[], start: number, total: number, con
 function createShuffleButtonHandler(context: CommandContext) : MessageButtonOnClickHandler {
   return async (message, user) => {
     message.delete();
-    await context.queue!.shuffle();
-    const tracks = await context.queue!.get();
+    await context.server!.queue.shuffle();
+    const tracks = await context.server!.queue.get();
     await sendQueueEmbed(tracks, 0, tracks.length, context);
     return true;
   };
@@ -37,7 +37,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return executeClearQueue(context, options);
   }
 
-  let tracks = await context.queue!.get();
+  let tracks = await context.server!.queue.get();
 
   if (tracks.length === 0) {
     await context.channel.send('🕳 The queue is empty!');
@@ -45,7 +45,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (options.SHUFFLE) {
-    await context.queue!.shuffle();
+    await context.server!.queue.shuffle();
     await context.channel.send('🔀 I have shuffled the queue!');
     return;
   }
