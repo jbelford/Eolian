@@ -31,6 +31,7 @@
     "mongodb": "^3.6.6",
     "node-cache": "^5.1.2",
     "node-cleanup": "^2.1.2",
+    "opusscript": "0.0.8",
     "prism-media": "^1.2.9",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
