@@ -9,6 +9,7 @@ import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChan
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { DiscordPlayer, VoiceConnectionProvider } from 'music/player';
 import { EolianUserService, MusicQueueService } from 'services';
+import { UserLockManager } from 'services/lock';
 import { EolianBot } from './@types';
 import { DiscordGuildClient } from './client';
 import { GuildQueue } from './queue';
@@ -28,6 +29,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly users: EolianUserService;
   private readonly queues: MusicQueueService;
   private readonly servers: ServerStateStore;
+  private readonly lockManager: UserLockManager;
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
@@ -44,6 +46,7 @@ export class DiscordEolianBot implements EolianBot {
     this.users = new EolianUserService(args.db.users);
     this.queues = new MusicQueueService(args.store.queueDao);
     this.servers = new InMemoryServerStateStore();
+    this.lockManager = new UserLockManager(60000);
   }
 
   async start() {
@@ -74,10 +77,13 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private async handleMessage(message: Message): Promise<void> {
+    let userId: string | undefined;
     try {
-      if (this.isIgnorable(message)) {
+      if (await this.isIgnorable(message)) {
         return;
       }
+      userId = message.author.id;
+      await this.lockManager.lockUser(userId);
 
       const { author, content, channel, member, guild } = message;
 
@@ -119,13 +125,18 @@ export class DiscordEolianBot implements EolianBot {
         logger.warn(`Unhandled error occured during request: ${e.stack || e}`);
         await message.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
       }
+    } finally {
+      if (userId) {
+        await this.lockManager.unlockUser(userId);
+      }
     }
   }
 
-  private isIgnorable(message: Message) {
+  private async isIgnorable(message: Message) {
     return message.author.bot
       || message.channel.type === 'news'
-      || (!message.mentions.has(this.client.user!) && !this.parser.messageInvokesBot(message.content));
+      || (!message.mentions.has(this.client.user!) && !this.parser.messageInvokesBot(message.content))
+      || await this.lockManager.isLocked(message.author.id);
   }
 
   private hasSendPermission(channel: Channel) {
