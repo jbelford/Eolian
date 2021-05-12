@@ -171,7 +171,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
         resp.pause();
 
-        resolve({ readable: resp, size: contentLength, details: track });
+        resolve({ readable: resp, details: track });
       });
     });
   }

@@ -2,7 +2,7 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
-import ytdl from 'ytdl-core';
+import ytdl from 'ytdl-core-discord';
 import { YouTubeApi, YoutubePlaylist, YouTubeResourceType, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 export class YouTubeApiImpl implements YouTubeApi {
@@ -139,24 +139,13 @@ export class YouTubeApiImpl implements YouTubeApi {
     return undefined;
   }
 
-  getStream(track: Track): Promise<StreamData | undefined> {
+  async getStream(track: Track): Promise<StreamData | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
 
-    return new Promise<StreamData>((resolve, reject) => {
-      const stream = ytdl(track.url, { filter : 'audioonly' });
-      stream.once('info', (info, format) => {
-        const contentLength = Number(format['contentLength']);
-        if (isNaN(contentLength)) {
-          return reject('Could not parse content-length from YouTube stream');
-        }
-
-        stream.pause();
-
-        resolve({ readable: stream, size: contentLength, details: track });
-      });
-    });
+    const stream = await ytdl(track.url, { filter : 'audioonly' });
+    return { readable: stream, details: track, opus: true };
   }
 
 }

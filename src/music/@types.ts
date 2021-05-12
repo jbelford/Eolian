@@ -15,8 +15,8 @@ export interface Track {
 
 export interface StreamData {
   readable: Readable,
-  size: number,
-  details: Track
+  details: Track,
+  opus?: boolean
 }
 
 export interface Player extends EventEmitter {

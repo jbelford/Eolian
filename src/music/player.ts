@@ -4,6 +4,7 @@ import { ServerQueue } from 'data/@types';
 import { Client, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player, StreamData } from 'music/@types';
+import prism from 'prism-media';
 import { PassThrough } from 'stream';
 
 
@@ -24,6 +25,8 @@ export class VoiceConnectionProvider {
 
 }
 
+const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
+const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 
 export class DiscordPlayer extends EventEmitter implements Player {
 
@@ -76,6 +79,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         }
         await this.popNext();
       } catch (e) {
+        logger.warn(e);
         passthrough.end();
       }
     };
@@ -83,7 +87,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stream.readable.pipe(passthrough, { end: false });
     this.stream.readable.once('end', endHandler);
 
-    connection.play(passthrough, { seek: 0, volume: this.volume });
+    connection.play(passthrough, { seek: 0, volume: this.volume, type: 'opus' });
 
     connection.once('disconnect', () => {
       this.emitDone();
@@ -148,7 +152,15 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private async getNextStream(): Promise<StreamData | undefined> {
     const nextTrack = await this.queue.peek();
     if (nextTrack) {
-      return getTrackStream(nextTrack);
+      const stream = await getTrackStream(nextTrack);
+      if (stream) {
+        // If not opus then we have to add some extra noodles here
+        if (!stream.opus) {
+          stream.readable = stream.readable.pipe(new prism.FFmpeg({ args: FFMPEG_ARGUMENTS }))
+              .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
+        }
+        return stream;
+      }
     }
     return undefined;
   }
