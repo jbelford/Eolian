@@ -1,9 +1,10 @@
 import { getTrackStream } from 'api';
+import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player, StreamData } from 'music/@types';
-import { QueueStream } from 'music/qstream';
+import { PassThrough } from 'stream';
 
 
 export class VoiceConnectionProvider {
@@ -27,7 +28,7 @@ export class VoiceConnectionProvider {
 export class DiscordPlayer extends EventEmitter implements Player {
 
   private volume: number = 0.5;
-  private stream?: QueueStream;
+  private stream?: StreamData;
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
@@ -57,27 +58,49 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
     const connection = this.getConnection();
 
-    this.stream = new QueueStream(
-      () => this.getNextStream(),
-      () => this.popNext(),
-      connection.channel.bitrate);
+    this.stream = await this.getNextStream();
+    if (!this.stream) {
+      throw Error('Failed to get first stream!');
+    }
+    await this.popNext();
 
-    connection.play(this.stream, { seek: 0, volume: this.volume });
+    const passthrough = new PassThrough();
+    const endHandler = async () => {
+      try {
+        this.stream = await this.getNextStream();
+        if (this.stream) {
+          this.stream.readable.pipe(passthrough, { end: false });
+          this.stream.readable.once('end', endHandler);
+        } else {
+          passthrough.end();
+        }
+        await this.popNext();
+      } catch (e) {
+        passthrough.end();
+      }
+    };
 
-    connection.on('disconnect', () => {
+    this.stream.readable.pipe(passthrough, { end: false });
+    this.stream.readable.once('end', endHandler);
+
+    connection.play(passthrough, { seek: 0, volume: this.volume });
+
+    connection.once('disconnect', () => {
       this.emitDone();
     });
 
+    connection.dispatcher.on('error', err => logger.warn(err));
+
     connection.dispatcher.once('close', () => {
-      if (this.stream && !this.stream.destroyed) {
-        this.stream.destroy();
+      if (this.stream && !this.stream.readable.destroyed) {
+        this.stream.readable.destroy();
       }
       this.stream = undefined;
     });
 
     connection.dispatcher.once('finish', async () => {
-      if (this.stream && !this.stream.destroyed) {
-        this.stream.destroy();
+      if (this.stream && !this.stream.readable.destroyed) {
+        this.stream.readable.destroy();
       }
       this.stream = undefined;
 
@@ -118,9 +141,6 @@ export class DiscordPlayer extends EventEmitter implements Player {
     const connection = this.connectionProvider.get();
     if (!connection) {
       throw new Error('Expected voice connection to be available');
-    }
-    if (this.isStreaming) {
-      this.stream!.setBitrate(connection.channel.bitrate);
     }
     return connection;
   }
