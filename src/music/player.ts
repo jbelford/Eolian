@@ -87,7 +87,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stream.readable.pipe(passthrough, { end: false });
     this.stream.readable.once('end', endHandler);
 
-    connection.play(passthrough, { seek: 0, volume: this.volume, type: 'opus' });
+    // We manage volume directly so set false
+    connection.play(passthrough, { seek: 0, volume: false, type: 'opus' });
 
     connection.once('disconnect', () => {
       this.emitDone();
@@ -154,11 +155,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (nextTrack) {
       const stream = await getTrackStream(nextTrack);
       if (stream) {
-        // If not opus then we have to add some extra noodles here
-        if (!stream.opus) {
-          stream.readable = stream.readable.pipe(new prism.FFmpeg({ args: FFMPEG_ARGUMENTS }))
-              .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
-        }
+        // Need to decode to a PCM stream in order to apply volume tranform
+        const decoder = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+        stream.readable = stream.readable.pipe(decoder)
+          .pipe(new prism.VolumeTransformer({ type: 's16le', volume: this.volume }))
+          .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
         return stream;
       }
     }
