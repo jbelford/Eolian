@@ -2,13 +2,15 @@ import { COLOR, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'eolian/@types';
 import { Track } from 'music/@types';
 
-export function createQueueEmbed(tracks: Track[], total: number) : EmbedMessage {
+export function createQueueEmbed(tracks: Track[], start: number, total: number) : EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.SELECTION,
     header: {
-      text: 'Music Queue'
+      text: '🎶 Music Queue 🎶'
     },
-    description: tracks.map(t => `[${clampLength(t.title, 100)}](${t.url})`).join('\n'),
+    title: `1. ${tracks[0].title}`,
+    description: `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. [${t.title}](${t.url})**`).join('\n'),
+    url: tracks[0].url,
     thumbnail: tracks.find(t => t.artwork)?.artwork,
     footer: {
       text: total > 1 ? `There are ${total} songs in the queue total`
@@ -24,17 +26,11 @@ export function createPlayingEmbed(track: Track) : EmbedMessage {
     header: {
       text: '🔊 Now Playing 🔊'
     },
-    description: `[**${track.title}**](${track.url})\n${track.poster}`,
-    thumbnail: track.artwork
+    title: track.title,
+    description: `${track.poster}`,
+    image: track.artwork,
+    url: track.url
   };
   return embed;
 }
 
-
-function clampLength(str: string, length: number) {
-  if (str.length > length) {
-    str = str.substring(0, length);
-    str += '...';
-  }
-  return str;
-}

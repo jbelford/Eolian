@@ -3,7 +3,7 @@ import { SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, So
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { convertRangeToAbsolute } from 'common/util';
+import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
 import { ContextMessage, ContextTextChannel } from 'eolian/@types';
 import { Track } from 'music/@types';
@@ -251,10 +251,9 @@ export class SoundCloudFetcher implements SourceFetcher {
     let messageCache: ContextMessage | undefined;
     let max = (this.identifier as SoundCloudUserIdentifier).favorites;
 
-    if (this.params.TOP) {
-      max = convertRangeToAbsolute(this.params.TOP, max).stop;
-    } else if (this.params.BOTTOM) {
-      max = convertRangeToAbsolute(this.params.BOTTOM, max, true).stop;
+    const range = getRangeOption(this.params, max);
+    if (range) {
+      max = range.stop;
     }
 
     if (this.channel && max > 300) {

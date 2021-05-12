@@ -94,12 +94,17 @@ export class DiscordTextChannel implements ContextTextChannel {
 
     if (embed.color) rich.setColor(embed.color);
     if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
-    if (embed.title) rich.setTitle(embed.title);
-    if (embed.description) rich.setDescription(embed.description);
+    if (embed.title) rich.setTitle(clampLength(embed.title, 256));
+    if (embed.description) rich.setDescription(clampLength(embed.description, 2048));
     if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
     if (embed.image) rich.setImage(embed.image);
     if (embed.url) rich.setURL(embed.url);
-    if (embed.footer) rich.setFooter(embed.footer.text, embed.footer.icon);
+    if (embed.footer) rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
+    if (embed.fields) {
+      const fields = embed.fields.slice(0, 25)
+        .map((f, i) => ({ name: clampLength(f.name, 256), value: clampLength(f.value, 1024) }));
+      rich.addFields(fields);
+    }
 
     const message = await this.channel.send(rich) as Message;
     const collector = embed.buttons ? this.addButtons(message, embed.buttons, embed.buttonUserId) : undefined;
@@ -146,4 +151,12 @@ export class DiscordTextChannel implements ContextTextChannel {
     return collector;
   }
 
+}
+
+function clampLength(str: string, length: number) {
+  if (str.length > length) {
+    str = str.substring(0, length - 2);
+    str += '..';
+  }
+  return str;
 }

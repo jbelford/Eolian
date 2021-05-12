@@ -71,6 +71,10 @@ export interface EmbedMessage {
   };
   title?: string;
   description?: string;
+  fields?: {
+    name: string;
+    value: string;
+  }[];
   color?: number;
   thumbnail?: string;
   url?: string;

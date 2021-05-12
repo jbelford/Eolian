@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { convertRangeToAbsolute, truthySum } from 'common/util';
+import { getRangeOption, truthySum } from 'common/util';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT);
@@ -23,9 +23,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   const queueLength = (await context.queue!.get()).length;
-  const range = options.TOP
-    ? convertRangeToAbsolute(options.TOP, queueLength)
-    : convertRangeToAbsolute(options.BOTTOM!, queueLength, true);
+  const range = getRangeOption(options, queueLength)!;
 
   const removed = await context.queue!.remove(range);
   await context.message.reply(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);

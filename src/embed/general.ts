@@ -43,7 +43,7 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
   return {
     header: {
       icon: contextUser.avatar,
-      text: `🎫 Profile Details 🎫 `
+      text: `🎫 Profile Details 🎫`
     },
     title: `Here's what I know about you ${contextUser.name}!`,
     color: COLOR.PROFILE,

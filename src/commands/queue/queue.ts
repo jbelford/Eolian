@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { applyRangeToList } from 'common/util';
+import { getRangeOption } from 'common/util';
 import { createQueueEmbed } from 'embed';
 import { MessageButtonOnClickHandler } from 'eolian/@types';
 import { Track } from 'music/@types';
@@ -16,8 +16,8 @@ async function executeClearQueue(context: CommandContext, options: CommandOption
   }
 }
 
-async function sendQueueEmbed(tracks: Track[], context: CommandContext) {
-  const embed = createQueueEmbed(tracks.slice(0, 15), tracks.length);
+async function sendQueueEmbed(tracks: Track[], start: number, total: number, context: CommandContext) {
+  const embed = createQueueEmbed(tracks.slice(0, 15), start, total);
   embed.buttons = [{ emoji: '🔀', onClick: createShuffleButtonHandler(context) }];
   await context.channel.sendEmbed(embed);
 }
@@ -26,7 +26,8 @@ function createShuffleButtonHandler(context: CommandContext) : MessageButtonOnCl
   return async (message, user) => {
     message.delete();
     await context.queue!.shuffle();
-    await sendQueueEmbed(await context.queue!.get(), context);
+    const tracks = await context.queue!.get();
+    await sendQueueEmbed(tracks, 0, tracks.length, context);
     return true;
   };
 }
@@ -49,10 +50,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  if (options.TOP) {
-    tracks = applyRangeToList(options.TOP, tracks);
-  } else if (options.BOTTOM) {
-    tracks = applyRangeToList(options.BOTTOM, tracks, true);
+  const total = tracks.length;
+  let range = getRangeOption(options, total);
+  if (range) {
+    tracks = tracks.slice(range.start, range.stop);
   }
 
   if (tracks.length === 0) {
@@ -60,7 +61,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  await sendQueueEmbed(tracks, context);
+  await sendQueueEmbed(tracks, range ? range.start : 0, total, context);
 }
 
 export const QUEUE_COMMAND: Command = {
@@ -76,3 +77,4 @@ export const QUEUE_COMMAND: Command = {
   ],
   execute
 };
+

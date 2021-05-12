@@ -1,3 +1,4 @@
+import { CommandOptions } from 'commands/@types';
 import { AbsRangeArgument, RangeArgument } from './@types';
 
 export function shuffleList<T>(list: T[]): T[] {
@@ -14,7 +15,7 @@ export function truthySum(...values: unknown[]): number {
   return values.map(value => +!!value).reduce((prev, curr) => prev + curr, 0);
 }
 
-export function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boolean): AbsRangeArgument {
+function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boolean): AbsRangeArgument {
   let newStart = 0;
   let newStop = max;
 
@@ -39,9 +40,14 @@ export function convertRangeToAbsolute(range: RangeArgument, max: number, revers
   return { start: Math.min(newStart, newStop), stop: Math.max(newStart, newStop) };
 }
 
-export function applyRangeToList<T>(range: RangeArgument, list: T[], reverse?: boolean): T[] {
-  const absRange = convertRangeToAbsolute(range, list.length, reverse);
-  return list.slice(absRange.start, absRange.stop);
+export function getRangeOption(options: CommandOptions, total: number) {
+  let range: AbsRangeArgument | undefined;
+  if (options.TOP) {
+    range = convertRangeToAbsolute(options.TOP, total);
+  } else if (options.BOTTOM) {
+    range = convertRangeToAbsolute(options.BOTTOM, total, true);
+  }
+  return range;
 }
 
 export function sleep(ms: number): Promise<void> {

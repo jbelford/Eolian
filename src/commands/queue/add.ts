@@ -3,7 +3,7 @@ import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { applyRangeToList, shuffleList, truthySum } from 'common/util';
+import { getRangeOption, shuffleList, truthySum } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
@@ -38,10 +38,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (identifier) {
     let tracks = await getSourceFetcher(identifier, options, context.channel).fetch();
     if (tracks.length > 0) {
-      if (options.TOP) {
-        tracks = applyRangeToList(options.TOP, tracks);
-      } else if (options.BOTTOM) {
-        tracks = applyRangeToList(options.BOTTOM, tracks, true);
+      const range = getRangeOption(options, tracks.length);
+      if (range) {
+        tracks.slice(range.start, range.stop);
       }
 
       if (options.SHUFFLE) {
