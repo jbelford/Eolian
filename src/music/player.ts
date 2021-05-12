@@ -90,9 +90,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     // We manage volume directly so set false
     connection.play(passthrough, { seek: 0, volume: false, type: 'opus' });
 
-    connection.once('disconnect', () => {
-      this.emitDone();
-    });
+    const disconnectHandler = () => this.emitDone();
+    connection.once('disconnect', disconnectHandler);
 
     connection.dispatcher.on('error', err => logger.warn(err));
 
@@ -111,6 +110,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
       // Start stream again if there are still items in the queue
       if (await this.queue.peek()) {
+        connection.removeListener('disconnect', disconnectHandler);
         await this.play();
         return;
       }
