@@ -40,7 +40,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     if (tracks.length > 0) {
       const range = getRangeOption(options, tracks.length);
       if (range) {
-        tracks.slice(range.start, range.stop);
+        tracks = tracks.slice(range.start, range.stop);
       }
 
       if (options.SHUFFLE) {
