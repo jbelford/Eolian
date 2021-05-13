@@ -178,8 +178,8 @@ export interface YouTubeApi extends StreamFetcher {
 }
 
 export interface YouTubeUrlDetails {
-  type: YouTubeResourceType;
-  id: string;
+  video?: string;
+  playlist?: string;
 }
 
 export interface YoutubeVideo {

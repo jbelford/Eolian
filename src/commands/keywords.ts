@@ -181,7 +181,7 @@ Fetching using TOP likes will execute much faster.`,
     ],
     priority: 2,
     matchText: (text: string) => {
-      const match = matchGroup(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/i, 0);
+      const match = matchGroup(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/, 0);
       return { matches: match.matches, newText: match.newText, args: match.matches ? match.args!.split(/\s*\/\s*/g) : undefined};
     },
   },
@@ -237,7 +237,14 @@ function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
 
 function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResult<string> {
   const match = matchText(text, reg);
-  return { matches: match.matches, newText: match.newText, args: match.matches ? match.args![group] : undefined };
+  let args: string | undefined;
+  if (match.matches) {
+    args = match.args![group];
+    if (reg.ignoreCase) {
+      args = args.toLowerCase();
+    }
+  }
+  return { matches: match.matches, newText: match.newText, args };
 }
 
 function simpleMatch(text: string, reg: RegExp): KeywordMatchResult<boolean> {

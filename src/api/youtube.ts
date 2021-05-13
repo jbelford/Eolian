@@ -2,8 +2,9 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
+import querystring from 'querystring';
 import ytdl from 'ytdl-core-discord';
-import { YouTubeApi, YoutubePlaylist, YouTubeResourceType, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 export class YouTubeApiImpl implements YouTubeApi {
 
@@ -14,14 +15,17 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   getResourceType(url: string): YouTubeUrlDetails | undefined {
-    const matcher = /youtube.com\/(watch\?v=|playlist\?list=)([^\&]+)/g;
-    const regArr = matcher.exec(url);
-    if (!regArr) return;
-    return {
-      id: regArr[2],
-      type: regArr[1].includes('watch') ? YouTubeResourceType.VIDEO
-        : YouTubeResourceType.PLAYLIST
-    };
+    const [path, query] = url.split('?');
+
+    if (path.match(/youtube\.com\/(watch|playlist)/g)) {
+      const parsed = querystring.parse(query);
+      return {
+        playlist: parsed['list'] as string,
+        video: parsed['v'] as string
+      };
+    }
+
+    return undefined;
   }
 
   async getVideo(id: string): Promise<YoutubeVideo> {

@@ -1,5 +1,5 @@
 import { youtube } from 'api';
-import { YoutubePlaylist, YouTubeResourceType, YoutubeVideo } from 'api/@types';
+import { YoutubePlaylist, YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
@@ -9,20 +9,34 @@ import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class YouTubeUrlResolver implements SourceResolver {
-  constructor(private readonly url: string) {
+  constructor(private readonly url: string,
+    private readonly context: CommandContext) {
   }
 
   async resolve(): Promise<ResolvedResource> {
     const resourceDetails = youtube.getResourceType(this.url);
     if (resourceDetails) {
-      switch (resourceDetails.type) {
-        case YouTubeResourceType.PLAYLIST:
-          const playlist = await youtube.getPlaylist(resourceDetails.id);
-          return createYouTubePlaylist(playlist!);
-        case YouTubeResourceType.VIDEO:
-          const video = await youtube.getVideo(resourceDetails.id);
-          return createYouTubeVideo(video!);
-        default:
+      if (resourceDetails.video && resourceDetails.playlist) {
+        const idx = await this.context.channel.sendSelection('Do you want this video or the playlist?', ['Video', 'Playlist'], this.context.user);
+        switch (idx) {
+          // @ts-ignore
+          default:
+            await this.context.channel.send('No selection.. defaulting to video');
+          case 0:
+            resourceDetails.playlist = undefined;
+            break;
+          case 1:
+            resourceDetails.video = undefined;
+            break;
+        }
+      }
+
+      if (resourceDetails.video) {
+        const video = await youtube.getVideo(resourceDetails.video);
+        return createYouTubeVideo(video!);
+      } else if (resourceDetails.playlist) {
+        const playlist = await youtube.getPlaylist(resourceDetails.playlist);
+        return createYouTubePlaylist(playlist!);
       }
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');

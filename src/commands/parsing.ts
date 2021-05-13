@@ -44,8 +44,8 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
   parseCommand(message: string, permission: PERMISSION): ParsedCommand {
     let text = this.messageInvokesBot(message) ? message.trim().substr(1) : message.trim();
 
-    const textSplit = text.toLowerCase().split(/\s+/g);
-    const commandName = textSplit[0];
+    const textSplit = text.split(/\s+/g);
+    const commandName = textSplit[0].toLowerCase();
 
     text = textSplit.slice(1).join(' ');
 

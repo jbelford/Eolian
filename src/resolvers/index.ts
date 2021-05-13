@@ -20,10 +20,10 @@ const UNKNOWN_FETCHER: SourceFetcher = {
   }
 }
 
-function getBySource(url: UrlArgument) {
+function getBySource(context: CommandContext, url: UrlArgument) {
   switch (url.source) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(url.value);
-    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(url.value);
+    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(url.value, context);
     case SOURCE.SPOTIFY: return new SpotifyUrlResolver(url.value);
     default: return UNKNOWN_RESOLVER;
   }
@@ -98,7 +98,7 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
   }
 
   return params.URL
-    ? getBySource(params.URL)
+    ? getBySource(context, params.URL)
     : getByQuery(context, params);
 }
 
