@@ -12,6 +12,7 @@ import { EolianUserService, MusicQueueService } from 'services';
 import { UserLockManager } from 'services/lock';
 import { EolianBot } from './@types';
 import { DiscordGuildClient } from './client';
+import { DiscordQueueDisplay } from './display';
 import { GuildQueue } from './queue';
 import { DiscordUser } from './user';
 
@@ -157,7 +158,8 @@ export class DiscordEolianBot implements EolianBot {
       const connectionProvider = new VoiceConnectionProvider(this.client, guildId);
       const queue = new GuildQueue(this.queues, guildId);
       const player = new DiscordPlayer(connectionProvider, queue);
-      state = { player, queue };
+      const queueDisplay = new DiscordQueueDisplay(queue);
+      state = { player, queue, display: { queue: queueDisplay } };
       this.servers.set(guildId, state);
     }
     return state;

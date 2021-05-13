@@ -7,8 +7,6 @@ if (env === 'local') {
   require('./module_setup');
 }
 
-const _ =require("@discordjs/opus");
-
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { Closable } from 'common/@types';

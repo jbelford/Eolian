@@ -3,9 +3,7 @@ import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { getRangeOption } from 'common/util';
-import { createQueueEmbed } from 'embed';
-import { MessageButtonOnClickHandler } from 'eolian/@types';
-import { Track } from 'music/@types';
+
 
 async function executeClearQueue(context: CommandContext, options: CommandOptions): Promise<void> {
   const cleared = await context.server!.queue.clear();
@@ -14,22 +12,6 @@ async function executeClearQueue(context: CommandContext, options: CommandOption
   } else {
     await context.channel.send('❓ The queue is already empty!');
   }
-}
-
-async function sendQueueEmbed(tracks: Track[], start: number, total: number, context: CommandContext) {
-  const embed = createQueueEmbed(tracks.slice(0, 15), start, total);
-  embed.buttons = [{ emoji: '🔀', onClick: createShuffleButtonHandler(context) }];
-  await context.channel.sendEmbed(embed);
-}
-
-function createShuffleButtonHandler(context: CommandContext) : MessageButtonOnClickHandler {
-  return async (message, user) => {
-    message.delete();
-    await context.server!.queue.shuffle();
-    const tracks = await context.server!.queue.get();
-    await sendQueueEmbed(tracks, 0, tracks.length, context);
-    return true;
-  };
 }
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -61,7 +43,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  await sendQueueEmbed(tracks, range ? range.start : 0, total, context);
+  context.server!.display.queue.setChannel(context.channel);
+  await context.server!.display.queue.send(tracks, range ? range.start : 0, total);
 }
 
 export const QUEUE_COMMAND: Command = {

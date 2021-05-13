@@ -1,5 +1,7 @@
 import { AbsRangeArgument, Closable } from 'common/@types';
 import { SOURCE } from 'common/constants';
+import { ContextTextChannel } from 'eolian/@types';
+import EventEmitter from 'events';
 import { Player, Track } from 'music/@types';
 
 export interface EolianCache {
@@ -66,7 +68,7 @@ export interface MusicQueueDAO {
   peek(guildId: string): Promise<Track | undefined>;
 }
 
-export interface ServerQueue {
+export interface ServerQueue extends EventEmitter {
   get(limit?: number): Promise<Track[]>;
   remove(range: AbsRangeArgument): Promise<number>;
   add(tracks: Track[], head?: boolean): Promise<void>;
@@ -74,6 +76,11 @@ export interface ServerQueue {
   clear(): Promise<boolean>;
   pop(): Promise<Track | undefined>;
   peek(): Promise<Track | undefined>;
+}
+
+export interface QueueDisplay {
+  setChannel(channel: ContextTextChannel): void;
+  send(tracks: Track[], start?: number, total?: number): Promise<void>;
 }
 
 export interface ServerStateStore {
@@ -84,4 +91,7 @@ export interface ServerStateStore {
 export interface ServerState {
   player: Player;
   queue: ServerQueue;
+  display: {
+    queue: QueueDisplay;
+  }
 }
