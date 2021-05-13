@@ -32,6 +32,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     }
   }
 
+  const next = await context.server!.queue.peek();
+  if (!next) {
+    await context.message.reply('There are no songs in the queue!');
+    return;
+  }
+
   let reactionChain = Promise.resolve();
 
   let voice = context.client.getVoice();
