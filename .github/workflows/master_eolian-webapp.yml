@@ -23,11 +23,13 @@ jobs:
       with:
         node-version: '14.x'
 
+    # We also move the prebuilt opus file because app service uses 2.28 to annoy people
     - name: npm install, build, and test
       run: |
         npm install
         npm run build --if-present
         npm run test --if-present
+        mv ./node_modules/@discordjs/opus/prebuild/node-v83-napi-v3-linux-x64-glibc-2.27/ ./node_modules/@discordjs/opus/prebuild/node-v83-napi-v3-linux-x64-glibc-2.28/
 
     - name: Run Azure webapp deploy action using publish profile credentials
       uses: azure/webapps-deploy@v2

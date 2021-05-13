@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "start-dev": "ts-node -r dotenv/config --files src/app.ts -gi",
-    "start": "npm install @discordjs/opus && node -r dotenv/config ./dist/bundle.js -gi",
+    "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "check": "gts check"
   },
   "keywords": [
