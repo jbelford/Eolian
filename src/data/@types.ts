@@ -23,7 +23,7 @@ export interface UsersDAO {
   setSpotify(id: string, spotify: string): Promise<void>;
   removeSpotify(id: string): Promise<void>;
   setIdentifier(id: string, key: string, identifier: Identifier): Promise<void>;
-  removeIdentifier(id: string, key: string): Promise<void>;
+  removeIdentifier(id: string, key: string): Promise<boolean>;
   delete(id: string): Promise<boolean>;
 }
 

@@ -47,14 +47,15 @@ export class MongoUsers implements UsersDAO {
       { upsert: true });
   }
 
-  async removeIdentifier(id: string, key: string): Promise<void> {
+  async removeIdentifier(id: string, key: string): Promise<boolean> {
     const unset: any = {};
     unset[`identifiers.${key}`] = true;
 
-    await this.collection.updateOne(
+    const result = await this.collection.updateOne(
       { _id: id },
       { $unset: unset },
       { upsert: true });
+    return result.modifiedCount > 0;
   }
 
   async delete(id: string): Promise<boolean> {

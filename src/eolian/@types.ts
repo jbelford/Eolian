@@ -50,6 +50,7 @@ export interface ContextUser {
   get(): Promise<UserDTO>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
+  removeIdentifier(id: string): Promise<boolean>;
   setSpotify(id: string | null): Promise<void>;
   setSoundCloud(id: number | null): Promise<void>;
 }

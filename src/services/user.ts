@@ -50,6 +50,15 @@ export class EolianUserService {
     }
   }
 
+  async removeResourceIdentifier(userId: string, key: string) {
+    try {
+      return await this.users.removeIdentifier(userId, key);
+    } catch (e) {
+      logger.warn(`Failed to add identifier: userId: ${userId} key: ${key}`);
+      throw e;
+    }
+  }
+
   async getUser(userId: string): Promise<UserDTO> {
     try {
       return await this.users.get(userId);

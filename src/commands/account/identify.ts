@@ -8,7 +8,18 @@ import { getSourceResolver } from 'resolvers';
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.IDENTIFIER) {
     throw new EolianUserError(`You forgot to specify the key for your identifer.`);
-  } else if (options.URL && options.QUERY) {
+  }
+
+  if (options.CLEAR) {
+    const success = await context.user.removeIdentifier(options.IDENTIFIER);
+    if (!success) {
+      throw new EolianUserError(`You don't have an identifier for \`${options.IDENTIFIER}\``);
+    }
+    await context.message.reply(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
+    return;
+  }
+
+  if (options.URL && options.QUERY) {
     throw new EolianUserError(`You specified both a url and a query! Please try again with only one of those.`);
   }
 
@@ -31,8 +42,8 @@ export const IDENTIFY_COMMAND: Command = {
   dmAllowed: true,
   keywords: [
     KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
-    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS
+    KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.FAVORITES, KEYWORDS.TRACKS, KEYWORDS.CLEAR
   ],
-  usage: ['spotify playlist (retrowave) as [retro]'],
+  usage: ['spotify playlist (retrowave) as [retro]', '[retro] clear'],
   execute
 };

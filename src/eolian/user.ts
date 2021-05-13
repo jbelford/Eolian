@@ -58,6 +58,13 @@ export class DiscordUser implements ContextUser {
     return this.users.addResourceIdentifier(this.id, id, identifier);
   }
 
+  removeIdentifier(id: string): Promise<boolean> {
+    if (this.dto && this.dto.identifiers && id in this.dto.identifiers) {
+      delete this.dto.identifiers[id];
+    }
+    return this.users.removeResourceIdentifier(this.id, id);
+  }
+
   setSpotify(id: string | null): Promise<void> {
     if (this.dto) {
       this.dto.spotify = id || undefined;
