@@ -158,8 +158,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     } else if (this.channel) {
       this.queueDisplay.setChannel(this.channel);
       const tracks = await this.player.queue.get();
-      this.queueDisplay.send(tracks);
-      this.queueAhead = true;
+      if (tracks.length) {
+        this.queueDisplay.send(tracks);
+        this.queueAhead = true;
+      }
     }
     return false;
   }

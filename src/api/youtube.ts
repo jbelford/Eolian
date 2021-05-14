@@ -2,8 +2,9 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
+import { opus } from 'prism-media';
 import querystring from 'querystring';
-import ytdl from 'ytdl-core-discord';
+import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 export class YouTubeApiImpl implements YouTubeApi {
@@ -148,11 +149,22 @@ export class YouTubeApiImpl implements YouTubeApi {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
 
-    const stream = await ytdl(track.url, { filter : 'audioonly' });
-    return { readable: stream, details: track, opus: true };
+    const info = await ytdl.getInfo(track.url);
+    const formats = ytdl.filterFormats(info.formats, ytdlFilter);
+    if (formats.length) {
+      const stream = ytdl.downloadFromInfo(info, { filter: ytdlFilter }).pipe(new opus.WebmDemuxer());
+      return { readable: stream, details: track, opus: true };
+    } else {
+      const stream = ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio' });
+      return { readable: stream, details: track };
+    }
   }
 
 }
+
+const ytdlFilter: ytdl.Filter = format => format.codecs === 'opus' &&
+  format.container === 'webm' &&
+  format.audioSampleRate === '48000';
 
 export function mapYouTubeVideo(video: YoutubeVideo): Track {
   return {
