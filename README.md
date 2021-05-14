@@ -23,7 +23,7 @@ https://discord.gg/4BMkBHWT
 
 # 🎇 Features
 
-![Player](pics/player.png)
+![Demo](pics/demo.gif)
 
 ## 🔎 Search Anything
 
@@ -41,6 +41,13 @@ You can add any type of resource to the queue. Here is the list of each type of 
 * Songs searched from Spotify will default to YouTube<br>
 ** Spotify likes are not public
 </sub>
+
+## 🎮 Easy To Use Buttons
+
+This bot takes every opportunity to simplify usage through the use of emoji buttons
+
+![Player](pics/player.png)
+
 
 ## 🗣 Keyword Based Command Syntax
 
@@ -73,10 +80,6 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 ## 🚀 Performance Improvements
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
-
-## 🚧 Upcoming: Emoji Button Player
-
-The emoji button player from ShuffleBot will be added in future release
 
 # 🚧 Tutorial / How to Use
 
