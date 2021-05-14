@@ -8,7 +8,7 @@ export function createQueueEmbed(tracks: Track[], start: number, total: number) 
     header: {
       text: '🎶 Music Queue 🎶'
     },
-    title: `1. ${tracks[0].title}`,
+    title: `${start + 1}. ${tracks[0].title}`,
     description: `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. [${t.title}](${t.url})**`).join('\n'),
     url: tracks[0].url,
     thumbnail: tracks.find(t => t.artwork)?.artwork,
