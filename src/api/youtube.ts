@@ -133,7 +133,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const query = `${track.title} ${track.poster} audio`;
+    const query = `${track.title} ${track.poster} lyrics`;
     const videos = await this.searchVideos(query);
     if (videos.length > 0) {
       const youtubeTrack = mapYouTubeVideo(videos[0]);
