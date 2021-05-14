@@ -1,10 +1,11 @@
 import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
-import { DMChannel, Message, MessageCollector, MessageEmbed, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
+import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { DiscordMessage } from 'eolian';
 import { EolianUserService } from 'services';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
+import { mapDiscordEmbed } from './message';
 import { DiscordUser } from './user';
 
 const numberToEmoji = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
@@ -90,22 +91,7 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
-    const rich = new MessageEmbed();
-
-    if (embed.color) rich.setColor(embed.color);
-    if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
-    if (embed.title) rich.setTitle(clampLength(embed.title, 256));
-    if (embed.description) rich.setDescription(clampLength(embed.description, 2048));
-    if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
-    if (embed.image) rich.setImage(embed.image);
-    if (embed.url) rich.setURL(embed.url);
-    if (embed.footer) rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
-    if (embed.fields) {
-      const fields = embed.fields.slice(0, 25)
-        .map((f, i) => ({ name: clampLength(f.name, 256), value: clampLength(f.value, 1024) }));
-      rich.addFields(fields);
-    }
-
+    const rich = mapDiscordEmbed(embed);
     const message = await this.channel.send(rich) as Message;
     const collector = embed.buttons ? this.addButtons(message, embed.buttons, embed.buttonUserId) : undefined;
     return new DiscordMessage(message, collector);
@@ -120,22 +106,30 @@ export class DiscordTextChannel implements ContextTextChannel {
       && (!userId || userId === user.id)
       && reaction.emoji.name in buttonMap
       && !!buttonMap[reaction.emoji.name].onClick,
-      { idle: 60000 * 15 });
+      { idle: 60000 * 15, dispose: true });
 
-    collector.on('collect', async (reaction: MessageReaction, user: User) => {
-      const button = buttons.find(button => button.emoji === reaction.emoji.name)!;
+    const reactionEventHandler = async (reaction: MessageReaction, user: User) => {
+        const button = buttonMap[reaction.emoji.name];
 
-      let destroy = false;
-      try {
-        destroy = await button.onClick!(new DiscordMessage(reaction.message),
-            new DiscordUser(user, this.users, PERMISSION.UNKNOWN),
-            button.emoji);
-      } catch (e) {
-        logger.warn(`Button handler threw an unhandled exception: ${e.stack || e}`);
-        destroy = true;
-      }
+        let destroy = false;
+        try {
+          destroy = await button.onClick!(new DiscordMessage(reaction.message),
+              new DiscordUser(user, this.users, PERMISSION.UNKNOWN),
+              button.emoji);
+        } catch (e) {
+          logger.warn(`Button handler threw an unhandled exception: ${e.stack || e}`);
+          destroy = true;
+        }
 
-      if (destroy) collector.stop();
+        if (destroy) collector.stop();
+      };
+
+    collector.on('collect', reactionEventHandler);
+    collector.on('remove', reactionEventHandler);
+
+    collector.once('end', () => {
+      collector.removeListener('collect', reactionEventHandler);
+      collector.removeListener('remove', reactionEventHandler);
     });
 
     (async () => {
@@ -151,12 +145,4 @@ export class DiscordTextChannel implements ContextTextChannel {
     return collector;
   }
 
-}
-
-function clampLength(str: string, length: number) {
-  if (str.length > length) {
-    str = str.substring(0, length - 2);
-    str += '..';
-  }
-  return str;
 }

@@ -3,9 +3,6 @@ import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { IdentifierType } from 'data/@types';
-import { createPlayingEmbed } from 'embed';
-import { ContextMessage } from 'eolian/@types';
-import { Track } from 'music/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
 
@@ -49,23 +46,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (voice) {
     if (!voice.player.isStreaming) {
-      let messageCache: ContextMessage;
-
-      voice.player.on('next', async (track: Track) => {
-        if (messageCache) {
-          await messageCache.delete();
-        }
-
-        const embed = createPlayingEmbed(track);
-        messageCache = await context.channel.sendEmbed(embed);
-      });
-
-      voice.player.once('done', () => {
-        if (messageCache) {
-          messageCache.delete();
-        }
-      });
-
+      context.server!.display.player.setChannel(context.channel);
       await voice.player.play();
       reactionChain = reactionChain.then(() => context.message.react('🎵'));
     } else if (added) {

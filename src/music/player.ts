@@ -140,6 +140,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   async stop(): Promise<void> {
+    if (this.isStreaming) {
+      this.getConnection().disconnect();
+    }
   }
 
   async pause(): Promise<void> {
@@ -182,6 +185,5 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private emitDone() {
     this.emit('done');
-    this.removeAllListeners();
   }
 }

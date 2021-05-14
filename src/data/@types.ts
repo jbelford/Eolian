@@ -78,9 +78,17 @@ export interface ServerQueue extends EventEmitter {
   peek(): Promise<Track | undefined>;
 }
 
-export interface QueueDisplay {
+export interface Display {
+  setChannel(channel: ContextTextChannel): void;
+}
+
+export interface PlayerDisplay extends Display {
+}
+
+export interface QueueDisplay extends Display {
   setChannel(channel: ContextTextChannel): void;
   send(tracks: Track[], start?: number, total?: number): Promise<void>;
+  delete(): Promise<void>;
 }
 
 export interface ServerStateStore {
@@ -93,5 +101,6 @@ export interface ServerState {
   queue: ServerQueue;
   display: {
     queue: QueueDisplay;
+    player: PlayerDisplay;
   }
 }
