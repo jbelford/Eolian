@@ -5,6 +5,7 @@ export interface Closable {
 
 export interface AppEnv {
   prod: boolean;
+  debug: boolean;
   cmdToken: string;
   owners: string[];
   tokens: {

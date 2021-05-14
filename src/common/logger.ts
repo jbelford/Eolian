@@ -10,7 +10,7 @@ if (environment.prod) {
 }
 
 export const logger = winston.createLogger({
-  level: environment.prod ? 'info' : 'debug',
+  level: environment.debug ? 'debug' : 'info',
   exitOnError: false,
   format: winston.format.combine(
     winston.format.timestamp(),

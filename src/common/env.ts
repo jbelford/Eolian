@@ -16,6 +16,7 @@ function getArrayEnv(name: string): string[] {
 
 export const environment: AppEnv = {
   prod: getEnv('PROD') === 'true',
+  debug: getEnv('DEBUG_ENABLED') === 'true',
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
   tokens: {
