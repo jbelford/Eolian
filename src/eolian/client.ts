@@ -1,7 +1,7 @@
 import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
 import { Client } from 'discord.js';
 import { DiscordPlayer } from "../music/player";
-import { ContextClient, ContextVoiceConnection } from './@types';
+import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
 import { DiscordVoiceConnection } from './voice';
 
 export class DiscordClient implements ContextClient {
@@ -23,6 +23,10 @@ export class DiscordClient implements ContextClient {
 
   generateInvite(): Promise<string> {
     return this.client.generateInvite(DISCORD_INVITE_PERMISSIONS);
+  }
+
+  getServers(): ServerInfo[] {
+    return this.client.guilds.cache.array().map(guild => ({ name: guild.name, members: guild.memberCount, id: guild.id }));
   }
 
 }

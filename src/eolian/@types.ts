@@ -18,6 +18,13 @@ export interface ContextClient {
   readonly pic?: string;
   getVoice(): ContextVoiceConnection | undefined;
   generateInvite(): Promise<string>;
+  getServers(): ServerInfo[];
+}
+
+export interface ServerInfo {
+  name: string;
+  id: string;
+  members: number;
 }
 
 export interface ContextMessage {
