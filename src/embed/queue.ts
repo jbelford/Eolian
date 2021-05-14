@@ -1,4 +1,4 @@
-import { COLOR, mapSourceToColor } from 'common/constants';
+import { COLOR, getIcon, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'eolian/@types';
 import { Track } from 'music/@types';
 
@@ -24,13 +24,13 @@ export function createPlayingEmbed(track: Track) : EmbedMessage {
   const embed: EmbedMessage = {
     color: mapSourceToColor(track.src),
     header: {
+      icon: getIcon(track.src),
       text: '🔊 Now Playing 🔊'
     },
     title: track.title,
     description: `${track.poster}`,
     image: track.artwork,
-    url: track.url
+    url: track.url,
   };
   return embed;
 }
-

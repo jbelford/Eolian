@@ -37,6 +37,20 @@ export enum SOURCE {
   SOUNDCLOUD
 }
 
+
+export function getIcon(src: SOURCE): string | undefined {
+  switch (src) {
+    case SOURCE.SOUNDCLOUD:
+      return 'https://www.dropbox.com/s/ub1jhziixrc00da/soundcloud_icon.png?raw=1';
+    case SOURCE.SPOTIFY:
+      return 'https://www.dropbox.com/s/l1q0wrz2a5w0i64/spotify_icon.png?raw=1';
+    case SOURCE.YOUTUBE:
+      return 'https://www.dropbox.com/s/m6dwdgwwf06d67g/youtube_icon.png?raw=1';
+    default:
+      return undefined;
+  }
+}
+
 export function getEnumName(e: any, i: number) {
   return Object.keys(e).find(k => e[k] === i);
 }
