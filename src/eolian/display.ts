@@ -3,10 +3,13 @@ import { createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player, Track } from 'music/@types';
 import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler } from './@types';
 
+const QUEUE_LENGTH = 15;
+
 export class DiscordQueueDisplay implements QueueDisplay {
 
   private message?: ContextMessage;
   private channel?: ContextTextChannel;
+  private start = 0;
   private updating = false;
 
   constructor(private readonly queue: ServerQueue) {
@@ -22,11 +25,15 @@ export class DiscordQueueDisplay implements QueueDisplay {
       throw new Error('Channel is not set!');
     }
 
+    this.start = start;
+
     const messageDelete = this.message ? this.message.delete() :Promise.resolve();
 
-    const embed = createQueueEmbed(tracks.slice(0, 15), start, total);
+    const embed = createQueueEmbed(tracks.slice(0, QUEUE_LENGTH), this.start, total);
     embed.buttons = [
-      { emoji: '🔀', onClick: this.shuffleHandler }
+      { emoji: '🔀', onClick: this.shuffleHandler },
+      { emoji: '⬅', onClick: this.prevPageHandler },
+      { emoji: '➡', onClick: this.nextPageHandler }
     ];
     this.message = await this.channel.sendEmbed(embed);
 
@@ -46,8 +53,17 @@ export class DiscordQueueDisplay implements QueueDisplay {
       try {
         if (this.message) {
           const tracks = await this.queue.get();
-          const newEmbed = createQueueEmbed(tracks.slice(0, 15), 0, tracks.length);
-          await this.message.editEmbed(newEmbed);
+          if (this.start >= tracks.length) {
+            this.start = 0;
+          } else if (this.start < 0) {
+            this.start = Math.max(0, tracks.length - QUEUE_LENGTH);
+          }
+          if (tracks.length) {
+            const newEmbed = createQueueEmbed(tracks.slice(this.start, this.start + QUEUE_LENGTH), this.start, tracks.length);
+            await this.message.editEmbed(newEmbed);
+          } else {
+            await this.delete();
+          }
         }
       } finally {
         this.updating = false;
@@ -57,6 +73,19 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
   private shuffleHandler: MessageButtonOnClickHandler = async () => {
     await this.queue.shuffle();
+    return false;
+  }
+
+  private prevPageHandler: MessageButtonOnClickHandler = async () => {
+    this.start -= QUEUE_LENGTH;
+    await this.updateHandler();
+    return false;
+  }
+
+
+  private nextPageHandler: MessageButtonOnClickHandler = async () => {
+    this.start += QUEUE_LENGTH;
+    await this.updateHandler();
     return false;
   }
 
