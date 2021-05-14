@@ -42,8 +42,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
   async delete(): Promise<void> {
     if (this.message) {
-      await this.message.delete();
+      const deletePromise = this.message.delete();
       this.message = undefined;
+      await deletePromise;
     }
   }
 
@@ -125,8 +126,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onEndHandler = async () => {
     if (this.messageCache) {
-      await this.messageCache.delete();
+      const deletePromise = this.messageCache.delete();
       this.messageCache = undefined;
+      await deletePromise;
     }
   };
 
