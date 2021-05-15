@@ -1,4 +1,4 @@
-import { PERMISSION } from 'common/constants';
+import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
 import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
@@ -8,13 +8,6 @@ import { EolianUserService } from 'services';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
 import { mapDiscordEmbed } from './message';
 import { DiscordUser } from './user';
-
-const numberToEmoji = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
-
-const emojiToNumber: { [key: string]: number } = {};
-for (let i = 0; i < numberToEmoji.length; ++i) {
-  emojiToNumber[numberToEmoji[i]] = i;
-}
 
 const STOP_EMOJI = '🚫';
 
@@ -58,14 +51,14 @@ export class DiscordTextChannel implements ContextTextChannel {
           resolved = true;
           collector.stop();
           await msg.delete();
-          resolve(emoji === STOP_EMOJI ? -1 : emojiToNumber[emoji] - 1);
+          resolve(emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1);
         }
         return true;
       };
 
       const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
-      if (options.length <= numberToEmoji.length) {
-        selectEmbed.buttons = options.map((o, i) => ({ emoji: numberToEmoji[i + 1], onClick }));
+      if (options.length <= NUMBER_TO_EMOJI.length) {
+        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], onClick }));
         selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
         selectEmbed.buttonUserId = user.id;
       }

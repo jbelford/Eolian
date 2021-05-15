@@ -1,17 +1,12 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption, PollOptionResult } from 'embed/@types';
 import { ContextMessage, ContextUser } from 'eolian/@types';
-
-// Have to use explicit unicode
-const emojis = ['\u0031\u20E3', '\u0032\u20E3', '\u0033\u20E3', '\u0034\u20E3', '\u0035\u20E3',
-  '\u0036\u20E3', '\u0037\u20E3', '\u0038\u20E3', '\u0039\u20E3', '\u1F51F'];
-const close = '🚫';
 
 async function execute({ channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
@@ -24,7 +19,7 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
   }
 
   const question = ARG[0];
-  const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text, emoji: emojis[i] }));
+  const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text, emoji: NUMBER_TO_EMOJI[i + 1] }));
   const questionEmbed = createPollQuestionEmbed(question, options, user.name, user.avatar);
 
   const closePollHandler = async (message: ContextMessage, reactionUser: ContextUser) => {
@@ -41,7 +36,7 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
     return true;
   };
 
-  questionEmbed.buttons!.push({ emoji: close, onClick: closePollHandler });
+  questionEmbed.buttons!.push({ emoji: '🚫', onClick: closePollHandler });
 
   await channel.sendEmbed(questionEmbed);
 }
