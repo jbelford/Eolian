@@ -2,6 +2,7 @@ import { SoundCloudUser, SpotifyUser } from 'api/@types';
 import { COLOR } from 'common/constants';
 import { Identifier } from 'data/@types';
 import { ContextUser, EmbedMessage } from 'eolian/@types';
+import { SelectionOption } from './@types';
 
 export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {
   return {
@@ -13,14 +14,31 @@ export function createInviteEmbed(link: string, username: string, pic?: string):
   }
 }
 
-export function createSelectionEmbed(question: string, options: string[], username: string, pic?: string): EmbedMessage {
+const mapOption = (option: SelectionOption, i: number): string => {
+  let text = `${i + 1}: `;
+  if (typeof option === 'string') {
+    text += option;
+  } else {
+    let name = option.name;
+    if (option.subname) {
+      name += ` - ${option.subname}`;
+    }
+    if (option.url) {
+      name = `[${name}](${option.url})`;
+    }
+    text += name;
+  }
+  return text;
+}
+
+export function createSelectionEmbed(question: string, options: SelectionOption[], username: string, pic?: string): EmbedMessage {
   return {
     header: {
       text: '👈🏻 Select one 👉🏻'
     },
     title: `*${question}*`,
     color: COLOR.SELECTION,
-    description: options.map((option, i) => `${i + 1}: ${option}`).join('\n') + '\n0: Cancel',
+    description: options.map(mapOption).join('\n') + '\n0: Cancel',
     footer: {
       icon: pic,
       text: `${username}, enter the number of your selection in chat or click emoji`

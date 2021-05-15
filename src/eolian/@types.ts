@@ -1,6 +1,7 @@
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, UserDTO } from 'data/@types';
+import { SelectionOption } from 'embed/@types';
 import { Player } from 'music/@types';
 
 export interface EolianBot extends Closable {
@@ -9,7 +10,7 @@ export interface EolianBot extends Closable {
 
 export interface ContextTextChannel {
   send(message: string): Promise<ContextMessage>;
-  sendSelection(question: string, options: string[], user: ContextUser): Promise<number>
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number>
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
 }
 

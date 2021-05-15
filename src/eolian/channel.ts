@@ -2,6 +2,7 @@ import { PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
 import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
+import { SelectionOption } from 'embed/@types';
 import { DiscordMessage } from 'eolian';
 import { EolianUserService } from 'services';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
@@ -28,12 +29,12 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
-  async sendSelection(question: string, options: string[], user: ContextUser): Promise<number> {
+  async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
     return new Promise((resolve, reject) => {
       let sentEmbedPromise: Promise<ContextMessage>;
       let resolved = false;
 
-      const collector = this.awaitUserSelection(user.id, options, async (msg) => {
+      const collector = this.awaitUserSelection(user.id, options.length, async (msg) => {
         if (!resolved) {
           try {
             resolved = true;
@@ -74,13 +75,13 @@ export class DiscordTextChannel implements ContextTextChannel {
     });
   }
 
-  private awaitUserSelection(userId: string, options: string[], cb: (message: Message | undefined) => void): MessageCollector {
+  private awaitUserSelection(userId: string, count: number, cb: (message: Message | undefined) => void): MessageCollector {
     const collector = this.channel.createMessageCollector((message: Message) => {
       if (message.author.id !== userId) {
         return false;
       }
       const idx = +message.content;
-      return !isNaN(idx) && idx >= 0 && idx <= options.length;
+      return !isNaN(idx) && idx >= 0 && idx <= count;
     }, { max: 1, time: 60000 });
 
     collector.on('end', (collected) => {

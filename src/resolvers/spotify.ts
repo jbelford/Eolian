@@ -4,6 +4,7 @@ import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
+import { SelectionOption } from 'embed/@types';
 import { Track } from 'music/@types';
 import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
@@ -45,7 +46,11 @@ export class SpotifyAlbumResolver implements SourceResolver {
 
     const albums = await spotify.searchAlbums(this.params.QUERY);
 
-    const options = albums.map(album => `${album.name} - ${album.artists.map(artist => artist.name).join(',')}`);
+    const options: SelectionOption[] = albums.map(album => ({
+      name: album.name,
+      subname: album.artists.map(artist => artist.name).join(','),
+      url: album.external_urls.spotify
+    }));
     const idx = await this.context.channel.sendSelection(
       `Select the album you want (resolved via Spotify)`, options, this.context.user);
     if (idx < 0) {
@@ -71,7 +76,8 @@ export class SpotifyPlaylistResolver implements SourceResolver {
     let playlist = playlists[0];
     if (playlists.length > 1) {
       const idx = await this.context.channel.sendSelection('Choose a Spotify playlist',
-        playlists.map(playlist => playlist.name), this.context.user);
+        playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
+        this.context.user);
       if (idx < 0) {
         throw new EolianUserError('Nothing selected. Cancelled request.');
       }
@@ -115,7 +121,8 @@ export class SpotifyArtistResolver implements SourceResolver {
 
     const artists = await spotify.searchArtists(this.params.QUERY);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
-      artists.map(artist => artist.name), this.context.user);
+      artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
+      this.context.user);
     if (idx < 0) {
       throw new EolianUserError('Nothing selected. Cancelled request.');
     }

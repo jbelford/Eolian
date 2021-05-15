@@ -36,6 +36,7 @@ export interface SoundCloudUser extends SoundCloudResource {
   username: string;
   avatar_url: string;
   public_favorites_count: number;
+  followers_count: number;
 }
 
 export interface SoundCloudPlaylist extends SoundCloudResource {

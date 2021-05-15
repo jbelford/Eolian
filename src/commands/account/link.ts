@@ -6,6 +6,7 @@ import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
+import { SelectionOption } from 'embed/@types';
 
 async function execute(context: CommandContext, { QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
   if (QUERY && URL) {
@@ -63,7 +64,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
   }
 
   const question = 'Which SoundCloud account do you want me to link?';
-  const options = soundCloudUsers.map(user => `${user.username} - ${user.permalink_url}`);
+  const options: SelectionOption[] = soundCloudUsers.map(user => ({ name: user.username, subname: user.permalink_url, url: user.permalink_url }));
   const idx = await context.channel.sendSelection(question, options, context.user);
   if (idx < 0) {
     context.message.reply('The selection has been cancelled');
