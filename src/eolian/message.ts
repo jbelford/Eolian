@@ -10,6 +10,10 @@ export class DiscordMessage implements ContextMessage {
     return this.message.content;
   }
 
+  get id(): string {
+    return this.message.id;
+  }
+
   async reply(message: string): Promise<void> {
     await this.message.reply(message);
   };

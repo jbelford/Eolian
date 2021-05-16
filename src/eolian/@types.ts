@@ -9,6 +9,7 @@ export interface EolianBot extends Closable {
 }
 
 export interface ContextTextChannel {
+  readonly lastMessageId?: string;
   send(message: string): Promise<ContextMessage>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number>
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
@@ -30,6 +31,7 @@ export interface ServerInfo {
 
 export interface ContextMessage {
   readonly text: string;
+  readonly id: string;
   edit(message: string): Promise<void>;
   editEmbed(embed: EmbedMessage): Promise<void>;
   reply(message: string): Promise<void>;

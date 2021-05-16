@@ -109,19 +109,22 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   }
 
   private onNextHandler = async (track: Track) => {
-    await this.onEndHandler();
-
     if (this.channel) {
       const embed = createPlayingEmbed(track);
-      embed.buttons = [
-        { emoji: '⏏', onClick: this.queueHandler },
-        { emoji: '⏯', onClick: this.onPauseResumeHandler },
-        { emoji: '⏪', onClick: this.backHandler },
-        { emoji: '⏩', onClick: this.skipHandler },
-        { emoji: '⏹', onClick: this.stopHandler },
-      ];
-      this.messageCache = await this.channel.sendEmbed(embed);
-      this.queueAhead = false;
+      if (!this.messageCache || this.channel.lastMessageId !== this.messageCache.id) {
+        embed.buttons = [
+          { emoji: '⏏', onClick: this.queueHandler },
+          { emoji: '⏯', onClick: this.onPauseResumeHandler },
+          { emoji: '⏪', onClick: this.backHandler },
+          { emoji: '⏩', onClick: this.skipHandler },
+          { emoji: '⏹', onClick: this.stopHandler },
+        ];
+        await this.onEndHandler();
+        this.messageCache = await this.channel.sendEmbed(embed);
+        this.queueAhead = false;
+      } else {
+        await this.messageCache.editEmbed(embed);
+      }
     }
   };
 
@@ -145,14 +148,18 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private backHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
     if (await this.player.queue.unpop(2)) {
       await this.player.skip();
-      await this.onEndHandler();
+      if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
+        await this.onEndHandler();
+      }
     }
     return false;
   };
 
   private skipHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
     await this.player.skip();
-    await this.onEndHandler();
+    if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
+      await this.onEndHandler();
+    }
     return false;
   };
 

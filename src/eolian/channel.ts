@@ -16,6 +16,10 @@ export class DiscordTextChannel implements ContextTextChannel {
   constructor(private readonly channel: TextChannel | DMChannel,
     private readonly users: EolianUserService) { }
 
+  get lastMessageId(): string | undefined {
+    return this.channel.lastMessageID || undefined;
+  }
+
   async send(message: string): Promise<ContextMessage> {
     const discordMessage = await this.channel.send(message);
     return new DiscordMessage(discordMessage as Message);
