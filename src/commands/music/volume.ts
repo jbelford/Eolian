@@ -10,13 +10,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     volume = Math.min(1, volume + 0.1);
   } else if (options.LESS) {
     volume = Math.max(0, volume - 0.1);
-  } else if (options.ARG) {
-    const arg = +options.ARG[0];
-    if (isNaN(arg) || arg < 0 || arg > 100) {
+  } else if (options.NUMBER) {
+    if (options.NUMBER < 0 || options.NUMBER > 100) {
       await context.message.reply('Volume must be between 0-100!');
       return;
     }
-    volume = arg / 100;
+    volume = options.NUMBER / 100;
   }
 
   if (context.server!.player.volume != volume) {
@@ -32,13 +31,13 @@ export const VOLUME_COMMAND: Command = {
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
-    KEYWORDS.MORE, KEYWORDS.LESS, KEYWORDS.ARG
+    KEYWORDS.MORE, KEYWORDS.LESS, KEYWORDS.NUMBER
   ],
   usage: [
     '',
     'more',
     'less',
-    '/75/'
+    '75'
   ],
   execute
 };

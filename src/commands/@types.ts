@@ -62,6 +62,7 @@ export interface CommandOptions {
   BOTTOM?: RangeArgument;
   QUERY?: string;
   IDENTIFIER?: string;
+  NUMBER?: number;
   URL?: UrlArgument;
   ARG?: string[];
 }
@@ -117,5 +118,6 @@ export interface Keywords {
   QUERY: Keyword<string>;
   IDENTIFIER: Keyword<string>;
   URL: Keyword<UrlArgument>;
+  NUMBER: Keyword<number>;
   ARG: Keyword<string[]>;
 }

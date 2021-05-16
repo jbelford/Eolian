@@ -132,6 +132,21 @@ Fetching using TOP likes will execute much faster.`,
     priority: 0,
     matchText: (text: string) => simpleMatch(text, /\btracks\b/i),
   },
+  NUMBER: {
+    name: 'NUMBER',
+    details: 'Indicates to specify a number',
+    permission: PERMISSION.USER,
+    usage: [
+      '50',
+      '0.5',
+      '-100'
+    ],
+    priority: 1,
+    matchText: (text: string) => {
+      const match = matchText(text, /\b(-?\d+(\.\d+)?)\b/i);
+      return { matches: match.matches, newText: match.newText, args: match.args ? +match.args[0] : undefined };
+    },
+  },
   TOP: {
     name: 'TOP',
     details: 'Indicates to fetch the range of tracks starting from the beginning in the list',
@@ -141,7 +156,7 @@ Fetching using TOP likes will execute much faster.`,
       'TOP 4:10  # Get the 4th song to the 10th song',
       'TOP 5:-5  # Get the 5th song to the 5th last song'
     ],
-    priority: 1,
+    priority: 2,
     matchText: (text: string) => {
       const match = matchText(text, /\TOP\s+((\d+)(:(-?\d+))?)\b/i);
       let args: RangeArgument | undefined;
@@ -161,7 +176,7 @@ Fetching using TOP likes will execute much faster.`,
       'BOTTOM 4:10  # Get the 4th last song to the 10th last song',
       'BOTTOM 5:-5  # Get the 5th last song to the 5th first song'
     ],
-    priority: 1,
+    priority: 2,
     matchText: (text: string) => {
       const match = matchText(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
       let args: RangeArgument | undefined;
@@ -179,7 +194,7 @@ Fetching using TOP likes will execute much faster.`,
     usage: [
       '/ argument 1 / argument 2 / argument 3 /'
     ],
-    priority: 2,
+    priority: 3,
     matchText: (text: string) => {
       const match = matchGroup(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/, 0);
       return { matches: match.matches, newText: match.newText, args: match.matches ? match.args!.split(/\s*\/\s*/g) : undefined};
@@ -195,7 +210,7 @@ Fetching using TOP likes will execute much faster.`,
       'spotify:album:3cWA6fj7NEfoGuGRYGxsam',
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
-    priority: 3,
+    priority: 4,
     matchText: (text: string) => {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
       let args: UrlArgument | undefined;
@@ -213,7 +228,7 @@ Fetching using TOP likes will execute much faster.`,
     details: 'Used for referring to an identifier (a shortcut) for some resource such as a playlist.',
     permission: PERMISSION.USER,
     usage: ['[my identifier]', '[music playlist #2]'],
-    priority: 4,
+    priority: 5,
     matchText: (text: string) => matchGroup(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
   },
   QUERY: {
@@ -221,7 +236,7 @@ Fetching using TOP likes will execute much faster.`,
     details: 'Used for searching.',
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],
-    priority: 5,
+    priority: 6,
     matchText: (text: string) => matchGroup(text, /\B\(\s*([^\s].+[^\s])\s*\)\B/i, 0),
   },
 };
