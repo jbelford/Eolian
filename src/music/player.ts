@@ -30,9 +30,10 @@ const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 
 export class DiscordPlayer extends EventEmitter implements Player {
 
-  private _volume: number = 0.5;
+  private _volume: number = 0.10;
   private stream?: StreamData;
   private volumeTransform?: VolumeTransformer;
+  private skipClose = false;
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
@@ -82,12 +83,12 @@ export class DiscordPlayer extends EventEmitter implements Player {
           this.stream.readable.pipe(passthrough, { end: false });
           this.stream.readable.once('end', endHandler);
         } else {
-          passthrough.end();
+          passthrough.destroy();
         }
         await this.popNext();
       } catch (e) {
         logger.warn(e);
-        passthrough.end();
+        passthrough.destroy();
       }
     };
 
@@ -106,27 +107,24 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
     connection.dispatcher.on('error', err => logger.warn(err));
 
-    connection.dispatcher.once('close', () => {
+    connection.dispatcher.once('close', async () => {
       if (this.stream && !this.stream.readable.destroyed) {
         this.stream.readable.destroy();
       }
+      passthrough.destroy();
       this.stream = undefined;
       this.volumeTransform = undefined;
+
+      if (this.skipClose) {
+        this.skipClose = false;
+        if (await this.queue.peek()) {
+          connection.removeListener('disconnect', disconnectHandler);
+          await this.play();
+        }
+      }
     });
 
-    connection.dispatcher.once('finish', async () => {
-      if (this.stream && !this.stream.readable.destroyed) {
-        this.stream.readable.destroy();
-      }
-      this.stream = undefined;
-
-      // Start stream again if there are still items in the queue
-      if (await this.queue.peek()) {
-        connection.removeListener('disconnect', disconnectHandler);
-        await this.play();
-        return;
-      }
-
+    connection.dispatcher.on('finish', () => {
       if (this.connectionProvider.has()) {
         this.getConnection().disconnect();
       }
@@ -134,8 +132,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   async skip(): Promise<void> {
-    if (this.isStreaming) {
-      this.getConnection().dispatcher.end();
+    if (this.isStreaming && !this.skipClose) {
+      this.skipClose = true;
+      this.getConnection().dispatcher.destroy();
     }
   }
 
@@ -147,7 +146,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async pause(): Promise<void> {
     if (this.isStreaming) {
-      this.getConnection().dispatcher.pause(true);
+      this.getConnection().dispatcher.pause();
     }
   }
 
