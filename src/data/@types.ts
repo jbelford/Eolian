@@ -59,6 +59,7 @@ export interface MemoryStore extends Closable {
 }
 
 export interface MusicQueueDAO {
+  unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, limit?: number): Promise<Track[]>;
   remove(guildId: string, range: AbsRangeArgument): Promise<number>
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
@@ -69,6 +70,7 @@ export interface MusicQueueDAO {
 }
 
 export interface ServerQueue extends EventEmitter {
+  unpop(count: number): Promise<boolean>;
   get(limit?: number): Promise<Track[]>;
   remove(range: AbsRangeArgument): Promise<number>;
   add(tracks: Track[], head?: boolean): Promise<void>;

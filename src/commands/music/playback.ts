@@ -40,6 +40,28 @@ export const SKIP_COMMAND: Command = {
   execute: executeSkip
 };
 
+async function executeBack(context: CommandContext, options: CommandOptions): Promise<void> {
+  const success = await context.server!.queue.unpop(2);
+  if (success) {
+    const voice = context.client.getVoice();
+    if (voice) {
+      await voice.player.skip();
+    }
+    await context.message.react('⏪');
+  } else {
+    await context.message.reply("There are no previous songs!");
+  }
+}
+
+export const BACK_COMMAND: Command = {
+  name: 'back',
+  details: 'Go back a song',
+  category: MUSIC_CATEGORY,
+  permission: PERMISSION.USER,
+  usage: [''],
+  execute: executeBack
+};
+
 async function executePause(context: CommandContext, options: CommandOptions): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {

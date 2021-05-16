@@ -7,6 +7,15 @@ export class MusicQueueService {
 
   constructor(private readonly queues: MusicQueueDAO) { }
 
+  async unpop(guildId: string, count: number): Promise<boolean> {
+    try {
+      return await this.queues.unpop(guildId, count);
+    } catch (e) {
+      logger.warn(`Failed to pop previous track from queue: guildId: ${guildId}`);
+      throw e;
+    }
+  }
+
   async getTracks(guildId: string, limit?: number): Promise<Track[]> {
     try {
       return await this.queues.get(guildId, limit);

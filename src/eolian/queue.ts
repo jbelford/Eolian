@@ -12,6 +12,10 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     super();
   }
 
+  unpop(count: number): Promise<boolean> {
+    return this.queue.unpop(this.guildId, count);
+  }
+
   get(limit?: number | undefined): Promise<Track[]> {
     return this.queue.getTracks(this.guildId, limit);
   }

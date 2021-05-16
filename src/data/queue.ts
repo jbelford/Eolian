@@ -4,6 +4,8 @@ import { Track } from 'music/@types';
 import { EolianCache, MusicQueueDAO } from './@types';
 import { InMemoryCache } from './cache';
 
+const MAX_PREV = 10;
+
 /**
  * Temporary implementation storing music queues in-memory.
  */
@@ -13,6 +15,20 @@ export class InMemoryQueues implements MusicQueueDAO {
 
   constructor(ttl: number) {
     this.cache = new InMemoryCache(ttl);
+  }
+
+  async unpop(guildId: string, count: number): Promise<boolean> {
+    count = Math.max(0, count);
+    const list = await this.getPrev(guildId);
+    if (list.length < count) {
+      return false;
+    }
+
+    const tracks = list.splice(Math.max(0, list.length - count), count);
+    await this.setPrev(guildId, list);
+    this.add(guildId, tracks, true);
+
+    return true;
   }
 
   async get(guildId: string, limit?: number): Promise<Track[]> {
@@ -43,6 +59,7 @@ export class InMemoryQueues implements MusicQueueDAO {
   }
 
   async clear(guildId: string): Promise<boolean> {
+    this.cache.del(`${guildId}_prev`);
     return this.cache.del(guildId);
   }
 
@@ -52,7 +69,8 @@ export class InMemoryQueues implements MusicQueueDAO {
       return;
     }
 
-    const track = list.shift();
+    const track = list.shift()!;
+    this.addPrev(guildId, track);
     this.cache.set(guildId, list);
     return track;
   }
@@ -60,6 +78,23 @@ export class InMemoryQueues implements MusicQueueDAO {
   async peek(guildId: string): Promise<Track | undefined> {
     const list = await this.cache.get<Track[]>(guildId) || [];
     return list.length ? list[0] : undefined;
+  }
+
+  private async getPrev(guildId: string): Promise<Track[]> {
+    return await this.cache.get<Track[]>(`${guildId}_prev`) || [];
+  }
+
+  private async setPrev(guildId: string, tracks: Track[]): Promise<void> {
+    await this.cache.set(`${guildId}_prev`, tracks);
+  }
+
+  private async addPrev(guildId: string, track: Track): Promise<void> {
+    let tracks = await this.getPrev(guildId);
+    tracks.push(track);
+    if (tracks.length === MAX_PREV) {
+      tracks = tracks.slice(1);
+    }
+    await this.setPrev(guildId, tracks);
   }
 
 }

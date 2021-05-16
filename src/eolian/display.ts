@@ -116,6 +116,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       embed.buttons = [
         { emoji: '⏏', onClick: this.queueHandler },
         { emoji: '⏯', onClick: this.onPauseResumeHandler },
+        { emoji: '⏪', onClick: this.backHandler },
         { emoji: '⏩', onClick: this.skipHandler },
         { emoji: '⏹', onClick: this.stopHandler },
       ];
@@ -137,6 +138,14 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       await this.player.resume();
     } else {
       await this.player.pause();
+    }
+    return false;
+  };
+
+  private backHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+    if (await this.player.queue.unpop(2)) {
+      await this.player.skip();
+      await this.onEndHandler();
     }
     return false;
   };
