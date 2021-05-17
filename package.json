@@ -17,7 +17,7 @@
     "soundcloud"
   ],
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=14.0.0"
   },
   "author": "Jack Belford",
   "license": "GPL-3.0+",
