@@ -13,7 +13,7 @@ export class WebServer implements Closable {
     });
   }
 
-  start() {
+  start(): void {
     this.server.listen(8080);
   }
 

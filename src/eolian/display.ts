@@ -16,7 +16,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
     this.queue.on('update', () => this.updateHandler());
   }
 
-  setChannel(channel: ContextTextChannel) {
+  setChannel(channel: ContextTextChannel): void {
     this.channel = channel;
   }
 
@@ -104,7 +104,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.on('done', this.onEndHandler);
   }
 
-  setChannel(channel: ContextTextChannel) {
+  setChannel(channel: ContextTextChannel): void {
     this.channel = channel;
   }
 
@@ -136,7 +136,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
   };
 
-  private onPauseResumeHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+  private onPauseResumeHandler: MessageButtonOnClickHandler = async () => {
     if (this.player.paused) {
       await this.player.resume();
     } else {
@@ -145,7 +145,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     return false;
   };
 
-  private backHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+  private backHandler: MessageButtonOnClickHandler = async () => {
     if (await this.player.queue.unpop(2)) {
       await this.player.skip();
       if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
@@ -155,7 +155,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     return false;
   };
 
-  private skipHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+  private skipHandler: MessageButtonOnClickHandler = async () => {
     await this.player.skip();
     if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
       await this.onEndHandler();
@@ -163,7 +163,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     return false;
   };
 
-  private stopHandler: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+  private stopHandler: MessageButtonOnClickHandler = async () => {
     await this.player.stop();
     await this.onEndHandler();
     return false;

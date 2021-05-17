@@ -237,7 +237,7 @@ export class SoundCloudFetcher implements SourceFetcher {
 
   private async fetchPlaylist(): Promise<Track[]> {
     const playlist = await soundcloud.getPlaylist(+this.identifier.id);
-    return playlist.tracks!.map(mapSoundCloudTrack);
+    return playlist.tracks?.map(mapSoundCloudTrack) ?? [];
   }
 
   private async fetchTrack(): Promise<Track> {
@@ -260,9 +260,11 @@ export class SoundCloudFetcher implements SourceFetcher {
     }
 
     if (this.channel && max > 300) {
-      messageCache = await this.channel!.send(`Fetching favorites: 0%`);
+      messageCache = await this.channel.send(`Fetching favorites: 0%`);
       cb = async (count: number) => {
-        await messageCache!.edit(`Fetching favorites: ${Math.round(100 * count / max)}%`);
+        if (messageCache) {
+          await messageCache.edit(`Fetching favorites: ${Math.round(100 * count / max)}%`);
+        }
       };
     }
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { google, youtube_v3 } from 'googleapis';

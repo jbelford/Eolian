@@ -33,10 +33,10 @@ export class YouTubeUrlResolver implements SourceResolver {
 
       if (resourceDetails.video) {
         const video = await youtube.getVideo(resourceDetails.video);
-        return createYouTubeVideo(video!);
+        return createYouTubeVideo(video);
       } else if (resourceDetails.playlist) {
         const playlist = await youtube.getPlaylist(resourceDetails.playlist);
-        return createYouTubePlaylist(playlist!);
+        return createYouTubePlaylist(playlist);
       }
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');

@@ -5,7 +5,7 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand } from './@types';
 
-function simpleOptionsStrategy(text: string, permission: PERMISSION): CommandOptions {
+function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};
   if (text.trim().length > 0) {
     options.ARG = text.trim().split(' ');

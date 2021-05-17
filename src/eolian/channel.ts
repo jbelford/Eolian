@@ -28,15 +28,16 @@ export class DiscordTextChannel implements ContextTextChannel {
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
   async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
     return new Promise((resolve, reject) => {
-      let sentEmbedPromise: Promise<ContextMessage>;
       let resolved = false;
 
       const collector = this.awaitUserSelection(user.id, options.length, async (msg) => {
         if (!resolved) {
           try {
             resolved = true;
-            const sentEmbed = await sentEmbedPromise;
-            await sentEmbed.delete();
+            if (sentEmbedPromise) {
+              const sentEmbed = await sentEmbedPromise;
+              await sentEmbed.delete();
+            }
             if (!msg) {
               resolve(-1);
             } else {
@@ -67,7 +68,7 @@ export class DiscordTextChannel implements ContextTextChannel {
         selectEmbed.buttonUserId = user.id;
       }
 
-      sentEmbedPromise = this.sendEmbed(selectEmbed);
+      const sentEmbedPromise = this.sendEmbed(selectEmbed);
       sentEmbedPromise.catch(reject);
     });
   }
@@ -81,7 +82,7 @@ export class DiscordTextChannel implements ContextTextChannel {
       return !isNaN(idx) && idx >= 0 && idx <= count;
     }, { max: 1, time: 60000 });
 
-    collector.on('end', (collected) => {
+    collector.once('end', (collected) => {
       cb(collected.first());
     });
 

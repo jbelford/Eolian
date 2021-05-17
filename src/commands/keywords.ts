@@ -158,11 +158,11 @@ Fetching using TOP likes will execute much faster.`,
     ],
     priority: 2,
     matchText: (text: string) => {
-      const match = matchText(text, /\TOP\s+((\d+)(:(-?\d+))?)\b/i);
+      const match = matchText(text, /\bTOP\s+((\d+)(:(-?\d+))?)\b/i);
       let args: RangeArgument | undefined;
-      if (match.matches) {
-        args = { start: +match.args![1] };
-        if (match.args![3]) args.stop = +match.args![3];
+      if (match.matches && match.args && match.args.length >= 4) {
+        args = { start: +match.args[1] };
+        if (match.args[3]) args.stop = +match.args[3];
       }
       return { matches: match.matches, newText: match.newText, args };
     },
@@ -180,9 +180,9 @@ Fetching using TOP likes will execute much faster.`,
     matchText: (text: string) => {
       const match = matchText(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
       let args: RangeArgument | undefined;
-      if (match.matches) {
-        args = { start: +match.args![1] };
-        if (match.args![3]) args.stop = +match.args![3];
+      if (match.matches && match.args && match.args.length >= 4) {
+        args = { start: +match.args[1] };
+        if (match.args[3]) args.stop = +match.args[3];
       }
       return { matches: match.matches, newText: match.newText, args };
     },
@@ -196,8 +196,8 @@ Fetching using TOP likes will execute much faster.`,
     ],
     priority: 3,
     matchText: (text: string) => {
-      const match = matchGroup(text, /\B\/\s*([^\/]+(\/[^\/]+)*)\/\B/, 0);
-      return { matches: match.matches, newText: match.newText, args: match.matches ? match.args!.split(/\s*\/\s*/g) : undefined};
+      const match = matchGroup(text, /\B\/\s*([^/]+(\/[^/]+)*)\/\B/, 0);
+      return { matches: match.matches, newText: match.newText, args: match.args?.split(/\s*\/\s*/g) };
     },
   },
   URL: {
@@ -214,8 +214,8 @@ Fetching using TOP likes will execute much faster.`,
     matchText: (text: string) => {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
       let args: UrlArgument | undefined;
-      if (match.matches) {
-        args = { value: match.args!, source: SOURCE.UNKNOWN };
+      if (match.matches && match.args) {
+        args = { value: match.args, source: SOURCE.UNKNOWN };
         if (args.value.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;
         else if (args.value.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
         else if (args.value.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
@@ -244,17 +244,17 @@ Fetching using TOP likes will execute much faster.`,
 function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
   const regArr = reg.exec(text);
   const match: KeywordMatchResult<string[]> = { matches: !!regArr, newText: text.replace(reg, '') };
-  if (!!regArr) {
+  if (regArr) {
     match.args = regArr.slice(1).map(group => group && group.trim());
   }
   return match;
-};
+}
 
 function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResult<string> {
   const match = matchText(text, reg);
   let args: string | undefined;
-  if (match.matches) {
-    args = match.args![group];
+  if (match.matches && match.args) {
+    args = match.args[group];
     if (reg.ignoreCase) {
       args = args.toLowerCase();
     }

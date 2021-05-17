@@ -6,7 +6,7 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed } from 'embed';
 
-async function execute({ user, channel, message }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+async function execute({ user, channel }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
     const categoryListEmbed = createCategoryListEmbed(COMMAND_CATEGORIES);
     await channel.sendEmbed(categoryListEmbed);

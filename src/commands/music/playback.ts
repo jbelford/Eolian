@@ -1,9 +1,9 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { PERMISSION } from 'common/constants';
 
 
-async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
+async function execute(context: CommandContext): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {
     await voice.disconnect();
@@ -21,7 +21,7 @@ export const STOP_COMMAND: Command = {
 };
 
 
-async function executeSkip(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executeSkip(context: CommandContext): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {
     await voice.player.skip();
@@ -40,7 +40,7 @@ export const SKIP_COMMAND: Command = {
   execute: executeSkip
 };
 
-async function executeBack(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executeBack(context: CommandContext): Promise<void> {
   const success = await context.server!.queue.unpop(2);
   if (success) {
     const voice = context.client.getVoice();
@@ -62,7 +62,7 @@ export const BACK_COMMAND: Command = {
   execute: executeBack
 };
 
-async function executePause(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executePause(context: CommandContext): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {
     if (voice.player.paused) {
@@ -85,7 +85,7 @@ export const PAUSE_COMMAND: Command = {
   execute: executePause
 };
 
-async function executeResume(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executeResume(context: CommandContext): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {
     if (voice.player.paused) {

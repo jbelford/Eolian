@@ -23,7 +23,7 @@ export class EolianUserService {
     }
   }
 
-  async unlinkSpotifyAccount(userId: string) {
+  async unlinkSpotifyAccount(userId: string): Promise<void> {
     try {
       await this.users.removeSpotify(userId);
     } catch (e) {
@@ -32,7 +32,7 @@ export class EolianUserService {
     }
   }
 
-  async unlinkSoundCloudAccount(userId: string) {
+  async unlinkSoundCloudAccount(userId: string): Promise<void> {
     try {
       await this.users.removeSoundCloud(userId);
     } catch (e) {
@@ -41,7 +41,7 @@ export class EolianUserService {
     }
   }
 
-  async addResourceIdentifier(userId: string, key: string, identifier: Identifier) {
+  async addResourceIdentifier(userId: string, key: string, identifier: Identifier): Promise<void> {
     try {
       await this.users.setIdentifier(userId, key, identifier);
     } catch (e) {
@@ -50,7 +50,7 @@ export class EolianUserService {
     }
   }
 
-  async removeResourceIdentifier(userId: string, key: string) {
+  async removeResourceIdentifier(userId: string, key: string): Promise<boolean> {
     try {
       return await this.users.removeIdentifier(userId, key);
     } catch (e) {

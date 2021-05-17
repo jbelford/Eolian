@@ -13,8 +13,7 @@ export function createPollQuestionEmbed(question: string, options: PollOption[],
     footer: {
       text: `${username}'s poll`,
       icon: pic
-    },
-    buttons: Array.from(options) // This is to break the reference
+    }
   };
 }
 

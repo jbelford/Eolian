@@ -17,15 +17,18 @@ export class SpotifyUrlResolver implements SourceResolver {
     const resourceDetails = spotify.resolve(this.url);
     if (resourceDetails) {
       switch (resourceDetails.type) {
-        case SpotifyResourceType.PLAYLIST:
+        case SpotifyResourceType.PLAYLIST: {
           const playlist = await spotify.getPlaylist(resourceDetails.id);
           return createSpotifyPlaylist(playlist);
-        case SpotifyResourceType.ALBUM:
+        }
+        case SpotifyResourceType.ALBUM: {
           const album = await spotify.getAlbum(resourceDetails.id);
           return createSpotifyAlbum(album);
-        case SpotifyResourceType.ARTIST:
+        }
+        case SpotifyResourceType.ARTIST: {
           const artist = await spotify.getArtist(resourceDetails.id);
           return createSpotifyArtist(artist);
+        }
         default:
       }
     }

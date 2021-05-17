@@ -6,7 +6,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption, PollOptionResult } from 'embed/@types';
-import { ContextMessage, ContextUser } from 'eolian/@types';
+import { MessageButtonOnClickHandler } from 'eolian/@types';
 
 async function execute({ channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
@@ -21,8 +21,9 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
   const question = ARG[0];
   const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text, emoji: NUMBER_TO_EMOJI[i + 1] }));
   const questionEmbed = createPollQuestionEmbed(question, options, user.name, user.avatar);
+  questionEmbed.buttons = options.map(option => ({ emoji: option.emoji }));
 
-  const closePollHandler = async (message: ContextMessage, reactionUser: ContextUser) => {
+  const closePollHandler: MessageButtonOnClickHandler = async (message, reactionUser) => {
     if (reactionUser.id !== user.id) return false;
 
     const buttons = message.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
@@ -36,7 +37,7 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
     return true;
   };
 
-  questionEmbed.buttons!.push({ emoji: '🚫', onClick: closePollHandler });
+  questionEmbed.buttons.push({ emoji: '🚫', onClick: closePollHandler });
 
   await channel.sendEmbed(questionEmbed);
 }

@@ -126,7 +126,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       tracks = tracks.concat(result.collection);
 
       if (progressCb) {
-        let curr = tracks.length;
+        const curr = tracks.length;
         progressPromise = progressPromise.then(() => progressCb(curr));
       }
 
@@ -134,7 +134,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
         result = await this.getUri<SoundCloudPaginatedTracks>(`${result.next_href}&client_id=${this.token}`);
         tracks = tracks.concat(result.collection);
         if (progressCb) {
-          let curr = tracks.length;
+          const curr = tracks.length;
           progressPromise = progressPromise.then(() => progressCb(curr));
         }
       }
@@ -176,7 +176,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     });
   }
 
-  private async get<T>(endpoint: string, params: { [key: string]: any } = {}): Promise<T> {
+  private async get<T>(endpoint: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
     params.client_id = this.token;
     return this.getUri<T>(`${URL}/${endpoint}?${querystring.stringify(params)}`);
   }

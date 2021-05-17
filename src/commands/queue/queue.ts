@@ -5,7 +5,7 @@ import { PERMISSION } from 'common/constants';
 import { getRangeOption } from 'common/util';
 
 
-async function executeClearQueue(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executeClearQueue(context: CommandContext): Promise<void> {
   const cleared = await context.server!.queue.clear();
   if (cleared) {
     await context.channel.send('💨 I have cleared the queue!');
@@ -16,7 +16,7 @@ async function executeClearQueue(context: CommandContext, options: CommandOption
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.CLEAR) {
-    return executeClearQueue(context, options);
+    return executeClearQueue(context);
   }
 
   let tracks = await context.server!.queue.get();
@@ -33,7 +33,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   const total = tracks.length;
-  let range = getRangeOption(options, total);
+  const range = getRangeOption(options, total);
   if (range) {
     tracks = tracks.slice(range.start, range.stop);
   }

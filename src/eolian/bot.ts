@@ -50,13 +50,13 @@ export class DiscordEolianBot implements EolianBot {
     this.lockManager = new UserLockManager(60000);
   }
 
-  async start() {
+  async start(): Promise<void> {
     if (!this.client.readyTimestamp) {
       await this.client.login(environment.tokens.discord);
     }
   }
 
-  async close() {
+  async close(): Promise<void> {
     this.client.destroy();
   }
 
@@ -142,9 +142,10 @@ export class DiscordEolianBot implements EolianBot {
 
   private hasSendPermission(channel: Channel) {
     switch (channel.type) {
-      case DiscordChannel.TEXT:
+      case DiscordChannel.TEXT: {
         const permissions = (channel as TextChannel).permissionsFor(this.client.user!);
         return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
+      }
       case DiscordChannel.DM:
         return true;
       default:

@@ -58,7 +58,8 @@ export function getIcon(src: SOURCE): string | undefined {
   }
 }
 
-export function getEnumName(e: any, i: number) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function getEnumName(e: any, i: number): string | undefined {
   return Object.keys(e).find(k => e[k] === i);
 }
 
@@ -106,13 +107,13 @@ export const enum DiscordEvents {
   DEBUG = 'debug',
   WARN = 'warn',
   MESSAGE_REACTION_ADD = 'messageReactionAdd',
-};
+}
 
 export const enum DiscordChannel {
   TEXT = 'text',
   DM = 'dm',
   VOICE = 'voice'
-};
+}
 
 export const EOLIAN_CLIENT_OPTIONS: ClientOptions = {
   ws: { intents: DISCORD_ENABLED_INTENTS }

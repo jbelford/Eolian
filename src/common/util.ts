@@ -40,7 +40,7 @@ function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boo
   return { start: Math.min(newStart, newStop), stop: Math.max(newStart, newStop) };
 }
 
-export function getRangeOption(options: CommandOptions, total: number) {
+export function getRangeOption(options: CommandOptions, total: number): AbsRangeArgument | undefined {
   let range: AbsRangeArgument | undefined;
   if (options.TOP) {
     range = convertRangeToAbsolute(options.TOP, total);

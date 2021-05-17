@@ -30,7 +30,7 @@ const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 
 export class DiscordPlayer extends EventEmitter implements Player {
 
-  private _volume: number = 0.10;
+  private _volume = 0.10;
   private stream?: StreamData;
   private volumeTransform?: VolumeTransformer;
   private skipClose = false;
@@ -41,11 +41,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
     super();
   }
 
-  get isStreaming() {
+  get isStreaming(): boolean {
     return !!this.stream && this.connectionProvider.has();
   }
 
-  get paused() {
+  get paused(): boolean {
     return this.isStreaming && this.getConnection().dispatcher.paused;
   }
 

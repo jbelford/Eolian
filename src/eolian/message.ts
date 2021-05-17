@@ -1,6 +1,6 @@
 import { logger } from 'common/logger';
 import { Message, MessageEmbed, ReactionCollector } from 'discord.js';
-import { ContextMessage, EmbedMessage } from './@types';
+import { ContextMessage, ContextMessageButton, EmbedMessage } from './@types';
 
 export class DiscordMessage implements ContextMessage {
 
@@ -16,7 +16,7 @@ export class DiscordMessage implements ContextMessage {
 
   async reply(message: string): Promise<void> {
     await this.message.reply(message);
-  };
+  }
 
   async react(emoji: string): Promise<void> {
     await this.message.react(emoji);
@@ -31,7 +31,7 @@ export class DiscordMessage implements ContextMessage {
     await this.message.edit(rich);
   }
 
-  getButtons() {
+  getButtons(): ContextMessageButton[] {
     return this.message.reactions.cache.map(reaction => {
       let count = 0;
       if (reaction.count === null) {
@@ -44,7 +44,7 @@ export class DiscordMessage implements ContextMessage {
     });
   }
 
-  releaseButtons() {
+  releaseButtons(): void {
     if (this.collector) {
       this.collector.stop();
     }
@@ -57,7 +57,7 @@ export class DiscordMessage implements ContextMessage {
 
 }
 
-export function mapDiscordEmbed(embed: EmbedMessage) {
+export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
   const rich = new MessageEmbed();
 
   if (embed.color)
@@ -78,7 +78,7 @@ export function mapDiscordEmbed(embed: EmbedMessage) {
     rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
   if (embed.fields) {
     const fields = embed.fields.slice(0, 25)
-      .map((f, i) => ({ name: clampLength(f.name, 256), value: clampLength(f.value, 1024) }));
+      .map(f => ({ name: clampLength(f.name, 256), value: clampLength(f.value, 1024) }));
     rich.addFields(fields);
   }
   return rich;

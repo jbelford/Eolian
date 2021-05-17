@@ -53,7 +53,7 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
     + `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n`
     + `**Identifiers:** `;
   if (identifiers && Object.keys(identifiers).length > 0) {
-    description += Object.keys(identifiers).map((key, i) => `[${key}](${identifiers[key].url})`).join(', ');
+    description += Object.keys(identifiers).map(key => `[${key}](${identifiers[key].url})`).join(', ');
   } else {
     description += 'N/A';
   }

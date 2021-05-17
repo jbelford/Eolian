@@ -26,7 +26,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
-    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:\/]([^\?]+)/g
+    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:/]([^?]+)/g
     const regArr = matcher.exec(uri);
     if (!regArr) return;
     return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };

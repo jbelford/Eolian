@@ -14,15 +14,15 @@ export class DiscordUser implements ContextUser {
       readonly permission: PERMISSION,
       private readonly guildUser?: GuildMember | null) {}
 
-  get id() {
+  get id(): string {
     return this.user.id;
   }
 
-  get name() {
+  get name(): string {
     return this.user.username;
   }
 
-  get avatar() {
+  get avatar(): string | undefined {
     return this.user.avatarURL({ dynamic: true }) || undefined;
   }
 

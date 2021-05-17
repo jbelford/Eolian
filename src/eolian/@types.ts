@@ -36,9 +36,14 @@ export interface ContextMessage {
   editEmbed(embed: EmbedMessage): Promise<void>;
   reply(message: string): Promise<void>;
   react(emoji: string): Promise<void>;
-  getButtons(): Array<{ emoji: string, count: number }>;
+  getButtons(): ContextMessageButton[];
   releaseButtons(): void;
   delete(): Promise<void>;
+}
+
+export type ContextMessageButton = {
+  emoji: string;
+  count: number;
 }
 
 export interface ContextVoiceChannel {
