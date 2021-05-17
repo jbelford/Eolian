@@ -1,6 +1,6 @@
 {
   "name": "eolian",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A bot for music enthusiasts",
   "private": true,
   "scripts": {
@@ -16,6 +16,9 @@
     "spotify",
     "soundcloud"
   ],
+  "engines": {
+    "node": ">=14.17.0"
+  },
   "author": "Jack Belford",
   "license": "GPL-3.0+",
   "dependencies": {
@@ -46,8 +49,11 @@
     "@types/node-cache": "^4.2.5",
     "@types/node-cleanup": "^2.1.0",
     "@types/request-promise-native": "^1.0.17",
+    "@types/webpack-node-externals": "^2.5.1",
     "@types/winston": "^2.4.4",
-    "gts": "^3.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
     "ts-loader": "^9.1.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4",

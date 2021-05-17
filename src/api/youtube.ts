@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { google, youtube_v3 } from 'googleapis';
@@ -70,7 +71,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async getPlaylistVideos(id: string): Promise<YoutubeVideo[]> {
-    let items = [];
+    let items: youtube_v3.Schema$PlaylistItem[] = [];
 
     try {
       // @ts-ignore Typescript is dumb
