@@ -97,6 +97,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private messageCache?: ContextMessage;
   private channel?: ContextTextChannel;
   private queueAhead = false;
+  private inputLock = false;
 
   constructor(private readonly player: Player,
       private readonly queueDisplay: QueueDisplay) {
@@ -113,11 +114,11 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       const embed = createPlayingEmbed(track);
       if (!this.messageCache || this.channel.lastMessageId !== this.messageCache.id) {
         embed.buttons = [
-          { emoji: '⏏', onClick: this.queueHandler },
-          { emoji: '⏯', onClick: this.onPauseResumeHandler },
-          { emoji: '⏪', onClick: this.backHandler },
-          { emoji: '⏩', onClick: this.skipHandler },
-          { emoji: '⏹', onClick: this.stopHandler },
+          { emoji: '⏏', onClick: this.lock(this.queueHandler) },
+          { emoji: '⏯', onClick: this.lock(this.onPauseResumeHandler) },
+          { emoji: '⏪', onClick: this.lock(this.backHandler) },
+          { emoji: '⏩', onClick: this.lock(this.skipHandler) },
+          { emoji: '⏹', onClick: this.lock(this.stopHandler) },
         ];
         await this.onEndHandler();
         this.messageCache = await this.channel.sendEmbed(embed);
@@ -135,6 +136,20 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       await deletePromise;
     }
   };
+
+  private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {
+    return async (msg, usr, emoji) => {
+      if (!this.inputLock) {
+        this.inputLock = true;
+        try {
+          return await cb(msg, usr, emoji);
+        } finally {
+          this.inputLock = false;
+        }
+      }
+      return false;
+    };
+  }
 
   private onPauseResumeHandler: MessageButtonOnClickHandler = async () => {
     if (this.player.paused) {
