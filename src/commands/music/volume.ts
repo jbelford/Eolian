@@ -22,7 +22,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     context.server!.player.setVolume(volume);
   }
 
-  await context.channel.send(`🔊  **${Math.floor(volume * 100)}%**  🔊`);
+  if (!context.server!.player.isStreaming) {
+    await context.channel.send(`🔊  **${Math.floor(volume * 100)}%**  🔊`);
+  } else {
+    await context.message.react('🔊');
+  }
 }
 
 export const VOLUME_COMMAND: Command = {

@@ -110,7 +110,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
 
+  private track: Track | null = null;
   private messageCache: ContextMessage | null = null;
+
   private channel: ContextTextChannel | null = null;
   private queueAhead = false;
   private inputLock = false;
@@ -118,12 +120,14 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   constructor(private readonly player: Player,
       private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
+    this.player.on('volume', this.onVolumeHandler);
     this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
   }
 
   async close(): Promise<void> {
     this.player.removeListener('next', this.onNextHandler);
+    this.player.removeListener('volume', this.onVolumeHandler);
     this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.channel = null;
@@ -146,7 +150,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onNextHandler = async (track: Track) => {
     if (this.channel) {
-      const embed = createPlayingEmbed(track);
+      this.track = track;
+      const embed = createPlayingEmbed(this.track, this.player.volume);
       if (!this.messageCache || this.channel.lastMessageId !== this.messageCache.id) {
         embed.buttons = [
           { emoji: '⏏', onClick: this.lock(this.queueHandler) },
@@ -155,7 +160,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
           { emoji: '⏩', onClick: this.lock(this.skipHandler) },
           { emoji: '⏹', onClick: this.lock(this.stopHandler) },
         ];
-        await this.onEndHandler();
+        await this.safeDelete();
         this.messageCache = await this.channel.sendEmbed(embed);
         this.queueAhead = false;
       } else {
@@ -166,12 +171,24 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onIdleHandler = () => this.removeIdle();
 
-  private onEndHandler = async () => {
+  private onVolumeHandler = async () => {
+    if (this.messageCache && this.track) {
+      const embed = createPlayingEmbed(this.track, this.player.volume);
+      await this.messageCache.editEmbed(embed);
+    }
+  };
+
+  private async safeDelete(): Promise<void> {
     if (this.messageCache) {
       const deletePromise = this.messageCache.delete();
       this.messageCache = null;
       await deletePromise;
     }
+  }
+
+  private onEndHandler = async () => {
+    await this.safeDelete();
+    this.track = null;
   };
 
   private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {
@@ -234,6 +251,6 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       }
     }
     return false;
-  }
+  };
 
 }

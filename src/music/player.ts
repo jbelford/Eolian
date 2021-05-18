@@ -108,6 +108,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.volumeTransform) {
       this.volumeTransform.setVolume(this._volume);
     }
+    this.emitVolume();
   }
 
   async play(): Promise<void> {
@@ -270,6 +271,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private emitIdle() {
     this.emit('idle');
+  }
+
+  private emitVolume() {
+    return this.emit('volume');
   }
 
   private streamErrorHandler = (err: Error) => this.cleanup(err);

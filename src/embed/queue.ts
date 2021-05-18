@@ -20,17 +20,17 @@ export function createQueueEmbed(tracks: Track[], start: number, total: number) 
   return embed;
 }
 
-export function createPlayingEmbed(track: Track) : EmbedMessage {
+export function createPlayingEmbed(track: Track, volume: number) : EmbedMessage {
   const embed: EmbedMessage = {
     color: mapSourceToColor(track.src),
     header: {
       icon: getIcon(track.src),
-      text: '🔊 Now Playing 🔊'
+      text: `🎶 Now Playing 🔊 ${Math.floor(volume * 100)}% `
     },
     title: track.title,
     description: `${track.poster}`,
     image: track.artwork,
-    url: track.url,
+    url: track.url
   };
   return embed;
 }
