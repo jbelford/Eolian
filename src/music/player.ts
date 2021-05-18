@@ -1,7 +1,7 @@
 import { getTrackStream } from 'api';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
-import { Client, VoiceConnection } from 'discord.js';
+import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player } from 'music/@types';
 import prism, { VolumeTransformer } from 'prism-media';
@@ -47,6 +47,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private volumeTransform: VolumeTransformer | null = null;
   private opusStream: Transform | null = null;
   private inputStream: PassThrough | null = null;
+  private dispatcher: StreamDispatcher | null = null;
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
@@ -63,20 +64,21 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.pcmTransform?.destroy(err);
     this.volumeTransform?.destroy(err);
     this.opusStream?.destroy(err);
-    this.connectionProvider.get()?.dispatcher?.destroy(err);
+    this.dispatcher?.destroy(err);
     this.inputStream = null;
     this.songStream = null;
     this.pcmTransform = null;
     this.volumeTransform = null;
     this.opusStream = null;
+    this.dispatcher = null;
   }
 
   get isStreaming(): boolean {
-    return !!this.inputStream && this.connectionProvider.has();
+    return !!this.dispatcher;
   }
 
   get paused(): boolean {
-    return this.isStreaming && this.getConnection().dispatcher.paused;
+    return this.isStreaming && !!this.dispatcher?.paused;
   }
 
   get volume(): number {
@@ -96,18 +98,20 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
 
     try {
-      const connection = this.getConnection();
+      const connection = this.connectionProvider.get();
+      if (!connection) {
+        throw new Error('No voice connection!');
+      }
+      connection.once('disconnect', this.disconnectHandler);
+
       const input = await this.startNewStream();
 
       // We manage volume directly so set false
-      connection.play(input, { seek: 0, volume: false, type: 'opus' });
-      connection.once('disconnect', this.disconnectHandler);
-      connection.dispatcher.on('error', this.streamErrorHandler);
-      connection.dispatcher.once('close', this.cleanup);
-      connection.dispatcher.on('finish', () => {
-        if (this.connectionProvider.has()) {
-          this.getConnection().disconnect();
-        }
+      this.dispatcher = connection.play(input, { seek: 0, volume: false, type: 'opus' });
+      this.dispatcher.on('error', this.streamErrorHandler);
+      this.dispatcher.once('close', this.cleanup);
+      this.dispatcher.on('finish', () => {
+        this.connectionProvider.get()?.disconnect();
       });
     } catch (e) {
       this.streamErrorHandler(e);
@@ -124,28 +128,20 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async stop(): Promise<void> {
     if (this.isStreaming) {
-      this.getConnection().disconnect();
+      this.connectionProvider.get()?.disconnect();
     }
   }
 
   async pause(): Promise<void> {
-    if (this.isStreaming) {
-      this.getConnection().dispatcher.pause();
+    if (this.isStreaming && !this.paused) {
+      this.dispatcher!.pause();
     }
   }
 
   async resume(): Promise<void> {
-    if (this.isStreaming) {
-      this.getConnection().dispatcher.resume();
+    if (this.isStreaming && this.paused) {
+      this.dispatcher!.resume();
     }
-  }
-
-  private getConnection(): VoiceConnection {
-    const connection = this.connectionProvider.get();
-    if (!connection) {
-      throw new Error('Expected voice connection to be available');
-    }
-    return connection;
   }
 
   private async getNextStream(): Promise<Readable | null> {
@@ -208,12 +204,15 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private streamEndHandler = async () => {
     try {
+        if (this.pcmTransform) {
+          this.pcmTransform.unpipe(this.volumeTransform!);
+        }
         const readable = await this.getNextStream();
         if (readable) {
           readable.once('end', this.streamEndHandler)
             .pipe(this.volumeTransform!, { end: false });
         } else {
-          await this.stop();
+          this.volumeTransform!.end();
           return;
         }
         await this.popNext();
