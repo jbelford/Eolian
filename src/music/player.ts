@@ -3,9 +3,9 @@ import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
-import { Player, StreamData } from 'music/@types';
+import { Player } from 'music/@types';
 import prism, { VolumeTransformer } from 'prism-media';
-import { PassThrough } from 'stream';
+import { Duplex, PassThrough, Readable, Transform } from 'stream';
 
 
 export class VoiceConnectionProvider {
@@ -28,12 +28,25 @@ export class VoiceConnectionProvider {
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 
+/**
+ *
+ * Stream pipeline:
+ *
+ *   ------------------------------------- Replace all of these when force skipped -----------------------------
+ *  |                                                                                                          |
+ *  Song readable stream -> PCM transformer (either opus decoder / ffmpeg) -> Volume Transform -> Opus Encoder -> Passthrough -> Dispatcher
+ * |                                                                     |
+ * ------------- Replace these 2 when song ends -------------------------
+ *
+ */
 export class DiscordPlayer extends EventEmitter implements Player {
 
   private _volume = 0.10;
-  private stream?: StreamData;
-  private volumeTransform?: VolumeTransformer;
-  private skipClose = false;
+  private songStream: Readable | null = null;
+  private pcmTransform: Duplex | null = null;
+  private volumeTransform: VolumeTransformer | null = null;
+  private opusStream: Transform | null = null;
+  private inputStream: PassThrough | null = null;
 
   constructor(
     readonly connectionProvider: VoiceConnectionProvider,
@@ -41,8 +54,25 @@ export class DiscordPlayer extends EventEmitter implements Player {
     super();
   }
 
+  private cleanup = (err?: Error) => {
+    if (err) {
+      logger.warn(`Cleanup stream due to error: ${err}`);
+    }
+
+    this.songStream?.destroy(err);
+    this.pcmTransform?.destroy(err);
+    this.volumeTransform?.destroy(err);
+    this.opusStream?.destroy(err);
+    this.connectionProvider.get()?.dispatcher?.destroy(err);
+    this.inputStream = null;
+    this.songStream = null;
+    this.pcmTransform = null;
+    this.volumeTransform = null;
+    this.opusStream = null;
+  }
+
   get isStreaming(): boolean {
-    return !!this.stream && this.connectionProvider.has();
+    return !!this.songStream && this.connectionProvider.has();
   }
 
   get paused(): boolean {
@@ -65,76 +95,30 @@ export class DiscordPlayer extends EventEmitter implements Player {
       return;
     }
 
-    const connection = this.getConnection();
+    try {
+      const connection = this.getConnection();
+      const input = await this.startNewStream();
 
-    this.stream = await this.getNextStream();
-    if (!this.stream) {
-      throw Error('Failed to get first stream!');
+      // We manage volume directly so set false
+      connection.play(input, { seek: 0, volume: false, type: 'opus' });
+      connection.once('disconnect', this.disconnectHandler);
+      connection.dispatcher.on('error', this.streamErrorHandler);
+      connection.dispatcher.once('close', this.cleanup);
+      connection.dispatcher.on('finish', () => {
+        if (this.connectionProvider.has()) {
+          this.getConnection().disconnect();
+        }
+      });
+    } catch (e) {
+      this.streamErrorHandler(e);
     }
-    await this.popNext();
-
-
-    const passthrough = new PassThrough();
-
-    const endHandler = async () => {
-      try {
-        this.stream = await this.getNextStream();
-        if (this.stream) {
-          this.stream.readable.pipe(passthrough, { end: false });
-          this.stream.readable.once('end', endHandler);
-        } else {
-          passthrough.destroy();
-        }
-        await this.popNext();
-      } catch (e) {
-        logger.warn(e);
-        passthrough.destroy();
-      }
-    };
-
-    this.stream.readable.pipe(passthrough, { end: false });
-    this.stream.readable.once('end', endHandler);
-
-    this.volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume: this._volume });
-    const opusStream = passthrough.pipe(this.volumeTransform)
-      .pipe(new prism.opus.Encoder(OPUS_OPTIONS));
-
-    // We manage volume directly so set false
-    connection.play(opusStream, { seek: 0, volume: false, type: 'opus' });
-
-    const disconnectHandler = () => this.emitDone();
-    connection.once('disconnect', disconnectHandler);
-
-    connection.dispatcher.on('error', err => logger.warn(err));
-
-    connection.dispatcher.once('close', async () => {
-      if (this.stream && !this.stream.readable.destroyed) {
-        this.stream.readable.destroy();
-      }
-      passthrough.destroy();
-      this.stream = undefined;
-      this.volumeTransform = undefined;
-
-      if (this.skipClose) {
-        this.skipClose = false;
-        if (await this.queue.peek()) {
-          connection.removeListener('disconnect', disconnectHandler);
-          await this.play();
-        }
-      }
-    });
-
-    connection.dispatcher.on('finish', () => {
-      if (this.connectionProvider.has()) {
-        this.getConnection().disconnect();
-      }
-    });
   }
 
   async skip(): Promise<void> {
-    if (this.isStreaming && !this.skipClose) {
-      this.skipClose = true;
-      this.getConnection().dispatcher.destroy();
+    if (this.isStreaming) {
+      if (await this.queue.peek()) {
+        await this.startNewStream().catch(this.streamErrorHandler);
+      }
     }
   }
 
@@ -164,18 +148,75 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return connection;
   }
 
-  private async getNextStream(): Promise<StreamData | undefined> {
+  private async getNextStream(): Promise<Readable | null> {
+    this.songStream?.destroy();
+    this.pcmTransform?.destroy();
+    this.songStream = null;
+    this.pcmTransform = null;
+
     const nextTrack = await this.queue.peek();
     if (nextTrack) {
       const stream = await getTrackStream(nextTrack);
       if (stream) {
-        const pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
-        stream.readable = stream.readable.pipe(pcmTransform);
-        return stream;
+        this.songStream = stream.readable;
+        this.pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+        return this.songStream
+            .once('error', this.streamErrorHandler)
+            .once('close', () => logger.debug(`Song stream closed`))
+          .pipe(this.pcmTransform)
+            .once('error', this.streamErrorHandler)
+            .once('close', () => logger.debug(`PCM transform closed`));
       }
     }
-    return undefined;
+    return null;
   }
+
+  private async startNewStream(): Promise<Readable> {
+    if (!this.inputStream) {
+      this.inputStream = new PassThrough()
+        .once('error', this.streamErrorHandler)
+        .once('close', () => logger.debug('Passthrough input closed'));
+    }
+
+    const readable = await this.getNextStream();
+    if (!readable) {
+      throw new Error('Missing next stream!');
+    }
+    await this.popNext();
+
+    this.volumeTransform?.destroy();
+    this.opusStream?.destroy();
+    this.volumeTransform = null;
+    this.opusStream = null;
+
+    this.volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume: this._volume });
+    this.opusStream = new prism.opus.Encoder(OPUS_OPTIONS);
+
+    return readable.once('end', this.streamEndHandler)
+      .pipe(this.volumeTransform, { end: false })
+        .once('error', this.streamErrorHandler)
+        .once('close', () => logger.debug('Volume transform closed'))
+      .pipe(this.opusStream)
+        .once('error', this.streamErrorHandler)
+        .once('close', () => logger.debug('Opus encoder closed'))
+      .pipe(this.inputStream, { end: false });
+  }
+
+  private streamEndHandler = async () => {
+    try {
+        const readable = await this.getNextStream();
+        if (readable) {
+          readable.once('end', this.streamEndHandler)
+            .pipe(this.volumeTransform!, { end: false });
+        } else {
+          this.volumeTransform!.destroy();
+          this.volumeTransform = null;
+        }
+        await this.popNext();
+    } catch (e) {
+      this.streamErrorHandler(e);
+    }
+  };
 
   private async popNext(): Promise<void> {
     const track = await this.queue.pop();
@@ -185,4 +226,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private emitDone() {
     this.emit('done');
   }
+
+  private streamErrorHandler = (err: Error) => this.cleanup(err);
+  private disconnectHandler = () => this.emitDone();
 }

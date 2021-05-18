@@ -4,6 +4,7 @@ import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
 import { opus } from 'prism-media';
 import querystring from 'querystring';
+import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
@@ -152,7 +153,10 @@ export class YouTubeApiImpl implements YouTubeApi {
     const info = await ytdl.getInfo(track.url);
     const formats = ytdl.filterFormats(info.formats, ytdlFilter);
     if (formats.length) {
-      const stream = ytdl.downloadFromInfo(info, { filter: ytdlFilter }).pipe(new opus.WebmDemuxer());
+      const stream = pipeline(
+        ytdl.downloadFromInfo(info, { filter: ytdlFilter }),
+        new opus.WebmDemuxer(),
+        () => ({}));
       return { readable: stream, details: track, opus: true };
     } else {
       const stream = ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio' });
