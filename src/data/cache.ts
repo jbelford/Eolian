@@ -1,45 +1,34 @@
 import NodeCache from 'node-cache';
 import { EolianCache } from './@types';
 
-export class InMemoryCache implements EolianCache {
+export class InMemoryCache<V> implements EolianCache<V> {
 
   private cache: NodeCache;
 
-  constructor(private readonly ttl: number) {
-    this.cache = new NodeCache({ stdTTL: ttl });
-  }
-
-  async get<T>(id: string): Promise<T | undefined> {
-    return this.cache.get<T>(id);
-  }
-
-  async del(id: string): Promise<boolean> {
-    return this.cache.del(id) > 0;
-  }
-
-  async set<T>(id: string, val: T, ttl = this.ttl): Promise<boolean> {
-    return this.cache.set(id, val, ttl);
-  }
-
-  async mset<T>(pairs: Array<{ id: string, val: T }>): Promise<number> {
-    let count = 0;
-    for (const pair of pairs) {
-      if (this.cache.set(pair.id, pair.val, this.ttl)) {
-        count++;
-      }
+  constructor(private readonly ttl: number, clone = true,
+      private readonly onExpired?: (key: string, value: V) => void) {
+    this.cache = new NodeCache({ stdTTL: this.ttl, useClones: clone, deleteOnExpire: !this.onExpired });
+    if (this.onExpired) {
+      this.cache.on('expired', this.onExpired);
     }
-    return count;
   }
 
-  async getOrSet<T>(id: string, fn: () => PromiseLike<T> | T): Promise<[T, boolean]> {
-    let result = await this.get<T>(id);
-    let found = true;
-    if (!result) {
-      result = await Promise.resolve(fn());
-      await this.set(id, result);
-      found = false;
+  async close(): Promise<void> {
+    if (this.onExpired) {
+      this.cache.removeListener('expired', this.onExpired);
     }
-    return [result, found];
+  }
+
+  async get(key: string): Promise<V | undefined> {
+    return this.cache.get<V>(key);
+  }
+
+  async del(key: string): Promise<boolean> {
+    return this.cache.del(key) > 0;
+  }
+
+  async set(key: string, val: V, ttl = this.ttl): Promise<boolean> {
+    return this.cache.set<V>(key, val, ttl);
   }
 
 }

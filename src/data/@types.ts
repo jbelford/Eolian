@@ -4,12 +4,10 @@ import { ContextTextChannel } from 'eolian/@types';
 import EventEmitter from 'events';
 import { Player, Track } from 'music/@types';
 
-export interface EolianCache {
-  get<T>(id: string): Promise<T | undefined>;
-  del(id: string): Promise<boolean>;
-  set<T>(id: string, val: T, ttl?: number): Promise<boolean>;
-  mset<T>(pairs: Array<{ id: string, val: T }>): Promise<number>;
-  getOrSet<T>(id: string, fn: () => Promise<T> | T): Promise<[T, boolean]>;
+export interface EolianCache<V> extends Closable {
+  get(key: string): Promise<V | undefined>;
+  del(key: string): Promise<boolean>;
+  set(key: string, val: V, ttl?: number): Promise<boolean>;
 }
 
 export interface AppDatabase extends Closable {

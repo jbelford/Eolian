@@ -3,7 +3,7 @@ import { EolianCache } from 'data/@types';
 
 export class UserLockManager {
 
-  private readonly cache: EolianCache;
+  private readonly cache: EolianCache<boolean>;
 
   constructor(timeout: number) {
     this.cache = new InMemoryCache(timeout);
