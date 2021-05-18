@@ -44,8 +44,8 @@ const PLAYER_TIMEOUT = 1000 * 60 * 5;
 export class DiscordPlayer extends EventEmitter implements Player {
 
   private lastUsed = Date.now();
-  private timeoutTime = Date.now();
   private _volume = 0.10;
+  private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: Readable | null = null;
   private pcmTransform: Duplex | null = null;
   private volumeTransform: VolumeTransformer | null = null;
@@ -64,6 +64,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       logger.warn(`Cleanup stream due to error: ${err}`);
     }
 
+    if (this.timeoutCheck) {
+      clearInterval(this.timeoutCheck);
+      this.timeoutCheck = null;
+    }
     this.songStream?.destroy(err);
     this.pcmTransform?.destroy(err);
     this.volumeTransform?.destroy(err);
@@ -119,6 +123,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
       connection.once('disconnect', this.disconnectHandler);
 
       const input = await this.startNewStream();
+
+      this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
       // We manage volume directly so set false
       this.dispatcher = connection.play(input, { seek: 0, volume: false, type: 'opus' });
@@ -186,7 +192,6 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.inputStream = new PassThrough()
         .once('error', this.streamErrorHandler)
         .once('close', () => logger.debug('Passthrough input closed'))
-        .on('data', this.timeoutCheck);
     } else if (this.opusStream) {
       this.opusStream.unpipe(this.inputStream);
     } else {
@@ -217,14 +222,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       .pipe(this.inputStream);
   }
 
-  private timeoutCheck = () => {
-    if (Date.now() >= this.timeoutTime) {
-      if (this.hasPeopleListening()) {
-        this.timeoutTime = Date.now() + PLAYER_TIMEOUT;
-      } else {
-        this.emitIdle();
-        this.stop();
-      }
+  private timeoutCheckHandler = () => {
+    if (!this.hasPeopleListening()) {
+      this.emitIdle();
+      this.stop();
     }
   };
 
