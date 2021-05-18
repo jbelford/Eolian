@@ -17,6 +17,8 @@ export class InMemoryCache<V> implements EolianCache<V> {
     if (this.onExpired) {
       this.cache.removeListener('expired', this.onExpired);
     }
+    this.cache.flushAll();
+    this.cache.close();
   }
 
   async get(key: string): Promise<V | undefined> {
