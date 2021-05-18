@@ -176,6 +176,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.inputStream = new PassThrough()
         .once('error', this.streamErrorHandler)
         .once('close', () => logger.debug('Passthrough input closed'));
+    } else if (this.opusStream) {
+      this.opusStream.unpipe(this.inputStream);
+    } else {
+      throw new Error('Input and output are missing!');
     }
 
     const readable = await this.getNextStream();
@@ -199,7 +203,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       .pipe(this.opusStream)
         .once('error', this.streamErrorHandler)
         .once('close', () => logger.debug('Opus encoder closed'))
-      .pipe(this.inputStream, { end: false });
+      .pipe(this.inputStream);
   }
 
   private streamEndHandler = async () => {
@@ -209,8 +213,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
           readable.once('end', this.streamEndHandler)
             .pipe(this.volumeTransform!, { end: false });
         } else {
-          this.volumeTransform!.destroy();
-          this.volumeTransform = null;
+          await this.stop();
+          return;
         }
         await this.popNext();
     } catch (e) {
