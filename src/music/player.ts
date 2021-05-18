@@ -28,7 +28,7 @@ export class VoiceConnectionProvider {
 
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
-const PLAYER_TIMEOUT = 1000 * 60 * 5;
+const PLAYER_TIMEOUT = 1000 * 60 * 3;
 
 /**
  *
