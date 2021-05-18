@@ -7,7 +7,7 @@ export class InMemoryCache<V> implements EolianCache<V> {
 
   constructor(private readonly ttl: number, clone = true,
       private readonly onExpired?: (key: string, value: V) => void) {
-    this.cache = new NodeCache({ stdTTL: this.ttl, useClones: clone, deleteOnExpire: !this.onExpired });
+    this.cache = new NodeCache({ stdTTL: this.ttl, checkperiod: 30,  useClones: clone, deleteOnExpire: !this.onExpired });
     if (this.onExpired) {
       this.cache.on('expired', this.onExpired);
     }
@@ -31,6 +31,10 @@ export class InMemoryCache<V> implements EolianCache<V> {
 
   async set(key: string, val: V, ttl = this.ttl): Promise<boolean> {
     return this.cache.set<V>(key, val, ttl);
+  }
+
+  async refreshTTL(key: string): Promise<boolean> {
+    return this.cache.ttl(key, this.ttl);
   }
 
 }

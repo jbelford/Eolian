@@ -1,4 +1,4 @@
-import { AbsRangeArgument, Closable } from 'common/@types';
+import { AbsRangeArgument, Closable, Idleable } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { ContextTextChannel } from 'eolian/@types';
 import EventEmitter from 'events';
@@ -8,6 +8,7 @@ export interface EolianCache<V> extends Closable {
   get(key: string): Promise<V | undefined>;
   del(key: string): Promise<boolean>;
   set(key: string, val: V, ttl?: number): Promise<boolean>;
+  refreshTTL(key: string): Promise<boolean>;
 }
 
 export interface AppDatabase extends Closable {
@@ -67,7 +68,7 @@ export interface MusicQueueDAO {
   peek(guildId: string): Promise<Track | undefined>;
 }
 
-export interface ServerQueue extends EventEmitter {
+export interface ServerQueue extends EventEmitter, Idleable {
   unpop(count: number): Promise<boolean>;
   get(limit?: number): Promise<Track[]>;
   remove(range: AbsRangeArgument): Promise<number>;
@@ -78,7 +79,7 @@ export interface ServerQueue extends EventEmitter {
   peek(): Promise<Track | undefined>;
 }
 
-export interface Display {
+export interface Display extends Closable {
   setChannel(channel: ContextTextChannel): void;
 }
 
@@ -92,8 +93,8 @@ export interface QueueDisplay extends Display {
 }
 
 export interface ServerStateStore {
-  get(id: string): ServerState | undefined;
-  set(id: string, context: ServerState): void;
+  get(id: string): Promise<ServerState | undefined>;
+  set(id: string, context: ServerState): Promise<void>;
 }
 
 export interface ServerState {

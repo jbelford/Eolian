@@ -3,6 +3,10 @@ export interface Closable {
   close(): Promise<void>;
 }
 
+export interface Idleable {
+  readonly idle: boolean;
+}
+
 export interface AppEnv {
   prod: boolean;
   debug: boolean;

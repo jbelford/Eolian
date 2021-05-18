@@ -1,5 +1,5 @@
 import { PlayerDisplay, QueueDisplay, ServerQueue } from 'data/@types';
-import { createPlayingEmbed, createQueueEmbed } from 'embed';
+import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player, Track } from 'music/@types';
 import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler } from './@types';
 
@@ -7,13 +7,24 @@ const QUEUE_LENGTH = 15;
 
 export class DiscordQueueDisplay implements QueueDisplay {
 
-  private message?: ContextMessage;
-  private channel?: ContextTextChannel;
+  private message: ContextMessage | null = null;
+  private channel: ContextTextChannel | null = null;
   private start = 0;
   private updating = false;
 
   constructor(private readonly queue: ServerQueue) {
-    this.queue.on('update', () => this.updateHandler());
+    this.queue.on('update', this.updateHandler);
+  }
+
+  async close(): Promise<void> {
+    this.queue.removeListener('update', this.updateHandler);
+    this.channel = null;
+    if (this.message) {
+      this.message.releaseButtons();
+      const msgCopy = this.message;
+      this.message = null;
+      await msgCopy.editEmbed(createBasicEmbed('**Queue has been removed due to idle**'));
+    }
   }
 
   setChannel(channel: ContextTextChannel): void {
@@ -43,12 +54,12 @@ export class DiscordQueueDisplay implements QueueDisplay {
   async delete(): Promise<void> {
     if (this.message) {
       const deletePromise = this.message.delete();
-      this.message = undefined;
+      this.message = null;
       await deletePromise;
     }
   }
 
-  private async updateHandler(): Promise<void> {
+  private updateHandler = async () => {
     if (!this.updating) {
       this.updating = true;
       try {
@@ -94,8 +105,8 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
 
-  private messageCache?: ContextMessage;
-  private channel?: ContextTextChannel;
+  private messageCache: ContextMessage | null = null;
+  private channel: ContextTextChannel | null = null;
   private queueAhead = false;
   private inputLock = false;
 
@@ -103,6 +114,18 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
     this.player.on('done', this.onEndHandler);
+  }
+
+  async close(): Promise<void> {
+    this.player.removeListener('next', this.onNextHandler);
+    this.player.removeListener('done', this.onEndHandler);
+    this.channel = null;
+    if (this.messageCache) {
+      this.messageCache.releaseButtons();
+      const msgCopy = this.messageCache;
+      this.messageCache = null;
+      await msgCopy.editEmbed(createBasicEmbed('**Player has been removed due to idle**'));
+    }
   }
 
   setChannel(channel: ContextTextChannel): void {
@@ -132,7 +155,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private onEndHandler = async () => {
     if (this.messageCache) {
       const deletePromise = this.messageCache.delete();
-      this.messageCache = undefined;
+      this.messageCache = null;
       await deletePromise;
     }
   };

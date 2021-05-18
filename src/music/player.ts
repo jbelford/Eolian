@@ -1,4 +1,5 @@
 import { getTrackStream } from 'api';
+import { IDLE_TIMEOUT } from 'common/constants';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
@@ -41,6 +42,7 @@ const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
  */
 export class DiscordPlayer extends EventEmitter implements Player {
 
+  private lastUsed = Date.now();
   private _volume = 0.10;
   private songStream: Readable | null = null;
   private pcmTransform: Duplex | null = null;
@@ -85,7 +87,17 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return this._volume;
   }
 
+  get idle(): boolean {
+    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT;
+  }
+
+  async close(): Promise<void> {
+    this.removeAllListeners();
+    await this.stop();
+  }
+
   setVolume(value: number): void {
+    this.lastUsed = Date.now();
     this._volume = Math.max(0, Math.min(1, value));
     if (this.volumeTransform) {
       this.volumeTransform.setVolume(this._volume);
@@ -127,19 +139,19 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   async stop(): Promise<void> {
-    if (this.isStreaming) {
-      this.connectionProvider.get()?.disconnect();
-    }
+    this.connectionProvider.get()?.disconnect();
   }
 
   async pause(): Promise<void> {
     if (this.isStreaming && !this.paused) {
+      this.lastUsed = Date.now();
       this.dispatcher!.pause();
     }
   }
 
   async resume(): Promise<void> {
     if (this.isStreaming && this.paused) {
+      this.lastUsed = Date.now();
       this.dispatcher!.resume();
     }
   }
@@ -222,6 +234,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   };
 
   private async popNext(): Promise<void> {
+    this.lastUsed = Date.now();
     const track = await this.queue.pop();
     this.emit('next', track);
   }

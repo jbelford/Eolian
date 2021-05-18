@@ -1,3 +1,4 @@
+import { Closable, Idleable } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import EventEmitter from 'events';
@@ -19,7 +20,7 @@ export interface StreamData {
   opus?: boolean
 }
 
-export interface Player extends EventEmitter {
+export interface Player extends EventEmitter, Idleable, Closable {
 
   readonly isStreaming: boolean;
   readonly paused: boolean;

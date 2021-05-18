@@ -4,7 +4,7 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { AppDatabase, MemoryStore, ServerState, ServerStateStore } from 'data/@types';
-import { InMemoryServerStateStore } from 'data/playerstore';
+import { InMemoryServerStateStore } from 'data/serverstore';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { DiscordPlayer, VoiceConnectionProvider } from 'music/player';
@@ -21,6 +21,9 @@ export interface DiscordEolianBotArgs {
   store: MemoryStore,
   parser: CommandParsingStrategy,
 }
+
+const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
+const USER_COMMAND_LOCK_TIMEOUT = 60;
 
 export class DiscordEolianBot implements EolianBot {
 
@@ -46,8 +49,8 @@ export class DiscordEolianBot implements EolianBot {
 
     this.users = new EolianUserService(args.db.users);
     this.queues = new MusicQueueService(args.store.queueDao);
-    this.servers = new InMemoryServerStateStore();
-    this.lockManager = new UserLockManager(60000);
+    this.servers = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
+    this.lockManager = new UserLockManager(USER_COMMAND_LOCK_TIMEOUT);
   }
 
   async start(): Promise<void> {
@@ -108,7 +111,7 @@ export class DiscordEolianBot implements EolianBot {
         }
         context.client = new DiscordClient(this.client);
       } else if (guild) {
-        context.server = this.getGuildState(guild.id);
+        context.server = await this.getGuildState(guild.id);
         context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
       } else {
         throw new Error('Guild is missing from text message');
@@ -153,8 +156,8 @@ export class DiscordEolianBot implements EolianBot {
     }
   }
 
-  private getGuildState(guildId: string): ServerState {
-    let state = this.servers.get(guildId);
+  private async getGuildState(guildId: string): Promise<ServerState> {
+    let state = await this.servers.get(guildId);
     if (!state) {
       const connectionProvider = new VoiceConnectionProvider(this.client, guildId);
       const queue = new GuildQueue(this.queues, guildId);
@@ -162,7 +165,7 @@ export class DiscordEolianBot implements EolianBot {
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
       state = { player, queue, display: { queue: queueDisplay, player: playerDisplay } };
-      this.servers.set(guildId, state);
+      await this.servers.set(guildId, state);
     }
     return state;
   }

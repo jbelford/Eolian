@@ -71,3 +71,10 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
     }
   }
 }
+
+export function createBasicEmbed(message: string): EmbedMessage {
+  return {
+    title: message,
+    color: COLOR.SELECTION
+  };
+}

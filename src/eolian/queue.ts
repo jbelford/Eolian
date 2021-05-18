@@ -1,4 +1,5 @@
 import { AbsRangeArgument } from 'common/@types';
+import { IDLE_TIMEOUT } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
 import { Track } from 'music/@types';
@@ -6,10 +7,16 @@ import { MusicQueueService } from 'services';
 
 export class GuildQueue extends EventEmitter implements ServerQueue {
 
+  private lastUpdated = Date.now();
+
   constructor(
       private readonly queue: MusicQueueService,
       private readonly guildId: string) {
     super();
+  }
+
+  get idle(): boolean {
+    return Date.now() - this.lastUpdated >= IDLE_TIMEOUT;
   }
 
   unpop(count: number): Promise<boolean> {
@@ -53,6 +60,9 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return this.queue.peek(this.guildId);
   }
 
-  private emitUpdate = () => this.emit('update');
+  private emitUpdate = () => {
+    this.lastUpdated = Date.now();
+    this.emit('update')
+  };
 
 }

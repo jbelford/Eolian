@@ -44,6 +44,8 @@ export enum SOURCE {
   SOUNDCLOUD
 }
 
+export const IDLE_TIMEOUT = 60 * 10;
+
 
 export function getIcon(src: SOURCE): string | undefined {
   switch (src) {
