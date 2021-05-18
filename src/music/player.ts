@@ -219,7 +219,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       .pipe(this.opusStream)
         .once('error', this.streamErrorHandler)
         .once('close', () => logger.debug('Opus encoder closed'))
-      .pipe(this.inputStream);
+      .pipe(this.inputStream, { end: false });
   }
 
   private timeoutCheckHandler = () => {
@@ -248,6 +248,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         } else {
           this.emitIdle();
         }
+        this.opusStream?.once('end', () => this.inputStream?.end());
         this.volumeTransform!.end();
     } catch (e) {
       this.streamErrorHandler(e);
