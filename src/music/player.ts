@@ -142,6 +142,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.isStreaming) {
       if (await this.queue.peek()) {
         await this.startNewStream().catch(this.streamErrorHandler);
+      } else {
+        await this.stop();
       }
     }
   }
