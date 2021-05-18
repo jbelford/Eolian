@@ -72,7 +72,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   get isStreaming(): boolean {
-    return !!this.songStream && this.connectionProvider.has();
+    return !!this.inputStream && this.connectionProvider.has();
   }
 
   get paused(): boolean {
