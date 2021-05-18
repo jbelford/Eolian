@@ -246,6 +246,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
             readable.once('end', this.streamEndHandler)
               .pipe(this.volumeTransform!, { end: false });
             await this.popNext();
+            return;
           }
         } else {
           this.emitIdle();
