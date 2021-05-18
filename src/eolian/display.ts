@@ -118,11 +118,13 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   constructor(private readonly player: Player,
       private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
+    this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
   }
 
   async close(): Promise<void> {
     this.player.removeListener('next', this.onNextHandler);
+    this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.channel = null;
     await this.removeIdle();
@@ -161,6 +163,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       }
     }
   };
+
+  private onIdleHandler = () => this.removeIdle();
 
   private onEndHandler = async () => {
     if (this.messageCache) {

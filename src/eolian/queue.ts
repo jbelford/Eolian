@@ -16,7 +16,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   get idle(): boolean {
-    return Date.now() - this.lastUpdated >= IDLE_TIMEOUT;
+    return Date.now() - this.lastUpdated >= IDLE_TIMEOUT * 1000;
   }
 
   unpop(count: number): Promise<boolean> {

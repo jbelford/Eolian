@@ -28,6 +28,7 @@ export class VoiceConnectionProvider {
 
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
+const PLAYER_TIMEOUT = 1000 * 60 * 5;
 
 /**
  *
@@ -43,6 +44,7 @@ const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 export class DiscordPlayer extends EventEmitter implements Player {
 
   private lastUsed = Date.now();
+  private timeoutTime = Date.now();
   private _volume = 0.10;
   private songStream: Readable | null = null;
   private pcmTransform: Duplex | null = null;
@@ -88,7 +90,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   get idle(): boolean {
-    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT;
+    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT * 1000;
   }
 
   async close(): Promise<void> {
@@ -183,7 +185,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (!this.inputStream) {
       this.inputStream = new PassThrough()
         .once('error', this.streamErrorHandler)
-        .once('close', () => logger.debug('Passthrough input closed'));
+        .once('close', () => logger.debug('Passthrough input closed'))
+        .on('data', this.timeoutCheck);
     } else if (this.opusStream) {
       this.opusStream.unpipe(this.inputStream);
     } else {
@@ -214,20 +217,37 @@ export class DiscordPlayer extends EventEmitter implements Player {
       .pipe(this.inputStream);
   }
 
+  private timeoutCheck = () => {
+    if (Date.now() >= this.timeoutTime) {
+      if (this.hasPeopleListening()) {
+        this.timeoutTime = Date.now() + PLAYER_TIMEOUT;
+      } else {
+        this.emitIdle();
+        this.stop();
+      }
+    }
+  };
+
+  private hasPeopleListening(): boolean {
+    return !!this.connectionProvider.get()?.channel.members.find(member => !member.user.bot && !member.voice.deaf);
+  }
+
   private streamEndHandler = async () => {
     try {
         if (this.pcmTransform) {
           this.pcmTransform.unpipe(this.volumeTransform!);
         }
-        const readable = await this.getNextStream();
-        if (readable) {
-          readable.once('end', this.streamEndHandler)
-            .pipe(this.volumeTransform!, { end: false });
+        if (this.hasPeopleListening()) {
+          const readable = await this.getNextStream();
+          if (readable) {
+            readable.once('end', this.streamEndHandler)
+              .pipe(this.volumeTransform!, { end: false });
+            await this.popNext();
+          }
         } else {
-          this.volumeTransform!.end();
-          return;
+          this.emitIdle();
         }
-        await this.popNext();
+        this.volumeTransform!.end();
     } catch (e) {
       this.streamErrorHandler(e);
     }
@@ -241,6 +261,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private emitDone() {
     this.emit('done');
+  }
+
+  private emitIdle() {
+    this.emit('idle');
   }
 
   private streamErrorHandler = (err: Error) => this.cleanup(err);
