@@ -8,6 +8,8 @@ import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
+const MUSIC_TOPIC = '/m/04rlf';
+
 export class YouTubeApiImpl implements YouTubeApi {
 
   private readonly youtube: youtube_v3.Youtube;
@@ -118,7 +120,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
       // @ts-ignore Typescript is dumb
-      const response = await this.youtube.search.list({ q: query, maxResults: 5, type: 'video', part: 'id,snippet' });
+      const response = await this.youtube.search.list({q: query, maxResults: 5, type: 'video', part: 'id,snippet', topicId: MUSIC_TOPIC });
       if (!response.data.items) return [];
 
       return response.data.items.map(video => ({
@@ -135,7 +137,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const query = `${track.title} ${track.poster} lyrics`;
+    const query = `${track.title} ${track.poster}`;
     const videos = await this.searchVideos(query);
     if (videos.length > 0) {
       const youtubeTrack = mapYouTubeVideo(videos[0]);
