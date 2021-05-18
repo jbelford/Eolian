@@ -19,11 +19,16 @@ export class DiscordQueueDisplay implements QueueDisplay {
   async close(): Promise<void> {
     this.queue.removeListener('update', this.updateHandler);
     this.channel = null;
+    await this.removeIdle();
+  }
+
+  async removeIdle(): Promise<void> {
     if (this.message) {
-      this.message.releaseButtons();
-      const msgCopy = this.message;
+      const temp = this.message;
       this.message = null;
-      await msgCopy.editEmbed(createBasicEmbed('**Queue has been removed due to idle**'));
+
+      temp.releaseButtons();
+      await temp.editEmbed(createBasicEmbed('**Queue has been removed due to idle**'));
     }
   }
 
@@ -120,11 +125,16 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.removeListener('next', this.onNextHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.channel = null;
+    await this.removeIdle();
+  }
+
+  async removeIdle(): Promise<void> {
     if (this.messageCache) {
-      this.messageCache.releaseButtons();
-      const msgCopy = this.messageCache;
+      const temp = this.messageCache;
       this.messageCache = null;
-      await msgCopy.editEmbed(createBasicEmbed('**Player has been removed due to idle**'));
+
+      temp.releaseButtons();
+      await temp.editEmbed(createBasicEmbed('**Player has been removed due to idle**'));
     }
   }
 

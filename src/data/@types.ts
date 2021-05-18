@@ -81,6 +81,7 @@ export interface ServerQueue extends EventEmitter, Idleable {
 
 export interface Display extends Closable {
   setChannel(channel: ContextTextChannel): void;
+  removeIdle(): Promise<void>;
 }
 
 export interface PlayerDisplay extends Display {
