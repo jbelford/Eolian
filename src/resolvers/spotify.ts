@@ -175,6 +175,9 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
 }
 
 function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
+  if (!artwork && track.album.images.length) {
+    artwork = track.album.images[0].url;
+  }
   return {
     id: track.id,
     poster: track.artists.map(artist => artist.name).join(', '),
@@ -205,8 +208,7 @@ export class SpotifyFetcher implements SourceFetcher {
 
   async fetchPlaylist(id: string): Promise<Track[]> {
     const playlist = await spotify.getPlaylistTracks(id);
-    const artwork = playlist.images.length ? playlist.images[0].url : undefined;
-    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track, artwork));
+    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track));
   }
 
   async fetchAlbum(id: string): Promise<Track[]> {
@@ -217,7 +219,7 @@ export class SpotifyFetcher implements SourceFetcher {
 
   async fetchArtistTracks(id: string): Promise<Track[]> {
     const tracks = await spotify.getArtistTracks(id);
-    return tracks.map(track => mapSpotifyTrack(track, track.album.images.length ? track.album.images[0].url : undefined))
+    return tracks.map(track => mapSpotifyTrack(track));
   }
 
 }
