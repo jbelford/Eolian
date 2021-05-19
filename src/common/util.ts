@@ -1,4 +1,5 @@
 import { CommandOptions } from 'commands/@types';
+import * as fuzz from 'fuzzball';
 import { AbsRangeArgument, RangeArgument } from './@types';
 
 export function shuffleList<T>(list: T[]): T[] {
@@ -52,4 +53,8 @@ export function getRangeOption(options: CommandOptions, total: number): AbsRange
 
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function fuzzyMatch(query: string, list: string[]): Promise<{choice: string, score: number, key: number}[]> {
+  return fuzz.extractAsPromised(query, list, { scorer: fuzz.token_sort_ratio, returnObjects: true });
 }

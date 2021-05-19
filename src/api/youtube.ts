@@ -1,5 +1,6 @@
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
+import { fuzzyMatch } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
 import { opus } from 'prism-media';
@@ -8,6 +9,7 @@ import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
+const MUSIC_CATEGORY_ID = 10;
 const MUSIC_TOPIC = '/m/04rlf';
 
 export class YouTubeApiImpl implements YouTubeApi {
@@ -119,17 +121,27 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
-      // @ts-ignore Typescript is dumb
-      const response = await this.youtube.search.list({q: query, maxResults: 5, type: 'video', part: 'id,snippet', topicId: MUSIC_TOPIC });
+      const response = await this.youtube.search.list({
+        // @ts-ignore Typescript is dumb
+        q: query,
+        maxResults: 5,
+        type: 'video',
+        part: 'id,snippet',
+        topicId: MUSIC_TOPIC,
+        videoCategoryId: MUSIC_CATEGORY_ID
+      });
       if (!response.data.items) return [];
 
-      return response.data.items.map(video => ({
-        id: video.id!.videoId!,
-        name: video.snippet!.title!,
-        channelName: video.snippet!.channelTitle!,
-        url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
-        artwork: video.snippet!.thumbnails!.default!.url!
-      }));
+      const videos = response.data.items.map(video => ({
+          id: video.id!.videoId!,
+          name: video.snippet!.title!,
+          channelName: video.snippet!.channelTitle!,
+          url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
+          artwork: video.snippet!.thumbnails!.default!.url!
+        }));
+
+      const sorted = await fuzzyMatch(query, videos.map(video => video.name));
+      return sorted.map(scored => videos[scored.key]);
     } catch (e) {
       logger.warn(`Failed to search YouTube videos: query: ${query}`);
       throw e;
@@ -137,7 +149,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const query = `${track.poster} ${track.title}`;
+    const query = `${track.title} ${track.poster}`;
     const videos = await this.searchVideos(query);
     if (videos.length > 0) {
       const youtubeTrack = mapYouTubeVideo(videos[0]);

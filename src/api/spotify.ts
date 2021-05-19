@@ -1,7 +1,7 @@
 import { youtube } from 'api';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import * as fuzz from 'fuzzball';
+import { fuzzyMatch } from 'common/util';
 import { StreamData, Track } from 'music/@types';
 import requestPromise from 'request-promise-native';
 import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser } from './@types';
@@ -162,8 +162,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     try {
       await this.checkAndUpdateToken();
       const playlists = await this.getAllItems<SpotifyPlaylist>(options => this.get(`users/${userId}/playlists`, options));
-      const results = await fuzz.extractAsPromised(query, playlists.map(playlist => playlist.name),
-          { scorer: fuzz.token_sort_ratio, returnObjects: true });
+      const results = await fuzzyMatch(query, playlists.map(playlist => playlist.name));
       return results.slice(0, 5).map(result => playlists[result.key]);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify user playlists: query: ${query} userId: ${userId}`);
