@@ -115,14 +115,14 @@ export const KEYWORDS: Keywords = {
     priority: 0,
     matchText: (text: string) => simpleMatch(text, /\bshuffled?\b/i),
   },
-  FAVORITES: {
-    name: 'FAVORITES',
-    details: `Indicates to fetch SoundCloud favorites.
+  LIKES: {
+    name: 'LIKES',
+    details: `Indicates to fetch liked tracks (Only SoundCloud supported).
 Fetching using TOP likes will execute much faster.`,
     permission: PERMISSION.USER,
-    usage: ['favorites'],
+    usage: ['likes', 'favorites'],
     priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bfavorites\b/i),
+    matchText: (text: string) => simpleMatch(text, /\b(likes|favorites)\b/i),
   },
   TRACKS: {
     name: 'TRACKS',

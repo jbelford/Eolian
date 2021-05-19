@@ -111,7 +111,7 @@ export interface Keywords {
   ARTIST: Keyword<boolean>;
   NEXT: Keyword<boolean>;
   SHUFFLE: Keyword<boolean>;
-  FAVORITES: Keyword<boolean>;
+  LIKES: Keyword<boolean>;
   TRACKS: Keyword<boolean>;
   TOP: Keyword<RangeArgument>;
   BOTTOM: Keyword<RangeArgument>;

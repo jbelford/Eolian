@@ -170,7 +170,7 @@ function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
 function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
   // @ts-ignore
   const identifier: SoundCloudUserIdentifier = createIdentifier(user);
-  identifier.favorites = user.public_favorites_count;
+  identifier.likes = user.public_favorites_count;
 
   return {
     name: user.username,
@@ -252,7 +252,7 @@ export class SoundCloudFetcher implements SourceFetcher {
   private async fetchUserFavorites(): Promise<Track[]> {
     let cb: SoundCloudFavoritesCallback | undefined;
     let messageCache: ContextMessage | undefined;
-    let max = (this.identifier as SoundCloudUserIdentifier).favorites;
+    let max = (this.identifier as SoundCloudUserIdentifier).likes;
 
     const range = getRangeOption(this.params, max);
     if (range) {
@@ -260,10 +260,10 @@ export class SoundCloudFetcher implements SourceFetcher {
     }
 
     if (this.channel && max > 300) {
-      messageCache = await this.channel.send(`Fetching favorites: 0%`);
+      messageCache = await this.channel.send(`Fetching likes: 0%`);
       cb = async (count: number) => {
         if (messageCache) {
-          await messageCache.edit(`Fetching favorites: ${Math.round(100 * count / max)}%`);
+          await messageCache.edit(`Fetching likes: ${Math.round(100 * count / max)}%`);
         }
       };
     }
@@ -271,7 +271,7 @@ export class SoundCloudFetcher implements SourceFetcher {
     const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, cb);
 
     if (messageCache) {
-      await messageCache.edit(`Fetching favorites: 100%`);
+      await messageCache.edit(`Fetching likes: 100%`);
     }
 
     return tracks.map(mapSoundCloudTrack);

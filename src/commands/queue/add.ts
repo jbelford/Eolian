@@ -68,12 +68,12 @@ export const ADD_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST,
-    KEYWORDS.NEXT, KEYWORDS.SHUFFLE, KEYWORDS.FAVORITES, KEYWORDS.TRACKS, KEYWORDS.TOP, KEYWORDS.BOTTOM,
+    KEYWORDS.NEXT, KEYWORDS.SHUFFLE, KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.TOP, KEYWORDS.BOTTOM,
     KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.IDENTIFIER,
   ],
   usage: [
     `(what is love) next`,
-    'soundcloud favorites shuffled',
+    'soundcloud likes shuffled',
     'https://www.youtube.com/watch?v=HEXWRTEbj1I',
     `playlist [retro]`,
     `my playlist (cool playlist)`,

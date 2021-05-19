@@ -41,7 +41,7 @@ export interface Identifier {
 }
 
 export interface SoundCloudUserIdentifier extends Identifier {
-  favorites: number;
+  likes: number;
 }
 
 export enum IdentifierType {
