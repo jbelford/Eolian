@@ -47,8 +47,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   await context.server!.display.queue.send(tracks, range ? range.start : 0, total);
 }
 
-export const QUEUE_COMMAND: Command = {
-  name: 'queue',
+export const LIST_COMMAND: Command = {
+  name: 'list',
   details: 'Show or clear the queue',
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,

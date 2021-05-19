@@ -101,7 +101,7 @@ export const KEYWORDS: Keywords = {
   },
   NEXT: {
     name: 'NEXT',
-    details: 'Indicates to place fetched tracks at the top of the queue',
+    details: 'Indicates to apply operation to the top of queue',
     permission: PERMISSION.USER,
     usage: ['next'],
     priority: 0,
