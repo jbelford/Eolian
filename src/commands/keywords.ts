@@ -241,6 +241,9 @@ Fetching using TOP likes will execute much faster.`,
   },
 };
 
+export const KEYWORDS_SORTED = Object.values(KEYWORDS)
+  .sort((a, b) => b!.priority - a!.priority);
+
 function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
   const regArr = reg.exec(text);
   const match: KeywordMatchResult<string[]> = { matches: !!regArr, newText: text.replace(reg, '') };

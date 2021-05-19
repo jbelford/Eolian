@@ -1,5 +1,5 @@
 import { COMMANDS } from 'commands';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS_SORTED } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -13,22 +13,17 @@ function simpleOptionsStrategy(text: string): CommandOptions {
   return options;
 }
 
-function keywordOptionsStrategy(text: string, permission: PERMISSION): CommandOptions {
-  const options: CommandOptions = {};
-
-  // Extract complex keywords
-  Object.values(KEYWORDS)
-    .sort((a, b) => b!.priority - a!.priority)
-    .filter(keyword => keyword!.permission <= permission)
-    .forEach(keyword => {
-      const result = keyword!.matchText(text);
-      if (!result.matches) return;
-
-      options[keyword!.name] = result.args;
-      text = result.newText;
-    });
-
-  return options;
+function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = []): CommandOptions {
+  const keywordSet = new Set<string>(keywords);
+  return KEYWORDS_SORTED.filter(keyword => keywordSet.has(keyword.name) && keyword.permission <= permission)
+    .reduce((options, keyword) => {
+      const result = keyword.matchText(text);
+      if (result.matches) {
+        options[keyword.name] = result.args;
+        text = result.newText;
+      }
+      return options;
+    }, {} as CommandOptions);
 }
 
 function getCommandOptionParsingStrategy(command: Command): CommandOptionsParsingStrategy {
@@ -55,7 +50,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     }
 
     const optionParsingFn = getCommandOptionParsingStrategy(command);
-    const options = optionParsingFn(text, permission);
+    const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name));
 
     return { command, options };
   }

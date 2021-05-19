@@ -25,7 +25,7 @@ export interface CommandParsingStrategy {
   parseCommand(message: string, permission: PERMISSION): ParsedCommand;
 }
 
-export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION) => CommandOptions;
+export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[]) => CommandOptions;
 
 export interface ParsedCommand {
   command: Command;
@@ -96,7 +96,7 @@ export interface Keyword<T> {
 }
 
 export interface Keywords {
-  [key: string]: Keyword<unknown> | undefined;
+  [key: string]: Keyword<unknown>;
   ENABLE: Keyword<boolean>;
   DISABLE: Keyword<boolean>;
   CLEAR: Keyword<boolean>;
