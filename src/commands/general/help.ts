@@ -1,4 +1,4 @@
-import { COMMANDS } from 'commands';
+import { COMMAND_MAP } from 'commands';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
@@ -32,7 +32,7 @@ async function execute({ user, channel }: CommandContext, { ARG }: CommandOption
     return;
   }
 
-  const command = COMMANDS.find(cmd => cmd.name.toLowerCase() === arg);
+  const command = COMMAND_MAP[arg];
   if (command) {
     const commandEmbed = createCommandDetailsEmbed(command);
     await channel.sendEmbed(commandEmbed);

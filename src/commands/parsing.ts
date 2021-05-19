@@ -1,4 +1,4 @@
-import { COMMANDS } from 'commands';
+import { COMMAND_MAP } from 'commands';
 import { KEYWORDS_SORTED } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
@@ -44,7 +44,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 
     text = textSplit.slice(1).join(' ');
 
-    const command = COMMANDS.find(cmd => cmd.name === commandName);
+    const command = COMMAND_MAP[commandName];
     if (!command) {
       throw new EolianUserError(`There is no command \`${commandName}\``);
     }
