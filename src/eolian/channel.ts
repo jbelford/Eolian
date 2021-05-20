@@ -62,7 +62,7 @@ export class DiscordTextChannel implements ContextTextChannel {
       };
 
       const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
-      if (options.length <= NUMBER_TO_EMOJI.length) {
+      if (options.length < NUMBER_TO_EMOJI.length) {
         selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], onClick }));
         selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
         selectEmbed.buttonUserId = user.id;
