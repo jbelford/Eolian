@@ -153,19 +153,26 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchStream(track: Track): Promise<StreamData | undefined> {
-    const query = `${track.poster} ${track.title}`;
+  async searchSong(name: string, artist: string): Promise<YoutubeVideo[]> {
+    const query = `${artist} ${name}`;
     let videos = await this.searchVideos(query);
-    if (videos.length > 0) {
+    if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       videos = sorted.map(scored => videos[scored.key]);
+    } else {
+      logger.warn(`Failed to fetch YouTube track for query: ${query}`);
+    }
+    return videos;
+  }
 
+  async searchStream(track: Track): Promise<StreamData | undefined> {
+    const videos = await this.searchSong(track.title, track.poster);
+    if (videos.length > 0) {
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
-      logger.debug(`Searched stream '${query}' selected '${video.url}'`);
+      logger.debug(`Searched stream '${track.poster} ${track.title}' selected '${video.url}'`);
       const youtubeTrack = mapYouTubeVideo(video);
       return this.getStream(youtubeTrack);
     }
-    logger.warn(`Failed to fetch YouTube track for query: ${query}`);
     return undefined;
   }
 

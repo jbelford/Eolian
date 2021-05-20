@@ -175,6 +175,7 @@ export interface YouTubeApi extends StreamFetcher {
   getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
+  searchSong(name: string, artist: string): Promise<YoutubeVideo[]>;
   searchStream(track: Track): Promise<StreamData | undefined>;
 }
 
