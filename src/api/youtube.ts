@@ -9,8 +9,8 @@ import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
 import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
-const MUSIC_CATEGORY_ID = 10;
-const MUSIC_TOPIC = '/m/04rlf';
+// const MUSIC_CATEGORY_ID = 10;
+// const MUSIC_TOPIC = '/m/04rlf';
 
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
@@ -124,18 +124,21 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
+      // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({
-        // @ts-ignore Typescript is dumb
         q: query,
-        maxResults: 5,
-        type: 'video',
+        maxResults: 7,
+        // We should not provide the video type. It yields entirely different results for some videos for some reason.
+        // type: 'video',
         part: 'id,snippet',
-        topicId: MUSIC_TOPIC,
-        videoCategoryId: MUSIC_CATEGORY_ID
+        // These should also be removed for the same reason as type: 'video' until this bug is no longer present
+        // topicId: MUSIC_TOPIC,
+        // videoCategoryId: MUSIC_CATEGORY_ID
       });
-      if (!response.data.items) return [];
+      const videoResponse = response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
+      if (!videoResponse.length) return [];
 
-      const videos = response.data.items.map(video => ({
+      const videos = videoResponse.map(video => ({
           id: video.id!.videoId!,
           name: video.snippet!.title!,
           channelName: video.snippet!.channelTitle!,
@@ -143,8 +146,7 @@ export class YouTubeApiImpl implements YouTubeApi {
           artwork: video.snippet!.thumbnails!.default!.url!
         }));
 
-      const sorted = await fuzzyMatch(query, videos.map(video => video.name));
-      return sorted.map(scored => videos[scored.key]);
+      return videos.slice(0, 5);
     } catch (e) {
       logger.warn(`Failed to search YouTube videos: query: ${query}`);
       throw e;
@@ -152,9 +154,12 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const query = `${track.title} ${track.poster}`;
-    const videos = await this.searchVideos(query);
+    const query = `${track.poster} ${track.title}`;
+    let videos = await this.searchVideos(query);
     if (videos.length > 0) {
+      const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
+      videos = sorted.map(scored => videos[scored.key]);
+
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
       logger.debug(`Searched stream '${query}' selected '${video.url}'`);
       const youtubeTrack = mapYouTubeVideo(video);
@@ -183,6 +188,15 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
+}
+
+function mapVideoToName(video: YoutubeVideo) {
+  const split = video.name.split(' - ');
+  if (split.length > 1) {
+    return `${video.name}`
+  } else {
+    return `${video.channelName} ${video.name}`;
+  }
 }
 
 const ytdlFilter: ytdl.Filter = format => format.codecs === 'opus' &&

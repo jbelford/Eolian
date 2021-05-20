@@ -155,7 +155,17 @@ export class SpotifyApiImpl implements SpotifyApi {
     if (track.src !== SOURCE.SPOTIFY) {
       throw new Error(`Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`);
     }
-    return youtube.searchStream(track);
+    const trackCopy: Track = { ...track };
+
+    // Spotify has a format like "Track name - modifier", Ex: "My Song - accoustic" or "My Song - remix"
+    // YouTube its more common to do "My Song (accoustic)". So we map to this to improve odds of searching right thing
+    const reg = /^\s*(.+)\s+-\s+([^-]+)\s*$/i
+    const match = reg.exec(trackCopy.title);
+    if (match) {
+      trackCopy.title = `${match[1]} (${match[2]})`;
+    }
+
+    return youtube.searchStream(trackCopy);
   }
 
   private async searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {
