@@ -12,6 +12,9 @@ import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './
 const MUSIC_CATEGORY_ID = 10;
 const MUSIC_TOPIC = '/m/04rlf';
 
+// eslint-disable-next-line no-useless-escape
+const MUSIC_VIDEO_PATTERN = /[\(\[]((official\s+(music\s+)?video)|(music\s+video))[\])]\s*$/i;
+
 export class YouTubeApiImpl implements YouTubeApi {
 
   private readonly youtube: youtube_v3.Youtube;
@@ -152,7 +155,9 @@ export class YouTubeApiImpl implements YouTubeApi {
     const query = `${track.title} ${track.poster}`;
     const videos = await this.searchVideos(query);
     if (videos.length > 0) {
-      const youtubeTrack = mapYouTubeVideo(videos[0]);
+      const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
+      logger.debug(`Searched stream '${query}' selected '${video.url}'`);
+      const youtubeTrack = mapYouTubeVideo(video);
       return this.getStream(youtubeTrack);
     }
     logger.warn(`Failed to fetch YouTube track for query: ${query}`);
