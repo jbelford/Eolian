@@ -13,7 +13,7 @@ const MUSIC_CATEGORY_ID = 10;
 const MUSIC_TOPIC = '/m/04rlf';
 
 // eslint-disable-next-line no-useless-escape
-const MUSIC_VIDEO_PATTERN = /[\(\[]((official\s+(music\s+)?video)|(music\s+video))[\])]\s*$/i;
+const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
 
 export class YouTubeApiImpl implements YouTubeApi {
 
