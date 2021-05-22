@@ -55,6 +55,31 @@ export const HELP_COMMAND: Command = {
   permission: PERMISSION.USER,
   category: GENERAL_CATEGORY,
   dmAllowed: true,
-  usage: ['', '1', 'General', 'poll', 'spotify', 'arg', 'ARG  # Everything is case insensitive',],
+  usage: [
+    {
+      title: 'Get list of categories',
+      example: '',
+    },
+    {
+      title: 'Show commands for first category',
+      example: '1',
+    },
+    {
+      title: `Show commands for 'General' category`,
+      example: 'General'
+    },
+    {
+      title: `Show help for 'poll' command`,
+      example: 'poll'
+    },
+    {
+      title: `Show help for SPOTIFY keyword`,
+      example: 'spotify'
+    },
+    {
+      title: `Show help for QUERY pattern`,
+      example: 'query'
+    }
+  ],
   execute
 }

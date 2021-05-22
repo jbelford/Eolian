@@ -32,6 +32,15 @@ export const SERVERS_COMMAND: Command = {
   permission: PERMISSION.OWNER,
   category: GENERAL_CATEGORY,
   dmAllowed: true,
-  usage: ['', '1', '2'],
+  usage: [
+    {
+      title: 'Show servers',
+      example: ''
+    },
+    {
+      title: 'Show servers at page',
+      example: '2'
+    }
+  ],
   execute
 }

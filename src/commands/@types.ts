@@ -11,8 +11,13 @@ export interface Command {
   // If using keyword parsing
   keywords?: Array<Keyword<unknown>>;
   dmAllowed?: boolean;
-  usage: string[];
+  usage: CommandUsage[];
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
+}
+
+export interface CommandUsage {
+  title?: string;
+  example: string;
 }
 
 export interface CommandCategory {

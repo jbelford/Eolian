@@ -30,6 +30,19 @@ export const UNLINK_COMMAND: Command = {
   permission: PERMISSION.USER,
   dmAllowed: true,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
-  usage: ['soundcloud', 'spotify', 'soundcloud spotify'],
+  usage: [
+    {
+      title: 'Unlink SoundCloud account',
+      example: 'soundcloud',
+    },
+    {
+      title: 'Unlink Spotify account',
+      example: 'spotify'
+    },
+    {
+      title: 'Unlink Spotify and SoundCloud',
+      example: 'soundcloud spotify'
+    }
+  ],
   execute
 };

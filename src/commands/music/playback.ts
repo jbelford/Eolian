@@ -16,7 +16,11 @@ export const STOP_COMMAND: Command = {
   details: 'Stop playing music',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  usage: ['',],
+  usage: [
+    {
+      example: '',
+    }
+  ],
   execute
 };
 
@@ -36,7 +40,11 @@ export const SKIP_COMMAND: Command = {
   details: 'Skip current song',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  usage: [''],
+  usage: [
+    {
+      example: ''
+    }
+  ],
   execute: executeSkip
 };
 
@@ -58,7 +66,11 @@ export const BACK_COMMAND: Command = {
   details: 'Go back a song',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  usage: [''],
+  usage: [
+    {
+      example: ''
+    }
+  ],
   execute: executeBack
 };
 
@@ -81,7 +93,11 @@ export const PAUSE_COMMAND: Command = {
   details: 'Pause the current song',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  usage: [''],
+  usage: [
+    {
+      example: ''
+    }
+  ],
   execute: executePause
 };
 
@@ -104,6 +120,10 @@ export const RESUME_COMMAND: Command = {
   details: 'Resume the current song',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  usage: [''],
+  usage: [
+    {
+      example: ''
+    }
+  ],
   execute: executeResume
 };

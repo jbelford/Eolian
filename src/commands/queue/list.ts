@@ -56,7 +56,26 @@ export const LIST_COMMAND: Command = {
     KEYWORDS.TOP, KEYWORDS.BOTTOM, KEYWORDS.CLEAR, KEYWORDS.SHUFFLE
   ],
   usage: [
-    '', 'clear', 'top 10', 'bottom 10', 'shuffle'
+    {
+      title: 'Show the queue in this channel',
+      example: '',
+    },
+    {
+      title: 'Clear the queue',
+      example: 'clear'
+    },
+    {
+      title: 'Show the top 10 songs in the queue',
+      example: 'top 10'
+    },
+    {
+      title: 'Show the last 10 songs in the queue',
+      example: 'bottom 10'
+    },
+    {
+      title: 'Shuffle the queue',
+      example: 'shuffle'
+    }
   ],
   execute
 };

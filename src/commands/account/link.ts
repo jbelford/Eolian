@@ -88,6 +88,19 @@ export const LINK_COMMAND: Command = {
   permission: PERMISSION.USER,
   dmAllowed: true,
   keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD, KEYWORDS.QUERY, KEYWORDS.URL],
-  usage: ['soundcloud (jack belford)', 'https://soundcloud.com/jack-belford-1'],
+  usage: [
+    {
+      title: `Search for SoundCloud user to link`,
+      example: 'soundcloud (john smith)'
+    },
+    {
+      title: 'Provide URL to SoundCloud user to link',
+      example: 'https://soundcloud.com/john-smith'
+    },
+    {
+      title: 'Provide URL to Spotify user to link',
+      example: 'https://open.spotify.com/user/1111111111?si=1111111111111'
+    }
+  ],
   execute
 };

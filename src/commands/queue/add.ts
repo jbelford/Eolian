@@ -72,15 +72,34 @@ export const ADD_COMMAND: Command = {
     KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.IDENTIFIER,
   ],
   usage: [
-    `(what is love) next`,
-    'soundcloud likes shuffled',
-    'https://www.youtube.com/watch?v=HEXWRTEbj1I',
-    `playlist [retro]`,
-    `my playlist (cool playlist)`,
-    `spotify playlist (awesome music playlist) shuffle next`,
-    `artist (deadmau5) top 10`,
-    `tracks`,
-    `album (the life of pablo)`
+    {
+      title: `Search song and add to top of the queue`,
+      example: `(what is love) next`
+    },
+    {
+      title: 'Add song from URL',
+      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I'
+    },
+    {
+      title: 'Add songs from your saved identifier',
+      example: '[retro]'
+    },
+    {
+      title: 'Search for artist and add their top 5 songs',
+      example: 'artist (deadmau5) top 5'
+    },
+    {
+      title: 'Search for album and add songs to queue',
+      example: 'album (the life of pablo)'
+    },
+    {
+      title: 'Search for playlist from your linked Spotify account and add songs to top of queue',
+      example: `my spotify playlist (cool playlist) next`
+    },
+    {
+      title: `Get likes from your linked SoundCloud account, shuffle them, and add to queue`,
+      example: 'my soundcloud likes shuffled'
+    },
   ],
   execute
 };

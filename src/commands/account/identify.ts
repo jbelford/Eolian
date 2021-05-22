@@ -44,6 +44,15 @@ export const IDENTIFY_COMMAND: Command = {
     KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.QUERY, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
     KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.CLEAR
   ],
-  usage: ['spotify playlist (retrowave) as [retro]', '[retro] clear'],
+  usage: [
+    {
+      title: `Search playlist from Spotify and assign it to identifier`,
+      example: 'spotify playlist (retrowave) [retro]'
+    },
+    {
+      title: `Delete an identifier`,
+      example: '[retro] clear'
+    }
+  ],
   execute
 };

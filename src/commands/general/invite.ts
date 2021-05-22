@@ -16,6 +16,6 @@ export const INVITE_COMMAND: Command = {
   keywords: [],
   permission: PERMISSION.USER,
   dmAllowed: true,
-  usage: [''],
+  usage: [{ example: '' }],
   execute
 };

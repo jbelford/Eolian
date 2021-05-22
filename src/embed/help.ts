@@ -50,17 +50,18 @@ export function createCommandDetailsEmbed(command: Command): EmbedMessage {
     const keywords = command.keywords.filter(keyword => !keyword.priority);
     const complexKeywords = command.keywords.filter(keywords => keywords.priority);
     if (keywords.length) {
-      embed.description += '**Keywords:** These are keywords which don\'t take inputs.\n```\n'
-        + keywords.map(keyword => keyword.name).join('\n') + '```\n';
+      embed.description += '**Accepted Keywords**\n```\n'
+        + keywords.map(keyword => keyword.name).join(' ') + '```\n';
     }
     if (complexKeywords.length) {
-      embed.description += '**Patterns:** Special patterns for taking inputs.\n```\n'
-        + complexKeywords.map(keyword => keyword.name).join('\n') + '```\n';
+      embed.description += '**Accepted Patterns**\n```\n'
+        + complexKeywords.map(keyword => keyword.name).join(' ') + '```\n';
     }
   }
 
   embed.description += 'Use `help <name of pattern or keyword>` to learn more about patterns and keywords. Most arguments are based on them!\n\n'
-  embed.description += '**Example Usage:**\n```\n' + command.usage.map(example => `${command.name} ${example}`).join('\n') + '```';
+
+  embed.fields = command.usage.map(({ title, example }, idx) => ({ name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`, value: `\`\`\`\n${command.name} ${example}\n\`\`\``}));
 
   return embed;
 }

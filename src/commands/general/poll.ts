@@ -48,6 +48,11 @@ export const POLL_COMMAND: Command = {
   details: 'Create a poll in the channel. Up to 10 options are allowed.',
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.ARG],
-  usage: ['/ What is your favorite color? / Red / Green / Blue /'],
+  usage: [
+    {
+      title: `Create a simple poll`,
+      example: '/ What is your favorite color? / Red / Green / Blue /'
+    }
+  ],
   execute
 };

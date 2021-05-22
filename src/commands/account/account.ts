@@ -28,7 +28,16 @@ export const ACCOUNT_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   dmAllowed: true,
   keywords: [KEYWORDS.CLEAR],
-  usage: ['', 'clear'],
+  usage: [
+    {
+      title: 'Show profile',
+      example: '',
+    },
+    {
+      title: `Remove all links and identifiers`,
+      example: `clear`
+    }
+  ],
   execute
 };
 

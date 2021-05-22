@@ -68,9 +68,18 @@ If query OR url is provided and currently streaming. The current song will be sk
     KEYWORDS.QUERY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.URL
   ],
   usage: [
-    '',
-    'https://www.youtube.com/watch?v=HEXWRTEbj1I',
-    '(what is love)'
+    {
+      title: 'Join voice channel and start playing (if not already)',
+      example: ''
+    },
+    {
+      title: 'Start playing song from URL',
+      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I'
+    },
+    {
+      title: 'Start playing song from QUERY',
+      example: '(what is love)'
+    }
   ],
   execute
 };
