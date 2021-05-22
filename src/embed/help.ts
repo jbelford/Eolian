@@ -7,9 +7,7 @@ import { EmbedMessage } from 'eolian/@types';
 export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
-    header: {
-      text: 'Command Category List',
-    },
+    title: 'Command Categories',
     description: 'The following are categories for the various commands available:\n\n',
     footer: {
       text: `You can activate commands by tagging me directly OR by placing a \`${environment.cmdToken}\` symbol at the beginning of the message.`
@@ -24,8 +22,9 @@ export function createCommandListEmbed(category: CommandCategory): EmbedMessage 
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
-      text: `Category: ${category.name}`,
+      text: `📁  Category  📁`,
     },
+    title: category.name,
     description: `${category.details}\n\n`,
   };
   embed.description += '```\n'
@@ -38,8 +37,9 @@ export function createCommandDetailsEmbed(command: Command): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
-      text: `Command: ${command.name}`
+      text: `📁  Command  📁`
     },
+    title: command.name,
     description: `${command.details}\n\n`,
     footer: {
       text: `Can be used in direct message? ${command.dmAllowed ? 'Yes': 'No' }`
@@ -69,8 +69,9 @@ export function createKeywordDetailsEmbed(keyword: Keyword<unknown>): EmbedMessa
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
-      text: `${keyword.priority ? 'Pattern' : 'Keyword'}: ${keyword.name}`
+      text: `🚩  ${keyword.priority ? 'Pattern' : 'Keyword'}  🚩`
     },
+    title: keyword.name,
     description: `${keyword.details}\n\n`,
   };
   embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => `${example}`).join('\n') + '```';
