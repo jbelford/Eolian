@@ -1,6 +1,6 @@
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import { fuzzyMatch } from 'common/util';
+import { fuzzyMatch, noop } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
 import { StreamData, Track } from 'music/@types';
 import { opus } from 'prism-media';
@@ -187,7 +187,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const stream = pipeline(
         ytdl.downloadFromInfo(info, { filter: ytdlFilter }),
         new opus.WebmDemuxer(),
-        () => ({}));
+        noop);
       return { readable: stream, details: track, opus: true };
     } else {
       const stream = ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio' });

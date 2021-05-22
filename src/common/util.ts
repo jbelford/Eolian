@@ -58,3 +58,5 @@ export function sleep(ms: number): Promise<void> {
 export function fuzzyMatch(query: string, list: string[]): Promise<{choice: string, score: number, key: number}[]> {
   return fuzz.extractAsPromised(query, list, { scorer: fuzz.token_sort_ratio, returnObjects: true });
 }
+
+export const noop = (): void => { /* Do nothing */ };
