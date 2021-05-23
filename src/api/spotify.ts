@@ -181,7 +181,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   private async checkAndUpdateToken() {
-    if (Date.now() + 1000 >= this.expiration) {
+    if (Date.now() + 10000 >= this.expiration) {
       const data = await this.getToken();
       this.accessToken = data.access_token;
       this.expiration = Date.now() + data.expires_in * 1000;
