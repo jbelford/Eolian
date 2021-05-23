@@ -59,9 +59,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const PLAY_COMMAND: Command = {
   name: 'play',
-  details: `Start playing music OR join the current channel (if already playing).
-You may optionally provide a query OR url to play that song right away.
-If query OR url is provided and currently streaming. The current song will be skipped and the requested song will be played.`,
+  details: `Join the current channel. Starts playing first song in the queue if not already.
+You may optionally provide a query or url to play that song right away.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [
