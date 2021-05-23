@@ -184,7 +184,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     if (Date.now() + 1000 >= this.expiration) {
       const data = await this.getToken();
       this.accessToken = data.access_token;
-      this.expiration = Date.now() + data.expires_in;
+      this.expiration = Date.now() + data.expires_in * 1000;
     }
   }
 
