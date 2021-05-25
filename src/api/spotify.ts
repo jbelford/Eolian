@@ -1,5 +1,5 @@
 import { youtube } from 'api';
-import { ProgressUpdater } from 'common/@types';
+import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
@@ -59,16 +59,36 @@ export class SpotifyApiImpl implements SpotifyApi {
     try {
       logger.debug(`Getting playlist tracks: ${id}`);
       const playlist = await this.getPlaylist(id);
-      const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { initial: playlist.tracks, limit: 100, progress };
+      const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { limit: 100 };
+
+      let range: AbsRangeArgument | undefined;
       if (rangeFn) {
-        const range = rangeFn(playlist.tracks.total);
-        if (range) {
-          options.offset = range.start;
-          options.total = range.stop - range.start;
-          delete options.initial;
-        }
+        range = rangeFn(playlist.tracks.total);
       }
+
+      if (range) {
+        options.offset = range.start;
+        options.total = range.stop - range.start;
+        playlist.tracks.items = playlist.tracks.items.slice(range.start, range.stop);
+        if (playlist.tracks.items.length) {
+          options.initial = playlist.tracks;
+        }
+      } else {
+        options.initial = playlist.tracks;
+        options.total = playlist.tracks.total;
+      }
+
+      if (options.total > 200) {
+        options.progress = progress;
+      }
+
       playlist.tracks.items = await this.getAllItems(options => this.get(`playlists/${id}/tracks`, options), options);
+
+      // Trim excess
+      if (range) {
+        playlist.tracks.items = playlist.tracks.items.slice(0, options.total);
+      }
+
       return playlist;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify playlist tracks: id: ${id}`);
