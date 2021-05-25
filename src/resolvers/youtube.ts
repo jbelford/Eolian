@@ -6,7 +6,7 @@ import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
 import { Track } from 'music/@types';
-import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
+import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class YouTubeUrlResolver implements SourceResolver {
   constructor(private readonly url: string,
@@ -117,14 +117,14 @@ export class YouTubeFetcher implements SourceFetcher {
 
   constructor(private readonly identifier: Identifier) {}
 
-  async fetch(): Promise<Track[]> {
+  async fetch(): Promise<FetchResult> {
     if (this.identifier.src !== SOURCE.YOUTUBE) {
       throw new Error('Attempted to fetch tracks for incorrect source type');
     }
 
     switch (this.identifier.type) {
-      case IdentifierType.PLAYLIST: return this.fetchPlaylist(this.identifier.id);
-      case IdentifierType.SONG: return [await this.fetchVideo(this.identifier.id)];
+      case IdentifierType.PLAYLIST: return { tracks: await this.fetchPlaylist(this.identifier.id) };
+      case IdentifierType.SONG: return { tracks: [await this.fetchVideo(this.identifier.id)] };
       default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
     }
   }

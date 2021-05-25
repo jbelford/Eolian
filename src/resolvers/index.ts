@@ -106,7 +106,7 @@ export function getSourceFetcher(identifier: Identifier, params: CommandOptions,
   switch (identifier.src) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier, params, channel);
     case SOURCE.YOUTUBE: return new YouTubeFetcher(identifier);
-    case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier);
+    case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier, params, channel);
     default: return UNKNOWN_FETCHER;
   }
 }

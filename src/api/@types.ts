@@ -1,3 +1,4 @@
+import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { StreamData, Track } from 'music/@types';
 
 interface StreamFetcher {
@@ -15,7 +16,7 @@ export interface SoundCloudApi extends StreamFetcher {
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
   getUserTracks(id: number): Promise<SoundCloudTrack[]>;
-  getUserFavorites(id: number, max?: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]>;
+  getUserFavorites(id: number, max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]>;
 }
 
 export type SoundCloudFavoritesCallback = (count: number) => Promise<void>;
@@ -65,7 +66,7 @@ export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
-  getPlaylistTracks(id: string): Promise<SpotifyPlaylistFull>;
+  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: SpotifyRangeFactory): Promise<SpotifyPlaylistFull>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
@@ -74,6 +75,8 @@ export interface SpotifyApi extends StreamFetcher {
   searchAlbums(query: string): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }
+
+export type SpotifyRangeFactory = (total: number) => AbsRangeArgument | undefined;
 
 export interface SpotifyUser {
   id: string;

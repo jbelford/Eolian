@@ -36,11 +36,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (identifier) {
-    let tracks = await getSourceFetcher(identifier, options, context.channel).fetch();
+    // eslint-disable-next-line prefer-const
+    let { tracks, rangeOptimized } = await getSourceFetcher(identifier, options, context.channel).fetch();
     if (tracks.length > 0) {
-      const range = getRangeOption(options, tracks.length);
-      if (range) {
-        tracks = tracks.slice(range.start, range.stop);
+      if (!rangeOptimized) {
+        const range = getRangeOption(options, tracks.length);
+        if (range) {
+          tracks = tracks.slice(range.start, range.stop);
+        }
       }
 
       if (options.SHUFFLE) {

@@ -13,5 +13,11 @@ export interface SourceResolver {
 }
 
 export interface SourceFetcher {
-  fetch(): Promise<Track[]>;
+  fetch(): Promise<FetchResult>;
 }
+
+export type FetchResult = {
+  tracks: Track[],
+  // Whether range params will be considered while fetching and already applied to the result
+  rangeOptimized?: boolean
+};

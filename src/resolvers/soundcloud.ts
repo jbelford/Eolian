@@ -1,13 +1,15 @@
 import { soundcloud } from 'api';
-import { SoundCloudFavoritesCallback, SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
+import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
+import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
-import { ContextMessage, ContextTextChannel } from 'eolian/@types';
+import { ContextTextChannel } from 'eolian/@types';
+import { DownloaderDisplay } from 'eolian/downloader';
 import { Track } from 'music/@types';
-import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
+import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class SoundCloudUrlResolver implements SourceResolver {
 
@@ -215,21 +217,21 @@ export class SoundCloudFetcher implements SourceFetcher {
     private readonly params: CommandOptions,
     private readonly channel?: ContextTextChannel) {}
 
-  async fetch(): Promise<Track[]> {
+  async fetch(): Promise<FetchResult> {
     if (this.identifier.src !== SOURCE.SOUNDCLOUD) {
       throw new Error('Attempted to fetch tracks for incorrect source type');
     }
 
     switch (this.identifier.type) {
       case IdentifierType.PLAYLIST:
-        return this.fetchPlaylist();
+        return { tracks: await this.fetchPlaylist() };
       case IdentifierType.SONG:
-        return [await this.fetchTrack()];
+        return { tracks: [await this.fetchTrack()] };
       case IdentifierType.TRACKS:
       case IdentifierType.ARTIST:
-        return this.fetchUserTracks();
+        return { tracks: await this.fetchUserTracks() };
       case IdentifierType.FAVORITES:
-        return this.fetchUserFavorites();
+        return { tracks: await this.fetchUserFavorites() };
       default:
         throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
     }
@@ -250,8 +252,7 @@ export class SoundCloudFetcher implements SourceFetcher {
   }
 
   private async fetchUserFavorites(): Promise<Track[]> {
-    let cb: SoundCloudFavoritesCallback | undefined;
-    let messageCache: ContextMessage | undefined;
+    let downloader: ProgressUpdater | undefined;
     let max = (this.identifier as SoundCloudUserIdentifier).likes;
 
     const range = getRangeOption(this.params, max);
@@ -260,19 +261,10 @@ export class SoundCloudFetcher implements SourceFetcher {
     }
 
     if (this.channel && max > 300) {
-      messageCache = await this.channel.send(`Fetching likes: 0%`);
-      cb = async (count: number) => {
-        if (messageCache) {
-          await messageCache.edit(`Fetching likes: ${Math.round(100 * count / max)}%`);
-        }
-      };
+      downloader = new DownloaderDisplay(this.channel, 'Fetching likes');
     }
 
-    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, cb);
-
-    if (messageCache) {
-      await messageCache.edit(`Fetching likes: 100%`);
-    }
+    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, downloader);
 
     return tracks.map(mapSoundCloudTrack);
   }

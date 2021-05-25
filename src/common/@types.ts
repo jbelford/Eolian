@@ -36,3 +36,9 @@ export interface AbsRangeArgument {
   start: number;
   stop: number;
 }
+
+export interface ProgressUpdater {
+  init(total?: number): void;
+  update(value: number): void;
+  done(): Promise<void>;
+}

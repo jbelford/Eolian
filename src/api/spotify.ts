@@ -1,10 +1,11 @@
 import { youtube } from 'api';
+import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import { StreamData, Track } from 'music/@types';
 import requestPromise from 'request-promise-native';
-import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser } from './@types';
+import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyPlaylistTrack, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser } from './@types';
 
 interface PaginationOptions {
   limit?: number;
@@ -54,11 +55,20 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getPlaylistTracks(id: string): Promise<SpotifyPlaylistFull> {
+  async getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: SpotifyRangeFactory): Promise<SpotifyPlaylistFull> {
     try {
       logger.debug(`Getting playlist tracks: ${id}`);
       const playlist = await this.getPlaylist(id);
-      playlist.tracks.items = await this.getAllItems(options => this.get(`playlists/${id}/tracks`, options), playlist.tracks);
+      const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { initial: playlist.tracks, limit: 100, progress };
+      if (rangeFn) {
+        const range = rangeFn(playlist.tracks.total);
+        if (range) {
+          options.offset = range.start;
+          options.total = range.stop - range.start;
+          delete options.initial;
+        }
+      }
+      playlist.tracks.items = await this.getAllItems(options => this.get(`playlists/${id}/tracks`, options), options);
       return playlist;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify playlist tracks: id: ${id}`);
@@ -212,16 +222,33 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   private async getAllItems<T>(
       next: (options: PaginationOptions) => Promise<SpotifyPagingObject<T>>,
-      initial?: SpotifyPagingObject<T>): Promise<T[]> {
-    const limit = 50;
-    let data = initial ? initial : await next({ limit, offset: 0 });
-    const total = data.total;
+      options?: GetAllItemsOptions<T>): Promise<T[]> {
+
+    const limit = options?.limit ?? 50;
+    const offset = options?.offset ?? 0;
+    let data = options?.initial ? options.initial : await next({ limit, offset });
+    const total = options?.total ?? data.total;
+
+    options?.progress?.init(total);
+
     let items = data.items;
     while (items.length < total) {
-      data = await next({ limit, offset: items.length });
+      data = await next({ limit, offset: offset + items.length });
       items = items.concat(data.items);
+      options?.progress?.update(items.length);
     }
+
+    await options?.progress?.done();
+
     return items;
   }
 
 }
+
+type GetAllItemsOptions<T> = {
+  initial?: SpotifyPagingObject<T>;
+  limit?: number;
+  offset?: number;
+  total?: number;
+  progress?: ProgressUpdater;
+};

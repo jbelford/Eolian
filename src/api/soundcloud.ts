@@ -1,4 +1,5 @@
 import { youtube } from 'api';
+import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
@@ -6,7 +7,7 @@ import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudFavoritesCallback, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
+import { SoundCloudApi, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
 
 const URL = 'https://api.soundcloud.com';
 
@@ -117,29 +118,24 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
-  async getUserFavorites(id: number, max?: number, progressCb?: SoundCloudFavoritesCallback): Promise<SoundCloudTrack[]> {
+  async getUserFavorites(id: number, max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]> {
     try {
-      let progressPromise = Promise.resolve();
       let tracks: SoundCloudTrack[] = [];
+
+      progress?.init(max);
 
       let result = await this.get<SoundCloudPaginatedTracks>(`users/${id}/likes/tracks`, { access: 'playable,blocked', linked_partitioning: true, limit: 200 });
       tracks = tracks.concat(result.collection);
 
-      if (progressCb) {
-        const curr = tracks.length;
-        progressPromise = progressPromise.then(() => progressCb(curr));
-      }
+      progress?.update(tracks.length);
 
       while (result.next_href && (!max || tracks.length < max)) {
         result = await this.getUri<SoundCloudPaginatedTracks>(`${result.next_href}&client_id=${this.token}`);
         tracks = tracks.concat(result.collection);
-        if (progressCb) {
-          const curr = tracks.length;
-          progressPromise = progressPromise.then(() => progressCb(curr));
-        }
+        progress?.update(tracks.length);
       }
 
-      await progressPromise;
+      await progress?.done();
 
       return tracks;
     } catch (e) {

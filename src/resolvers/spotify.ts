@@ -1,12 +1,16 @@
 import { spotify } from 'api';
-import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType, SpotifyTrack } from 'api/@types';
+import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
+import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
+import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
+import { ContextTextChannel } from 'eolian/@types';
+import { DownloaderDisplay } from 'eolian/downloader';
 import { Track } from 'music/@types';
-import { ResolvedResource, SourceFetcher, SourceResolver } from './@types';
+import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class SpotifyUrlResolver implements SourceResolver {
 
@@ -191,23 +195,33 @@ function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
 
 export class SpotifyFetcher implements SourceFetcher {
 
-  constructor(private readonly identifier: Identifier) {}
+  constructor(private readonly identifier: Identifier,
+    private readonly params: CommandOptions,
+    private readonly channel?: ContextTextChannel) {}
 
-  async fetch(): Promise<Track[]> {
+  async fetch(): Promise<FetchResult> {
     if (this.identifier.src !== SOURCE.SPOTIFY) {
       throw new Error('Attempted to fetch tracks for incorrect source type');
     }
 
     switch (this.identifier.type) {
-      case IdentifierType.PLAYLIST: return this.fetchPlaylist(this.identifier.id);
-      case IdentifierType.ALBUM: return this.fetchAlbum(this.identifier.id);
-      case IdentifierType.ARTIST: return this.fetchArtistTracks(this.identifier.id);
+      case IdentifierType.PLAYLIST: return { tracks: await this.fetchPlaylist(this.identifier.id), rangeOptimized: true };
+      case IdentifierType.ALBUM: return { tracks: await this.fetchAlbum(this.identifier.id) };
+      case IdentifierType.ARTIST: return { tracks: await this.fetchArtistTracks(this.identifier.id) };
       default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
     }
   }
 
   async fetchPlaylist(id: string): Promise<Track[]> {
-    const playlist = await spotify.getPlaylistTracks(id);
+    let progress: ProgressUpdater | undefined;
+
+    const rangeFn: SpotifyRangeFactory = total => getRangeOption(this.params, total);
+
+    if (this.channel) {
+      progress = new DownloaderDisplay(this.channel, 'Fetching playlist tracks');
+    }
+
+    const playlist = await spotify.getPlaylistTracks(id, progress, rangeFn);
     return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track));
   }
 
