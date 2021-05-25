@@ -27,13 +27,13 @@ async function execute({ user, channel }: CommandContext, { ARG }: CommandOption
       ? COMMAND_CATEGORIES[idx]
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
-    const commandListEmbed = createCommandListEmbed(category);
+    const commandListEmbed = createCommandListEmbed(category, user.permission);
     await channel.sendEmbed(commandListEmbed);
     return;
   }
 
   const command = COMMAND_MAP[arg];
-  if (command) {
+  if (command && command.permission <= user.permission) {
     const commandEmbed = createCommandDetailsEmbed(command);
     await channel.sendEmbed(commandEmbed);
     return;

@@ -1,6 +1,6 @@
 import { COMMANDS } from 'commands';
 import { Command, CommandCategory, Keyword } from 'commands/@types';
-import { COLOR } from 'common/constants';
+import { COLOR, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EmbedMessage } from 'eolian/@types';
 
@@ -21,7 +21,7 @@ export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMes
   return embed;
 }
 
-export function createCommandListEmbed(category: CommandCategory): EmbedMessage {
+export function createCommandListEmbed(category: CommandCategory, permission: PERMISSION): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -30,10 +30,19 @@ export function createCommandListEmbed(category: CommandCategory): EmbedMessage 
     title: category.name,
     description: `${category.details}\n\n`
   };
-  embed.description += '```\n'
-    + COMMANDS.filter(cmd => cmd.category.name === category.name).map(cmd => cmd.name).join('\n')
-    + '```' + `\nUse \`help <command>\` to see more information for that command.`
-    + `\n\n${helpFooter}`
+
+  const commands = COMMANDS.filter(cmd => cmd.category.name === category.name)
+    .filter(cmd => cmd.permission <= permission)
+    .map(cmd => cmd.name);
+
+  embed.description += `\`\`\`
+${commands.join('\n')}
+\`\`\`
+Use \`help <command\` to see more information for that command.
+
+${helpFooter}
+`;
+
   return embed;
 }
 
