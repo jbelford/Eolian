@@ -36,7 +36,7 @@ function getByQuery(context: CommandContext, params: CommandOptions) {
     return getPlaylistResolver(context, params);
   } else if (params.TRACKS) {
     return getTracksResolver(context, params);
-  } else if (params.FAVORITES) {
+  } else if (params.LIKES) {
     return getFavoritesResolver(context, params);
   } else if (params.ARTIST) {
     return getArtistResolver(context, params);

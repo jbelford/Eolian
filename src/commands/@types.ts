@@ -61,7 +61,7 @@ export interface CommandOptions {
   ARTIST?: boolean;
   NEXT?: boolean;
   SHUFFLE?: boolean;
-  FAVORITES?: boolean;
+  LIKES?: boolean;
   TRACKS?: boolean;
   TOP?: RangeArgument;
   BOTTOM?: RangeArgument;
