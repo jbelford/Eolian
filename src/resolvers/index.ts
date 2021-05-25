@@ -84,7 +84,7 @@ function getAlbumResolver(context: CommandContext, params: CommandOptions) {
 }
 
 function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
-  if (params.SPOTIFY) {
+  if (params.SPOTIFY || params.MY) {
     return new SpotifyPlaylistResolver(context, params);
   } else if (params.SOUNDCLOUD) {
     return new SoundCloudPlaylistResolver(context, params);
