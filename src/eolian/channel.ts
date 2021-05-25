@@ -41,7 +41,9 @@ export class DiscordTextChannel implements ContextTextChannel {
             if (!msg) {
               resolve(-1);
             } else {
-              await msg.delete();
+              if (msg.deletable) {
+                await msg.delete();
+              }
               const idx = +msg.content;
               resolve(idx - 1);
             }

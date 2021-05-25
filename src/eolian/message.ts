@@ -52,7 +52,11 @@ export class DiscordMessage implements ContextMessage {
 
   async delete(): Promise<void> {
     this.releaseButtons();
-    await this.message.delete();
+    if (this.message.deletable) {
+      await this.message.delete();
+    } else if (this.message.author.id === this.message.client.user?.id) {
+      logger.warn(`Failed to delete message created by ourself`)
+    }
   }
 
 }
