@@ -192,7 +192,12 @@ export class SpotifyApiImpl implements SpotifyApi {
     const reg = /^\s*(.+)\s+-\s+([^-]+)\s*$/i
     const match = reg.exec(trackCopy.title);
     if (match) {
-      trackCopy.title = `${match[1]} (${match[2]})`;
+      const secondPart = match[2].replace(/\s*remastered\s*/i, '');
+      if (secondPart.length) {
+        trackCopy.title = `${match[1]} (${secondPart})`;
+      } else {
+        trackCopy.title = match[1];
+      }
     }
 
     return youtube.searchStream(trackCopy);
