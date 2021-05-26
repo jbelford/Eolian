@@ -1,10 +1,10 @@
 import { COMMANDS } from 'commands';
 import { Command, CommandCategory, Keyword } from 'commands/@types';
-import { COLOR, PERMISSION } from 'common/constants';
+import { COLOR, GITHUB_PAGE_WIKI, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EmbedMessage } from 'eolian/@types';
 
-const helpFooter = '_Want to know more? [See the Wiki](https://github.com/jbelford/Eolian/wiki)_';
+const helpFooter = `_Want to know more? [See the Wiki](${GITHUB_PAGE_WIKI})_`;
 
 export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMessage {
   const embed: EmbedMessage = {

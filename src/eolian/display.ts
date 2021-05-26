@@ -1,3 +1,4 @@
+import { GITHUB_PAGE_ISSUES } from 'common/constants';
 import { PlayerDisplay, QueueDisplay, ServerQueue } from 'data/@types';
 import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player, Track } from 'music/@types';
@@ -123,6 +124,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.on('volume', this.onVolumeHandler);
     this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
+    this.player.on('error', this.onErrorHandler);
   }
 
   async close(): Promise<void> {
@@ -130,6 +132,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.removeListener('volume', this.onVolumeHandler);
     this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
+    this.player.removeListener('error', this.onErrorHandler);
     this.channel = null;
     await this.removeIdle();
   }
@@ -189,6 +192,11 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private onEndHandler = async () => {
     await this.safeDelete();
     this.track = null;
+  };
+
+  private onErrorHandler = async () => {
+    await this.onEndHandler();
+    await this.channel?.send(`Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES})`);
   };
 
   private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {

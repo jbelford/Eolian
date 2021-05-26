@@ -65,6 +65,10 @@ export function getEnumName(e: any, i: number): string | undefined {
   return Object.keys(e).find(k => e[k] === i);
 }
 
+export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
+export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;
+export const GITHUB_PAGE_WIKI = `${GITHUB_PAGE}/wiki`;
+
 // https://discord.com/developers/docs/topics/gateway#list-of-intents
 const DISCORD_ENABLED_INTENTS = new Intents();
 DISCORD_ENABLED_INTENTS.add(

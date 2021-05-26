@@ -62,6 +62,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private cleanup = (err?: Error) => {
     if (err) {
       logger.warn(`Cleanup stream due to error: ${err}`);
+      this.emitError();
     }
 
     if (this.timeoutCheck) {
@@ -136,6 +137,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       });
     } catch (e) {
       this.streamErrorHandler(e);
+      this.connectionProvider.get()?.disconnect();
     }
   }
 
@@ -173,19 +175,23 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.songStream = null;
     this.pcmTransform = null;
 
-    const nextTrack = await this.queue.peek();
-    if (nextTrack) {
-      const stream = await getTrackStream(nextTrack);
-      if (stream) {
-        this.songStream = stream.readable;
-        this.pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
-        return this.songStream
-            .once('error', this.streamErrorHandler)
-            .once('close', () => logger.debug(`Song stream closed`))
-          .pipe(this.pcmTransform)
-            .once('error', this.streamErrorHandler)
-            .once('close', () => logger.debug(`PCM transform closed`));
+    try {
+      const nextTrack = await this.queue.peek();
+      if (nextTrack) {
+        const stream = await getTrackStream(nextTrack);
+        if (stream) {
+          this.songStream = stream.readable;
+          this.pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+          return this.songStream
+              .once('error', this.streamErrorHandler)
+              .once('close', () => logger.debug(`Song stream closed`))
+            .pipe(this.pcmTransform)
+              .once('error', this.streamErrorHandler)
+              .once('close', () => logger.debug(`PCM transform closed`));
+        }
       }
+    } catch (e) {
+      logger.warn('Error occured getting next stream: %s', e);
     }
     return null;
   }
@@ -271,6 +277,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private emitIdle() {
     this.emit('idle');
+  }
+
+  private emitError() {
+    this.emit('error');
   }
 
   private emitVolume() {

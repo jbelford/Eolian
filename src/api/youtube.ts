@@ -128,6 +128,8 @@ export class YouTubeApiImpl implements YouTubeApi {
       const response = await this.youtube.search.list({
         q: query,
         maxResults: 7,
+        // Do not show age-restricted content until ytdl-core is fixed
+        safeSearch: 'strict',
         // We should not provide the video type. It yields entirely different results for some videos for some reason.
         // type: 'video',
         part: 'id,snippet',

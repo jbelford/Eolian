@@ -14,6 +14,7 @@ export const logger = winston.createLogger({
   exitOnError: false,
   format: winston.format.combine(
     winston.format.timestamp(),
+    winston.format.splat(),
     winston.format.colorize(),
     winston.format.printf(info => {
       return `${info.timestamp} ${info.level}: ${info.message}`
