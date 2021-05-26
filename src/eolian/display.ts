@@ -196,7 +196,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onErrorHandler = async () => {
     await this.onEndHandler();
-    await this.channel?.send(`Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES})`);
+    await this.channel?.send(`Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`);
   };
 
   private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {
