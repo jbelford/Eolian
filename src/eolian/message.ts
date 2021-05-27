@@ -27,10 +27,12 @@ export class DiscordMessage implements ContextMessage {
   }
 
   async react(emoji: string): Promise<void> {
-    try {
-      await this.message.react(emoji);
-    } catch (e) {
-      logger.warn('Failed to react to message: %s', e);
+    if (!this.message.deleted) {
+      try {
+        await this.message.react(emoji);
+      } catch (e) {
+        logger.warn('Failed to react to message: %s', e);
+      }
     }
   }
 
@@ -74,14 +76,16 @@ export class DiscordMessage implements ContextMessage {
 
   async delete(): Promise<void> {
     this.releaseButtons();
-    if (this.message.deletable) {
-      try {
-        await this.message.delete();
-      } catch (e) {
-        logger.warn('Failed to delete message: %s', e);
+    if (!this.message.deleted) {
+      if (this.message.deletable) {
+        try {
+          await this.message.delete();
+        } catch (e) {
+          logger.warn('Failed to delete message: %s', e);
+        }
+      } else if (this.message.author.id === this.message.client.user?.id) {
+        logger.warn(`Failed to delete message created by ourself`)
       }
-    } else if (this.message.author.id === this.message.client.user?.id) {
-      logger.warn(`Failed to delete message created by ourself`)
     }
   }
 
