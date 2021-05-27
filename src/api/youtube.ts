@@ -125,15 +125,13 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchVideos(query: string, safeSearch = true): Promise<YoutubeVideo[]> {
+  async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
       logger.debug(`YouTube HTTP: search.list ${query}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({
         q: query,
         maxResults: 7,
-        // Do not show age-restricted content until ytdl-core is fixed
-        safeSearch: safeSearch ? 'strict' : undefined,
         // We should not provide the video type. It yields entirely different results for some videos for some reason.
         // type: 'video',
         part: 'id,snippet',
@@ -161,7 +159,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchSong(name: string, artist: string): Promise<YoutubeVideo[]> {
     const query = `${artist} ${name}`;
-    let videos = await this.searchVideos(query, false);
+    let videos = await this.searchVideos(query);
     if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       videos = sorted.map(scored => videos[scored.key]);
