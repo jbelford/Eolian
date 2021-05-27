@@ -1,7 +1,6 @@
 import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { ServerState } from 'data/@types';
-import { ContextClient, ContextMessage, ContextTextChannel, ContextUser } from 'eolian/@types';
+import { ContextClient, ContextMessage, ContextTextChannel, ContextUser, ServerState } from 'eolian/@types';
 
 export interface Command {
   name: string;
