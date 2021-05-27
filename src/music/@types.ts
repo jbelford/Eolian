@@ -9,7 +9,7 @@ export interface Track {
   title: string;
   poster: string;
   url: string;
-  stream: string;
+  stream?: string;
   artwork?: string;
   src: SOURCE;
 }

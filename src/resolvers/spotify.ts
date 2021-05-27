@@ -187,7 +187,6 @@ function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
     poster: track.artists.map(artist => artist.name).join(', '),
     title: track.name,
     src: SOURCE.SPOTIFY,
-    stream: track.uri,
     url: track.external_urls.spotify,
     artwork
   };
