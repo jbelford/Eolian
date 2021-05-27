@@ -2,12 +2,11 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch, noop } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
-import { StreamData, Track } from 'music/@types';
 import { opus } from 'prism-media';
 import querystring from 'querystring';
 import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
-import { YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';

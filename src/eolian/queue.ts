@@ -1,8 +1,8 @@
+import { Track } from 'api/@types';
 import { AbsRangeArgument } from 'common/@types';
 import { IDLE_TIMEOUT } from 'common/constants';
 import { MusicQueueCache, ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
-import { Track } from 'music/@types';
 
 export class GuildQueue extends EventEmitter implements ServerQueue {
 

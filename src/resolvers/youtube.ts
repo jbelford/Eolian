@@ -1,11 +1,10 @@
 import { youtube } from 'api';
-import { YoutubePlaylist, YoutubeVideo } from 'api/@types';
+import { Track, YoutubePlaylist, YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
-import { Track } from 'music/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class YouTubeUrlResolver implements SourceResolver {

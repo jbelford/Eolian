@@ -1,6 +1,7 @@
+import { Track } from 'api/@types';
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
-import { Identifier, UserDTO } from 'data/@types';
+import { Identifier, ServerQueue, UserDTO } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 import { Player } from 'music/@types';
 
@@ -103,3 +104,31 @@ export interface MessageButton {
 }
 
 export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser, emoji: string) => Promise<boolean>;
+
+export interface Display extends Closable {
+  setChannel(channel: ContextTextChannel): void;
+  removeIdle(): Promise<void>;
+}
+
+export interface PlayerDisplay extends Display {
+}
+
+export interface QueueDisplay extends Display {
+  setChannel(channel: ContextTextChannel): void;
+  send(tracks: Track[], start?: number, total?: number): Promise<void>;
+  delete(): Promise<void>;
+}
+
+export interface ServerStateStore {
+  get(id: string): Promise<ServerState | undefined>;
+  set(id: string, context: ServerState): Promise<void>;
+}
+
+export interface ServerState {
+  player: Player;
+  queue: ServerQueue;
+  display: {
+    queue: QueueDisplay;
+    player: PlayerDisplay;
+  }
+}

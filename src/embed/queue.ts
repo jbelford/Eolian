@@ -1,6 +1,6 @@
+import { Track } from 'api/@types';
 import { COLOR, getIcon, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'eolian/@types';
-import { Track } from 'music/@types';
 
 export function createQueueEmbed(tracks: Track[], start: number, total: number) : EmbedMessage {
   const embed: EmbedMessage = {

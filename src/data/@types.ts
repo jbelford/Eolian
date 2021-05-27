@@ -1,8 +1,7 @@
+import { Track } from 'api/@types';
 import { AbsRangeArgument, Closable, Idleable } from 'common/@types';
 import { SOURCE } from 'common/constants';
-import { ContextTextChannel } from 'eolian/@types';
 import EventEmitter from 'events';
-import { Player, Track } from 'music/@types';
 
 export interface EolianCache<V> extends Closable {
   get(key: string): Promise<V | undefined>;
@@ -77,32 +76,4 @@ export interface ServerQueue extends EventEmitter, Idleable {
   clear(): Promise<boolean>;
   pop(): Promise<Track | undefined>;
   peek(): Promise<Track | undefined>;
-}
-
-export interface Display extends Closable {
-  setChannel(channel: ContextTextChannel): void;
-  removeIdle(): Promise<void>;
-}
-
-export interface PlayerDisplay extends Display {
-}
-
-export interface QueueDisplay extends Display {
-  setChannel(channel: ContextTextChannel): void;
-  send(tracks: Track[], start?: number, total?: number): Promise<void>;
-  delete(): Promise<void>;
-}
-
-export interface ServerStateStore {
-  get(id: string): Promise<ServerState | undefined>;
-  set(id: string, context: ServerState): Promise<void>;
-}
-
-export interface ServerState {
-  player: Player;
-  queue: ServerQueue;
-  display: {
-    queue: QueueDisplay;
-    player: PlayerDisplay;
-  }
 }

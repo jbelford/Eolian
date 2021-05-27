@@ -1,5 +1,5 @@
+import { Track } from 'api/@types';
 import { Identifier } from 'data/@types';
-import { Track } from 'music/@types';
 
 export interface ResolvedResource {
   authors: string[];

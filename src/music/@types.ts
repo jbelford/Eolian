@@ -1,24 +1,6 @@
 import { Closable, Idleable } from 'common/@types';
-import { SOURCE } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import EventEmitter from 'events';
-import { Readable } from 'stream';
-
-export interface Track {
-  id: string;
-  title: string;
-  poster: string;
-  url: string;
-  stream?: string;
-  artwork?: string;
-  src: SOURCE;
-}
-
-export interface StreamData {
-  readable: Readable,
-  details: Track,
-  opus?: boolean
-}
 
 export interface Player extends EventEmitter, Idleable, Closable {
 

@@ -1,7 +1,6 @@
 import { SOURCE } from 'common/constants';
 import { environment } from 'common/env';
-import { StreamData, Track } from 'music/@types';
-import { SoundCloudApi, SpotifyApi, YouTubeApi } from './@types';
+import { SoundCloudApi, SpotifyApi, StreamData, Track, YouTubeApi } from './@types';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';

@@ -1,7 +1,7 @@
-import { InMemoryCache } from 'data';
 import { EolianCache } from './@types';
+import { InMemoryCache } from './cache';
 
-export class UserLockManager {
+export class LockManager {
 
   private readonly cache: EolianCache<boolean>;
 
@@ -13,11 +13,11 @@ export class UserLockManager {
     return !!(await this.cache.get(id));
   }
 
-  async lockUser(id: string): Promise<void> {
+  async lock(id: string): Promise<void> {
     await this.cache.set(id, true);
   }
 
-  async unlockUser(id: string): Promise<void> {
+  async unlock(id: string): Promise<void> {
     await this.cache.set(id, false);
   }
 

@@ -1,5 +1,6 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
-import { StreamData, Track } from 'music/@types';
+import { SOURCE } from 'common/constants';
+import { Readable } from 'stream';
 
 interface StreamFetcher {
   getStream(track: Track): Promise<StreamData | undefined>;
@@ -206,4 +207,20 @@ export interface YoutubePlaylist {
 export const enum YouTubeResourceType {
   VIDEO = 0,
   PLAYLIST
+}
+
+export interface Track {
+  id: string;
+  title: string;
+  poster: string;
+  url: string;
+  stream?: string;
+  artwork?: string;
+  src: SOURCE;
+}
+
+export interface StreamData {
+  readable: Readable,
+  details: Track,
+  opus?: boolean
 }

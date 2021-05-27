@@ -1,6 +1,7 @@
 import { logger } from 'common/logger';
-import { EolianCache, ServerState, ServerStateStore } from './@types';
-import { InMemoryCache } from './cache';
+import { InMemoryCache } from 'data';
+import { EolianCache } from 'data/@types';
+import { ServerState, ServerStateStore } from './@types';
 
 
 export class InMemoryServerStateStore implements ServerStateStore {

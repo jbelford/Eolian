@@ -1,8 +1,9 @@
+import { Track } from 'api/@types';
 import { GITHUB_PAGE_ISSUES } from 'common/constants';
-import { PlayerDisplay, QueueDisplay, ServerQueue } from 'data/@types';
+import { ServerQueue } from 'data/@types';
 import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
-import { Player, Track } from 'music/@types';
-import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler } from './@types';
+import { Player } from 'music/@types';
+import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler, PlayerDisplay, QueueDisplay } from './@types';
 
 const QUEUE_LENGTH = 15;
 

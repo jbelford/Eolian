@@ -4,9 +4,8 @@ import { UsersDb } from 'data/@types';
 import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { DiscordMessage } from 'eolian';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
-import { mapDiscordEmbed } from './message';
+import { DiscordMessage, mapDiscordEmbed } from './message';
 import { DiscordUser } from './user';
 
 const STOP_EMOJI = '🚫';

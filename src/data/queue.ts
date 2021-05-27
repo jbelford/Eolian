@@ -1,6 +1,6 @@
+import { Track } from 'api/@types';
 import { AbsRangeArgument } from 'common/@types';
 import { shuffleList } from 'common/util';
-import { Track } from 'music/@types';
 import { EolianCache, MusicQueueCache } from './@types';
 import { InMemoryCache } from './cache';
 

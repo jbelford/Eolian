@@ -3,11 +3,10 @@ import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { StreamData, Track } from 'music/@types';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser } from './@types';
+import { SoundCloudApi, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track } from './@types';
 
 const URL = 'https://api.soundcloud.com';
 

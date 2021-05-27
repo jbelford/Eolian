@@ -13,9 +13,8 @@ import { Closable } from 'common/@types';
 import { logger } from 'common/logger';
 import { createDatabase, createMemoryStore } from 'data';
 import { AppDatabase, MemoryStore } from 'data/@types';
-import { DiscordEolianBot } from 'eolian';
+import { DiscordEolianBot, WebServer } from 'eolian';
 import { EolianBot } from 'eolian/@types';
-import { WebServer } from 'eolian/server';
 import nodeCleanup from 'node-cleanup';
 
 const resources: Closable[] = [];

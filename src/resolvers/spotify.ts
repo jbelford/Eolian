@@ -1,5 +1,5 @@
 import { spotify } from 'api';
-import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack } from 'api/@types';
+import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
@@ -7,9 +7,8 @@ import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
+import { DownloaderDisplay } from 'eolian';
 import { ContextTextChannel } from 'eolian/@types';
-import { DownloaderDisplay } from 'eolian/downloader';
-import { Track } from 'music/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class SpotifyUrlResolver implements SourceResolver {

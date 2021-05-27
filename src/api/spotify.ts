@@ -3,9 +3,8 @@ import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
-import { StreamData, Track } from 'music/@types';
 import requestPromise from 'request-promise-native';
-import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyPlaylistTrack, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser } from './@types';
+import { SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyPlaylistTrack, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track } from './@types';
 
 interface PaginationOptions {
   limit?: number;

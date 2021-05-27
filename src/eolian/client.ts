@@ -1,6 +1,6 @@
 import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
 import { Client } from 'discord.js';
-import { DiscordPlayer } from "../music/player";
+import { DiscordPlayer } from 'music';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
 import { DiscordVoiceConnection } from './voice';
 

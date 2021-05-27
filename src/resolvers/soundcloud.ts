@@ -1,14 +1,13 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
+import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
+import { DownloaderDisplay } from 'eolian';
 import { ContextTextChannel } from 'eolian/@types';
-import { DownloaderDisplay } from 'eolian/downloader';
-import { Track } from 'music/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
 
 export class SoundCloudUrlResolver implements SourceResolver {

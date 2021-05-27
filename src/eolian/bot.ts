@@ -3,16 +3,17 @@ import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIEN
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { UserLockManager } from 'data';
-import { AppDatabase, MemoryStore, MusicQueueCache, ServerState, ServerStateStore, UsersDb } from 'data/@types';
-import { InMemoryServerStateStore } from 'data/serverstore';
+import { LockManager } from 'data';
+import { AppDatabase, MemoryStore, MusicQueueCache, UsersDb } from 'data/@types';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
-import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
-import { EolianBot } from './@types';
-import { DiscordGuildClient } from './client';
+import { EolianBot, ServerState, ServerStateStore } from './@types';
+import { DiscordTextChannel } from './channel';
+import { DiscordClient, DiscordGuildClient } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
+import { DiscordMessage } from './message';
 import { GuildQueue } from './queue';
+import { InMemoryServerStateStore } from './state';
 import { DiscordUser } from './user';
 
 export interface DiscordEolianBotArgs {
@@ -32,7 +33,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly users: UsersDb;
   private readonly queues: MusicQueueCache;
   private readonly servers: ServerStateStore = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
-  private readonly lockManager: UserLockManager = new UserLockManager(USER_COMMAND_LOCK_TIMEOUT);
+  private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
@@ -87,7 +88,7 @@ export class DiscordEolianBot implements EolianBot {
       const locked = await this.lockManager.isLocked(message.author.id);
       if (!locked) {
         try {
-          await this.lockManager.lockUser(message.author.id);
+          await this.lockManager.lock(message.author.id);
           await this.onBotInvoked(message);
         } catch (e) {
           if (e instanceof EolianUserError) {
@@ -97,7 +98,7 @@ export class DiscordEolianBot implements EolianBot {
             await message.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
           }
         } finally {
-          await this.lockManager.unlockUser(message.author.id);
+          await this.lockManager.unlock(message.author.id);
         }
       }
     }
