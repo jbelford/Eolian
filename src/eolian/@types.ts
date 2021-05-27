@@ -112,6 +112,7 @@ export interface Display extends Closable {
 }
 
 export interface PlayerDisplay extends Display {
+  refresh(): Promise<void>;
 }
 
 export interface QueueDisplay extends Display {

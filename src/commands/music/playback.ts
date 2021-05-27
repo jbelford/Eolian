@@ -127,3 +127,26 @@ export const RESUME_COMMAND: Command = {
   ],
   execute: executeResume
 };
+
+async function executeShowPlayer(context: CommandContext): Promise<void> {
+  const voice = context.client.getVoice();
+  if (voice) {
+    context.server!.display.player.setChannel(context.channel);
+    await context.server!.display.player.refresh();
+  } else {
+    await context.message.reply("I'm not playing anything right now!");
+  }
+}
+
+export const SHOW_COMMAND: Command = {
+  name: 'show',
+  details: `Show what's playing. This will move the player and bind it to this channel.`,
+  category: MUSIC_CATEGORY,
+  permission: PERMISSION.USER,
+  usage: [
+    {
+      example: ''
+    }
+  ],
+  execute: executeShowPlayer
+};

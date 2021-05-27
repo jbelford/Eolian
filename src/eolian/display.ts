@@ -152,6 +152,12 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.channel = channel;
   }
 
+  async refresh(): Promise<void> {
+    if (this.track) {
+      await this.onNextHandler(this.track);
+    }
+  }
+
   private onNextHandler = async (track: Track) => {
     if (this.channel) {
       this.track = track;
