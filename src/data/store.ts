@@ -3,10 +3,10 @@ import { InMemoryQueues } from './queue';
 
 class LocalMemoryStore implements MemoryStore {
 
-  readonly queueDao: MusicQueueCache;
+  readonly queue: MusicQueueCache;
 
   constructor() {
-    this.queueDao = new InMemoryQueues(60 * 60 * 3);
+    this.queue = new InMemoryQueues(60 * 60 * 3);
   }
 
   async close(): Promise<void> {

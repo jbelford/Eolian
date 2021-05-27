@@ -3,12 +3,11 @@ import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIEN
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { AppDatabase, MemoryStore, ServerState, ServerStateStore, UsersDb } from 'data/@types';
+import { AppDatabase, MemoryStore, MusicQueueCache, ServerState, ServerStateStore, UsersDb } from 'data/@types';
 import { InMemoryServerStateStore } from 'data/serverstore';
 import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordClient, DiscordMessage, DiscordTextChannel } from 'eolian';
 import { DiscordPlayer, VoiceConnectionProvider } from 'music/player';
-import { MusicQueueService } from 'services';
 import { UserLockManager } from 'services/lock';
 import { EolianBot } from './@types';
 import { DiscordGuildClient } from './client';
@@ -31,7 +30,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly parser: CommandParsingStrategy;
 
   private readonly users: UsersDb;
-  private readonly queues: MusicQueueService;
+  private readonly queues: MusicQueueCache;
   private readonly servers: ServerStateStore;
   private readonly lockManager: UserLockManager;
 
@@ -42,13 +41,15 @@ export class DiscordEolianBot implements EolianBot {
     this.client.once(DiscordEvents.READY, () => this.handleReady());
     this.client.on(DiscordEvents.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
     this.client.on(DiscordEvents.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: ${replayed}`));
-    this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
     this.client.on(DiscordEvents.WARN, (info) => logger.warn(`Warn event emitted: ${info}`));
     this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted ${err}`));
     this.client.on(DiscordEvents.MESSAGE, (message) => this.handleMessage(message));
+    if (logger.isDebugEnabled()) {
+      this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
+    }
 
     this.users = args.db.users;
-    this.queues = new MusicQueueService(args.store.queueDao);
+    this.queues = args.store.queue;
     this.servers = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
     this.lockManager = new UserLockManager(USER_COMMAND_LOCK_TIMEOUT);
   }

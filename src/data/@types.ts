@@ -54,7 +54,7 @@ export enum IdentifierType {
 }
 
 export interface MemoryStore extends Closable {
-  readonly queueDao: MusicQueueCache;
+  readonly queue: MusicQueueCache;
 }
 
 export interface MusicQueueCache {

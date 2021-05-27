@@ -43,7 +43,7 @@ export class InMemoryQueues implements MusicQueueCache {
     return range.stop - range.start;
   }
 
-  async add(guildId: string, tracks: Track[], head?: boolean): Promise<void> {
+  async add(guildId: string, tracks: Track[], head = false): Promise<void> {
     const list = await this.cache.get(guildId) || [];
     const newList = head ? tracks.concat(list) : list.concat(tracks);
     await this.cache.set(guildId, newList);
