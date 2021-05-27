@@ -1,7 +1,7 @@
 import { Collection } from 'mongodb';
-import { Identifier, UserDTO, UsersDAO } from './@types';
+import { Identifier, UserDTO, UsersDb } from './@types';
 
-export class MongoUsers implements UsersDAO {
+export class MongoUsers implements UsersDb {
 
   constructor(private readonly collection: Collection<UserDTO>) {
   }

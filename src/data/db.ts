@@ -1,12 +1,12 @@
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { MongoClient } from 'mongodb';
-import { AppDatabase, UsersDAO } from './@types';
+import { AppDatabase, UsersDb } from './@types';
 import { MongoUsers } from './users';
 
 class MongoDatabase implements AppDatabase {
 
-  readonly users: UsersDAO;
+  readonly users: UsersDb;
 
   constructor(private readonly client: MongoClient) {
     const db = client.db(environment.mongo.db_name);

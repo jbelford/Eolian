@@ -12,10 +12,10 @@ export interface EolianCache<V> extends Closable {
 }
 
 export interface AppDatabase extends Closable {
-  readonly users: UsersDAO;
+  readonly users: UsersDb;
 }
 
-export interface UsersDAO {
+export interface UsersDb {
   get(id: string): Promise<UserDTO>;
   setSoundCloud(id: string, soundcloud: number): Promise<void>;
   removeSoundCloud(id: string): Promise<void>;
@@ -54,10 +54,10 @@ export enum IdentifierType {
 }
 
 export interface MemoryStore extends Closable {
-  readonly queueDao: MusicQueueDAO;
+  readonly queueDao: MusicQueueCache;
 }
 
-export interface MusicQueueDAO {
+export interface MusicQueueCache {
   unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, limit?: number): Promise<Track[]>;
   remove(guildId: string, range: AbsRangeArgument): Promise<number>

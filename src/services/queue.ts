@@ -1,11 +1,11 @@
 import { AbsRangeArgument } from 'common/@types';
 import { logger } from 'common/logger';
-import { MusicQueueDAO } from 'data/@types';
+import { MusicQueueCache } from 'data/@types';
 import { Track } from 'music/@types';
 
 export class MusicQueueService {
 
-  constructor(private readonly queues: MusicQueueDAO) { }
+  constructor(private readonly queues: MusicQueueCache) { }
 
   async unpop(guildId: string, count: number): Promise<boolean> {
     try {

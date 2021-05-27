@@ -1,9 +1,9 @@
-import { MemoryStore, MusicQueueDAO } from './@types';
+import { MemoryStore, MusicQueueCache } from './@types';
 import { InMemoryQueues } from './queue';
 
 class LocalMemoryStore implements MemoryStore {
 
-  readonly queueDao: MusicQueueDAO;
+  readonly queueDao: MusicQueueCache;
 
   constructor() {
     this.queueDao = new InMemoryQueues(60 * 60 * 3);

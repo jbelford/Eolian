@@ -1,7 +1,6 @@
 import { PERMISSION } from 'common/constants';
-import { Identifier, UserDTO } from 'data/@types';
+import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, User } from 'discord.js';
-import { EolianUserService } from 'services';
 import { ContextUser, ContextVoiceChannel } from './@types';
 import { DiscordVoiceChannel } from './voice';
 
@@ -10,7 +9,7 @@ export class DiscordUser implements ContextUser {
   private dto?: UserDTO;
 
   constructor(private readonly user: User,
-      private readonly users: EolianUserService,
+      private readonly users: UsersDb,
       readonly permission: PERMISSION,
       private readonly guildUser?: GuildMember | null) {}
 
@@ -37,7 +36,7 @@ export class DiscordUser implements ContextUser {
   }
 
   async get(): Promise<UserDTO> {
-    return this.dto || (this.dto = await this.users.getUser(this.id));
+    return this.dto || (this.dto = await this.users.get(this.id));
   }
 
 
@@ -45,7 +44,7 @@ export class DiscordUser implements ContextUser {
     if (this.dto) {
       this.dto = undefined;
     }
-    return this.users.removeUser(this.id);
+    return this.users.delete(this.id);
   }
 
   setIdentifier(id: string, identifier: Identifier): Promise<void> {
@@ -55,30 +54,36 @@ export class DiscordUser implements ContextUser {
       }
       this.dto.identifiers[id] = identifier;
     }
-    return this.users.addResourceIdentifier(this.id, id, identifier);
+    return this.users.setIdentifier(this.id, id, identifier);
   }
 
   removeIdentifier(id: string): Promise<boolean> {
     if (this.dto && this.dto.identifiers && id in this.dto.identifiers) {
       delete this.dto.identifiers[id];
     }
-    return this.users.removeResourceIdentifier(this.id, id);
+    return this.users.removeIdentifier(this.id, id);
   }
 
-  setSpotify(id: string | null): Promise<void> {
+  async setSpotify(id: string | null): Promise<void> {
     if (this.dto) {
       this.dto.spotify = id || undefined;
     }
-    return id != null ? this.users.linkSpotifyAccount(this.id, id)
-        : this.users.unlinkSpotifyAccount(this.id);
+    if (id) {
+      await this.users.setSpotify(this.id, id);
+    } else {
+      await this.users.removeSpotify(this.id);
+    }
   }
 
-  setSoundCloud(id: number | null): Promise<void> {
+  async setSoundCloud(id: number | null): Promise<void> {
     if (this.dto) {
       this.dto.soundcloud = id || undefined;
     }
-    return id != null ? this.users.linkSoundCloudAccount(this.id, id)
-        : this.users.unlinkSoundCloudAccount(this.id);
+    if (id) {
+      await this.users.setSoundCloud(this.id, id);
+    } else {
+      await this.users.removeSoundCloud(this.id);
+    }
   }
 
 }

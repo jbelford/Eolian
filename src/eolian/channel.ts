@@ -1,10 +1,10 @@
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
+import { UsersDb } from 'data/@types';
 import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
 import { DiscordMessage } from 'eolian';
-import { EolianUserService } from 'services';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
 import { mapDiscordEmbed } from './message';
 import { DiscordUser } from './user';
@@ -14,7 +14,7 @@ const STOP_EMOJI = '🚫';
 export class DiscordTextChannel implements ContextTextChannel {
 
   constructor(private readonly channel: TextChannel | DMChannel,
-    private readonly users: EolianUserService) { }
+    private readonly users: UsersDb) { }
 
   get lastMessageId(): string | undefined {
     return this.channel.lastMessageID || undefined;

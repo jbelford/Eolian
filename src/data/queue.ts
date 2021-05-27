@@ -1,7 +1,7 @@
 import { AbsRangeArgument } from 'common/@types';
 import { shuffleList } from 'common/util';
 import { Track } from 'music/@types';
-import { EolianCache, MusicQueueDAO } from './@types';
+import { EolianCache, MusicQueueCache } from './@types';
 import { InMemoryCache } from './cache';
 
 const MAX_PREV = 10;
@@ -9,7 +9,7 @@ const MAX_PREV = 10;
 /**
  * Temporary implementation storing music queues in-memory.
  */
-export class InMemoryQueues implements MusicQueueDAO {
+export class InMemoryQueues implements MusicQueueCache {
 
   private readonly cache: EolianCache<Track[]>;
 
