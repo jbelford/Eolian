@@ -39,6 +39,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getVideo(id: string): Promise<YoutubeVideo> {
     try {
+      logger.debug(`YouTube HTTP: videos.list ${id}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.videos.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
       if (!response.data.items) throw new Error('No results from YouTube');
@@ -59,6 +60,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getPlaylist(id: string): Promise<YoutubePlaylist> {
     try {
+      logger.debug(`YouTube HTTP: playlists.list ${id}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.playlists.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
       if (!response.data.items) throw new Error('No results from YouTube');
@@ -81,6 +83,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     let items: youtube_v3.Schema$PlaylistItem[] = [];
 
     try {
+      logger.debug(`YouTube HTTP: playlistItems.list ${id}`);
       // @ts-ignore Typescript is dumb
       let response = await this.youtube.playlistItems.list({ playlistId: id, part: 'id,snippet,contentDetails' });
       items = response.data.items || [];
@@ -106,6 +109,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
     try {
+      logger.debug(`YouTube HTTP: search.list type:playlist ${query}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({ q: query, maxResults: 5, type: 'playlist', part: 'id,snippet' });
       if (!response.data.items) return [];
@@ -124,6 +128,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
+      logger.debug(`YouTube HTTP: search.list ${query}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({
         q: query,
