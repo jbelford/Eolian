@@ -11,9 +11,10 @@ export interface EolianBot extends Closable {
 
 export interface ContextTextChannel {
   readonly lastMessageId?: string;
-  send(message: string): Promise<ContextMessage>;
+  readonly sendable: boolean;
+  send(message: string): Promise<ContextMessage | undefined>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number>
-  sendEmbed(embed: EmbedMessage): Promise<ContextMessage>;
+  sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined>;
 }
 
 export interface ContextClient {

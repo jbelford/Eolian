@@ -1,10 +1,12 @@
 import { logger } from 'common/logger';
 import { Message, MessageEmbed, ReactionCollector } from 'discord.js';
-import { ContextMessage, ContextMessageButton, EmbedMessage } from './@types';
+import { ContextMessage, ContextMessageButton, ContextTextChannel, EmbedMessage } from './@types';
 
 export class DiscordMessage implements ContextMessage {
 
-  constructor(private readonly message: Message, private readonly collector?: ReactionCollector) { }
+  constructor(private readonly message: Message,
+    private readonly channel: ContextTextChannel,
+    private readonly collector?: ReactionCollector) { }
 
   get text(): string {
     return this.message.content;
@@ -15,27 +17,47 @@ export class DiscordMessage implements ContextMessage {
   }
 
   async reply(message: string): Promise<void> {
-    await this.message.reply(message);
+    if (this.channel.sendable) {
+      try {
+        await this.message.reply(message);
+      } catch (e) {
+        logger.warn('Failed to reply to message: %s', e);
+      }
+    }
   }
 
   async react(emoji: string): Promise<void> {
-    await this.message.react(emoji);
+    try {
+      await this.message.react(emoji);
+    } catch (e) {
+      logger.warn('Failed to react to message: %s', e);
+    }
   }
 
   async edit(message: string): Promise<void> {
-    await this.message.edit(message);
+    await this.editMessage(message);
   }
 
   async editEmbed(embed: EmbedMessage): Promise<void> {
     const rich = mapDiscordEmbed(embed);
-    await this.message.edit(rich);
+    await this.editMessage(rich);
+  }
+
+  private async editMessage(message: string | MessageEmbed) : Promise<void> {
+    if (this.message.editable) {
+      try {
+        await this.message.edit(message);
+      } catch (e) {
+        logger.warn('Failed to edit message: %s', e);
+      }
+    }
   }
 
   getButtons(): ContextMessageButton[] {
     return this.message.reactions.cache.map(reaction => {
       let count = 0;
       if (reaction.count === null) {
-        logger.error('[DiscordMessage::getButtons] Discord.js devs think making everything nullable is good design!');
+        logger.warn('Reaction count was found to be null');
       } else {
         count = reaction.me ? reaction.count - 1 : reaction.count;
       }
@@ -53,7 +75,11 @@ export class DiscordMessage implements ContextMessage {
   async delete(): Promise<void> {
     this.releaseButtons();
     if (this.message.deletable) {
-      await this.message.delete();
+      try {
+        await this.message.delete();
+      } catch (e) {
+        logger.warn('Failed to delete message: %s', e);
+      }
     } else if (this.message.author.id === this.message.client.user?.id) {
       logger.warn(`Failed to delete message created by ourself`)
     }

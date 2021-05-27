@@ -1,7 +1,7 @@
-import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
+import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
-import { DMChannel, Message, MessageCollector, MessageReaction, ReactionCollector, TextChannel, User } from 'discord.js';
+import { DMChannel, Message, MessageCollector, MessageReaction, Permissions, ReactionCollector, TextChannel, User } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButton, MessageButtonOnClickHandler } from './@types';
@@ -19,13 +19,33 @@ export class DiscordTextChannel implements ContextTextChannel {
     return this.channel.lastMessageID || undefined;
   }
 
-  async send(message: string): Promise<ContextMessage> {
-    const discordMessage = await this.channel.send(message);
-    return new DiscordMessage(discordMessage as Message);
+  get sendable(): boolean {
+    let value = !this.channel.deleted;
+    if (this.channel.type === DiscordChannel.TEXT) {
+      const permissions = (this.channel as TextChannel).permissionsFor(this.channel.client.user!);
+      value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES);
+    }
+    return value;
+  }
+
+  async send(message: string): Promise<ContextMessage | undefined> {
+    if (this.sendable) {
+      try {
+        const discordMessage = await this.channel.send(message);
+        return new DiscordMessage(discordMessage as Message, this);
+      } catch (e) {
+        logger.warn('Failed to send message: %s', e);
+      }
+    }
+    return undefined;
   }
 
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
   async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+    if (!this.sendable) {
+      return -1;
+    }
+
     return new Promise((resolve, reject) => {
       let resolved = false;
 
@@ -35,7 +55,9 @@ export class DiscordTextChannel implements ContextTextChannel {
             resolved = true;
             if (sentEmbedPromise) {
               const sentEmbed = await sentEmbedPromise;
-              await sentEmbed.delete();
+              if (sentEmbed) {
+                await sentEmbed.delete();
+              }
             }
             if (!msg) {
               resolve(-1);
@@ -90,11 +112,18 @@ export class DiscordTextChannel implements ContextTextChannel {
     return collector;
   }
 
-  async sendEmbed(embed: EmbedMessage): Promise<ContextMessage> {
-    const rich = mapDiscordEmbed(embed);
-    const message = await this.channel.send(rich) as Message;
-    const collector = embed.buttons ? this.addButtons(message, embed.buttons, embed.buttonUserId) : undefined;
-    return new DiscordMessage(message, collector);
+  async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
+    if (this.sendable) {
+      try {
+        const rich = mapDiscordEmbed(embed);
+        const message = await this.channel.send(rich) as Message;
+        const collector = embed.buttons ? this.addButtons(message, embed.buttons, embed.buttonUserId) : undefined;
+        return new DiscordMessage(message, this, collector);
+      } catch (e) {
+        logger.warn('Failed to send embed message: %s', e);
+      }
+    }
+    return undefined;
   }
 
   private addButtons(message: Message, buttons: MessageButton[], userId?: string): ReactionCollector {
@@ -113,7 +142,7 @@ export class DiscordTextChannel implements ContextTextChannel {
 
         let destroy = false;
         try {
-          destroy = await button.onClick!(new DiscordMessage(reaction.message),
+          destroy = await button.onClick!(new DiscordMessage(reaction.message, this),
               new DiscordUser(user, this.users, PERMISSION.UNKNOWN),
               button.emoji);
         } catch (e) {
@@ -138,7 +167,7 @@ export class DiscordTextChannel implements ContextTextChannel {
           await message.react(button.emoji);
         }
       } catch (e) {
-        logger.warn(`Failed to add button reaction to selection: ${e}`);
+        logger.warn(`Failed to add button reaction to selection: %s`, e);
       }
     })();
 

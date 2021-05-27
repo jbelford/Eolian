@@ -53,7 +53,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
       { emoji: '⬅', onClick: this.prevPageHandler },
       { emoji: '➡', onClick: this.nextPageHandler }
     ];
-    this.message = await this.channel.sendEmbed(embed);
+    this.message = await this.channel.sendEmbed(embed) ?? null;
 
     await messageDelete;
   }
@@ -113,7 +113,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
 export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private track: Track | null = null;
-  private messageCache: ContextMessage | null = null;
+  private message: ContextMessage | null = null;
 
   private channel: ContextTextChannel | null = null;
   private queueAhead = false;
@@ -139,9 +139,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   }
 
   async removeIdle(): Promise<void> {
-    if (this.messageCache) {
-      const temp = this.messageCache;
-      this.messageCache = null;
+    if (this.message) {
+      const temp = this.message;
+      this.message = null;
 
       temp.releaseButtons();
       await temp.editEmbed(createBasicEmbed('**Player has been removed due to idle**'));
@@ -156,19 +156,21 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     if (this.channel) {
       this.track = track;
       const embed = createPlayingEmbed(this.track, this.player.volume);
-      if (!this.messageCache || this.channel.lastMessageId !== this.messageCache.id) {
+      if (!this.message || this.channel.lastMessageId !== this.message.id) {
         embed.buttons = [
-          { emoji: '⏏', onClick: this.lock(this.queueHandler) },
-          { emoji: '⏯', onClick: this.lock(this.onPauseResumeHandler) },
-          { emoji: '⏪', onClick: this.lock(this.backHandler) },
-          { emoji: '⏩', onClick: this.lock(this.skipHandler) },
-          { emoji: '⏹', onClick: this.lock(this.stopHandler) },
+          { emoji: '⏏', onClick: this.queueHandler },
+          { emoji: '⏯', onClick: this.onPauseResumeHandler },
+          { emoji: '⏪', onClick: this.backHandler },
+          { emoji: '⏩', onClick: this.skipHandler },
+          { emoji: '⏹', onClick: this.stopHandler },
         ];
         await this.safeDelete();
-        this.messageCache = await this.channel.sendEmbed(embed);
-        this.queueAhead = false;
+        this.message = await this.channel.sendEmbed(embed) ?? null;
+        if (this.message) {
+          this.queueAhead = false;
+        }
       } else {
-        await this.messageCache.editEmbed(embed);
+        await this.message.editEmbed(embed);
       }
     }
   };
@@ -176,16 +178,16 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private onIdleHandler = () => this.removeIdle();
 
   private onVolumeHandler = async () => {
-    if (this.messageCache && this.track) {
+    if (this.message && this.track) {
       const embed = createPlayingEmbed(this.track, this.player.volume);
-      await this.messageCache.editEmbed(embed);
+      await this.message.editEmbed(embed);
     }
   };
 
   private async safeDelete(): Promise<void> {
-    if (this.messageCache) {
-      const deletePromise = this.messageCache.delete();
-      this.messageCache = null;
+    if (this.message) {
+      const deletePromise = this.message.delete();
+      this.message = null;
       await deletePromise;
     }
   }
@@ -203,6 +205,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
   };
 
+  // Tries to ensure that button presses during an operation will be ignored
   private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {
     return async (msg, usr, emoji) => {
       if (!this.inputLock) {
@@ -217,40 +220,40 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     };
   }
 
-  private onPauseResumeHandler: MessageButtonOnClickHandler = async () => {
+  private onPauseResumeHandler: MessageButtonOnClickHandler = this.lock(async () => {
     if (this.player.paused) {
       await this.player.resume();
     } else {
       await this.player.pause();
     }
     return false;
-  };
+  });
 
-  private backHandler: MessageButtonOnClickHandler = async () => {
+  private backHandler: MessageButtonOnClickHandler = this.lock(async () => {
     if (await this.player.queue.unpop(2)) {
       await this.player.skip();
-      if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
+      if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
         await this.onEndHandler();
       }
     }
     return false;
-  };
+  });
 
-  private skipHandler: MessageButtonOnClickHandler = async () => {
+  private skipHandler: MessageButtonOnClickHandler = this.lock(async () => {
     await this.player.skip();
-    if (this.messageCache && this.channel && this.channel.lastMessageId !== this.messageCache.id) {
+    if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
       await this.onEndHandler();
     }
     return false;
-  };
+  });
 
-  private stopHandler: MessageButtonOnClickHandler = async () => {
+  private stopHandler: MessageButtonOnClickHandler = this.lock(async () => {
     await this.player.stop();
     await this.onEndHandler();
     return false;
-  };
+  });
 
-  private queueHandler: MessageButtonOnClickHandler = async () => {
+  private queueHandler: MessageButtonOnClickHandler = this.lock(async () => {
     if (this.queueAhead) {
       await this.queueDisplay.delete();
       this.queueAhead = false;
@@ -263,6 +266,6 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       }
     }
     return false;
-  };
+  });
 
 }

@@ -30,7 +30,7 @@ export class DownloaderDisplay implements ProgressUpdater {
           if (this.message) {
             await this.message.edit(text);
           } else {
-            this.message = await this.channel.send(text);
+            this.message = await this.channel.send(text) ?? null;
           }
         }
       });

@@ -1,11 +1,11 @@
 import { CommandContext, CommandParsingStrategy } from 'commands/@types';
-import { DiscordChannel, DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
+import { DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { LockManager } from 'data';
 import { AppDatabase, MemoryStore, MusicQueueCache, UsersDb } from 'data/@types';
-import { Channel, Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
+import { Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerState, ServerStateStore } from './@types';
 import { DiscordTextChannel } from './channel';
@@ -91,12 +91,7 @@ export class DiscordEolianBot implements EolianBot {
           await this.lockManager.lock(message.author.id);
           await this.onBotInvoked(message);
         } catch (e) {
-          if (e instanceof EolianUserError) {
-            await message.reply(e.message);
-          } else {
-            logger.warn(`Unhandled error occured during request: %s`, e);
-            await message.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
-          }
+          logger.warn(`Unhandled error occured during request: %s`, e);
         } finally {
           await this.lockManager.unlock(message.author.id);
         }
@@ -109,16 +104,18 @@ export class DiscordEolianBot implements EolianBot {
 
     logger.debug(`Message event received: '%s'`, content);
 
-    if (!this.hasSendPermission(channel)) {
-      author.send(`I do not have permission to send messages to the channel.`);
+    // @ts-ignore
+    const context: CommandContext = {};
+    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users);
+
+    if (!context.channel.sendable) {
+      author.send(`I can't send messages to that channel.`);
       return;
     }
 
     const permission = getPermissionLevel(author, member);
     const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
 
-    // @ts-ignore
-    const context: CommandContext = {};
 
     if (channel instanceof DMChannel) {
       if (!command.dmAllowed) {
@@ -134,22 +131,23 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     context.user = new DiscordUser(author, this.users, permission, member);
-    context.message = new DiscordMessage(message);
-    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users);
+    context.message = new DiscordMessage(message, context.channel);
 
-    await command.execute(context, options);
-  }
+    try {
+      await command.execute(context, options);
+    } catch (e) {
+      const userError = (e instanceof EolianUserError);
 
-  private hasSendPermission(channel: Channel) {
-    switch (channel.type) {
-      case DiscordChannel.TEXT: {
-        const permissions = (channel as TextChannel).permissionsFor(this.client.user!);
-        return !!permissions && permissions.has(Permissions.FLAGS.SEND_MESSAGES as number);
+      if (context.channel.sendable) {
+        const text = userError ? (e as EolianUserError).message : `Hmm.. I tried to do that but something in my internals is broken. Try again later.`;
+        await message.reply(text);
+      } else {
+        await author.send(`Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`);
       }
-      case DiscordChannel.DM:
-        return true;
-      default:
-        return false;
+
+      if (!userError) {
+        throw e;
+      }
     }
   }
 
