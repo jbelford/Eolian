@@ -164,7 +164,9 @@ export class DiscordTextChannel implements ContextTextChannel {
     (async () => {
       try {
         for (const button of buttons) {
-          await message.react(button.emoji);
+          if (!message.deleted) {
+            await message.react(button.emoji);
+          }
         }
       } catch (e) {
         logger.warn(`Failed to add button reaction to selection: %s`, e);
