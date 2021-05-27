@@ -9,7 +9,7 @@ import prism, { VolumeTransformer } from 'prism-media';
 import { Duplex, PassThrough, Readable, Transform } from 'stream';
 
 
-export class VoiceConnectionProvider {
+export class DiscordVoiceConnectionProvider {
 
   constructor(
     private readonly client: Client,
@@ -54,7 +54,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private dispatcher: StreamDispatcher | null = null;
 
   constructor(
-    readonly connectionProvider: VoiceConnectionProvider,
+    readonly connectionProvider: DiscordVoiceConnectionProvider,
     readonly queue: ServerQueue) {
     super();
   }

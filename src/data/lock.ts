@@ -1,5 +1,5 @@
 import { InMemoryCache } from 'data';
-import { EolianCache } from 'data/@types';
+import { EolianCache } from './@types';
 
 export class UserLockManager {
 
