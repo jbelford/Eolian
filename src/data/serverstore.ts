@@ -28,7 +28,6 @@ export class InMemoryServerStateStore implements ServerStateStore {
       logger.debug(`${key} guild state expired`);
       if (value.player.idle && value.queue.idle) {
         logger.debug(`${key} deleting idle guild state`);
-        await this.cache.del(key);
         await Promise.allSettled([
           value.player.close(),
           value.display.player.close(),
@@ -42,6 +41,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
         } else if (value.queue.idle) {
           await value.display.queue.removeIdle();
         }
+        await this.cache.set(key, value);
       }
     } catch (e) {
       logger.warn(`Error occured clearing guild state ${e}`);
