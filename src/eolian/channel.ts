@@ -106,7 +106,7 @@ export class DiscordTextChannel implements ContextTextChannel {
       && (!userId || userId === user.id)
       && reaction.emoji.name in buttonMap
       && !!buttonMap[reaction.emoji.name].onClick,
-      { idle: 60000 * 15, dispose: true });
+      { idle: 60000 * 60 * 2, dispose: true });
 
     const reactionEventHandler = async (reaction: MessageReaction, user: User) => {
         const button = buttonMap[reaction.emoji.name];
