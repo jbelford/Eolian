@@ -189,14 +189,18 @@ export class SpotifyApiImpl implements SpotifyApi {
 
     // Spotify has a format like "Track name - modifier", Ex: "My Song - accoustic" or "My Song - remix"
     // YouTube its more common to do "My Song (accoustic)". So we map to this to improve odds of searching right thing
-    const reg = /^\s*(.+)\s+-\s+([^-]+)\s*$/i
+    const reg = /^\s*(?<title>.*[^\s])\s+-\s+(?<extra>[^-]+)\s*$/i;
     const match = reg.exec(trackCopy.title);
-    if (match) {
-      const secondPart = match[2].replace(/\s*remastered\s*/i, '');
-      if (secondPart.length) {
-        trackCopy.title = `${match[1]} (${secondPart})`;
+    if (match && match.groups) {
+      const title = match.groups['title'];
+      const extra = match.groups['extra'];
+
+      // Remove 'remastered' as it often leads to flaky search results
+      const noRemastered = extra.replace(/\s*remastered\s*/i, '');
+      if (noRemastered.length) {
+        trackCopy.title = `${title} (${extra})`;
       } else {
-        trackCopy.title = match[1];
+        trackCopy.title = title;
       }
     }
 
