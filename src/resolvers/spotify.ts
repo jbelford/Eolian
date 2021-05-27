@@ -2,7 +2,7 @@ import { spotify } from 'api';
 import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
+import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
@@ -60,7 +60,7 @@ export class SpotifyAlbumResolver implements SourceResolver {
     const idx = await this.context.channel.sendSelection(
       `Select the album you want (resolved via Spotify)`, options, this.context.user);
     if (idx < 0) {
-      throw new EolianUserError('Nothing selected. Cancelled request.');
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
     const album = albums[idx];
@@ -85,7 +85,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
         playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
         this.context.user);
       if (idx < 0) {
-        throw new EolianUserError('Nothing selected. Cancelled request.');
+        throw new EolianUserError(MESSAGES.NO_SELECTION);
       }
       playlist = playlists[idx];
     }
@@ -130,7 +130,7 @@ export class SpotifyArtistResolver implements SourceResolver {
       artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
       this.context.user);
     if (idx < 0) {
-      throw new EolianUserError('Nothing selected. Cancelled request.');
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
     return createSpotifyArtist(artists[idx]);

@@ -2,7 +2,7 @@ import { soundcloud } from 'api';
 import { SoundCloudPlaylist, SoundCloudResource, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
+import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
 import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
@@ -47,7 +47,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
         playlists.map(playlist => ({ name: playlist.title, subname: playlist.user.username, url: playlist.permalink_url })),
         this.context.user);
       if (idx < 0) {
-        throw new EolianUserError('Nothing selected. Cancelled request.');
+        throw new EolianUserError(MESSAGES.NO_SELECTION);
       }
       playlist = playlists[idx];
     }
@@ -96,7 +96,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
       users.map(user => ({ name: user.username, url: user.permalink_url })),
       this.context.user);
     if (idx < 0) {
-      throw new EolianUserError('Nothing selected. Cancelled request.');
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
     return createSoundCloudUser(users[idx]);
@@ -144,7 +144,7 @@ export class SoundCloudSongResolver implements SourceResolver {
       songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
       this.context.user);
     if (idx < 0) {
-      throw new EolianUserError('Nothing selected. Cancelled request.');
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
     return createSoundCloudSong(songs[idx]);

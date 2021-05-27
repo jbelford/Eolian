@@ -3,7 +3,7 @@ import { SoundCloudUser, SpotifyResourceType } from 'api/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION, SOURCE } from 'common/constants';
+import { MESSAGES, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -67,8 +67,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
   const options: SelectionOption[] = soundCloudUsers.map(user => ({ name: user.username, subname: user.permalink_url, url: user.permalink_url }));
   const idx = await context.channel.sendSelection(question, options, context.user);
   if (idx < 0) {
-    context.message.reply('The selection has been cancelled');
-    return;
+    throw new EolianUserError(MESSAGES.NO_SELECTION);
   }
 
   await handleSoundCloud(context, soundCloudUsers[idx]);

@@ -2,6 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   let volume = context.server!.player.volume;
@@ -12,8 +13,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     volume = Math.max(0, volume - 0.1);
   } else if (options.NUMBER) {
     if (options.NUMBER < 0 || options.NUMBER > 100) {
-      await context.message.reply('Volume must be between 0-100!');
-      return;
+      throw new EolianUserError('Volume must be between 0-100!');
     }
     volume = options.NUMBER / 100;
   }

@@ -2,7 +2,7 @@ import { youtube } from 'api';
 import { Track, YoutubePlaylist, YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
+import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier, IdentifierType } from 'data/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
@@ -56,7 +56,9 @@ export class YouTubePlaylistResolver implements SourceResolver {
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
       this.context.user);
-    if (idx < 0) throw new EolianUserError('Nothing selected. Cancelled request.');
+    if (idx < 0) {
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
+    }
 
     const playlist = playlists[idx];
     return createYouTubePlaylist(playlist);
@@ -78,7 +80,7 @@ export class YouTubeVideoResolver implements SourceResolver {
       videos.map(video => ({ name: video.name, url: video.url })),
       this.context.user);
     if (idx < 0) {
-      throw new EolianUserError('Nothing selected. Cancelled request.');
+      throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
     return createYouTubeVideo(videos[idx]);

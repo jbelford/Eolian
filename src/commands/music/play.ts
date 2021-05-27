@@ -2,6 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 
@@ -9,8 +10,7 @@ import { getSourceFetcher, getSourceResolver } from 'resolvers';
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.user.getVoice();
   if (!userVoice) {
-    await context.message.reply('You need to be in a voice channel!');
-    return;
+    throw new EolianUserError('You need to be in a voice channel!');
   }
 
   let added = false;
@@ -31,8 +31,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const next = await context.server!.queue.peek();
   if (!next) {
-    await context.message.reply('There are no songs in the queue!');
-    return;
+    throw new EolianUserError('There are no songs in the queue!');
   }
 
   let reactionChain = Promise.resolve();

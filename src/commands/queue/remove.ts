@@ -2,16 +2,15 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 import { getRangeOption, truthySum } from 'common/util';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT);
   if (sum === 0) {
-    await context.message.reply('You must provide TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!');
-    return;
+    throw new EolianUserError('You must provide TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!');
   } else if (sum > 1) {
-    await context.message.reply('You must provide only 1 of TOP, BOTTOM, or NEXT keywords!');
-    return;
+    throw new EolianUserError('You must provide only 1 of TOP, BOTTOM, or NEXT keywords!');
   }
 
   await context.message.react('🌪');

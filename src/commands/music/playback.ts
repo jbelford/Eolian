@@ -1,6 +1,7 @@
 import { Command, CommandContext } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { PERMISSION } from 'common/constants';
+import { MESSAGES, PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 
 
 async function execute(context: CommandContext): Promise<void> {
@@ -8,6 +9,8 @@ async function execute(context: CommandContext): Promise<void> {
   if (voice) {
     await voice.disconnect();
     await context.message.react('😢');
+  } else {
+    throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
 }
 
@@ -31,7 +34,7 @@ async function executeSkip(context: CommandContext): Promise<void> {
     await voice.player.skip();
     await context.message.react('⏩');
   } else {
-    await context.message.reply("I'm not playing anything right now!");
+    throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
 }
 
@@ -57,7 +60,7 @@ async function executeBack(context: CommandContext): Promise<void> {
     }
     await context.message.react('⏪');
   } else {
-    await context.message.reply("There are no previous songs!");
+    throw new EolianUserError("There are no previous songs!");
   }
 }
 
@@ -78,13 +81,13 @@ async function executePause(context: CommandContext): Promise<void> {
   const voice = context.client.getVoice();
   if (voice) {
     if (voice.player.paused) {
-      await context.message.reply('Playback is already paused!');
+      throw new EolianUserError('Playback is already paused!');
     } else {
       await voice.player.pause();
       await context.message.react('⏸');
     }
   } else {
-    await context.message.reply("I'm not playing anything right now!");
+    throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
 }
 
@@ -108,10 +111,10 @@ async function executeResume(context: CommandContext): Promise<void> {
       await voice.player.resume();
       await context.message.react('▶');
     } else {
-      await context.message.reply('Playback is not paused!');
+      throw new EolianUserError('Playback is not paused!');
     }
   } else {
-    await context.message.reply("I'm not playing anything right now!");
+    throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
 }
 
@@ -134,7 +137,7 @@ async function executeShowPlayer(context: CommandContext): Promise<void> {
     context.server!.display.player.setChannel(context.channel);
     await context.server!.display.player.refresh();
   } else {
-    await context.message.reply("I'm not playing anything right now!");
+    throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
 }
 
