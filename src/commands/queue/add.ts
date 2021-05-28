@@ -13,7 +13,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (sum === 0 && !options.MY) {
     throw new EolianUserError('You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. Please try again.');
   } else if (sum > 1) {
-    throw new EolianUserError('You can only include 1 QUERY, URL, or IDENTIFIER pattern. Please try again.');
+    throw new EolianUserError('You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again.');
   }
 
   let identifier: Identifier | null = null;
