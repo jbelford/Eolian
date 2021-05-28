@@ -104,7 +104,7 @@ export interface SpotifyPlaylistFull extends SpotifyPlaylist {
 }
 
 export interface SpotifyPlaylistTrack {
-  track: SpotifyTrack
+  track?: SpotifyTrack
 }
 
 export interface SpotifyAlbum {

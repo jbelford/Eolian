@@ -224,7 +224,7 @@ export class SpotifyFetcher implements SourceFetcher {
 
     const playlist = await spotify.getPlaylistTracks(id, progress, rangeFn);
     const defaultForLocals = playlist.images.length ? playlist.images[0].url : undefined;
-    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track, undefined, defaultForLocals));
+    return playlist.tracks.items.filter(item => !!item.track).map(item => mapSpotifyTrack(item.track!, undefined, defaultForLocals));
   }
 
   async fetchAlbum(id: string): Promise<Track[]> {
