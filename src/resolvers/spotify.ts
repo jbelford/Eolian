@@ -177,8 +177,11 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
   };
 }
 
-function mapSpotifyTrack(track: SpotifyTrack, artwork?: string): Track {
-  if (!artwork && track.album.images.length) {
+function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, playlistArtwork?: string): Track {
+  let artwork: string | undefined;
+  if (track.is_local && playlistArtwork) {
+    artwork = playlistArtwork;
+  } else if (!albumArtwork && track.album.images.length) {
     artwork = track.album.images[0].url;
   }
   return {
@@ -220,7 +223,8 @@ export class SpotifyFetcher implements SourceFetcher {
     }
 
     const playlist = await spotify.getPlaylistTracks(id, progress, rangeFn);
-    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track));
+    const defaultForLocals = playlist.images.length ? playlist.images[0].url : undefined;
+    return playlist.tracks.items.map(playlistTrack => mapSpotifyTrack(playlistTrack.track, undefined, defaultForLocals));
   }
 
   async fetchAlbum(id: string): Promise<Track[]> {

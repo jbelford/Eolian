@@ -147,6 +147,7 @@ export interface SpotifyTrack {
   name: string;
   album: SpotifyAlbum;
   artists: SpotifyArtist[];
+  is_local: boolean;
   duration_ms: number;
   uri: string;
   external_urls: SpotifyExternalUrls;
