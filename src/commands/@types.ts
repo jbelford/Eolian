@@ -64,7 +64,7 @@ export interface CommandOptions {
   TRACKS?: boolean;
   TOP?: RangeArgument;
   BOTTOM?: RangeArgument;
-  QUERY?: string;
+  SEARCH?: string;
   IDENTIFIER?: string;
   NUMBER?: number;
   URL?: UrlArgument;
@@ -119,7 +119,7 @@ export interface Keywords {
   TRACKS: Keyword<boolean>;
   TOP: Keyword<RangeArgument>;
   BOTTOM: Keyword<RangeArgument>;
-  QUERY: Keyword<string>;
+  SEARCH: Keyword<string>;
   IDENTIFIER: Keyword<string>;
   URL: Keyword<UrlArgument>;
   NUMBER: Keyword<number>;

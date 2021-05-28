@@ -19,8 +19,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  if (options.URL && options.QUERY) {
-    throw new EolianUserError(`You specified both a url and a query! Please try again with only one of those.`);
+  if (options.URL && options.SEARCH) {
+    throw new EolianUserError(`You specified both URL and SEARCH pattern! Please try again with only one of those.`);
   }
 
   const resource = await getSourceResolver(context, options).resolve();
@@ -41,7 +41,7 @@ export const IDENTIFY_COMMAND: Command = {
   permission: PERMISSION.USER,
   dmAllowed: true,
   keywords: [
-    KEYWORDS.QUERY, KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
+    KEYWORDS.SEARCH, KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
     KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.CLEAR
   ],
   usage: [

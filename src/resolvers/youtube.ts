@@ -48,11 +48,11 @@ export class YouTubePlaylistResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('Missing query for YouTube playlist.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('Missing search query for YouTube playlist.');
     }
 
-    const playlists = await youtube.searchPlaylists(this.params.QUERY);
+    const playlists = await youtube.searchPlaylists(this.params.SEARCH);
     const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
       this.context.user);
@@ -71,11 +71,11 @@ export class YouTubeVideoResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('Missing query for YouTube song.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('Missing search query for YouTube song.');
     }
 
-    const videos = await youtube.searchVideos(this.params.QUERY);
+    const videos = await youtube.searchVideos(this.params.SEARCH);
     const idx = await this.context.channel.sendSelection('Choose a YouTube video',
       videos.map(video => ({ name: video.name, url: video.url })),
       this.context.user);

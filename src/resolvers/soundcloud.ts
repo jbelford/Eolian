@@ -56,8 +56,8 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
   }
 
   private async searchSoundCloudPlaylists(): Promise<SoundCloudPlaylist[]> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('You must specify a query.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('You must specify a SEARCH query.');
     }
 
     let playlists: SoundCloudPlaylist[];
@@ -67,9 +67,9 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
       if (!user.soundcloud) {
         throw new EolianUserError(`I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
       }
-      playlists = await soundcloud.searchPlaylists(this.params.QUERY, user.soundcloud);
+      playlists = await soundcloud.searchPlaylists(this.params.SEARCH, user.soundcloud);
     } else {
-      playlists = await soundcloud.searchPlaylists(this.params.QUERY);
+      playlists = await soundcloud.searchPlaylists(this.params.SEARCH);
     }
 
     return playlists;
@@ -82,8 +82,8 @@ export class SoundCloudArtistResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (this.params.QUERY) {
-      return this.resolveArtistQuery(this.params.QUERY);
+    if (this.params.SEARCH) {
+      return this.resolveArtistQuery(this.params.SEARCH);
     } else if (this.params.MY) {
       return this.resolveUser();
     }
@@ -135,11 +135,11 @@ export class SoundCloudSongResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('Missing query for SoundCloud song.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('Missing SEARCH query for SoundCloud song.');
     }
 
-    const songs = await soundcloud.searchSongs(this.params.QUERY);
+    const songs = await soundcloud.searchSongs(this.params.SEARCH);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud track',
       songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
       this.context.user);

@@ -231,8 +231,8 @@ Fetching using TOP likes will execute much faster.`,
     priority: 5,
     matchText: (text: string) => matchGroup(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
   },
-  QUERY: {
-    name: 'QUERY',
+  SEARCH: {
+    name: 'SEARCH',
     details: 'Used for searching.',
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],

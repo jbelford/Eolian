@@ -8,9 +8,9 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
 
-async function execute(context: CommandContext, { QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
+async function execute(context: CommandContext, { SEARCH: QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
   if (QUERY && URL) {
-    throw new EolianUserError(`You provided both a query and a url. Please provide just one of those items.`);
+    throw new EolianUserError(`You provided both SEARCH and URL patterns. Please provide just one of those items.`);
   }
 
   if (URL) {
@@ -21,7 +21,7 @@ async function execute(context: CommandContext, { QUERY, URL, SPOTIFY }: Command
     }
     await handleSoundCloudQuery(context, QUERY);
   } else {
-    throw new EolianUserError('You must provide valid url or a query for me to link your account to!');
+    throw new EolianUserError('You must provide valid URL or SEARCH for me to link your account to!');
   }
 }
 
@@ -83,10 +83,10 @@ async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCl
 export const LINK_COMMAND: Command = {
   name: 'link',
   category: ACCOUNT_CATEGORY,
-  details: 'Link your Spotify or SoundCloud account.\n If a query is provided, will search SoundCloud.',
+  details: 'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',
   permission: PERMISSION.USER,
   dmAllowed: true,
-  keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD, KEYWORDS.QUERY, KEYWORDS.URL],
+  keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SEARCH, KEYWORDS.URL],
   usage: [
     {
       title: `Search for SoundCloud user to link`,

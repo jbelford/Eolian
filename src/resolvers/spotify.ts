@@ -46,11 +46,11 @@ export class SpotifyAlbumResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('Missing query for album.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('Missing search query for album.');
     }
 
-    const albums = await spotify.searchAlbums(this.params.QUERY);
+    const albums = await spotify.searchAlbums(this.params.SEARCH);
 
     const options: SelectionOption[] = albums.map(album => ({
       name: album.name,
@@ -94,8 +94,8 @@ export class SpotifyPlaylistResolver implements SourceResolver {
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('You must specify a query.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('You must specify a search query.');
     }
 
     let playlists: SpotifyPlaylist[];
@@ -105,9 +105,9 @@ export class SpotifyPlaylistResolver implements SourceResolver {
       if (!user.spotify) {
         throw new EolianUserError(`I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
       }
-      playlists = await spotify.searchPlaylists(this.params.QUERY, user.spotify);
+      playlists = await spotify.searchPlaylists(this.params.SEARCH, user.spotify);
     } else {
-      playlists = await spotify.searchPlaylists(this.params.QUERY);
+      playlists = await spotify.searchPlaylists(this.params.SEARCH);
     }
 
     return playlists;
@@ -121,11 +121,11 @@ export class SpotifyArtistResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (!this.params.QUERY) {
-      throw new EolianUserError('Missing query for Spotify artist.');
+    if (!this.params.SEARCH) {
+      throw new EolianUserError('Missing search query for Spotify artist.');
     }
 
-    const artists = await spotify.searchArtists(this.params.QUERY);
+    const artists = await spotify.searchArtists(this.params.SEARCH);
     const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
       this.context.user);

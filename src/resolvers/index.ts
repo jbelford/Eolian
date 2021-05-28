@@ -93,8 +93,8 @@ function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
 }
 
 export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
-  if (params.URL && (params.QUERY || params.MY)) {
-    throw new EolianUserError('You must specify only an URL, QUERY or MY.');
+  if (params.URL && (params.SEARCH || params.MY)) {
+    throw new EolianUserError('You must specify only an URL, SEARCH or MY.');
   }
 
   return params.URL
