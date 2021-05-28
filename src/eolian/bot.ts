@@ -108,32 +108,33 @@ export class DiscordEolianBot implements EolianBot {
     const context: CommandContext = {};
     context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users);
 
-    if (!context.channel.sendable) {
-      author.send(`I can't send messages to that channel.`);
-      return;
-    }
+    try {
 
-    const permission = getPermissionLevel(author, member);
-    const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
-
-
-    if (channel instanceof DMChannel) {
-      if (!command.dmAllowed) {
-        author.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
+      if (!context.channel.sendable) {
+        author.send(`I can't send messages to that channel.`);
         return;
       }
-      context.client = new DiscordClient(this.client);
-    } else if (guild) {
-      context.server = await this.getGuildState(guild.id);
-      context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
-    } else {
-      throw new Error('Guild is missing from text message');
-    }
 
-    context.user = new DiscordUser(author, this.users, permission, member);
-    context.message = new DiscordMessage(message, context.channel);
+      const permission = getPermissionLevel(author, member);
+      const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
 
-    try {
+
+      if (channel instanceof DMChannel) {
+        if (!command.dmAllowed) {
+          author.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
+          return;
+        }
+        context.client = new DiscordClient(this.client);
+      } else if (guild) {
+        context.server = await this.getGuildState(guild.id);
+        context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
+      } else {
+        throw new Error('Guild is missing from text message');
+      }
+
+      context.user = new DiscordUser(author, this.users, permission, member);
+      context.message = new DiscordMessage(message, context.channel);
+
       await command.execute(context, options);
     } catch (e) {
       const userError = (e instanceof EolianUserError);
