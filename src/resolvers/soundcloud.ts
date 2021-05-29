@@ -5,7 +5,7 @@ import { ProgressUpdater } from 'common/@types';
 import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
-import { Identifier, IdentifierType, SoundCloudUserIdentifier } from 'data/@types';
+import { Identifier, IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'eolian';
 import { ContextTextChannel } from 'eolian/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './@types';
@@ -171,14 +171,10 @@ function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
 }
 
 function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
-  // @ts-ignore
-  const identifier: SoundCloudUserIdentifier = createIdentifier(user);
-  identifier.likes = user.public_favorites_count;
-
   return {
     name: user.username,
     authors: [user.username],
-    identifier
+    identifier: createIdentifier(user)
   }
 }
 
@@ -206,7 +202,7 @@ function mapSoundCloudTrack(track: SoundCloudTrack): Track {
     poster: track.user.username,
     src: SOURCE.SOUNDCLOUD,
     url: track.permalink_url,
-    stream: track.streamable ? track.stream_url : undefined,
+    stream: track.streamable && track.access === 'playable' ? track.stream_url : undefined,
     title: track.title,
     artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500')
   };
@@ -240,7 +236,7 @@ export class SoundCloudFetcher implements SourceFetcher {
 
   private async fetchPlaylist(): Promise<Track[]> {
     const playlist = await soundcloud.getPlaylist(+this.identifier.id);
-    return playlist.tracks?.map(mapSoundCloudTrack) ?? [];
+    return playlist.tracks.map(mapSoundCloudTrack);
   }
 
   private async fetchTrack(): Promise<Track> {
@@ -253,8 +249,14 @@ export class SoundCloudFetcher implements SourceFetcher {
   }
 
   private async fetchUserFavorites(): Promise<Track[]> {
+    const user = await soundcloud.getUser(+this.identifier.id);
+    const { max, downloader } = this.getListOptions('Fetching likes', user.public_favorites_count);
+    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, downloader);
+    return tracks.map(mapSoundCloudTrack);
+  }
+
+  private getListOptions(downloaderName: string, max: number): { max: number, downloader?: ProgressUpdater } {
     let downloader: ProgressUpdater | undefined;
-    let max = (this.identifier as SoundCloudUserIdentifier).likes;
 
     const range = getRangeOption(this.params, max);
     if (range) {
@@ -262,12 +264,10 @@ export class SoundCloudFetcher implements SourceFetcher {
     }
 
     if (this.channel && max > 300) {
-      downloader = new DownloaderDisplay(this.channel, 'Fetching likes');
+      downloader = new DownloaderDisplay(this.channel, downloaderName);
     }
 
-    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, downloader);
-
-    return tracks.map(mapSoundCloudTrack);
+    return { max, downloader };
   }
 
 }

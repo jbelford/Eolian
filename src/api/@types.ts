@@ -12,7 +12,6 @@ export interface SoundCloudApi extends StreamFetcher {
   searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]>;
   resolve(url: string): Promise<SoundCloudResource>;
   resolveUser(url: string): Promise<SoundCloudUser>;
-  resolvePlaylist(url: string): Promise<SoundCloudPlaylist>;
   getUser(id: number): Promise<SoundCloudUser>;
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
@@ -39,17 +38,19 @@ export interface SoundCloudUser extends SoundCloudResource {
   avatar_url: string;
   public_favorites_count: number;
   followers_count: number;
+  track_count: number;
 }
 
 export interface SoundCloudPlaylist extends SoundCloudResource {
   artwork_url: string;
-  tracks?: SoundCloudTrack[];
+  tracks: SoundCloudTrack[];
   track_count: number;
   title: string;
   user: SoundCloudUser;
 }
 
 export interface SoundCloudTrack extends SoundCloudResource {
+  access: 'playable' | 'preview' | 'blocked';
   streamable: boolean;
   duration: number;
   stream_url: string;
@@ -58,8 +59,8 @@ export interface SoundCloudTrack extends SoundCloudResource {
   title: string;
 }
 
-export interface SoundCloudPaginatedTracks {
-  collection: SoundCloudTrack[];
+export interface SoundCloudPaginatedResult<T> {
+  collection: T[];
   next_href: string;
 }
 

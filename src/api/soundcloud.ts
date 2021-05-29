@@ -6,9 +6,12 @@ import { logger } from 'common/logger';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudPaginatedTracks, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track } from './@types';
+import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track } from './@types';
 
 const URL = 'https://api.soundcloud.com';
+const TRACKS_PARAMS = {
+  access: 'playable,blocked,preview'
+};
 
 export class SoundCloudApiImpl implements SoundCloudApi {
 
@@ -16,8 +19,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
-      const tracks: SoundCloudTrack[] = await this.get('tracks', { q: query, access: 'playable,blocked', limit });
-      return tracks.slice(0, limit);
+      return await this.getPaginatedItems<SoundCloudTrack>('tracks', { params: { ...TRACKS_PARAMS, q: query }, total: limit, requestLimit: 1 });
     } catch (e) {
       logger.warn(`Failed to search SoundCloud songs: '${query}' limit: '${limit}'`);
       throw e;
@@ -26,8 +28,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async searchUser(query: string, limit = 5): Promise<SoundCloudUser[]> {
     try {
-      const users: SoundCloudUser[] = await this.get('users', { q: query, limit });
-      return users.slice(0, limit);
+      return await this.getPaginatedItems<SoundCloudUser>('users', { params: { q: query }, total: limit, requestLimit: 1 });
     } catch (e) {
       logger.warn(`Failed to search SoundCloud users: query: '${query}' limit: '${limit}'`);
       throw e;
@@ -36,9 +37,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
     try {
-      const playlists: SoundCloudPlaylist[] = await this.get(userId ? `users/${userId}/playlists` : 'playlists',
-        { q: query, limit: 5 });
-      return playlists.slice(0, 5);
+      const path = userId ? `users/${userId}/playlists` : 'playlists'
+      return await this.getPaginatedItems<SoundCloudPlaylist>(path, { params: { ...TRACKS_PARAMS, q: query }, total: 5, requestLimit: 1 });
     } catch (e) {
       logger.warn(`Failed to search SoundCloud playlists: query: '${query}', userId: '${userId}'`);
       throw e;
@@ -71,14 +71,6 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     return resource as SoundCloudUser;
   }
 
-  async resolvePlaylist(url: string): Promise<SoundCloudPlaylist> {
-    const resource = await this._resolve(url, { representation: 'compact '});
-    if (resource.kind !== 'playlist') {
-      throw new EolianUserError('The url provided is not a SoundCloud playlist');
-    }
-    return resource as SoundCloudPlaylist;
-  }
-
   async getUser(id: number): Promise<SoundCloudUser> {
     try {
       const user: SoundCloudUser = await this.get(`users/${id}`);
@@ -101,7 +93,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getPlaylist(id: number): Promise<SoundCloudPlaylist> {
     try {
-      return await this.get<SoundCloudPlaylist>(`playlists/${id}`, { access: 'playable,blocked' });
+      return await this.get<SoundCloudPlaylist>(`playlists/${id}`, TRACKS_PARAMS);
     } catch (e) {
       logger.warn(`Failed to fetch SoundCloud playlist: id: ${id}`);
       throw e;
@@ -110,7 +102,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getUserTracks(id: number): Promise<SoundCloudTrack[]> {
     try {
-      return await this.get<SoundCloudTrack[]>(`users/${id}/tracks`, { access: 'playable,blocked' });
+      const user = await this.getUser(id);
+      return await this.getPaginatedItems<SoundCloudTrack>(`users/${id}/tracks`, { total: user.track_count, params: TRACKS_PARAMS });
     } catch (e) {
       logger.warn(`Failed to fetch SoundCloud user's track: id: ${id}`);
       throw e;
@@ -119,28 +112,44 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getUserFavorites(id: number, max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]> {
     try {
-      let tracks: SoundCloudTrack[] = [];
-
-      progress?.init(max);
-
-      let result = await this.get<SoundCloudPaginatedTracks>(`users/${id}/likes/tracks`, { access: 'playable,blocked', linked_partitioning: true, limit: 200 });
-      tracks = tracks.concat(result.collection);
-
-      progress?.update(tracks.length);
-
-      while (result.next_href && (!max || tracks.length < max)) {
-        result = await this.getUri<SoundCloudPaginatedTracks>(`${result.next_href}&client_id=${this.token}`);
-        tracks = tracks.concat(result.collection);
-        progress?.update(tracks.length);
-      }
-
-      await progress?.done();
-
-      return tracks;
+      return await this.getPaginatedItems<SoundCloudTrack>(`users/${id}/likes/tracks`, { total: max, progress, params: TRACKS_PARAMS });
     } catch (e) {
       logger.warn(`Failed to fetch SoundCloud user's liked tracks: ${id}`);
       throw e;
     }
+  }
+
+  private async getPaginatedItems<T>(path: string, options: GetPaginatedItemsOptions = {}): Promise<T[]> {
+    let items: T[] = [];
+
+    options.progress?.init(options.total);
+
+    const params = options.params ?? {};
+
+    let limit = 200;
+    if (options.total) {
+      limit = Math.min(limit, options.total);
+    }
+    let result = await this.get<SoundCloudPaginatedResult<T>>(path, { ...params, linked_partitioning: true, limit });
+    items = items.concat(result.collection);
+
+    options.progress?.update(items.length);
+
+    let requests = 1;
+    while (result.next_href && (!options.total || items.length < options.total) && (!options.requestLimit || requests < options.requestLimit)) {
+      result = await this.getUri<SoundCloudPaginatedResult<T>>(`${result.next_href}&client_id=${this.token}`);
+      items = items.concat(result.collection);
+      options.progress?.update(items.length);
+      requests++;
+    }
+
+    await options.progress?.done();
+
+    if (options.total && items.length > options.total) {
+      items = items.slice(0, options.total);
+    }
+
+    return items;
   }
 
   getStream(track: Track): Promise<StreamData | undefined> {
@@ -183,3 +192,10 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   }
 
 }
+
+type GetPaginatedItemsOptions = {
+  params?: any;
+  total?: number;
+  requestLimit?: number;
+  progress?: ProgressUpdater;
+};
