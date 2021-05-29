@@ -152,10 +152,12 @@ export class SoundCloudSongResolver implements SourceResolver {
 }
 
 function createSoundCloudPlaylist(playlist: SoundCloudPlaylist): ResolvedResource {
+  const tracks = playlist.track_count === playlist.tracks?.length ? playlist.tracks.map(mapSoundCloudTrack) : undefined;
   return {
     name: playlist.title,
     authors: [playlist.user.username],
-    identifier: createIdentifier(playlist)
+    identifier: createIdentifier(playlist),
+    tracks
   };
 }
 
