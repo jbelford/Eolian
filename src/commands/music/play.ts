@@ -17,13 +17,18 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (options.SEARCH || options.URL) {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      await context.channel.send(`📍 Selected **${resource.name}** by **${resource.authors.join(',')}**`
-        + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
-        + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+      const authors = resource.authors.join(',');
+      const typeName = getEnumName(IdentifierType, resource.identifier.type);
+      const sourceName = getEnumName(SOURCE, resource.identifier.src);
+      await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
 
-      const { tracks } = await getSourceFetcher(resource.identifier, options, context.channel).fetch();
-      if (tracks.length > 0) {
-        await context.server!.queue.add(tracks, true);
+      if (!resource.tracks) {
+        const fetchResult = await getSourceFetcher(resource.identifier, options, context.channel).fetch();
+        resource.tracks = fetchResult.tracks;
+      }
+
+      if (resource.tracks.length > 0) {
+        await context.server!.queue.add(resource.tracks, true);
         added = true;
       }
     }

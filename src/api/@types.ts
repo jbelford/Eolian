@@ -66,6 +66,7 @@ export interface SoundCloudPaginatedTracks {
 export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
+  getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
   getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: SpotifyRangeFactory): Promise<SpotifyPlaylistFull>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;

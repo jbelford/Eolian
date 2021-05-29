@@ -1,3 +1,4 @@
+import { Track } from 'api/@types';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
@@ -17,27 +18,37 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   let identifier: Identifier | null = null;
+  let tracks: Track[] | undefined;
   if (options.IDENTIFIER) {
     const user = await context.user.get();
     if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
     identifier = user.identifiers[options.IDENTIFIER];
-    await context.channel.send(`🔎 Resolved identifier ${identifier.url}`
-      + `\n(**${getEnumName(IdentifierType, identifier.type)}** from **${getEnumName(SOURCE, identifier.src)}**)`);
+
+    const typeName = getEnumName(IdentifierType, identifier.type);
+    const srcName = getEnumName(SOURCE, identifier.src);
+    await context.channel.send(`🔎 Resolved identifier ${identifier.url}\n(**${typeName}** from **${srcName}**)`);
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      await context.channel.send(`📍 Selected **${resource.name}** by **${resource.authors.join(',')}**`
-        + `\n(**${getEnumName(IdentifierType, resource.identifier.type)}**`
-        + ` from **${getEnumName(SOURCE, resource.identifier.src)}**)`);
+      const authors = resource.authors.join(',');
+      const typeName = getEnumName(IdentifierType, resource.identifier.type);
+      const sourceName = getEnumName(SOURCE, resource.identifier.src);
+      await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
       identifier = resource.identifier;
+      tracks = resource.tracks;
     }
   }
 
   if (identifier) {
-    // eslint-disable-next-line prefer-const
-    let { tracks, rangeOptimized } = await getSourceFetcher(identifier, options, context.channel).fetch();
+    let rangeOptimized = false;
+    if (!tracks) {
+      const fetchResult = await getSourceFetcher(identifier, options, context.channel).fetch();
+      rangeOptimized = !!fetchResult.rangeOptimized;
+      tracks = fetchResult.tracks;
+    }
+
     if (tracks.length > 0) {
       if (!rangeOptimized) {
         const range = getRangeOption(options, tracks.length);
@@ -52,9 +63,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
       await context.server!.queue.add(tracks, options.NEXT);
 
-      const bodyText = tracks.length > 1 ? `Successfully added ${tracks.length} songs`
+      const bodyText = tracks.length > 1
+        ? `Successfully added ${tracks.length} songs`
         : `Successfully added **${tracks[0].title}**`;
-      const endText = options.NEXT ? 'to be played next!' : 'to the queue!';
+      const endText = options.NEXT
+        ? 'to be played next!'
+        : 'to the queue!';
       await context.channel.send(`✨ ${bodyText} ${endText}`);
 
       return;

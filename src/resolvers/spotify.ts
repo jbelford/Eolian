@@ -32,6 +32,13 @@ export class SpotifyUrlResolver implements SourceResolver {
           const artist = await spotify.getArtist(resourceDetails.id);
           return createSpotifyArtist(artist);
         }
+        case SpotifyResourceType.TRACK: {
+          const track = await spotify.getTrack(resourceDetails.id);
+          return createSpotifyTrack(track);
+        }
+        case SpotifyResourceType.USER: {
+          throw new EolianUserError(`Spotify user URLs are not valid for this operation`);
+        }
         default:
       }
     }
@@ -174,6 +181,20 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
       type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
     }
+  };
+}
+
+function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
+  return {
+    name: track.name,
+    authors: track.artists.map(artist => artist.name),
+    identifier: {
+      id: track.id,
+      src: SOURCE.SPOTIFY,
+      type: IdentifierType.SONG,
+      url: track.external_urls.spotify
+    },
+    tracks: [mapSpotifyTrack(track)]
   };
 }
 

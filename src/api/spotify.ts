@@ -43,6 +43,17 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
+  async getTrack(id: string): Promise<SpotifyTrack> {
+    try {
+      logger.debug(`Getting spotify track: %s`, id);
+      await this.checkAndUpdateToken();
+      return await this.get<SpotifyTrack>(`tracks/${id}`);
+    } catch (e) {
+      logger.warn(`Failed to fetch Spotify track: id: %s`, id);
+      throw e;
+    }
+  }
+
   async getPlaylist(id: string): Promise<SpotifyPlaylistFull> {
     try {
       logger.debug(`Getting playlist: ${id}`);
