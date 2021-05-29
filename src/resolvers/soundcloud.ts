@@ -152,12 +152,11 @@ export class SoundCloudSongResolver implements SourceResolver {
 }
 
 function createSoundCloudPlaylist(playlist: SoundCloudPlaylist): ResolvedResource {
-  const tracks = playlist.track_count === playlist.tracks?.length ? playlist.tracks.map(mapSoundCloudTrack) : undefined;
   return {
     name: playlist.title,
     authors: [playlist.user.username],
     identifier: createIdentifier(playlist),
-    tracks
+    fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist)
   };
 }
 
@@ -166,7 +165,7 @@ function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
     name: track.title,
     authors: [track.user.username],
     identifier: createIdentifier(track),
-    tracks: [mapSoundCloudTrack(track)]
+    fetcher: new SoundCloudSongFetcher(track.id, track)
   }
 }
 
@@ -174,7 +173,8 @@ function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
   return {
     name: user.username,
     authors: [user.username],
-    identifier: createIdentifier(user)
+    identifier: createIdentifier(user),
+    fetcher: new SoundCloudArtistFetcher(user.id)
   }
 }
 
@@ -208,51 +208,62 @@ function mapSoundCloudTrack(track: SoundCloudTrack): Track {
   };
 }
 
-export class SoundCloudFetcher implements SourceFetcher {
+export class SoundCloudPlaylistFetcher implements SourceFetcher {
 
-  constructor(private readonly identifier: Identifier,
-    private readonly params: CommandOptions,
-    private readonly channel?: ContextTextChannel) {}
+  constructor(private readonly id: number,
+    private readonly playlist?: SoundCloudPlaylist) {
+  }
 
   async fetch(): Promise<FetchResult> {
-    if (this.identifier.src !== SOURCE.SOUNDCLOUD) {
-      throw new Error('Attempted to fetch tracks for incorrect source type');
+    let tracks: SoundCloudTrack[];
+    if (this.playlist && this.playlist.tracks.length === this.playlist.track_count) {
+      tracks = this.playlist.tracks;
+    } else {
+      const playlist = await soundcloud.getPlaylist(this.id);
+      tracks = playlist.tracks;
     }
-
-    switch (this.identifier.type) {
-      case IdentifierType.PLAYLIST:
-        return { tracks: await this.fetchPlaylist() };
-      case IdentifierType.SONG:
-        return { tracks: [await this.fetchTrack()] };
-      case IdentifierType.TRACKS:
-      case IdentifierType.ARTIST:
-        return { tracks: await this.fetchUserTracks() };
-      case IdentifierType.FAVORITES:
-        return { tracks: await this.fetchUserFavorites() };
-      default:
-        throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
-    }
+    return { tracks: tracks.map(mapSoundCloudTrack) };
   }
 
-  private async fetchPlaylist(): Promise<Track[]> {
-    const playlist = await soundcloud.getPlaylist(+this.identifier.id);
-    return playlist.tracks.map(mapSoundCloudTrack);
+}
+
+export class SoundCloudSongFetcher implements SourceFetcher {
+
+  constructor(private readonly id: number,
+    private readonly track?: SoundCloudTrack) {
   }
 
-  private async fetchTrack(): Promise<Track> {
-    return mapSoundCloudTrack(await soundcloud.getTrack(+this.identifier.id));
+  async fetch(): Promise<FetchResult> {
+    const track = this.track ? this.track : await soundcloud.getTrack(this.id);
+    return { tracks: [mapSoundCloudTrack(track)], rangeOptimized: true };
   }
 
-  private async fetchUserTracks(): Promise<Track[]> {
-    const tracks = await soundcloud.getUserTracks(+this.identifier.id);
-    return tracks.map(mapSoundCloudTrack);
+}
+
+export class SoundCloudArtistFetcher implements SourceFetcher {
+
+  constructor(private readonly id: number) {
   }
 
-  private async fetchUserFavorites(): Promise<Track[]> {
-    const user = await soundcloud.getUser(+this.identifier.id);
+  async fetch(): Promise<FetchResult> {
+    const tracks = await soundcloud.getUserTracks(this.id);
+    return { tracks: tracks.map(mapSoundCloudTrack) };
+  }
+
+}
+
+export class SoundCloudFavoritesFetcher implements SourceFetcher {
+
+  constructor(private readonly id: number,
+    private readonly params: CommandOptions,
+    private readonly channel: ContextTextChannel) {
+  }
+
+  async fetch(): Promise<FetchResult> {
+    const user = await soundcloud.getUser(this.id);
     const { max, downloader } = this.getListOptions('Fetching likes', user.public_favorites_count);
-    const tracks = await soundcloud.getUserFavorites(+this.identifier.id, max, downloader);
-    return tracks.map(mapSoundCloudTrack);
+    const tracks = await soundcloud.getUserFavorites(this.id, max, downloader);
+    return { tracks: tracks.map(mapSoundCloudTrack) };
   }
 
   private getListOptions(downloaderName: string, max: number): { max: number, downloader?: ProgressUpdater } {
@@ -263,11 +274,30 @@ export class SoundCloudFetcher implements SourceFetcher {
       max = range.stop;
     }
 
-    if (this.channel && max > 300) {
+    if (max > 300) {
       downloader = new DownloaderDisplay(this.channel, downloaderName);
     }
 
     return { max, downloader };
   }
 
+}
+
+export function getSoundCloudSourceFetcher(id: number,
+    type: IdentifierType,
+    params: CommandOptions,
+    channel: ContextTextChannel): SourceFetcher {
+  switch (type) {
+    case IdentifierType.TRACKS:
+    case IdentifierType.ARTIST:
+      return new SoundCloudArtistFetcher(id);
+    case IdentifierType.FAVORITES:
+      return new SoundCloudFavoritesFetcher(id, params, channel);
+    case IdentifierType.PLAYLIST:
+      return new SoundCloudPlaylistFetcher(id);
+    case IdentifierType.SONG:
+      return new SoundCloudSongFetcher(id);
+    default:
+      throw new Error(`Invalid type for SoundCloud fetcher`);
+  }
 }

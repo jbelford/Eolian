@@ -4,7 +4,7 @@ import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
-import { getSourceFetcher, getSourceResolver } from 'resolvers';
+import { getSourceResolver } from 'resolvers';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -22,13 +22,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       const sourceName = getEnumName(SOURCE, resource.identifier.src);
       await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
 
-      if (!resource.tracks) {
-        const fetchResult = await getSourceFetcher(resource.identifier, options, context.channel).fetch();
-        resource.tracks = fetchResult.tracks;
-      }
-
-      if (resource.tracks.length > 0) {
-        await context.server!.queue.add(resource.tracks, true);
+      const { tracks } = await resource.fetcher.fetch();
+      if (tracks.length > 0) {
+        await context.server!.queue.add(tracks, true);
         added = true;
       }
     }

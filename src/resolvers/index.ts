@@ -1,12 +1,12 @@
-import { CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
+import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
 import { ContextTextChannel } from 'eolian/@types';
 import { SourceFetcher, SourceResolver } from './@types';
-import { SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudFetcher, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
-import { SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyFetcher, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
-import { YouTubeFetcher, YouTubePlaylistResolver, YouTubeUrlResolver, YouTubeVideoResolver } from './youtube';
+import { getSoundCloudSourceFetcher, SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
+import { getSpotifySourceFetcher, SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
+import { getYouTubeSourceFetcher, YouTubePlaylistResolver, YouTubeUrlResolver, YouTubeVideoResolver } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
   resolve: async () => {
@@ -20,11 +20,11 @@ const UNKNOWN_FETCHER: SourceFetcher = {
   }
 }
 
-function getBySource(context: CommandContext, url: UrlArgument) {
-  switch (url.source) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(url.value);
-    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(url.value, context);
-    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(url.value);
+function getBySource(context: CommandContext, params: CommandOptions) {
+  switch (params.URL?.source) {
+    case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(params.URL.value);
+    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(params.URL.value, context);
+    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.channel);
     default: return UNKNOWN_RESOLVER;
   }
 }
@@ -103,15 +103,15 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
   }
 
   return params.URL
-    ? getBySource(context, params.URL)
+    ? getBySource(context, params)
     : getByQuery(context, params);
 }
 
-export function getSourceFetcher(identifier: Identifier, params: CommandOptions, channel?: ContextTextChannel): SourceFetcher {
+export function getSourceFetcher(identifier: Identifier, params: CommandOptions, channel: ContextTextChannel): SourceFetcher {
   switch (identifier.src) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudFetcher(identifier, params, channel);
-    case SOURCE.YOUTUBE: return new YouTubeFetcher(identifier);
-    case SOURCE.SPOTIFY: return new SpotifyFetcher(identifier, params, channel);
+    case SOURCE.SOUNDCLOUD: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, channel);
+    case SOURCE.YOUTUBE: return getYouTubeSourceFetcher(identifier.id, identifier.type);
+    case SOURCE.SPOTIFY: return getSpotifySourceFetcher(identifier.id, identifier.type, params, channel);
     default: return UNKNOWN_FETCHER;
   }
 }

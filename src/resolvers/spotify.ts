@@ -1,11 +1,10 @@
 import { spotify } from 'api';
-import { RangeFactory, SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
+import { RangeFactory, SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { ProgressUpdater } from 'common/@types';
 import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption } from 'common/util';
-import { Identifier, IdentifierType } from 'data/@types';
+import { IdentifierType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 import { DownloaderDisplay } from 'eolian';
 import { ContextTextChannel } from 'eolian/@types';
@@ -13,7 +12,9 @@ import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from './
 
 export class SpotifyUrlResolver implements SourceResolver {
 
-  constructor(private readonly url: string) {
+  constructor(private readonly url: string,
+    private readonly params: CommandOptions,
+    private readonly channel: ContextTextChannel) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -22,7 +23,7 @@ export class SpotifyUrlResolver implements SourceResolver {
       switch (resourceDetails.type) {
         case SpotifyResourceType.PLAYLIST: {
           const playlist = await spotify.getPlaylist(resourceDetails.id);
-          return createSpotifyPlaylist(playlist);
+          return createSpotifyPlaylist(playlist, this.params, this.channel);
         }
         case SpotifyResourceType.ALBUM: {
           const album = await spotify.getAlbum(resourceDetails.id);
@@ -97,7 +98,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
       playlist = playlists[idx];
     }
 
-    return createSpotifyPlaylist(playlist);
+    return createSpotifyPlaylist(playlist, this.params, this.context.channel);
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
@@ -145,7 +146,7 @@ export class SpotifyArtistResolver implements SourceResolver {
 }
 
 
-function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {
+function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: CommandOptions, channel: ContextTextChannel): ResolvedResource {
   return {
     name: playlist.name,
     authors: [playlist.owner.display_name || '<unknown>'],
@@ -154,7 +155,8 @@ function createSpotifyPlaylist(playlist: SpotifyPlaylist): ResolvedResource {
       src: SOURCE.SPOTIFY,
       type: IdentifierType.PLAYLIST,
       url: playlist.external_urls.spotify
-    }
+    },
+    fetcher: new SpotifyPlaylistFetcher(playlist.id, params, channel, playlist)
   };
 }
 
@@ -167,7 +169,8 @@ function createSpotifyAlbum(album: SpotifyAlbum): ResolvedResource {
       src: SOURCE.SPOTIFY,
       type: IdentifierType.ALBUM,
       url: album.external_urls.spotify
-    }
+    },
+    fetcher: new SpotifyAlbumFetcher(album.id)
   };
 }
 
@@ -180,7 +183,8 @@ function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
       src: SOURCE.SPOTIFY,
       type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
-    }
+    },
+    fetcher: new SpotifyArtistFetcher(artist.id)
   };
 }
 
@@ -194,7 +198,7 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
       type: IdentifierType.SONG,
       url: track.external_urls.spotify
     },
-    tracks: [mapSpotifyTrack(track)]
+    fetcher: new SpotifySongFetcher(track.id, track)
   };
 }
 
@@ -215,54 +219,91 @@ function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, playlistArt
   };
 }
 
-export class SpotifyFetcher implements SourceFetcher {
+export class SpotifyPlaylistFetcher implements SourceFetcher {
 
-  constructor(private readonly identifier: Identifier,
+  constructor(private readonly id: string,
     private readonly params: CommandOptions,
-    private readonly channel?: ContextTextChannel) {}
+    private readonly channel: ContextTextChannel,
+    // @ts-ignore
+    private readonly playlist?: SpotifyPlaylist) {
+  }
 
   async fetch(): Promise<FetchResult> {
-    if (this.identifier.src !== SOURCE.SPOTIFY) {
-      throw new Error('Attempted to fetch tracks for incorrect source type');
+    let playlist: SpotifyPlaylistTracks;
+    let rangeOptimized = false;
+
+    if (this.playlist?.tracks.items && this.playlist.tracks.total === this.playlist.tracks.items.length) {
+      playlist = this.playlist as SpotifyPlaylistTracks;
+    } else {
+      const rangeFn: RangeFactory = total => getRangeOption(this.params, total);
+      const progress = new DownloaderDisplay(this.channel, 'Fetching playlist tracks');
+
+      playlist = await spotify.getPlaylistTracks(this.id, progress, rangeFn);
+
+      rangeOptimized = true;
     }
 
-    switch (this.identifier.type) {
-      case IdentifierType.PLAYLIST: return { tracks: await this.fetchPlaylist(this.identifier.id), rangeOptimized: true };
-      case IdentifierType.ALBUM: return { tracks: await this.fetchAlbum(this.identifier.id) };
-      case IdentifierType.ARTIST: return { tracks: await this.fetchArtistTracks(this.identifier.id) };
-      case IdentifierType.SONG: return { tracks: [await this.fetchTrack(this.identifier.id) ]};
-      default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
-    }
-  }
-
-  async fetchPlaylist(id: string): Promise<Track[]> {
-    let progress: ProgressUpdater | undefined;
-
-    const rangeFn: RangeFactory = total => getRangeOption(this.params, total);
-
-    if (this.channel) {
-      progress = new DownloaderDisplay(this.channel, 'Fetching playlist tracks');
-    }
-
-    const playlist = await spotify.getPlaylistTracks(id, progress, rangeFn);
     const defaultForLocals = playlist.images.length ? playlist.images[0].url : undefined;
-    return playlist.tracks.items.filter(item => !!item.track).map(item => mapSpotifyTrack(item.track!, undefined, defaultForLocals));
+    const tracks = playlist.tracks.items.filter(item => !!item.track).map(item => mapSpotifyTrack(item.track!, undefined, defaultForLocals));
+    return { tracks, rangeOptimized };
   }
 
-  async fetchAlbum(id: string): Promise<Track[]> {
-    const album = await spotify.getAlbumTracks(id);
+}
+
+export class SpotifyAlbumFetcher implements SourceFetcher {
+
+  constructor(private readonly id: string) {
+  }
+
+  async fetch(): Promise<FetchResult> {
+    const album = await spotify.getAlbumTracks(this.id);
     const artwork = album.images.length ? album.images[0].url : undefined;
-    return album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
+    const tracks = album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
+    return { tracks };
   }
 
-  async fetchArtistTracks(id: string): Promise<Track[]> {
-    const tracks = await spotify.getArtistTracks(id);
-    return tracks.map(track => mapSpotifyTrack(track));
+}
+
+export class SpotifyArtistFetcher implements SourceFetcher {
+
+  constructor(private readonly id: string) {
   }
 
-  async fetchTrack(id: string): Promise<Track> {
-    const track = await spotify.getTrack(id);
-    return mapSpotifyTrack(track);
+  async fetch(): Promise<FetchResult> {
+    const tracks = await spotify.getArtistTracks(this.id);
+    return { tracks: tracks.map(track => mapSpotifyTrack(track)) };
   }
 
+}
+
+export class SpotifySongFetcher implements SourceFetcher {
+
+  constructor(private readonly id: string,
+    private readonly track?: SpotifyTrack) {
+  }
+
+  async fetch(): Promise<FetchResult> {
+    const track = this.track ? this.track : await spotify.getTrack(this.id);
+    return { tracks: [mapSpotifyTrack(track)] };
+  }
+
+}
+
+export function getSpotifySourceFetcher(id: string,
+  type: IdentifierType,
+  params: CommandOptions,
+  channel: ContextTextChannel): SourceFetcher {
+
+  switch (type) {
+    case IdentifierType.ALBUM:
+      return new SpotifyAlbumFetcher(id);
+    case IdentifierType.ARTIST:
+      return new SpotifyArtistFetcher(id);
+    case IdentifierType.PLAYLIST:
+      return new SpotifyPlaylistFetcher(id, params, channel);
+    case IdentifierType.SONG:
+      return new SpotifySongFetcher(id);
+    default:
+      throw new Error('Invalid type for Spotify fetcher');
+  }
 }

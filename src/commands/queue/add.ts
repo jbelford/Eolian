@@ -1,12 +1,12 @@
-import { Track } from 'api/@types';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption, shuffleList, truthySum } from 'common/util';
-import { Identifier, IdentifierType } from 'data/@types';
+import { IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
+import { SourceFetcher } from 'resolvers/@types';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -17,18 +17,19 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError('You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again.');
   }
 
-  let identifier: Identifier | null = null;
-  let tracks: Track[] | undefined;
+  let fetcher: SourceFetcher | undefined;
   if (options.IDENTIFIER) {
     const user = await context.user.get();
     if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
-    identifier = user.identifiers[options.IDENTIFIER];
+    const identifier = user.identifiers[options.IDENTIFIER];
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
     await context.channel.send(`🔎 Resolved identifier ${identifier.url}\n(**${typeName}** from **${srcName}**)`);
+
+    fetcher = getSourceFetcher(identifier, options, context.channel);
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
@@ -36,19 +37,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       const typeName = getEnumName(IdentifierType, resource.identifier.type);
       const sourceName = getEnumName(SOURCE, resource.identifier.src);
       await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
-      identifier = resource.identifier;
-      tracks = resource.tracks;
+      fetcher = resource.fetcher;
     }
   }
 
-  if (identifier) {
-    let rangeOptimized = false;
-    if (!tracks) {
-      const fetchResult = await getSourceFetcher(identifier, options, context.channel).fetch();
-      rangeOptimized = !!fetchResult.rangeOptimized;
-      tracks = fetchResult.tracks;
-    }
-
+  if (fetcher) {
+    // eslint-disable-next-line prefer-const
+    let { tracks, rangeOptimized } = await fetcher.fetch();
     if (tracks.length > 0) {
       if (!rangeOptimized) {
         const range = getRangeOption(options, tracks.length);

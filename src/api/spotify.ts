@@ -4,7 +4,7 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import requestPromise from 'request-promise-native';
-import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistFull, SpotifyPlaylistTrack, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track } from './@types';
+import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
   V1 = 'v1'
@@ -47,17 +47,17 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getPlaylist(id: string): Promise<SpotifyPlaylistFull> {
+  async getPlaylist(id: string): Promise<SpotifyPlaylistTracks> {
     try {
       logger.debug(`Getting playlist: ${id}`);
-      return await this.get<SpotifyPlaylistFull>(`playlists/${id}`);
+      return await this.get<SpotifyPlaylistTracks>(`playlists/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify playlist: id: ${id}`);
       throw e;
     }
   }
 
-  async getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistFull> {
+  async getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistTracks> {
     try {
       logger.debug(`Getting playlist tracks: ${id}`);
       const playlist = await this.getPlaylist(id);

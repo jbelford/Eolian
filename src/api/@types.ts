@@ -68,8 +68,8 @@ export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
-  getPlaylist(id: string): Promise<SpotifyPlaylist>;
-  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistFull>;
+  getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
+  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistTracks>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
@@ -99,9 +99,14 @@ export interface SpotifyPlaylist {
   owner: SpotifyUser;
   external_urls: SpotifyExternalUrls;
   images: SpotifyImageObject[];
+  tracks: {
+    href: string;
+    total: number;
+    items?: SpotifyPlaylistTrack[];
+  }
 }
 
-export interface SpotifyPlaylistFull extends SpotifyPlaylist {
+export interface SpotifyPlaylistTracks extends SpotifyPlaylist {
   tracks: SpotifyPagingObject<SpotifyPlaylistTrack>;
 }
 

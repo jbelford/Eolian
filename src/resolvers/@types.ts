@@ -5,7 +5,7 @@ export interface ResolvedResource {
   authors: string[];
   name: string;
   identifier: Identifier;
-  tracks?: Track[];
+  fetcher: SourceFetcher;
 }
 
 export interface SourceResolver {
