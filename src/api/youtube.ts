@@ -2,6 +2,7 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch, noop } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
+import { decode } from 'html-entities';
 import { opus } from 'prism-media';
 import querystring from 'querystring';
 import { pipeline } from 'stream';
@@ -46,8 +47,8 @@ export class YouTubeApiImpl implements YouTubeApi {
       const video = response.data.items[0];
       return {
         id: video.id!,
-        name: video.snippet!.title!,
-        channelName: video.snippet!.channelTitle!,
+        name: decode(video.snippet!.title!),
+        channelName: decode(video.snippet!.channelTitle!),
         url: `https://www.youtube.com/watch?v=${video.id}`,
         artwork: video.snippet!.thumbnails!.high!.url!
       };
@@ -67,8 +68,8 @@ export class YouTubeApiImpl implements YouTubeApi {
       const playlist = response.data.items[0];
       return {
         id: playlist.id!,
-        name: playlist.snippet!.title!,
-        channelName: playlist.snippet!.channelTitle!,
+        name: decode(playlist.snippet!.title!),
+        channelName: decode(playlist.snippet!.channelTitle!),
         videos: playlist.contentDetails!.itemCount || undefined,
         url: `https://www.youtube.com/playlist?list=${playlist.id}`
       };
@@ -99,8 +100,8 @@ export class YouTubeApiImpl implements YouTubeApi {
 
     return items.map(item => ({
       id: item.id!,
-      name: item.snippet!.title!,
-      channelName: item.snippet!.channelTitle!,
+      name: decode(item.snippet!.title!),
+      channelName: decode(item.snippet!.channelTitle!),
       url: `https://www.youtube.com/watch?v=${item.id}`,
       artwork: item.snippet!.thumbnails!.default!.url!
     }));
@@ -115,8 +116,8 @@ export class YouTubeApiImpl implements YouTubeApi {
 
       return response.data.items.map(playlist => ({
         id: playlist.id!.playlistId!,
-        name: playlist.snippet!.title!,
-        channelName: playlist.snippet!.channelTitle!,
+        name: decode(playlist.snippet!.title!),
+        channelName: decode(playlist.snippet!.channelTitle!),
         url: `https://www.youtube.com/playlist?list=${playlist.id!.playlistId}`
       }));
     } catch (e) {
@@ -144,8 +145,8 @@ export class YouTubeApiImpl implements YouTubeApi {
 
       const videos = videoResponse.map(video => ({
           id: video.id!.videoId!,
-          name: video.snippet!.title!,
-          channelName: video.snippet!.channelTitle!,
+          name: decode(video.snippet!.title!),
+          channelName: decode(video.snippet!.channelTitle!),
           url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
           artwork: video.snippet!.thumbnails!.default!.url!
         }));

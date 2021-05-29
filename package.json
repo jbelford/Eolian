@@ -29,6 +29,7 @@
     "ffmpeg-static": "^4.3.0",
     "fuzzball": "^1.4.0",
     "googleapis": "^73.0.0",
+    "html-entities": "^2.3.2",
     "libsodium-wrappers": "^0.7.9",
     "module-alias": "^2.1.0",
     "mongodb": "^3.6.6",
