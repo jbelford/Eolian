@@ -68,7 +68,7 @@ export interface SpotifyApi extends StreamFetcher {
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylist>;
-  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: SpotifyRangeFactory): Promise<SpotifyPlaylistFull>;
+  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistFull>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
@@ -78,7 +78,7 @@ export interface SpotifyApi extends StreamFetcher {
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }
 
-export type SpotifyRangeFactory = (total: number) => AbsRangeArgument | undefined;
+export type RangeFactory = (total: number) => AbsRangeArgument | undefined;
 
 export interface SpotifyUser {
   id: string;

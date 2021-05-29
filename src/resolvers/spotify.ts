@@ -1,5 +1,5 @@
 import { spotify } from 'api';
-import { SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyRangeFactory, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
+import { RangeFactory, SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { ProgressUpdater } from 'common/@types';
 import { MESSAGES, SOURCE } from 'common/constants';
@@ -237,7 +237,7 @@ export class SpotifyFetcher implements SourceFetcher {
   async fetchPlaylist(id: string): Promise<Track[]> {
     let progress: ProgressUpdater | undefined;
 
-    const rangeFn: SpotifyRangeFactory = total => getRangeOption(this.params, total);
+    const rangeFn: RangeFactory = total => getRangeOption(this.params, total);
 
     if (this.channel) {
       progress = new DownloaderDisplay(this.channel, 'Fetching playlist tracks');
