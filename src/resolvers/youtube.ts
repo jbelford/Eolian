@@ -110,7 +110,8 @@ function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
       src: SOURCE.YOUTUBE,
       type: IdentifierType.SONG,
       url: video.url
-    }
+    },
+    tracks: [mapYouTubeVideo(video)]
   }
 }
 
