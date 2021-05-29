@@ -98,13 +98,14 @@ export class YouTubeApiImpl implements YouTubeApi {
       throw e;
     }
 
-    return items.map(item => ({
-      id: item.id!,
-      name: decode(item.snippet!.title!),
-      channelName: decode(item.snippet!.channelTitle!),
-      url: `https://www.youtube.com/watch?v=${item.id}`,
-      artwork: item.snippet!.thumbnails!.default!.url!
-    }));
+    return items.filter(item => item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default)
+      .map(item => ({
+        id: item.id!,
+        name: decode(item.snippet!.title!),
+        channelName: decode(item.snippet!.channelTitle!),
+        url: `https://www.youtube.com/watch?v=${item.id}`,
+        artwork: item.snippet!.thumbnails!.default!.url!
+      }));
   }
 
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
