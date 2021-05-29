@@ -1,5 +1,5 @@
 import { spotify } from 'api';
-import { RangeFactory, SpotifyAlbum, SpotifyArtist, SpotifyPlaylist, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
+import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyArtist, SpotifyPlaylist, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, Track } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
@@ -170,7 +170,7 @@ function createSpotifyAlbum(album: SpotifyAlbum): ResolvedResource {
       type: IdentifierType.ALBUM,
       url: album.external_urls.spotify
     },
-    fetcher: new SpotifyAlbumFetcher(album.id)
+    fetcher: new SpotifyAlbumFetcher(album.id, album)
   };
 }
 
@@ -252,11 +252,18 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
 
 export class SpotifyAlbumFetcher implements SourceFetcher {
 
-  constructor(private readonly id: string) {
+  constructor(private readonly id: string,
+    private readonly album?: SpotifyAlbum) {
   }
 
   async fetch(): Promise<FetchResult> {
-    const album = await spotify.getAlbumTracks(this.id);
+    let album: SpotifyAlbumFull;
+    if (this.album?.tracks && this.album.tracks.items?.length === this.album.tracks.total) {
+      album = this.album as SpotifyAlbumFull;
+    } else {
+      album = await spotify.getAlbumTracks(this.id);
+    }
+
     const artwork = album.images.length ? album.images[0].url : undefined;
     const tracks = album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
     return { tracks };

@@ -121,6 +121,11 @@ export interface SpotifyAlbum {
   artists: SpotifyArtist[];
   images: SpotifyImageObject[];
   name: string;
+  tracks?: {
+    href: string;
+    total: number;
+    items?: SpotifyTrack[];
+  }
 }
 
 export interface SpotifyAlbumFull extends SpotifyAlbum {
