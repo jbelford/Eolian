@@ -230,6 +230,7 @@ export class SpotifyFetcher implements SourceFetcher {
       case IdentifierType.PLAYLIST: return { tracks: await this.fetchPlaylist(this.identifier.id), rangeOptimized: true };
       case IdentifierType.ALBUM: return { tracks: await this.fetchAlbum(this.identifier.id) };
       case IdentifierType.ARTIST: return { tracks: await this.fetchArtistTracks(this.identifier.id) };
+      case IdentifierType.SONG: return { tracks: [await this.fetchTrack(this.identifier.id) ]};
       default: throw new Error(`Identifier type is unrecognized ${this.identifier.type}`);
     }
   }
@@ -257,6 +258,11 @@ export class SpotifyFetcher implements SourceFetcher {
   async fetchArtistTracks(id: string): Promise<Track[]> {
     const tracks = await spotify.getArtistTracks(id);
     return tracks.map(track => mapSpotifyTrack(track));
+  }
+
+  async fetchTrack(id: string): Promise<Track> {
+    const track = await spotify.getTrack(id);
+    return mapSpotifyTrack(track);
   }
 
 }
