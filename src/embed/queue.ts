@@ -9,7 +9,7 @@ export function createQueueEmbed(tracks: Track[], start: number, total: number) 
       text: '🎶 Music Queue 🎶'
     },
     title: `${start + 1}. ${tracks[0].title}`,
-    description: `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. [${t.title}](${t.url})**`).join('\n'),
+    description: `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. [${t.title.replace(/\*/g, '\\*')}](${t.url})**`).join('\n'),
     url: tracks[0].url,
     thumbnail: tracks.find(t => t.artwork)?.artwork,
     footer: {
