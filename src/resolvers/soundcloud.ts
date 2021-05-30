@@ -78,7 +78,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
 export class SoundCloudArtistResolver implements SourceResolver {
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
+  constructor(protected readonly context: CommandContext, protected readonly params: CommandOptions) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -126,6 +126,7 @@ export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
     const resource = await super.resolve();
     resource.identifier.type = IdentifierType.FAVORITES;
     resource.identifier.url = `${resource.identifier.url}/likes`;
+    resource.fetcher = new SoundCloudFavoritesFetcher(+resource.identifier.id, this.params, this.context.channel);
     return resource;
   }
 }
