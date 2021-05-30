@@ -12,9 +12,9 @@ import { SourceFetcher } from 'resolvers/@types';
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.SEARCH, options.URL, options.IDENTIFIER);
   if (sum === 0 && !options.MY) {
-    throw new EolianUserError('You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. Please try again.');
+    throw new EolianUserError('You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. See `help add` to learn more.');
   } else if (sum > 1) {
-    throw new EolianUserError('You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again.');
+    throw new EolianUserError('You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again. See `help add` to learn more.');
   }
 
   let fetcher: SourceFetcher | undefined;
