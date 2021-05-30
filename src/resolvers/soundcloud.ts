@@ -82,15 +82,26 @@ export class SoundCloudArtistResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    if (this.params.SEARCH) {
-      return this.resolveArtistQuery(this.params.SEARCH);
-    } else if (this.params.MY) {
-      return this.resolveUser();
-    }
-    throw new EolianUserError('Missing query for SoundCloud artist.');
+    const user = await this.getSoundCloudUser();
+    return createSoundCloudUser(user);
   }
 
-  private async resolveArtistQuery(query: string): Promise<ResolvedResource> {
+  protected async getSoundCloudUser(): Promise<SoundCloudUser> {
+    let user: SoundCloudUser | undefined;
+    if (this.params.SEARCH) {
+      user = await this.resolveArtistQuery(this.params.SEARCH);
+    } else if (this.params.MY) {
+      user = await this.resolveUser();
+    }
+
+    if (!user) {
+      throw new EolianUserError('Missing query for SoundCloud artist.');
+    }
+
+    return user;
+  }
+
+  private async resolveArtistQuery(query: string): Promise<SoundCloudUser> {
     const users = await soundcloud.searchUser(query);
     const idx = await this.context.channel.sendSelection('Choose a SoundCloud user',
       users.map(user => ({ name: user.username, url: user.permalink_url })),
@@ -99,22 +110,22 @@ export class SoundCloudArtistResolver implements SourceResolver {
       throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
 
-    return createSoundCloudUser(users[idx]);
+    return users[idx];
   }
 
-  private async resolveUser(): Promise<ResolvedResource> {
+  private async resolveUser(): Promise<SoundCloudUser> {
     const user = await this.context.user.get();
     if (!user.soundcloud) {
       throw new EolianUserError('You have not set your SoundCloud account yet!');
     }
-    const scUser = await soundcloud.getUser(user.soundcloud);
-    return createSoundCloudUser(scUser);
+    return await soundcloud.getUser(user.soundcloud);
   }
 }
 
 export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
-    const resource = await super.resolve();
+    const user = await this.getSoundCloudUser();
+    const resource = createSoundCloudUser(user);
     resource.identifier.type = IdentifierType.TRACKS;
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;
@@ -123,11 +134,8 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
-    const resource = await super.resolve();
-    resource.identifier.type = IdentifierType.FAVORITES;
-    resource.identifier.url = `${resource.identifier.url}/likes`;
-    resource.fetcher = new SoundCloudFavoritesFetcher(+resource.identifier.id, this.params, this.context.channel);
-    return resource;
+    const user = await this.getSoundCloudUser();
+    return createSoundCloudLikes(user, this.params, this.context.channel);
   }
 }
 
@@ -177,6 +185,21 @@ function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
     identifier: createIdentifier(user),
     fetcher: new SoundCloudArtistFetcher(user.id)
   }
+}
+
+function createSoundCloudLikes(
+    user: SoundCloudUser,
+    params: CommandOptions,
+    channel: ContextTextChannel): ResolvedResource {
+  const identifier = createIdentifier(user);
+  identifier.type = IdentifierType.FAVORITES;
+  identifier.url = `${identifier.url}/likes`;
+  return {
+    name: user.username,
+    authors: [user.username],
+    identifier: identifier,
+    fetcher: new SoundCloudFavoritesFetcher(user.id, params, channel, user)
+  };
 }
 
 function createIdentifier(resource: SoundCloudResource): Identifier {
@@ -257,11 +280,12 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
   constructor(private readonly id: number,
     private readonly params: CommandOptions,
-    private readonly channel: ContextTextChannel) {
+    private readonly channel: ContextTextChannel,
+    private readonly user?: SoundCloudUser) {
   }
 
   async fetch(): Promise<FetchResult> {
-    const user = await soundcloud.getUser(this.id);
+    const user = this.user ? this.user : await soundcloud.getUser(this.id);
     const { max, downloader } = this.getListOptions('Fetching likes', user.public_favorites_count);
     const tracks = await soundcloud.getUserFavorites(this.id, max, downloader);
     return { tracks: tracks.map(mapSoundCloudTrack) };
