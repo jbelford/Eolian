@@ -9,7 +9,7 @@ export function createPollQuestionEmbed(question: string, options: PollOption[],
     },
     title: `*${question}*`,
     color: COLOR.POLL,
-    description: options.map(option => `${option.emoji}: ${option.text}`).join('\n\n'),
+    description: options.map(option => `${option.emoji}  ${option.text}`).join('\n\n'),
     footer: {
       text: `${username}'s poll`,
       icon: pic

@@ -29,7 +29,11 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
     const buttons = message.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
     const results: PollOptionResult[] = options.map(option => {
       const button = buttons.find(button => button.emoji === option.emoji);
-      return { option: option.text, count: button ? button.count - 1 : 0 };
+      let count = 0;
+      if (button && button.count > 0) {
+        count = button.count - 1;
+      }
+      return { option: option.text, count };
     });
 
     const resultEmbed = createPollResultsEmbed(question, results, user.name, user.avatar);
