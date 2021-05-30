@@ -8,7 +8,7 @@ import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption, PollOptionResult } from 'embed/@types';
 import { MessageButtonOnClickHandler } from 'eolian/@types';
 
-async function execute({ channel, user }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+async function execute({ channel, user, message }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
     throw new EolianUserError('Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`');
   } else if (ARG.length < 3) {
@@ -23,10 +23,10 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
   const questionEmbed = createPollQuestionEmbed(question, options, user.name, user.avatar);
   questionEmbed.buttons = options.map(option => ({ emoji: option.emoji }));
 
-  const closePollHandler: MessageButtonOnClickHandler = async (message, reactionUser) => {
+  const closePollHandler: MessageButtonOnClickHandler = async (pollMessage, reactionUser) => {
     if (reactionUser.id !== user.id) return false;
 
-    const buttons = message.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
+    const buttons = pollMessage.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
     const results: PollOptionResult[] = options.map(option => {
       const button = buttons.find(button => button.emoji === option.emoji);
       let count = 0;
@@ -37,13 +37,13 @@ async function execute({ channel, user }: CommandContext, { ARG }: CommandOption
     });
 
     const resultEmbed = createPollResultsEmbed(question, results, user.name, user.avatar);
-    await Promise.all([channel.sendEmbed(resultEmbed), message.delete()]);
+    await Promise.allSettled([channel.sendEmbed(resultEmbed), pollMessage.delete()]);
     return true;
   };
 
   questionEmbed.buttons.push({ emoji: '🚫', onClick: closePollHandler });
 
-  await channel.sendEmbed(questionEmbed);
+  await Promise.allSettled([channel.sendEmbed(questionEmbed), message.delete()]);
 }
 
 export const POLL_COMMAND: Command = {
