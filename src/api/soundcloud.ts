@@ -135,9 +135,11 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     options.progress?.update(items.length);
 
+    const extraParams = querystring.stringify({ ...params, client_id: this.token });
+
     let requests = 1;
     while (result.next_href && (!options.total || items.length < options.total) && (!options.requestLimit || requests < options.requestLimit)) {
-      result = await this.getUri<SoundCloudPaginatedResult<T>>(`${result.next_href}&client_id=${this.token}`);
+      result = await this.getUri<SoundCloudPaginatedResult<T>>(`${result.next_href}&${extraParams}`);
       items = items.concat(result.collection);
       options.progress?.update(items.length);
       requests++;
