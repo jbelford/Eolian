@@ -50,7 +50,7 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted %s`, err));
     this.client.on(DiscordEvents.MESSAGE, this.onMessageHandler);
     if (logger.isDebugEnabled()) {
-      this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: ${info}`));
+      this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: %s`, info));
     }
   }
 
@@ -87,15 +87,13 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     try {
-      if (await this.isBotInvoked(message)) {
-        const locked = await this.lockManager.isLocked(message.author.id);
-        if (!locked) {
-          try {
-            await this.lockManager.lock(message.author.id);
-            await this.onBotInvoked(message);
-          } finally {
-            await this.lockManager.unlock(message.author.id);
-          }
+      const locked = await this.lockManager.isLocked(message.author.id);
+      if (!locked && await this.isBotInvoked(message)) {
+        try {
+          await this.lockManager.lock(message.author.id);
+          await this.onBotInvoked(message);
+        } finally {
+          await this.lockManager.unlock(message.author.id);
         }
       }
     } catch (e) {
