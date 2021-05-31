@@ -6,13 +6,13 @@ import { EmbedMessage } from 'eolian/@types';
 
 const helpFooter = `_Want to know more? [See the Wiki](${GITHUB_PAGE_WIKI})_`;
 
-export function createCategoryListEmbed(categories: CommandCategory[]): EmbedMessage {
+export function createCategoryListEmbed(categories: CommandCategory[], prefix = environment.cmdToken): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     title: 'Command Categories',
     description: 'The following are categories for the various commands available:\n\n',
     footer: {
-      text: `You can activate commands by tagging me directly OR by placing a \`${environment.cmdToken}\` symbol at the beginning of the message.`
+      text: `You can activate commands by tagging me directly OR by placing a \`${prefix}\` symbol at the beginning of the message.`
     }
   }
   embed.description += '```\n' + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') + '```'

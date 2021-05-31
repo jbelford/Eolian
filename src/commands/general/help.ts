@@ -6,10 +6,11 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed } from 'embed';
 
-async function execute({ user, channel }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+async function execute({ user, channel, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
     const categories = COMMAND_CATEGORIES.filter(category => category.permission <= user.permission);
-    const categoryListEmbed = createCategoryListEmbed(categories);
+    const config = await server?.details.get();
+    const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
     await channel.sendEmbed(categoryListEmbed);
     return;
   }
