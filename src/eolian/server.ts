@@ -1,25 +1,50 @@
-import { Closable } from 'common/@types';
-import { createServer, Server } from 'http';
+import { environment } from 'common/env';
+import { ServerDTO, ServersDb } from 'data/@types';
+import { Guild } from 'discord.js';
+import { ServerDetails } from './@types';
 
-export class WebServer implements Closable {
+export class DiscordGuild implements ServerDetails {
 
-  private readonly server: Server;
+  private configCache: ServerDTO | null = null;
 
-  constructor() {
-    this.server = createServer((req, res) => {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.write('Eolian Bot');
-      res.end();
-    });
+  constructor(private readonly servers: ServersDb, private readonly guild: Guild) {
   }
 
-  start(): void {
-    this.server.listen(8080);
+  get id(): string {
+    return this.guild.id;
   }
 
-  close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.server.close(err => err ? reject(err) : resolve());
-    });
+  get name(): string {
+    return this.guild.name;
   }
+
+  get members(): number {
+    return this.guild.memberCount;
+  }
+
+  get avatar(): string | undefined {
+    return this.guild.iconURL({ dynamic: true }) ?? undefined;
+  }
+
+  async get(): Promise<ServerDTO> {
+    if (!this.configCache) {
+      this.configCache = await this.servers.get(this.id);
+      if (!this.configCache) {
+        this.configCache = { _id: this.id, prefix: environment.cmdToken };
+      }
+    }
+    return this.configCache;
+  }
+
+  async setPrefix(prefix: string): Promise<void> {
+    if (prefix.length !== 1) {
+      throw new Error('Prefix must be length 1');
+    }
+
+    if (this.configCache) {
+      this.configCache.prefix = prefix;
+    }
+    await this.servers.setPrefix(this.id, prefix);
+  }
+
 }

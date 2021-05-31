@@ -26,9 +26,10 @@ export interface ContextClient {
 }
 
 export interface ServerInfo {
-  name: string;
-  id: string;
-  members: number;
+  readonly name: string;
+  readonly id: string;
+  readonly members: number;
+  readonly avatar?: string;
 }
 
 export interface ContextMessage {
@@ -127,7 +128,7 @@ export interface ServerStateStore {
 }
 
 export interface ServerState {
-  config: ServerConfig;
+  details: ServerDetails;
   player: Player;
   queue: ServerQueue;
   display: {
@@ -136,7 +137,7 @@ export interface ServerState {
   }
 }
 
-export interface ServerConfig {
+export interface ServerDetails extends ServerInfo {
   get(): Promise<ServerDTO>;
   setPrefix(prefix: string): Promise<void>;
 }

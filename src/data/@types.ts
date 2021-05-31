@@ -38,7 +38,7 @@ export interface DocDTO {
 }
 
 export interface ServerDTO extends DocDTO {
-  prefix: string;
+  prefix?: string;
 }
 
 export interface UserDTO extends DocDTO {

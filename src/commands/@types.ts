@@ -22,6 +22,7 @@ export interface CommandUsage {
 export interface CommandCategory {
   name: string;
   details: string;
+  permission: PERMISSION;
 }
 
 export interface CommandParsingStrategy {

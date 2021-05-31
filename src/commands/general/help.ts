@@ -8,7 +8,8 @@ import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEm
 
 async function execute({ user, channel }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
-    const categoryListEmbed = createCategoryListEmbed(COMMAND_CATEGORIES);
+    const categories = COMMAND_CATEGORIES.filter(category => category.permission <= user.permission);
+    const categoryListEmbed = createCategoryListEmbed(categories);
     await channel.sendEmbed(categoryListEmbed);
     return;
   }

@@ -1,7 +1,8 @@
 import { SoundCloudUser, SpotifyUser } from 'api/@types';
 import { COLOR } from 'common/constants';
+import { environment } from 'common/env';
 import { Identifier } from 'data/@types';
-import { ContextUser, EmbedMessage } from 'eolian/@types';
+import { ContextUser, EmbedMessage, ServerInfo } from 'eolian/@types';
 import { SelectionOption } from './@types';
 
 export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {
@@ -70,6 +71,22 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
       text: `See 'help' for the 'Account' category to configure your profile.`
     }
   }
+}
+
+export function createServerDetailsEmbed(guild: ServerInfo, prefix = environment.cmdToken): EmbedMessage {
+  const description = `**Prefix:** \`${prefix}\``;
+  return {
+    header: {
+      icon: guild.avatar,
+      text: `🎫 Server Details 🎫`
+    },
+    title: `Here's settings for ${guild.name}`,
+    color: COLOR.PROFILE,
+    description,
+    footer: {
+      text: `See 'help' for the 'Settings' category to configure these settings`
+    }
+  };
 }
 
 export function createBasicEmbed(message: string): EmbedMessage {

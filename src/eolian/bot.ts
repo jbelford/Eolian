@@ -5,15 +5,15 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { LockManager } from 'data';
 import { AppDatabase, MemoryStore, MusicQueueCache } from 'data/@types';
-import { Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
+import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerState, ServerStateStore } from './@types';
 import { DiscordTextChannel } from './channel';
 import { DiscordClient, DiscordGuildClient } from './client';
-import { DiscordGuildConfig } from './config';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordMessage } from './message';
 import { GuildQueue } from './queue';
+import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
 import { DiscordUser } from './user';
 
@@ -107,11 +107,12 @@ export class DiscordEolianBot implements EolianBot {
     if (!invoked) {
       let prefix: string | undefined;
       if (message.guild) {
-        const state = await this.getGuildState(message.guild.id);
-        const config = await state.config.get();
+        const state = await this.getGuildState(message.guild);
+        const config = await state.details.get();
         prefix = config.prefix;
       }
       invoked = this.parser.messageInvokesBot(message.content, prefix);
+      message.content = message.content.slice(1);
     }
     return invoked;
   }
@@ -142,7 +143,7 @@ export class DiscordEolianBot implements EolianBot {
         }
         context.client = new DiscordClient(this.client);
       } else if (guild) {
-        context.server = await this.getGuildState(guild.id);
+        context.server = await this.getGuildState(guild);
         context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
       } else {
         throw new Error('Guild is missing from text message');
@@ -168,17 +169,17 @@ export class DiscordEolianBot implements EolianBot {
     }
   }
 
-  private async getGuildState(guildId: string): Promise<ServerState> {
-    let state = await this.servers.get(guildId);
+  private async getGuildState(guild: Guild): Promise<ServerState> {
+    let state = await this.servers.get(guild.id);
     if (!state) {
-      const config = new DiscordGuildConfig(this.db.servers, guildId);
-      const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guildId);
-      const queue = new GuildQueue(this.queues, guildId);
+      const details = new DiscordGuild(this.db.servers, guild);
+      const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guild.id);
+      const queue = new GuildQueue(this.queues, guild.id);
       const player = new DiscordPlayer(connectionProvider, queue);
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
-      state = { config, player, queue, display: { queue: queueDisplay, player: playerDisplay } };
-      await this.servers.set(guildId, state);
+      state = { details, player, queue, display: { queue: queueDisplay, player: playerDisplay } };
+      await this.servers.set(guild.id, state);
     }
     return state;
   }
