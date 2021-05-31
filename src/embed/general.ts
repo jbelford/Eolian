@@ -1,7 +1,7 @@
 import { SoundCloudUser, SpotifyUser } from 'api/@types';
-import { COLOR } from 'common/constants';
+import { COLOR, DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
-import { Identifier } from 'data/@types';
+import { Identifier, ServerDTO } from 'data/@types';
 import { ContextUser, EmbedMessage, ServerInfo } from 'eolian/@types';
 import { SelectionOption } from './@types';
 
@@ -73,8 +73,10 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
   }
 }
 
-export function createServerDetailsEmbed(guild: ServerInfo, prefix = environment.cmdToken): EmbedMessage {
-  const description = `**Prefix:** \`${prefix}\``;
+export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): EmbedMessage {
+  const volume = dto.volume ?? DEFAULT_VOLUME;
+  const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
+**Volume:** \`${Math.floor(volume * 100)}%\``;
   return {
     header: {
       icon: guild.avatar,

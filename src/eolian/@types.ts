@@ -140,4 +140,5 @@ export interface ServerState {
 export interface ServerDetails extends ServerInfo {
   get(): Promise<ServerDTO>;
   setPrefix(prefix: string): Promise<void>;
+  setVolume(volume: number): Promise<void>;
 }

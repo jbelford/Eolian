@@ -31,6 +31,7 @@ export interface UsersDb extends CollectionDb<UserDTO> {
 
 export interface ServersDb extends CollectionDb<ServerDTO> {
   setPrefix(id: string, prefix: string): Promise<void>;
+  setVolume(id: string, volume: number): Promise<void>;
 }
 
 export interface DocDTO {
@@ -39,6 +40,7 @@ export interface DocDTO {
 
 export interface ServerDTO extends DocDTO {
   prefix?: string;
+  volume?: number;
 }
 
 export interface UserDTO extends DocDTO {

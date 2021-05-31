@@ -1,5 +1,5 @@
 import { getTrackStream } from 'api';
-import { IDLE_TIMEOUT } from 'common/constants';
+import { DEFAULT_VOLUME, IDLE_TIMEOUT } from 'common/constants';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
@@ -44,7 +44,6 @@ const PLAYER_TIMEOUT = 1000 * 60 * 3;
 export class DiscordPlayer extends EventEmitter implements Player {
 
   private lastUsed = Date.now();
-  private _volume = 0.10;
   private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: Readable | null = null;
   private pcmTransform: Duplex | null = null;
@@ -55,7 +54,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   constructor(
     readonly connectionProvider: DiscordVoiceConnectionProvider,
-    readonly queue: ServerQueue) {
+    readonly queue: ServerQueue,
+    private _volume = DEFAULT_VOLUME) {
     super();
   }
 

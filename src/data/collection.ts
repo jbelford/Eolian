@@ -78,5 +78,9 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
     await this.setProperty(id, 'prefix', prefix);
   }
 
+  async setVolume(id: string, volume: number): Promise<void> {
+    await this.setProperty(id, 'volume', volume);
+  }
+
 }
 

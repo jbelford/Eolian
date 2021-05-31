@@ -173,11 +173,14 @@ export class DiscordEolianBot implements EolianBot {
     let state = await this.servers.get(guild.id);
     if (!state) {
       const details = new DiscordGuild(this.db.servers, guild);
+      const dto = await details.get();
+
       const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guild.id);
       const queue = new GuildQueue(this.queues, guild.id);
-      const player = new DiscordPlayer(connectionProvider, queue);
+      const player = new DiscordPlayer(connectionProvider, queue, dto.volume);
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
+
       state = { details, player, queue, display: { queue: queueDisplay, player: playerDisplay } };
       await this.servers.set(guild.id, state);
     }

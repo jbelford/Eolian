@@ -51,6 +51,8 @@ export const enum MESSAGES {
 
 export const IDLE_TIMEOUT = 60 * 10;
 
+export const DEFAULT_VOLUME = 0.10;
+
 
 export function getIcon(src: SOURCE): string | undefined {
   switch (src) {
