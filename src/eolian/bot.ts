@@ -7,7 +7,7 @@ import { LockManager } from 'data';
 import { AppDatabase, MemoryStore, MusicQueueCache } from 'data/@types';
 import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
-import { EolianBot, ServerState, ServerStateStore } from './@types';
+import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { DiscordTextChannel } from './channel';
 import { DiscordClient, DiscordGuildClient } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
@@ -30,6 +30,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
+  private readonly guildMap = new Map<string, ServerDetails>();
 
   private readonly db: AppDatabase;
   private readonly queues: MusicQueueCache;
@@ -107,8 +108,8 @@ export class DiscordEolianBot implements EolianBot {
     if (!invoked) {
       let prefix: string | undefined;
       if (message.guild) {
-        const state = await this.getGuildState(message.guild);
-        const config = await state.details.get();
+        const details = this.getGuildDetails(message.guild);
+        const config = await details.get();
         prefix = config.prefix;
       }
       invoked = this.parser.messageInvokesBot(message.content, prefix);
@@ -172,7 +173,7 @@ export class DiscordEolianBot implements EolianBot {
   private async getGuildState(guild: Guild): Promise<ServerState> {
     let state = await this.servers.get(guild.id);
     if (!state) {
-      const details = new DiscordGuild(this.db.servers, guild);
+      const details = this.getGuildDetails(guild);
       const dto = await details.get();
 
       const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guild.id);
@@ -185,6 +186,15 @@ export class DiscordEolianBot implements EolianBot {
       await this.servers.set(guild.id, state);
     }
     return state;
+  }
+
+  private getGuildDetails(guild: Guild): ServerDetails {
+    let details = this.guildMap.get(guild.id);
+    if (!details) {
+      details = new DiscordGuild(this.db.servers, guild);
+      this.guildMap.set(guild.id, details);
+    }
+    return details;
   }
 
 }
