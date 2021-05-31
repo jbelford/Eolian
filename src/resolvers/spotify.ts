@@ -206,7 +206,9 @@ function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, playlistArt
   let artwork: string | undefined;
   if (track.is_local && playlistArtwork) {
     artwork = playlistArtwork;
-  } else if (!albumArtwork && track.album.images.length) {
+  } else if (albumArtwork) {
+    artwork = albumArtwork;
+  } else if (track.album.images.length) {
     artwork = track.album.images[0].url;
   }
   return {
