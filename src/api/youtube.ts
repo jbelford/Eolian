@@ -106,13 +106,13 @@ export class YouTubeApiImpl implements YouTubeApi {
       throw e;
     }
 
-    return items.filter(item => item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default)
+    return items.filter(item => item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default?.url)
       .map(item => ({
         id: item.id!,
         name: decode(item.snippet!.title!),
         channelName: decode(item.snippet!.channelTitle!),
         url: `https://www.youtube.com/watch?v=${item.id}`,
-        artwork: item.snippet!.thumbnails!.default!.url!
+        artwork: item.snippet!.thumbnails!.high?.url ?? item.snippet!.thumbnails!.default!.url!
       }));
   }
 
@@ -152,12 +152,13 @@ export class YouTubeApiImpl implements YouTubeApi {
       const videoResponse = response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
       if (!videoResponse.length) return [];
 
-      const videos = videoResponse.map(video => ({
+      const videos = videoResponse.filter(video => !!video.snippet?.thumbnails?.default?.url)
+        .map(video => ({
           id: video.id!.videoId!,
           name: decode(video.snippet!.title!),
           channelName: decode(video.snippet!.channelTitle!),
           url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
-          artwork: video.snippet!.thumbnails!.default!.url!
+          artwork: video.snippet!.thumbnails!.high?.url ?? video.snippet!.thumbnails!.default!.url!
         }));
 
       return videos.slice(0, 5);
