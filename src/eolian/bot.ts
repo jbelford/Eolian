@@ -87,13 +87,15 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     try {
-      const locked = await this.lockManager.isLocked(message.author.id);
-      if (!locked && await this.isBotInvoked(message)) {
-        try {
-          await this.lockManager.lock(message.author.id);
-          await this.onBotInvoked(message);
-        } finally {
-          await this.lockManager.unlock(message.author.id);
+      if (await this.isBotInvoked(message)) {
+        const locked = await this.lockManager.isLocked(message.author.id);
+        if (!locked) {
+          try {
+            await this.lockManager.lock(message.author.id);
+            await this.onBotInvoked(message);
+          } finally {
+            await this.lockManager.unlock(message.author.id);
+          }
         }
       }
     } catch (e) {
@@ -111,7 +113,9 @@ export class DiscordEolianBot implements EolianBot {
         prefix = config.prefix;
       }
       invoked = this.parser.messageInvokesBot(message.content, prefix);
-      message.content = message.content.slice(1);
+      if (invoked) {
+        message.content = message.content.slice(1);
+      }
     }
     return invoked;
   }
