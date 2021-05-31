@@ -12,6 +12,7 @@ import { StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, Yout
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
 
+const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
 
@@ -26,12 +27,19 @@ export class YouTubeApiImpl implements YouTubeApi {
   getResourceType(url: string): YouTubeUrlDetails | undefined {
     const [path, query] = url.split('?');
 
-    if (path.match(/youtube\.com\/(watch|playlist)/g)) {
-      const parsed = querystring.parse(query);
-      return {
-        playlist: parsed['list'] as string,
-        video: parsed['v'] as string
-      };
+    const match = path.match(YOUTUBE_PATTERN);
+    if (match) {
+      if (match.groups?.video) {
+        return {
+          video: match.groups['video']
+        }
+      } else {
+        const parsed = querystring.parse(query);
+        return {
+          playlist: parsed['list'] as string,
+          video: parsed['v'] as string
+        };
+      }
     }
 
     return undefined;

@@ -212,11 +212,11 @@ Fetching using TOP likes will execute much faster.`,
     ],
     priority: 4,
     matchText: (text: string) => {
-      const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.com(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
+      const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.(com|be)(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
       let args: UrlArgument | undefined;
       if (match.matches && match.args) {
         args = { value: match.args, source: SOURCE.UNKNOWN };
-        if (args.value.match(/youtube\.com/g)) args.source = SOURCE.YOUTUBE;
+        if (args.value.match(/youtu(be\.com|\.be)/g)) args.source = SOURCE.YOUTUBE;
         else if (args.value.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
         else if (args.value.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
       }
