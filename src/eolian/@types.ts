@@ -1,7 +1,7 @@
 import { Track } from 'api/@types';
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
-import { Identifier, ServerQueue, UserDTO } from 'data/@types';
+import { Identifier, ServerDTO, ServerQueue, UserDTO } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 import { Player } from 'music/@types';
 
@@ -127,10 +127,16 @@ export interface ServerStateStore {
 }
 
 export interface ServerState {
+  config: ServerConfig;
   player: Player;
   queue: ServerQueue;
   display: {
     queue: QueueDisplay;
     player: PlayerDisplay;
   }
+}
+
+export interface ServerConfig {
+  get(): Promise<ServerDTO>;
+  setPrefix(prefix: string): Promise<void>;
 }

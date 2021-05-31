@@ -12,21 +12,36 @@ export interface EolianCache<V> extends Closable {
 
 export interface AppDatabase extends Closable {
   readonly users: UsersDb;
+  readonly servers: ServersDb;
 }
 
-export interface UsersDb {
-  get(id: string): Promise<UserDTO>;
+export interface CollectionDb<T> {
+  get(id: string): Promise<T | null>;
+  delete(id: string): Promise<boolean>;
+}
+
+export interface UsersDb extends CollectionDb<UserDTO> {
   setSoundCloud(id: string, soundcloud: number): Promise<void>;
   removeSoundCloud(id: string): Promise<void>;
   setSpotify(id: string, spotify: string): Promise<void>;
   removeSpotify(id: string): Promise<void>;
   setIdentifier(id: string, key: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string, key: string): Promise<boolean>;
-  delete(id: string): Promise<boolean>;
 }
 
-export interface UserDTO {
-  id: string;
+export interface ServersDb extends CollectionDb<ServerDTO> {
+  setPrefix(id: string, prefix: string): Promise<void>;
+}
+
+export interface DocDTO {
+  _id: string;
+}
+
+export interface ServerDTO extends DocDTO {
+  prefix: string;
+}
+
+export interface UserDTO extends DocDTO {
   soundcloud?: number;
   spotify?: string;
   identifiers?: { [key: string]: Identifier };

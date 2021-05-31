@@ -4,12 +4,13 @@ import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { LockManager } from 'data';
-import { AppDatabase, MemoryStore, MusicQueueCache, UsersDb } from 'data/@types';
+import { AppDatabase, MemoryStore, MusicQueueCache } from 'data/@types';
 import { Client, DMChannel, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerState, ServerStateStore } from './@types';
 import { DiscordTextChannel } from './channel';
 import { DiscordClient, DiscordGuildClient } from './client';
+import { DiscordGuildConfig } from './config';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordMessage } from './message';
 import { GuildQueue } from './queue';
@@ -30,14 +31,14 @@ export class DiscordEolianBot implements EolianBot {
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
 
-  private readonly users: UsersDb;
+  private readonly db: AppDatabase;
   private readonly queues: MusicQueueCache;
   private readonly servers: ServerStateStore = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
-    this.users = args.db.users;
+    this.db = args.db;
     this.queues = args.store.queue;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
@@ -79,24 +80,40 @@ export class DiscordEolianBot implements EolianBot {
       .catch(err => logger.warn(`Failed to set presence: %s`, err));
   }
 
-  private onMessageHandler = async (message: Message): Promise<void>  => {
+  private onMessageHandler = async (message: Message): Promise<void> => {
     if (message.author.bot || message.channel.type === 'news') {
       return;
     }
 
-    if (message.mentions.has(this.client.user!) || this.parser.messageInvokesBot(message.content)) {
-      const locked = await this.lockManager.isLocked(message.author.id);
-      if (!locked) {
-        try {
-          await this.lockManager.lock(message.author.id);
-          await this.onBotInvoked(message);
-        } catch (e) {
-          logger.warn(`Unhandled error occured during request: %s`, e);
-        } finally {
-          await this.lockManager.unlock(message.author.id);
+    try {
+      if (await this.isBotInvoked(message)) {
+        const locked = await this.lockManager.isLocked(message.author.id);
+        if (!locked) {
+          try {
+            await this.lockManager.lock(message.author.id);
+            await this.onBotInvoked(message);
+          } finally {
+            await this.lockManager.unlock(message.author.id);
+          }
         }
       }
+    } catch (e) {
+      logger.warn(`Unhandled error occured during request: %s`, e);
     }
+  }
+
+  private async isBotInvoked(message: Message) {
+    let invoked = message.mentions.has(this.client.user!);
+    if (!invoked) {
+      let prefix: string | undefined;
+      if (message.guild) {
+        const state = await this.getGuildState(message.guild.id);
+        const config = await state.config.get();
+        prefix = config.prefix;
+      }
+      invoked = this.parser.messageInvokesBot(message.content, prefix);
+    }
+    return invoked;
   }
 
   private async onBotInvoked(message: Message): Promise<void> {
@@ -106,7 +123,7 @@ export class DiscordEolianBot implements EolianBot {
 
     // @ts-ignore
     const context: CommandContext = {};
-    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.users);
+    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.db.users);
 
     try {
 
@@ -117,7 +134,6 @@ export class DiscordEolianBot implements EolianBot {
 
       const permission = getPermissionLevel(author, member);
       const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
-
 
       if (channel instanceof DMChannel) {
         if (!command.dmAllowed) {
@@ -132,7 +148,7 @@ export class DiscordEolianBot implements EolianBot {
         throw new Error('Guild is missing from text message');
       }
 
-      context.user = new DiscordUser(author, this.users, permission, member);
+      context.user = new DiscordUser(author, this.db.users, permission, member);
       context.message = new DiscordMessage(message, context.channel);
 
       await command.execute(context, options);
@@ -155,12 +171,13 @@ export class DiscordEolianBot implements EolianBot {
   private async getGuildState(guildId: string): Promise<ServerState> {
     let state = await this.servers.get(guildId);
     if (!state) {
+      const config = new DiscordGuildConfig(this.db.servers, guildId);
       const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guildId);
       const queue = new GuildQueue(this.queues, guildId);
       const player = new DiscordPlayer(connectionProvider, queue);
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
-      state = { player, queue, display: { queue: queueDisplay, player: playerDisplay } };
+      state = { config, player, queue, display: { queue: queueDisplay, player: playerDisplay } };
       await this.servers.set(guildId, state);
     }
     return state;

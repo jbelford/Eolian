@@ -36,7 +36,7 @@ export class DiscordUser implements ContextUser {
   }
 
   async get(): Promise<UserDTO> {
-    return this.dto || (this.dto = await this.users.get(this.id));
+    return this.dto || (this.dto = (await this.users.get(this.id) ?? { _id: this.id }));
   }
 
 

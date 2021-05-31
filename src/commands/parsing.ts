@@ -32,8 +32,8 @@ function getCommandOptionParsingStrategy(command: Command): CommandOptionsParsin
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
 
-  messageInvokesBot(message: string): boolean {
-    return message.trim().charAt(0) === environment.cmdToken;
+  messageInvokesBot(message: string, prefix = environment.cmdToken): boolean {
+    return message.trim().charAt(0) === prefix;
   }
 
   parseCommand(message: string, permission: PERMISSION): ParsedCommand {

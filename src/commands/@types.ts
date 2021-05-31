@@ -25,7 +25,7 @@ export interface CommandCategory {
 }
 
 export interface CommandParsingStrategy {
-  messageInvokesBot(message: string): boolean;
+  messageInvokesBot(message: string, prefix?: string): boolean;
   parseCommand(message: string, permission: PERMISSION): ParsedCommand;
 }
 

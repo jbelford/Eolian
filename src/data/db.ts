@@ -1,16 +1,18 @@
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { MongoClient } from 'mongodb';
-import { AppDatabase, UsersDb } from './@types';
-import { MongoUsers } from './users';
+import { AppDatabase, ServersDb, UsersDb } from './@types';
+import { MongoServers, MongoUsers } from './collection';
 
 class MongoDatabase implements AppDatabase {
 
   readonly users: UsersDb;
+  readonly servers: ServersDb;
 
   constructor(private readonly client: MongoClient) {
     const db = client.db(environment.mongo.db_name);
     this.users = new MongoUsers(db.collection('users'));
+    this.servers = new MongoServers(db.collection('servers'));
   }
 
   async close(): Promise<void> {
