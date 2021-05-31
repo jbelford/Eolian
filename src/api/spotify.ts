@@ -11,6 +11,8 @@ const enum SPOTIFY_API_VERSIONS {
 }
 
 const SPOTIFY_API = 'https://api.spotify.com';
+const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
+
 
 export class SpotifyApiImpl implements SpotifyApi {
 
@@ -29,17 +31,15 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getUser(id: string): Promise<SpotifyUser> {
     try {
-      logger.debug(`Getting user: ${id}`);
       return await this.get<SpotifyUser>(`users/${id}`);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify user: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify user: id: %s`, id);
       throw e;
     }
   }
 
   async getTrack(id: string): Promise<SpotifyTrack> {
     try {
-      logger.debug(`Getting spotify track: %s`, id);
       return await this.get<SpotifyTrack>(`tracks/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify track: id: %s`, id);
@@ -49,17 +49,15 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getPlaylist(id: string): Promise<SpotifyPlaylistTracks> {
     try {
-      logger.debug(`Getting playlist: ${id}`);
       return await this.get<SpotifyPlaylistTracks>(`playlists/${id}`);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify playlist: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify playlist: id: %s`, id);
       throw e;
     }
   }
 
   async getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistTracks> {
     try {
-      logger.debug(`Getting playlist tracks: ${id}`);
       const playlist = await this.getPlaylist(id);
       const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { limit: 100 };
 
@@ -88,17 +86,16 @@ export class SpotifyApiImpl implements SpotifyApi {
 
       return playlist;
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify playlist tracks: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify playlist tracks: id: %s`, id);
       throw e;
     }
   }
 
   async getAlbum(id: string): Promise<SpotifyAlbumFull> {
     try {
-      logger.debug(`Getting album: ${id}`);
       return await this.get<SpotifyAlbumFull>(`albums/${id}`);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify album: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify album: id: %s`, id);
       throw e;
     }
   }
@@ -109,28 +106,26 @@ export class SpotifyApiImpl implements SpotifyApi {
       album.tracks.items = await this.getPaginatedItems(`albums/${id}/tracks`, { initial: album.tracks });
       return album;
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify album tracks: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify album tracks: id: %s`, id);
       throw e;
     }
   }
 
   async getArtist(id: string): Promise<SpotifyArtist> {
     try {
-      logger.debug(`Getting artist: ${id}`);
       return await this.get<SpotifyArtist>(`artists/${id}`);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify artist: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify artist: id: %s`, id);
       throw e;
     }
   }
 
   async getArtistTracks(id: string): Promise<SpotifyTrack[]> {
     try {
-      logger.debug(`Getting artist: ${id}`);
       const response = await this.get<{ tracks: SpotifyTrack[] }>(`artists/${id}/top-tracks`, { country: 'US' });
       return response.tracks;
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify artist tracks: id: ${id}`);
+      logger.warn(`Failed to fetch Spotify artist tracks: id: %s`, id);
       throw e;
     }
   }
@@ -145,7 +140,7 @@ export class SpotifyApiImpl implements SpotifyApi {
         { type: 'playlist', q: query, limit: 5 });
       return response.playlists.items;
     } catch (e) {
-      logger.warn(`Failed to search Spotify playlists: query: ${query} userId: ${userId}`);
+      logger.warn(`Failed to search Spotify playlists: query: %s userId: %s`, query, userId);
       throw e;
     }
   }
@@ -156,7 +151,7 @@ export class SpotifyApiImpl implements SpotifyApi {
         { type: 'album', q: query, limit: 5 });
       return response.albums.items;
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify album: query: ${query}`);
+      logger.warn(`Failed to fetch Spotify album: query: %s`, query);
       throw e;
     }
   }
@@ -167,7 +162,7 @@ export class SpotifyApiImpl implements SpotifyApi {
         { type: 'artist', q: query, limit });
       return response.artists.items;
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify artists: query: ${query} limit: ${limit}`);
+      logger.warn(`Failed to fetch Spotify artists: query: %s limit: %d`, query, limit);
       throw e;
     }
   }
@@ -204,7 +199,7 @@ export class SpotifyApiImpl implements SpotifyApi {
       const results = await fuzzyMatch(query, playlists.map(playlist => playlist.name));
       return results.slice(0, 5).map(result => playlists[result.key]);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify user playlists: query: ${query} userId: ${userId}`);
+      logger.warn(`Failed to fetch Spotify user playlists: query: %s userId: %s`, query, userId);
       throw e;
     }
   }
@@ -220,9 +215,9 @@ export class SpotifyApiImpl implements SpotifyApi {
   private async getToken(): Promise<{ access_token: string, expires_in: number }> {
     const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
-    logger.debug(`Spotify HTTP: https://accounts.spotify.com/api/token`);
+    logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
 
-    const resp = await requestPromise('https://accounts.spotify.com/api/token',
+    const resp = await requestPromise(SPOTIFY_TOKEN,
       { method: 'post', body: 'grant_type=client_credentials', json: true, headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }});
 
     return resp;
@@ -233,9 +228,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   private async getUrl<T>(url: string, params = {}) : Promise<T> {
-    if (logger.isDebugEnabled()) {
-      logger.debug(`Spotify HTTP: ${url} - ${JSON.stringify(params)}`);
-    }
+    logger.info(`Spotify HTTP: %s - %s`, url, params);
     await this.checkAndUpdateToken();
     return await requestPromise(url, { qs: params, json: true, auth: { bearer: this.accessToken } }) as unknown as Promise<T>;
   }

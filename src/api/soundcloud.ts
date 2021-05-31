@@ -8,7 +8,7 @@ import request from 'request';
 import requestp from 'request-promise-native';
 import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track } from './@types';
 
-const URL = 'https://api.soundcloud.com';
+const SOUNDCLOUD_API = 'https://api.soundcloud.com';
 const TRACKS_PARAMS = {
   access: 'playable,blocked,preview'
 };
@@ -21,7 +21,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       return await this.getPaginatedItems<SoundCloudTrack>('tracks', { params: { ...TRACKS_PARAMS, q: query }, total: limit, requestLimit: 1 });
     } catch (e) {
-      logger.warn(`Failed to search SoundCloud songs: '${query}' limit: '${limit}'`);
+      logger.warn('Failed to search SoundCloud songs: %s limit: %d', query, limit);
       throw e;
     }
   }
@@ -30,7 +30,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       return await this.getPaginatedItems<SoundCloudUser>('users', { params: { q: query }, total: limit, requestLimit: 1 });
     } catch (e) {
-      logger.warn(`Failed to search SoundCloud users: query: '${query}' limit: '${limit}'`);
+      logger.warn('Failed to search SoundCloud users: query: %s limit: %d', query, limit);
       throw e;
     }
   }
@@ -40,7 +40,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const path = userId ? `users/${userId}/playlists` : 'playlists'
       return await this.getPaginatedItems<SoundCloudPlaylist>(path, { params: { ...TRACKS_PARAMS, q: query }, total: 5, requestLimit: 1 });
     } catch (e) {
-      logger.warn(`Failed to search SoundCloud playlists: query: '${query}', userId: '${userId}'`);
+      logger.warn('Failed to search SoundCloud playlists: query: %s, userId: %s', query, userId);
       throw e;
     }
   }
@@ -50,7 +50,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       resource = await this.get('resolve', { url, ...options });
     } catch (e) {
-      logger.warn(`Failed to resolve URL from SoundCloud: url: ${url} options: ${JSON.stringify(options)}`);
+      logger.warn('Failed to resolve URL from SoundCloud: url: %s options: %s', url, options);
       throw e;
     }
     if (resource instanceof Array) {
@@ -76,7 +76,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const user: SoundCloudUser = await this.get(`users/${id}`);
       return user;
     } catch (e) {
-      logger.warn(`Failed to fetch SoundCloud user profile: id: ${id}`);
+      logger.warn('Failed to fetch SoundCloud user profile: id: %d', id);
       throw e;
     }
   }
@@ -86,7 +86,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       return await this.get<SoundCloudTrack>(`tracks/${id}`);
     } catch (e) {
-      logger.warn(`Failed to fetch SoundCloud track: id: ${id}`);
+      logger.warn('Failed to fetch SoundCloud track: id: %d', id);
       throw e;
     }
   }
@@ -95,7 +95,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       return await this.get<SoundCloudPlaylist>(`playlists/${id}`, TRACKS_PARAMS);
     } catch (e) {
-      logger.warn(`Failed to fetch SoundCloud playlist: id: ${id}`);
+      logger.warn('Failed to fetch SoundCloud playlist: id: %d', id);
       throw e;
     }
   }
@@ -105,7 +105,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const user = await this.getUser(id);
       return await this.getPaginatedItems<SoundCloudTrack>(`users/${id}/tracks`, { total: user.track_count, params: TRACKS_PARAMS });
     } catch (e) {
-      logger.warn(`Failed to fetch SoundCloud user's track: id: ${id}`);
+      logger.warn(`Failed to fetch SoundCloud user's track: id: %d`, id);
       throw e;
     }
   }
@@ -114,7 +114,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     try {
       return await this.getPaginatedItems<SoundCloudTrack>(`users/${id}/likes/tracks`, { total: max, progress, params: TRACKS_PARAMS });
     } catch (e) {
-      logger.warn(`Failed to fetch SoundCloud user's liked tracks: ${id}`);
+      logger.warn(`Failed to fetch SoundCloud user's liked tracks: %d`, id);
       throw e;
     }
   }
@@ -168,7 +168,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       const stream = request(`${track.stream}?client_id=${this.token}`);
       stream.once('response', resp => {
         if (resp.statusCode < 200 || resp.statusCode >= 400) {
-          logger.error(`Error occured on request: ${track.stream}`);
+          logger.warn(`Error occured on request: %s`, track.stream);
           return reject(resp.statusMessage);
         }
 
@@ -184,11 +184,11 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   private async get<T>(endpoint: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
     params.client_id = this.token;
-    return this.getUri<T>(`${URL}/${endpoint}?${querystring.stringify(params)}`);
+    return this.getUri<T>(`${SOUNDCLOUD_API}/${endpoint}?${querystring.stringify(params)}`);
   }
 
   private async getUri<T>(uri: string): Promise<T> {
-    logger.debug(`SoundCloud HTTP: ${uri}`);
+    logger.info(`SoundCloud HTTP: %s`, uri);
     const data = await requestp(uri);
     return JSON.parse(data);
   }

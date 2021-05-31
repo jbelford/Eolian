@@ -123,7 +123,7 @@ export class DiscordEolianBot implements EolianBot {
   private async onBotInvoked(message: Message): Promise<void> {
     const { author, content, channel, member, guild } = message;
 
-    logger.debug(`Message event received: '%s'`, content);
+    logger.info(`Message event received: '%s'`, content);
 
     // @ts-ignore
     const context: CommandContext = {};
