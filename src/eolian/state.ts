@@ -26,16 +26,16 @@ export class InMemoryServerStateStore implements ServerStateStore {
 
   private onExpired = async (key: string, value: ServerState) => {
     try {
-      logger.debug(`${key} guild state expired`);
+      logger.info('%s guild state expired', key);
       if (value.player.idle && value.queue.idle) {
-        logger.debug(`${key} deleting idle guild state`);
+        logger.info('%s deleting idle guild state', key);
         await Promise.allSettled([
           value.player.close(),
           value.display.player.close(),
           value.display.queue.close()
         ]);
       } else {
-        logger.debug(`${key} stopping partially idle guild state`);
+        logger.info('%s stopping partially idle guild state', key);
         if (value.player.idle) {
           await value.display.player.removeIdle();
           await value.player.stop();
@@ -45,7 +45,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
         await this.cache.set(key, value);
       }
     } catch (e) {
-      logger.warn(`Error occured clearing guild state ${e}`);
+      logger.warn(`Error occured clearing guild state: %s`, e);
     }
   };
 }
