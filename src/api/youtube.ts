@@ -47,19 +47,13 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getVideo(id: string): Promise<YoutubeVideo> {
     try {
-      logger.debug(`YouTube HTTP: videos.list ${id}`);
+      logger.info(`YouTube HTTP: videos.list ${id}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.videos.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
       if (!response.data.items) throw new Error('No results from YouTube');
 
       const video = response.data.items[0];
-      return {
-        id: video.id!,
-        name: decode(video.snippet!.title!),
-        channelName: decode(video.snippet!.channelTitle!),
-        url: `https://www.youtube.com/watch?v=${video.id}`,
-        artwork: video.snippet!.thumbnails!.high!.url!
-      };
+      return mapVideoResponse(video);
     } catch (e) {
       logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
       throw e;
@@ -68,19 +62,13 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getPlaylist(id: string): Promise<YoutubePlaylist> {
     try {
-      logger.debug(`YouTube HTTP: playlists.list ${id}`);
+      logger.info(`YouTube HTTP: playlists.list ${id}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.playlists.list({ id, maxResults: 1, part: 'id,snippet,contentDetails' });
       if (!response.data.items) throw new Error('No results from YouTube');
 
       const playlist = response.data.items[0];
-      return {
-        id: playlist.id!,
-        name: decode(playlist.snippet!.title!),
-        channelName: decode(playlist.snippet!.channelTitle!),
-        videos: playlist.contentDetails!.itemCount || undefined,
-        url: `https://www.youtube.com/playlist?list=${playlist.id}`
-      };
+      return mapPlaylistResponse(playlist);
     } catch (e) {
       logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
       throw e;
@@ -91,7 +79,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     let items: youtube_v3.Schema$PlaylistItem[] = [];
 
     try {
-      logger.debug(`YouTube HTTP: playlistItems.list ${id}`);
+      logger.info(`YouTube HTTP: playlistItems.list ${id}`);
       // @ts-ignore Typescript is dumb
       let response = await this.youtube.playlistItems.list({ playlistId: id, part: 'id,snippet,contentDetails' });
       items = response.data.items || [];
@@ -107,28 +95,17 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
 
     return items.filter(item => item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default?.url)
-      .map(item => ({
-        id: item.id!,
-        name: decode(item.snippet!.title!),
-        channelName: decode(item.snippet!.channelTitle!),
-        url: `https://www.youtube.com/watch?v=${item.id}`,
-        artwork: item.snippet!.thumbnails!.high?.url ?? item.snippet!.thumbnails!.default!.url!
-      }));
+      .map(mapVideoResponse);
   }
 
   async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
     try {
-      logger.debug(`YouTube HTTP: search.list type:playlist ${query}`);
+      logger.info(`YouTube HTTP: search.list type:playlist ${query}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({ q: query, maxResults: 5, type: 'playlist', part: 'id,snippet' });
       if (!response.data.items) return [];
 
-      return response.data.items.map(playlist => ({
-        id: playlist.id!.playlistId!,
-        name: decode(playlist.snippet!.title!),
-        channelName: decode(playlist.snippet!.channelTitle!),
-        url: `https://www.youtube.com/playlist?list=${playlist.id!.playlistId}`
-      }));
+      return response.data.items.map(mapPlaylistResponse);
     } catch (e) {
       logger.warn(`Failed to search YouTube playlists: query: ${query}`);
       throw e;
@@ -137,7 +114,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchVideos(query: string): Promise<YoutubeVideo[]> {
     try {
-      logger.debug(`YouTube HTTP: search.list ${query}`);
+      logger.info(`YouTube HTTP: search.list ${query}`);
       // @ts-ignore Typescript is dumb
       const response = await this.youtube.search.list({
         q: query,
@@ -153,13 +130,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       if (!videoResponse.length) return [];
 
       const videos = videoResponse.filter(video => !!video.snippet?.thumbnails?.default?.url)
-        .map(video => ({
-          id: video.id!.videoId!,
-          name: decode(video.snippet!.title!),
-          channelName: decode(video.snippet!.channelTitle!),
-          url: `https://www.youtube.com/watch?v=${video.id!.videoId}`,
-          artwork: video.snippet!.thumbnails!.high?.url ?? video.snippet!.thumbnails!.default!.url!
-        }));
+        .map(mapVideoResponse);
 
       return videos.slice(0, 5);
     } catch (e) {
@@ -184,7 +155,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     const videos = await this.searchSong(track.title, track.poster);
     if (videos.length > 0) {
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
-      logger.debug(`Searched stream '${track.poster} ${track.title}' selected '${video.url}'`);
+      logger.info(`Searched stream '${track.poster} ${track.title}' selected '${video.url}'`);
       const youtubeTrack = mapYouTubeVideo(video);
       return this.getStream(youtubeTrack);
     }
@@ -210,6 +181,29 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
+}
+
+function mapVideoResponse(video: youtube_v3.Schema$Video | youtube_v3.Schema$PlaylistItem | youtube_v3.Schema$SearchResult): YoutubeVideo {
+  const thumbnails = video.snippet!.thumbnails!;
+  const id = typeof video.id! === 'string' ? video.id! : video.id!.videoId!;
+  return {
+    id,
+    name: decode(video.snippet!.title!),
+    channelName: decode(video.snippet!.channelTitle!),
+    url: `https://www.youtube.com/watch?v=${id}`,
+    artwork: thumbnails.maxres?.url ?? thumbnails.standard?.url ?? thumbnails.medium?.url ?? thumbnails.default!.url!
+  };
+}
+
+function mapPlaylistResponse(playlist: youtube_v3.Schema$Playlist | youtube_v3.Schema$SearchResult): YoutubePlaylist {
+  const id = typeof playlist.id! === 'string' ? playlist.id! : playlist.id!.playlistId!;
+  return {
+    id,
+    name: decode(playlist.snippet!.title!),
+    channelName: decode(playlist.snippet!.channelTitle!),
+    videos: (playlist as youtube_v3.Schema$Playlist).contentDetails?.itemCount ?? undefined,
+    url: `https://www.youtube.com/playlist?list=${id}`
+  };
 }
 
 function mapVideoToName(video: YoutubeVideo) {
