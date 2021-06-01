@@ -36,9 +36,9 @@ const PLAYER_TIMEOUT = 1000 * 60 * 3;
  *
  *   ------------------------------------- Replace all of these when force skipped -----------------------------
  *  |                                                                                                          |
- *  Song readable stream -> PCM transformer (either opus decoder / ffmpeg) -> Volume Transform -> Opus Encoder -> Passthrough -> Dispatcher
- * |                                                                     |
- * ------------- Replace these 2 when song ends -------------------------
+ *  Song readable stream -> PCM transformer (ffmpeg) -> Volume Transform -> Opus Encoder -> Passthrough -> Dispatcher
+ * |                                                 |
+ * ------- Replace these 2 when song ends -----------
  *
  */
 export class DiscordPlayer extends EventEmitter implements Player {
@@ -181,7 +181,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         const stream = await getTrackStream(nextTrack);
         if (stream) {
           this.songStream = stream.readable;
-          this.pcmTransform = stream.opus ? new prism.opus.Decoder(OPUS_OPTIONS) : new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+          this.pcmTransform = new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
           return this.songStream
               .once('error', this.streamErrorHandler)
               .once('close', () => logger.debug(`Song stream closed`))

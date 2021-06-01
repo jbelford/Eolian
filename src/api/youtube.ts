@@ -1,11 +1,9 @@
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
-import { fuzzyMatch, noop } from 'common/util';
+import { fuzzyMatch } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
-import { opus } from 'prism-media';
 import querystring from 'querystring';
-import { pipeline } from 'stream';
 import ytdl from 'ytdl-core';
 import { StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
@@ -167,18 +165,8 @@ export class YouTubeApiImpl implements YouTubeApi {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
 
-    const info = await ytdl.getInfo(track.url);
-    const formats = ytdl.filterFormats(info.formats, ytdlFilter);
-    if (formats.length) {
-      const stream = pipeline(
-        ytdl.downloadFromInfo(info, { filter: ytdlFilter }),
-        new opus.WebmDemuxer(),
-        noop);
-      return { readable: stream, details: track, opus: true };
-    } else {
-      const stream = ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio' });
-      return { readable: stream, details: track };
-    }
+    const stream = ytdl(track.url, { filter: 'audioonly', quality: 'highestaudio' });
+    return { readable: stream, details: track };
   }
 
 }
@@ -209,10 +197,6 @@ function mapPlaylistResponse(playlist: youtube_v3.Schema$Playlist | youtube_v3.S
 function mapVideoToName(video: YoutubeVideo) {
   return `${video.channelName} ${video.name}`;
 }
-
-const ytdlFilter: ytdl.Filter = format => format.codecs === 'opus' &&
-  format.container === 'webm' &&
-  format.audioSampleRate === '48000';
 
 export function mapYouTubeVideo(video: YoutubeVideo): Track {
   return {

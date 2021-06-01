@@ -234,6 +234,5 @@ export interface Track {
 
 export interface StreamData {
   readable: Readable,
-  details: Track,
-  opus?: boolean
+  details: Track
 }
