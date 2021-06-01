@@ -1,6 +1,6 @@
 import { COLOR } from 'common/constants';
 import { EmbedMessage } from 'eolian/@types';
-import { PollOption, PollOptionResult } from './@types';
+import { PollOption } from './@types';
 
 export function createPollQuestionEmbed(question: string, options: PollOption[], username: string, pic?: string): EmbedMessage {
   return {
@@ -9,7 +9,7 @@ export function createPollQuestionEmbed(question: string, options: PollOption[],
     },
     title: `*${question}*`,
     color: COLOR.POLL,
-    description: options.map(option => `${option.emoji}  ${option.text}`).join('\n\n'),
+    description: options.map(option => `${option.emoji}  **${option.text}**:  ${option.count} Votes`).join('\n\n'),
     footer: {
       text: `${username}'s poll`,
       icon: pic
@@ -17,9 +17,9 @@ export function createPollQuestionEmbed(question: string, options: PollOption[],
   };
 }
 
-export function createPollResultsEmbed(question: string, results: PollOptionResult[], username: string, pic?: string): EmbedMessage {
-  const description = results.sort((a, b) => b.count - a.count)
-    .map(result => `**${result.option}**: ${result.count} Votes`);
+export function createPollResultsEmbed(question: string, options: PollOption[], username: string, pic?: string): EmbedMessage {
+  const description = options.sort((a, b) => b.count - a.count)
+    .map(option => `**${option.text}**: ${option.count} Votes`);
   description[0] += ' ✅';
 
   return {

@@ -7,7 +7,7 @@ export class InMemoryCache<V> implements EolianCache<V> {
 
   constructor(private readonly ttl: number, clone = true,
       private readonly onExpired?: (key: string, value: V) => void) {
-    this.cache = new NodeCache({ stdTTL: this.ttl, checkperiod: 30,  useClones: clone, deleteOnExpire: true });
+    this.cache = new NodeCache({ stdTTL: this.ttl, checkperiod: 300,  useClones: clone, deleteOnExpire: true });
     if (this.onExpired) {
       this.cache.on('del', this.onExpired);
     }

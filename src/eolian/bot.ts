@@ -210,7 +210,7 @@ export class DiscordEolianBot implements EolianBot {
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
 
-      state = { details, player, queue, display: { queue: queueDisplay, player: playerDisplay } };
+      state = { details, player, queue, display: { queue: queueDisplay, player: playerDisplay }, disposable: [] };
       await this.servers.set(guild.id, state);
     }
     return state;

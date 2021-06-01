@@ -144,7 +144,8 @@ export interface ServerState {
   display: {
     queue: QueueDisplay;
     player: PlayerDisplay;
-  }
+  },
+  disposable: Closable[];
 }
 
 export interface ServerDetails extends ServerInfo {
