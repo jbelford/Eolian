@@ -1,22 +1,19 @@
-import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
+import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
-import { UsersDb } from 'data/@types';
 import { MessageActionRow, MessageButton } from 'discord-buttons';
-import ButtonCollector from 'discord-buttons/typings/v12/Classes/ButtonCollector';
-import ButtonEvent from 'discord-buttons/typings/v12/Classes/INTERACTION_CREATE';
 import { DMChannel, Message, MessageCollector, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
 import { ButtonStyle, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, EmbedMessageButton, MessageButtonOnClickHandler } from './@types';
-import { DiscordMessage, mapDiscordEmbed } from './message';
-import { DiscordUser } from './user';
+import { ButtonRegistry } from './button';
+import { DiscordMessage, DiscordMessageButtons, mapDiscordEmbed } from './message';
 
 const STOP_EMOJI = '🚫';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
   constructor(private readonly channel: TextChannel | DMChannel,
-    private readonly users: UsersDb) { }
+    private readonly registry: ButtonRegistry) { }
 
   get lastMessageId(): string | undefined {
     return this.channel.lastMessageID || undefined;
@@ -121,31 +118,39 @@ export class DiscordTextChannel implements ContextTextChannel {
     if (this.sendable) {
       try {
         const rich = mapDiscordEmbed(embed);
-        const wrapped: ButtonWrapped[] | undefined = embed.buttons?.map(button => {
-          return {
-            details: button,
-            component: new MessageButton()
-              .setEmoji(button.emoji)
-              .setStyle(buttonStyleToDiscordStyle(button.style))
-              .setID(`${Date.now()}_${this.channel.id}_${button.emoji}`)
-          };
-        })
-        let buttonRow: any[] | undefined;
-        if (wrapped) {
-          buttonRow = [];
-          for (let i = 0; i < wrapped.length; i += 5) {
-            const row = new MessageActionRow()
-              .addComponent(wrapped.slice(i, i + 5).map(wrapped => wrapped.component));
-            buttonRow.push(row);
+
+        const buttonMap = new Map<string, EmbedMessageButton>();
+        let buttonRows: any[] | undefined;
+        if (embed.buttons) {
+          const buttons: any[] = embed.buttons.map((button, idx) => {
+            const id = `button_${idx}`;
+            buttonMap.set(id, button);
+            return new MessageButton()
+                .setEmoji(button.emoji)
+                .setStyle(buttonStyleToDiscordStyle(button.style))
+                .setID(id);
+          })
+
+          buttonRows = [];
+          for (let i = 0; i < buttons.length; i += 5) {
+            const row = new MessageActionRow().addComponent(buttons.slice(i, i + 5));
+            buttonRows.push(row);
           }
         }
+
         // @ts-ignore
-        const message = await this.channel.send({ embed: rich, components: buttonRow }) as Message;
+        const message = await this.channel.send({ embed: rich, components: buttonRows }) as Message;
         if (embed.reactions) {
           this.addReactions(message, embed.reactions);
         }
-        const collector = wrapped ? this.addButtons(message, wrapped, embed.buttonUserId) : undefined;
-        return new DiscordMessage(message, this, buttonRow, collector);
+
+        let msgButtons: DiscordMessageButtons | undefined;
+        if (buttonRows) {
+          this.registry.register(message.id, buttonMap);
+          msgButtons = { registry: this.registry, components: buttonRows };
+        }
+
+        return new DiscordMessage(message, this, msgButtons);
       } catch (e) {
         logger.warn('Failed to send embed message: %s', e);
       }
@@ -167,54 +172,6 @@ export class DiscordTextChannel implements ContextTextChannel {
     })();
   }
 
-  private addButtons(message: Message, buttons: ButtonWrapped[], userId?: string): ButtonCollector {
-    const buttonMap: { [key:string]: ButtonWrapped } = {};
-    buttons.forEach(button => buttonMap[button.component.custom_id] = button);
-
-    // @ts-ignore
-    const collector: ButtonCollector = message.createButtonCollector((button: ButtonEvent) =>
-      button.clicker.user.id !== message.author.id
-      && (!userId || userId === button.clicker.user.id)
-      && button.id in buttonMap
-      && !!buttonMap[button.id].details.onClick,
-      { time: 60000 * 60 * 2 });
-
-    const buttonClickEventHandler = async (button: ButtonEvent) => {
-        const wrapped = buttonMap[button.id];
-
-        let destroy = false;
-        try {
-          destroy = await wrapped.details.onClick!(new DiscordMessage(message, this),
-              new DiscordUser(button.clicker.user, this.users, PERMISSION.UNKNOWN),
-              wrapped.details.emoji);
-        } catch (e) {
-          logger.warn(`Button handler threw an unhandled exception: ${e.stack || e}`);
-          destroy = true;
-        }
-
-        if (destroy) {
-          collector.stop();
-        } else {
-          await button.defer();
-        }
-
-      };
-
-    collector.on('collect', buttonClickEventHandler);
-
-    collector.once('end', () => {
-      collector.removeListener('collect', buttonClickEventHandler);
-      collector.removeListener('remove', buttonClickEventHandler);
-    });
-
-    return collector;
-  }
-
-}
-
-interface ButtonWrapped {
-  details: EmbedMessageButton,
-  component: any
 }
 
 function buttonStyleToDiscordStyle(style = ButtonStyle.SECONDARY) {

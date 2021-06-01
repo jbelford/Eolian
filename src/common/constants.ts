@@ -120,6 +120,7 @@ export const enum DiscordEvents {
   DEBUG = 'debug',
   WARN = 'warn',
   MESSAGE_REACTION_ADD = 'messageReactionAdd',
+  CLICK_BUTTON = 'clickButton'
 }
 
 export const enum DiscordChannel {

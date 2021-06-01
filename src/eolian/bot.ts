@@ -5,9 +5,11 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { LockManager } from 'data';
 import { AppDatabase, MemoryStore, MusicQueueCache } from 'data/@types';
+import ButtonEvent from 'discord-buttons/typings/v12/Classes/INTERACTION_CREATE';
 import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
+import { ButtonRegistry } from './button';
 import { DiscordTextChannel } from './channel';
 import { DiscordClient, DiscordGuildClient } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
@@ -30,6 +32,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
+  private readonly registry = new ButtonRegistry();
   private readonly guildMap = new Map<string, ServerDetails>();
 
   private readonly db: AppDatabase;
@@ -52,6 +55,7 @@ export class DiscordEolianBot implements EolianBot {
     this.client.on(DiscordEvents.WARN, (info) => logger.warn(`Warn event emitted: %s`, info));
     this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted %s`, err));
     this.client.on(DiscordEvents.MESSAGE, this.onMessageHandler);
+    this.client.on(DiscordEvents.CLICK_BUTTON, this.onClickButtonHandler);
     if (logger.isDebugEnabled()) {
       this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: %s`, info));
     }
@@ -66,6 +70,25 @@ export class DiscordEolianBot implements EolianBot {
   async close(): Promise<void> {
     this.client.destroy();
   }
+
+  private onClickButtonHandler = async (button: ButtonEvent) => {
+    const embedButton = this.registry.getButton(button.message.id, button.id);
+    if (embedButton) {
+      try {
+        const permission = getPermissionLevel(button.clicker.user, button.clicker.member);
+        const channel = new DiscordTextChannel(<TextChannel | DMChannel>button.channel, this.registry);
+        const message = new DiscordMessage(button.message, channel);
+        const user = new DiscordUser(button.clicker.user, this.db.users, permission, button.clicker.member);
+        const destroy = await embedButton.onClick(message, user, embedButton.emoji);
+        if (destroy) {
+          this.registry.unregister(message.id);
+        }
+        await button.defer();
+      } catch (e) {
+        logger.warn('Unhandled occured executing button event: %s', e);
+      }
+    }
+  };
 
   /**
    * Executed when the connection has been established
@@ -130,7 +153,7 @@ export class DiscordEolianBot implements EolianBot {
 
     // @ts-ignore
     const context: CommandContext = {};
-    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.db.users);
+    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.registry);
 
     try {
 

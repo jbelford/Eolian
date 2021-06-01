@@ -1,14 +1,18 @@
 import { logger } from 'common/logger';
-import ButtonCollector from 'discord-buttons/typings/v12/Classes/ButtonCollector';
 import { Message, MessageEditOptions, MessageEmbed } from 'discord.js';
 import { ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage } from './@types';
+import { ButtonRegistry } from './button';
+
+export interface DiscordMessageButtons {
+  registry: ButtonRegistry;
+  components: any[];
+}
 
 export class DiscordMessage implements ContextMessage {
 
   constructor(private readonly message: Message,
     private readonly channel: ContextTextChannel,
-    private readonly buttons?: any[],
-    private readonly collector?: ButtonCollector) { }
+    private readonly buttons?: DiscordMessageButtons) { }
 
   get text(): string {
     return this.message.content;
@@ -58,7 +62,7 @@ export class DiscordMessage implements ContextMessage {
         }
         if (this.buttons) {
           // @ts-ignore
-          options.components = this.buttons;
+          options.components = this.buttons.components;
         }
         await this.message.edit(options);
       } catch (e) {
@@ -81,9 +85,7 @@ export class DiscordMessage implements ContextMessage {
   }
 
   releaseButtons(): void {
-    if (this.collector) {
-      this.collector.stop();
-    }
+    this.buttons?.registry.unregister(this.id);
   }
 
   async delete(): Promise<void> {
