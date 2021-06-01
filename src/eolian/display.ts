@@ -118,6 +118,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private channel: ContextTextChannel | null = null;
   private queueAhead = false;
   private inputLock = false;
+  private nightcore = false;
 
   constructor(private readonly player: Player,
       private readonly queueDisplay: QueueDisplay) {
@@ -161,7 +162,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private onNextHandler = async (track: Track) => {
     if (this.channel) {
       this.track = track;
-      const embed = createPlayingEmbed(this.track, this.player.volume, this.player.nightcore);
+      this.nightcore = this.player.nightcore;
+      const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       if (!this.message || this.channel.lastMessageId !== this.message.id) {
         embed.buttons = [
           { emoji: '⏏', onClick: this.queueHandler },
@@ -185,7 +187,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onVolumeHandler = async () => {
     if (this.message && this.track) {
-      const embed = createPlayingEmbed(this.track, this.player.volume, this.player.nightcore);
+      const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       await this.message.editEmbed(embed);
     }
   };
