@@ -30,6 +30,7 @@ jobs:
         npm run build --if-present
         npm run test --if-present
         mv ./node_modules/@discordjs/opus/prebuild/node-v83-napi-v3-linux-x64-glibc-2.27/ ./node_modules/@discordjs/opus/prebuild/node-v83-napi-v3-linux-x64-glibc-2.28/
+        rm -rf ./pics
 
     - name: Run Azure webapp deploy action using publish profile credentials
       uses: azure/webapps-deploy@v2

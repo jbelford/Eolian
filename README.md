@@ -44,7 +44,9 @@ You can add any type of resource to the queue. Here is the list of each type of 
 
 ## 🎮 Easy To Use Buttons
 
-This bot takes every opportunity to simplify usage through the use of emoji buttons
+**NEW** No more emoji reactions!
+
+This bot takes every opportunity to simplify usage through the use of modern Discord buttons
 
 ![Player](pics/player.png)
 
