@@ -61,7 +61,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private cleanup = (err?: Error) => {
     if (err) {
-      logger.warn(`Cleanup stream due to error: ${err}`);
+      logger.warn(`Cleanup stream due to error: %s`, err);
       this.emitError();
     }
 
@@ -69,11 +69,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
     }
-    this.songStream?.destroy(err);
-    this.pcmTransform?.destroy(err);
-    this.volumeTransform?.destroy(err);
-    this.opusStream?.destroy(err);
-    this.dispatcher?.destroy(err);
+    this.songStream?.destroy();
+    this.pcmTransform?.destroy();
+    this.volumeTransform?.destroy();
+    this.opusStream?.destroy();
+    this.dispatcher?.destroy();
     this.inputStream = null;
     this.songStream = null;
     this.pcmTransform = null;
