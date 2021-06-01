@@ -161,7 +161,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private onNextHandler = async (track: Track) => {
     if (this.channel) {
       this.track = track;
-      const embed = createPlayingEmbed(this.track, this.player.volume);
+      const embed = createPlayingEmbed(this.track, this.player.volume, this.player.nightcore);
       if (!this.message || this.channel.lastMessageId !== this.message.id) {
         embed.buttons = [
           { emoji: '⏏', onClick: this.queueHandler },
@@ -185,7 +185,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onVolumeHandler = async () => {
     if (this.message && this.track) {
-      const embed = createPlayingEmbed(this.track, this.player.volume);
+      const embed = createPlayingEmbed(this.track, this.player.volume, this.player.nightcore);
       await this.message.editEmbed(embed);
     }
   };

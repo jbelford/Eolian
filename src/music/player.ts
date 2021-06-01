@@ -27,6 +27,7 @@ export class DiscordVoiceConnectionProvider {
 }
 
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
+const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 
@@ -51,6 +52,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private opusStream: Transform | null = null;
   private inputStream: PassThrough | null = null;
   private dispatcher: StreamDispatcher | null = null;
+  private _nightcore = false;
 
   constructor(
     readonly connectionProvider: DiscordVoiceConnectionProvider,
@@ -94,6 +96,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return this._volume;
   }
 
+  get nightcore(): boolean {
+    return this._nightcore;
+  }
+
   get idle(): boolean {
     return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT * 1000;
   }
@@ -110,6 +116,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.volumeTransform.setVolume(this._volume);
     }
     this.emitVolume();
+  }
+
+  setNightcore(on: boolean): void {
+    this._nightcore = on;
   }
 
   async play(): Promise<void> {
@@ -181,7 +191,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         const stream = await getTrackStream(nextTrack);
         if (stream) {
           this.songStream = stream.readable;
-          this.pcmTransform = new prism.FFmpeg({ args: FFMPEG_ARGUMENTS });
+          this.pcmTransform = new prism.FFmpeg({ args: this.nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
           return this.songStream
               .once('error', this.streamErrorHandler)
               .once('close', () => logger.debug(`Song stream closed`))

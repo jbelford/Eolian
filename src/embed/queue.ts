@@ -20,17 +20,20 @@ export function createQueueEmbed(tracks: Track[], start: number, total: number) 
   return embed;
 }
 
-export function createPlayingEmbed(track: Track, volume: number) : EmbedMessage {
+export function createPlayingEmbed(track: Track, volume: number, nightcore: boolean) : EmbedMessage {
   const embed: EmbedMessage = {
     color: mapSourceToColor(track.src),
     header: {
       icon: getIcon(track.src),
-      text: `🎶 Now Playing 🔊 ${Math.floor(volume * 100)}% `
+      text: `🎶 Now Playing 🔊 ${Math.floor(volume * 100)}%`
     },
     title: track.title,
     description: `${track.poster}`,
     image: track.artwork,
     url: track.url
   };
+  if (nightcore) {
+    embed.header!.text += ` ⚡ Nightcore`;
+  }
   return embed;
 }

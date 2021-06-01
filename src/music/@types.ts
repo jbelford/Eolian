@@ -9,8 +9,10 @@ export interface Player extends EventEmitter, Idleable, Closable {
   readonly queue: ServerQueue;
 
   readonly volume: number;
+  readonly nightcore: boolean;
 
   setVolume(value: number): void;
+  setNightcore(on: boolean): void;
 
   /**
    * Tells the player to start streaming.
