@@ -56,6 +56,8 @@ class PollMessage implements Closable {
       if (past.emoji !== selected.emoji) {
         past.count--;
         selected.count++;
+      } else {
+        return false;
       }
     } else {
       selected.count++;
