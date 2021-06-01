@@ -21,12 +21,12 @@ async function execute({ channel, user, message }: CommandContext, { ARG }: Comm
   const question = ARG[0];
   const options: PollOption[] = ARG.slice(1).map((text, i) => ({ text, emoji: NUMBER_TO_EMOJI[i + 1] }));
   const questionEmbed = createPollQuestionEmbed(question, options, user.name, user.avatar);
-  questionEmbed.buttons = options.map(option => ({ emoji: option.emoji }));
+  questionEmbed.reactions = options.map(option => option.emoji);
 
   const closePollHandler: MessageButtonOnClickHandler = async (pollMessage, reactionUser) => {
     if (reactionUser.id !== user.id) return false;
 
-    const buttons = pollMessage.getButtons().filter(button => options.some(option => option.emoji === button.emoji));
+    const buttons = pollMessage.getReactions().filter(reaction => options.some(option => option.emoji === reaction.emoji));
     const results: PollOptionResult[] = options.map(option => {
       const button = buttons.find(button => button.emoji === option.emoji);
       let count = 0;
@@ -41,7 +41,7 @@ async function execute({ channel, user, message }: CommandContext, { ARG }: Comm
     return true;
   };
 
-  questionEmbed.buttons.push({ emoji: '🚫', onClick: closePollHandler });
+  questionEmbed.buttons = [{ emoji: '🚫', onClick: closePollHandler }];
 
   await Promise.allSettled([channel.sendEmbed(questionEmbed), message.delete()]);
 }

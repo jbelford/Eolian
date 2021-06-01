@@ -1,7 +1,7 @@
-import { MessageButton } from 'eolian/@types';
 
-export interface PollOption extends MessageButton {
+export interface PollOption {
   text: string;
+  emoji: string;
 }
 
 export interface PollOptionResult {

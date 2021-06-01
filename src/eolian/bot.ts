@@ -43,6 +43,9 @@ export class DiscordEolianBot implements EolianBot {
     this.queues = args.store.queue;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('discord-buttons')(this.client);
+
     this.client.once(DiscordEvents.READY, this.onReadyHandler);
     this.client.on(DiscordEvents.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
     this.client.on(DiscordEvents.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: %s`, replayed));

@@ -24,6 +24,7 @@
   "dependencies": {
     "@discordjs/opus": "^0.5.0",
     "bufferutil": "^4.0.3",
+    "discord-buttons": "^3.0.1",
     "discord.js": "^12.5.3",
     "dotenv": "^8.2.0",
     "ffmpeg-static": "^4.3.0",

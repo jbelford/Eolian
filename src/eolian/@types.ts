@@ -39,12 +39,12 @@ export interface ContextMessage {
   editEmbed(embed: EmbedMessage): Promise<void>;
   reply(message: string): Promise<void>;
   react(emoji: string): Promise<void>;
-  getButtons(): ContextMessageButton[];
+  getReactions(): ContextMessageReaction[];
   releaseButtons(): void;
   delete(): Promise<void>;
 }
 
-export type ContextMessageButton = {
+export type ContextMessageReaction = {
   emoji: string;
   count: number;
 }
@@ -93,16 +93,26 @@ export interface EmbedMessage {
     icon?: string;
     text: string;
   };
-  buttons?: MessageButton[];
+  reactions?: string[];
+  buttons?: EmbedMessageButton[];
   buttonUserId?: string;
 }
 
-export interface MessageButton {
+export const enum ButtonStyle {
+  PRIMARY = 0,
+  SECONDARY,
+  SUCCESS,
+  DANGER,
+  LINK
+}
+
+export interface EmbedMessageButton {
   emoji: string;
+  style?: ButtonStyle;
   /**
    * Return true if message is to be destroyed after.
    */
-  onClick?: MessageButtonOnClickHandler;
+  onClick: MessageButtonOnClickHandler;
 }
 
 export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser, emoji: string) => Promise<boolean>;

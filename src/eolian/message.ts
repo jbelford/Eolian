@@ -1,12 +1,14 @@
 import { logger } from 'common/logger';
-import { Message, MessageEmbed, ReactionCollector } from 'discord.js';
-import { ContextMessage, ContextMessageButton, ContextTextChannel, EmbedMessage } from './@types';
+import ButtonCollector from 'discord-buttons/typings/v12/Classes/ButtonCollector';
+import { Message, MessageEditOptions, MessageEmbed } from 'discord.js';
+import { ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage } from './@types';
 
 export class DiscordMessage implements ContextMessage {
 
   constructor(private readonly message: Message,
     private readonly channel: ContextTextChannel,
-    private readonly collector?: ReactionCollector) { }
+    private readonly buttons?: any[],
+    private readonly collector?: ButtonCollector) { }
 
   get text(): string {
     return this.message.content;
@@ -48,14 +50,24 @@ export class DiscordMessage implements ContextMessage {
   private async editMessage(message: string | MessageEmbed) : Promise<void> {
     if (this.message.editable) {
       try {
-        await this.message.edit(message);
+        const options: MessageEditOptions = { };
+        if (typeof message === 'string') {
+          options.content = message;
+        } else {
+          options.embed = message;
+        }
+        if (this.buttons) {
+          // @ts-ignore
+          options.components = this.buttons;
+        }
+        await this.message.edit(options);
       } catch (e) {
         logger.warn('Failed to edit message: %s', e);
       }
     }
   }
 
-  getButtons(): ContextMessageButton[] {
+  getReactions(): ContextMessageReaction[] {
     return this.message.reactions.cache.map(reaction => {
       let count = 0;
       if (reaction.count === null) {
