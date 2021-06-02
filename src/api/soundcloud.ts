@@ -164,6 +164,8 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       return youtube.searchStream(track);
     }
 
+    logger.info('Getting soundcloud stream %s', track.url);
+
     return new Promise<StreamData>((resolve, reject) => {
       const stream = request(`${track.stream}?client_id=${this.token}`);
       stream.once('response', resp => {

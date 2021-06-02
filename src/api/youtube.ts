@@ -165,6 +165,8 @@ export class YouTubeApiImpl implements YouTubeApi {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
 
+    logger.info('Getting youtube stream %s', track.url);
+
     const stream = ytdl(track.url, { filter: 'audioonly', quality: 'highestaudio' });
     return { readable: stream, details: track };
   }
