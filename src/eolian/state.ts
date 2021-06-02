@@ -45,6 +45,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
         await this.cache.set(key, value);
       }
       await Promise.allSettled(value.disposable.map(d => d.close()));
+      value.disposable = [];
     } catch (e) {
       logger.warn(`Error occured clearing guild state: %s`, e);
     }
