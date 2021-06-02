@@ -1,12 +1,11 @@
 import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
-import { MessageActionRow, MessageButton } from 'discord-buttons';
-import { DMChannel, Message, MessageCollector, Permissions, TextChannel } from 'discord.js';
+import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { ButtonStyle, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, EmbedMessageButton, MessageButtonOnClickHandler } from './@types';
+import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler } from './@types';
 import { ButtonRegistry } from './button';
-import { DiscordMessage, DiscordMessageButtons, mapDiscordEmbed } from './message';
+import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
 const STOP_EMOJI = '🚫';
 
@@ -119,35 +118,23 @@ export class DiscordTextChannel implements ContextTextChannel {
       try {
         const rich = mapDiscordEmbed(embed);
 
-        const buttonMap = new Map<string, EmbedMessageButton>();
-        let buttonRows: any[] | undefined;
-        if (embed.buttons) {
-          const buttons: any[] = embed.buttons.map((button, idx) => {
-            const id = `button_${idx}`;
-            buttonMap.set(id, button);
-            return new MessageButton()
-                .setEmoji(button.emoji)
-                .setStyle(buttonStyleToDiscordStyle(button.style))
-                .setID(id);
-          })
+        const messageOptions: MessageOptions & { components?: any[] } = { embed: rich };
 
-          buttonRows = [];
-          for (let i = 0; i < buttons.length; i += 5) {
-            const row = new MessageActionRow().addComponent(buttons.slice(i, i + 5));
-            buttonRows.push(row);
-          }
+        let buttonMapping: DiscordButtonMapping | undefined;
+        if (embed.buttons) {
+          buttonMapping = mapDiscordEmbedButtons(embed.buttons);
+          messageOptions.components = buttonMapping.rows;
         }
 
-        // @ts-ignore
-        const message = await this.channel.send({ embed: rich, components: buttonRows }) as Message;
+        const message = await this.channel.send(messageOptions) as Message;
         if (embed.reactions) {
           this.addReactions(message, embed.reactions);
         }
 
         let msgButtons: DiscordMessageButtons | undefined;
-        if (buttonRows) {
-          this.registry.register(message.id, buttonMap);
-          msgButtons = { registry: this.registry, components: buttonRows };
+        if (buttonMapping) {
+          this.registry.register(message.id, buttonMapping.mapping);
+          msgButtons = { registry: this.registry, components: buttonMapping.rows };
         }
 
         return new DiscordMessage(message, this, msgButtons);
@@ -172,8 +159,4 @@ export class DiscordTextChannel implements ContextTextChannel {
     })();
   }
 
-}
-
-function buttonStyleToDiscordStyle(style = ButtonStyle.SECONDARY) {
-  return style + 1;
 }

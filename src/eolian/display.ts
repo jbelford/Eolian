@@ -5,7 +5,7 @@ import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player } from 'music/@types';
 import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler, PlayerDisplay, QueueDisplay } from './@types';
 
-const QUEUE_LENGTH = 15;
+const QUEUE_PAGE_LENGTH = 15;
 
 export class DiscordQueueDisplay implements QueueDisplay {
 
@@ -47,11 +47,12 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
     const messageDelete = this.message ? this.message.delete() :Promise.resolve();
 
-    const embed = createQueueEmbed(tracks.slice(0, QUEUE_LENGTH), this.start, total);
+    const pagingButtonsDisabled = total <= QUEUE_PAGE_LENGTH;
+    const embed = createQueueEmbed(tracks.slice(0, QUEUE_PAGE_LENGTH), this.start, total);
     embed.buttons = [
-      { emoji: '🔀', onClick: this.shuffleHandler },
-      { emoji: '⬅', onClick: this.prevPageHandler },
-      { emoji: '➡', onClick: this.nextPageHandler }
+      { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1 },
+      { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
+      { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
     ];
     this.message = await this.channel.sendEmbed(embed) ?? null;
 
@@ -75,10 +76,16 @@ export class DiscordQueueDisplay implements QueueDisplay {
           if (this.start >= tracks.length) {
             this.start = 0;
           } else if (this.start < 0) {
-            this.start = Math.max(0, tracks.length - QUEUE_LENGTH);
+            this.start = Math.max(0, tracks.length - QUEUE_PAGE_LENGTH);
           }
           if (tracks.length) {
-            const newEmbed = createQueueEmbed(tracks.slice(this.start, this.start + QUEUE_LENGTH), this.start, tracks.length);
+            const pagingButtonsDisabled = tracks.length <= QUEUE_PAGE_LENGTH;
+            const newEmbed = createQueueEmbed(tracks.slice(this.start, this.start + QUEUE_PAGE_LENGTH), this.start, tracks.length);
+            newEmbed.buttons = [
+              { emoji: '🔀', onClick: this.shuffleHandler, disabled: tracks.length <= 1 },
+              { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
+              { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
+            ];
             await this.message.editEmbed(newEmbed);
           } else {
             await this.delete();
@@ -96,14 +103,14 @@ export class DiscordQueueDisplay implements QueueDisplay {
   }
 
   private prevPageHandler: MessageButtonOnClickHandler = async () => {
-    this.start -= QUEUE_LENGTH;
+    this.start -= QUEUE_PAGE_LENGTH;
     await this.updateHandler();
     return false;
   }
 
 
   private nextPageHandler: MessageButtonOnClickHandler = async () => {
-    this.start += QUEUE_LENGTH;
+    this.start += QUEUE_PAGE_LENGTH;
     await this.updateHandler();
     return false;
   }
@@ -127,6 +134,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
     this.player.on('error', this.onErrorHandler);
+    this.player.queue.on('add', this.onQueueUpdateHandler);
+    this.player.queue.on('remove', this.onQueueUpdateHandler);
   }
 
   async close(): Promise<void> {
@@ -135,6 +144,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.player.removeListener('error', this.onErrorHandler);
+    this.player.queue.removeListener('add', this.onQueueUpdateHandler);
+    this.player.queue.removeListener('remove', this.onQueueUpdateHandler);
     this.channel = null;
     await this.removeIdle();
   }
@@ -154,34 +165,41 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   }
 
   async refresh(): Promise<void> {
-    if (this.track) {
-      await this.onNextHandler(this.track);
-    }
+    await this.updateMessage();
+  }
+
+  private onQueueUpdateHandler = async () => {
+    await this.updateMessage(true);
   }
 
   private onNextHandler = async (track: Track) => {
-    if (this.channel) {
-      this.track = track;
-      this.nightcore = this.player.nightcore;
+    this.nightcore = this.player.nightcore;
+    this.track = track;
+    await this.updateMessage();
+  };
+
+  private async updateMessage(editOnly = false): Promise<void> {
+    if (this.channel && this.track && (!editOnly || this.message)) {
+      const [next, prev] = await Promise.all([this.player.queue.peek(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
-      if (!this.message || this.channel.lastMessageId !== this.message.id) {
-        embed.buttons = [
-          { emoji: '⏏', onClick: this.queueHandler },
-          { emoji: '⏯', onClick: this.onPauseResumeHandler },
-          { emoji: '⏪', onClick: this.backHandler },
-          { emoji: '⏩', onClick: this.skipHandler },
-          { emoji: '⏹', onClick: this.stopHandler },
-        ];
+      embed.buttons = [
+        { emoji: '⏏', onClick: this.queueHandler, disabled: !next },
+        { emoji: '⏯', onClick: this.onPauseResumeHandler },
+        { emoji: '⏪', onClick: this.backHandler, disabled: !prev },
+        { emoji: '⏩', onClick: this.skipHandler },
+        { emoji: '⏹', onClick: this.stopHandler },
+      ];
+      if (!editOnly && (!this.message || this.channel.lastMessageId !== this.message.id)) {
         await this.safeDelete();
         this.message = await this.channel.sendEmbed(embed) ?? null;
         if (this.message) {
           this.queueAhead = false;
         }
-      } else {
+      } else if (this.message) {
         await this.message.editEmbed(embed);
       }
     }
-  };
+  }
 
   private onIdleHandler = () => this.removeIdle();
 

@@ -109,6 +109,7 @@ export const enum ButtonStyle {
 export interface EmbedMessageButton {
   emoji: string;
   style?: ButtonStyle;
+  disabled?: boolean;
   /**
    * Return true if message is to be destroyed after.
    */

@@ -78,6 +78,7 @@ export interface MusicQueueCache {
   clear(guildId: string): Promise<boolean>;
   pop(guildId: string): Promise<Track | undefined>;
   peek(guildId: string): Promise<Track | undefined>;
+  peekReverse(guildId: string, idx?: number): Promise<Track | undefined>;
 }
 
 export interface ServerQueue extends EventEmitter, Idleable {
@@ -89,4 +90,5 @@ export interface ServerQueue extends EventEmitter, Idleable {
   clear(): Promise<boolean>;
   pop(): Promise<Track | undefined>;
   peek(): Promise<Track | undefined>;
+  peekReverse(idx?: number): Promise<Track | undefined>;
 }

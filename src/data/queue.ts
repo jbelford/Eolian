@@ -80,6 +80,11 @@ export class InMemoryQueues implements MusicQueueCache {
     return list.length ? list[0] : undefined;
   }
 
+  async peekReverse(guildId: string, idx = 0): Promise<Track | undefined> {
+    const list = await this.cache.get(`${guildId}_prev`) || [];
+    return list.length ? list[idx] : undefined;
+  }
+
   private async getPrev(guildId: string): Promise<Track[]> {
     return await this.cache.get(`${guildId}_prev`) || [];
   }

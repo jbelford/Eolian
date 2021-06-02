@@ -28,13 +28,13 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
 
   async remove(range: AbsRangeArgument): Promise<number> {
     const removed = await this.queue.remove(this.guildId, range);
-    this.emitUpdate();
+    this.emitRemove();
     return removed;
   }
 
   async add(tracks: Track[], head?: boolean | undefined): Promise<void> {
     await this.queue.add(this.guildId, tracks, head);
-    this.emitUpdate();
+    this.emitAdd();
   }
 
   async shuffle(): Promise<boolean> {
@@ -45,7 +45,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
 
   async clear(): Promise<boolean> {
     const cleared = await this.queue.clear(this.guildId);
-    this.emitUpdate();
+    this.emitRemove();
     return cleared;
   }
 
@@ -59,9 +59,23 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return this.queue.peek(this.guildId);
   }
 
+  peekReverse(idx: number): Promise<Track | undefined> {
+    return this.queue.peekReverse(this.guildId, idx);
+  }
+
   private emitUpdate = () => {
     this.lastUpdated = Date.now();
     this.emit('update')
   };
+
+  private emitAdd = () => {
+    this.emit('add');
+    this.emitUpdate();
+  }
+
+  private emitRemove = () => {
+    this.emit('remove');
+    this.emitUpdate();
+  }
 
 }

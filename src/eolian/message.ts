@@ -1,6 +1,7 @@
 import { logger } from 'common/logger';
+import { MessageActionRow, MessageButton } from 'discord-buttons';
 import { Message, MessageEditOptions, MessageEmbed } from 'discord.js';
-import { ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage } from './@types';
+import { ButtonStyle, ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
 
 export interface DiscordMessageButtons {
@@ -48,20 +49,24 @@ export class DiscordMessage implements ContextMessage {
 
   async editEmbed(embed: EmbedMessage): Promise<void> {
     const rich = mapDiscordEmbed(embed);
+    if (embed.buttons && this.buttons) {
+      const buttonMapping = mapDiscordEmbedButtons(embed.buttons);
+      this.buttons.components = buttonMapping.rows;
+      this.buttons.registry.register(this.id, buttonMapping.mapping);
+    }
     await this.editMessage(rich);
   }
 
   private async editMessage(message: string | MessageEmbed) : Promise<void> {
     if (this.message.editable) {
       try {
-        const options: MessageEditOptions = { };
+        const options: MessageEditOptions & { components?: any[] } = { };
         if (typeof message === 'string') {
           options.content = message;
         } else {
           options.embed = message;
         }
         if (this.buttons) {
-          // @ts-ignore
           options.components = this.buttons.components;
         }
         await this.message.edit(options);
@@ -132,6 +137,32 @@ export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
   return rich;
 }
 
+export interface DiscordButtonMapping {
+  rows: any[];
+  mapping: Map<string, EmbedMessageButton>;
+}
+
+export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordButtonMapping {
+  const buttonMap = new Map<string, EmbedMessageButton>();
+  const buttonRows: any[] = [];
+
+  const messageButtons = buttons.map((button, idx) => {
+    const id = `button_${idx}`;
+    buttonMap.set(id, button);
+    return new MessageButton()
+        .setEmoji(button.emoji)
+        .setDisabled(!!button.disabled)
+        .setStyle(buttonStyleToDiscordStyle(button.style))
+        .setID(id);
+  })
+
+  for (let i = 0; i < buttons.length; i += 5) {
+    const row = new MessageActionRow().addComponent(messageButtons.slice(i, i + 5));
+    buttonRows.push(row);
+  }
+
+  return { rows: buttonRows, mapping: buttonMap };
+}
 
 function clampLength(str: string, length: number) {
   if (str.length > length) {
@@ -139,4 +170,8 @@ function clampLength(str: string, length: number) {
     str += '..';
   }
   return str;
+}
+
+function buttonStyleToDiscordStyle(style = ButtonStyle.SECONDARY) {
+  return style + 1;
 }
