@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
@@ -41,8 +41,11 @@ export const IDENTIFY_COMMAND: Command = {
   permission: PERMISSION.USER,
   dmAllowed: true,
   keywords: [
-    KEYWORDS.SEARCH, KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
+    KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,
     KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST, KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.CLEAR
+  ],
+  patterns: [
+    PATTERNS.SEARCH, PATTERNS.IDENTIFIER, PATTERNS.URL,
   ],
   usage: [
     {

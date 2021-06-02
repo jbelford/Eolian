@@ -1,137 +1,93 @@
 import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { KeywordMatchResult, Keywords, UrlArgument } from './@types';
+import { KeywordMatchResult, Keywords, Patterns, UrlArgument } from './@types';
 
 export const KEYWORDS: Keywords = {
   ENABLE: {
     name: 'ENABLE',
     details: 'Indicates to enable a particular feature',
-    permission: PERMISSION.OWNER,
-    usage: ['enable'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\benable\b/i),
+    permission: PERMISSION.OWNER
   },
   DISABLE: {
     name: 'DISABLE',
     details: 'Indicates to disable a particular feature',
-    permission: PERMISSION.OWNER,
-    usage: ['disable'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bdisable\b/i),
+    permission: PERMISSION.OWNER
   },
   CLEAR: {
     name: 'CLEAR',
     details: 'Indicates to remove some data',
-    permission: PERMISSION.USER,
-    usage: ['clear'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bclear\b/i),
+    permission: PERMISSION.USER
   },
   MORE: {
     name: 'MORE',
     details: 'Indicates to increase a value',
-    permission: PERMISSION.USER,
-    usage: ['more'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bmore\b/i),
+    permission: PERMISSION.USER
   },
   LESS: {
     name: 'LESS',
     details: 'Indicates to decrease a value',
-    permission: PERMISSION.USER,
-    usage: ['less'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bless\b/i),
+    permission: PERMISSION.USER
   },
   MY: {
     name: 'MY',
     details: 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.',
-    permission: PERMISSION.USER,
-    usage: ['my'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bmy\b/i)
+    permission: PERMISSION.USER
   },
   SOUNDCLOUD: {
     name: 'SOUNDCLOUD',
     details: 'Indicates to fetch a resource from SoundCloud if applicable',
-    permission: PERMISSION.USER,
-    usage: ['soundcloud'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bsoundcloud\b/i),
+    permission: PERMISSION.USER
   },
   SPOTIFY: {
     name: 'SPOTIFY',
     details: 'Indicates to fetch a resource from Spotify if applicable',
-    permission: PERMISSION.USER,
-    usage: ['spotify'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bspotify\b/i),
+    permission: PERMISSION.USER
   },
   YOUTUBE: {
     name: 'YOUTUBE',
     details: 'Indicates to fetch a resource from YouTube if applicable',
-    permission: PERMISSION.USER,
-    usage: ['youtube'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\byoutube\b/i),
+    permission: PERMISSION.USER
   },
   PLAYLIST: {
     name: 'PLAYLIST',
     details: 'Indicates to fetch songs from a playlist given a query',
-    permission: PERMISSION.USER,
-    usage: ['playlist'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bplaylist\b/i),
+    permission: PERMISSION.USER
   },
   ALBUM: {
     name: 'ALBUM',
     details: 'Indicates to fetch songs from an album given a query',
-    permission: PERMISSION.USER,
-    usage: ['album'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\balbum\b/i),
+    permission: PERMISSION.USER
   },
   ARTIST: {
     name: 'ARTIST',
     details: 'Indicates to fetch songs for an artist given the query',
-    permission: PERMISSION.USER,
-    usage: ['artist'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bartist\b/i),
+    permission: PERMISSION.USER
   },
   NEXT: {
     name: 'NEXT',
     details: 'Indicates to apply operation to the top of queue',
-    permission: PERMISSION.USER,
-    usage: ['next'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bnext\b/i),
+    permission: PERMISSION.USER
   },
   SHUFFLE: {
     name: 'SHUFFLE',
     details: 'Indicates to shuffle the fetched tracks',
-    permission: PERMISSION.USER,
-    usage: ['shuffle', 'shuffled'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\bshuffled?\b/i),
+    permission: PERMISSION.USER
   },
   LIKES: {
     name: 'LIKES',
     details: `Indicates to fetch liked tracks (Only SoundCloud supported).
 Fetching using TOP likes will execute much faster.`,
-    permission: PERMISSION.USER,
-    usage: ['likes', 'favorites'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\b(likes|favorites)\b/i),
+    permission: PERMISSION.USER
   },
   TRACKS: {
     name: 'TRACKS',
     details: 'Indicates to fetch SoundCloud tracks',
-    permission: PERMISSION.USER,
-    usage: ['tracks'],
-    priority: 0,
-    matchText: (text: string) => simpleMatch(text, /\btracks\b/i),
-  },
+    permission: PERMISSION.USER
+  }
+};
+
+export const PATTERNS: Patterns = {
+
   NUMBER: {
     name: 'NUMBER',
     details: 'Indicates to specify a number',
@@ -237,11 +193,11 @@ Fetching using TOP likes will execute much faster.`,
     permission: PERMISSION.USER,
     usage: ['(what is love)', '(deadmau5)'],
     priority: 6,
-    matchText: (text: string) => matchGroup(text, /\B\(\s*([^\s].+[^\s])\s*\)\B/i, 0),
-  },
+    matchText: (text: string) => matchGroup(text, /\B\(\s*(.*[^\s])\s*\)\B/i, 0),
+  }
 };
 
-export const KEYWORDS_SORTED = Object.values(KEYWORDS)
+export const PATTERNS_SORTED = Object.values(PATTERNS)
   .sort((a, b) => b!.priority - a!.priority);
 
 function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
@@ -263,9 +219,4 @@ function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResul
     }
   }
   return { matches: match.matches, newText: match.newText, args };
-}
-
-function simpleMatch(text: string, reg: RegExp): KeywordMatchResult<boolean> {
-  const match = matchText(text, reg);
-  return { matches: match.matches, newText: match.newText, args: !!match.args };
 }

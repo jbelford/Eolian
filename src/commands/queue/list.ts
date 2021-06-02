@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { getRangeOption } from 'common/util';
 
@@ -52,9 +52,8 @@ export const LIST_COMMAND: Command = {
   details: 'Show or clear the queue',
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
-  keywords: [
-    KEYWORDS.TOP, KEYWORDS.BOTTOM, KEYWORDS.CLEAR, KEYWORDS.SHUFFLE
-  ],
+  keywords: [KEYWORDS.CLEAR, KEYWORDS.SHUFFLE],
+  patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [
     {
       title: 'Show the queue in this channel',

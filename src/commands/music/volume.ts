@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
@@ -34,9 +34,8 @@ export const VOLUME_COMMAND: Command = {
   details: `Get the current volume or set the volume`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  keywords: [
-    KEYWORDS.MORE, KEYWORDS.LESS, KEYWORDS.NUMBER
-  ],
+  keywords: [KEYWORDS.MORE, KEYWORDS.LESS],
+  patterns: [PATTERNS.NUMBER],
   usage: [
     {
       title: 'Get current volume',

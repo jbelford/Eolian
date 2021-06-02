@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
@@ -63,9 +63,8 @@ export const PLAY_COMMAND: Command = {
 You may optionally provide a SEARCH or URL pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
-  keywords: [
-    KEYWORDS.SEARCH, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.URL
-  ],
+  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   usage: [
     {
       title: 'Join voice channel and start playing (if not already)',

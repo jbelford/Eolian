@@ -1,10 +1,10 @@
 import { COMMAND_MAP } from 'commands';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed } from 'embed';
+import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
 
 async function execute({ user, channel, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
@@ -45,6 +45,13 @@ async function execute({ user, channel, server }: CommandContext, { ARG }: Comma
   if (keyword && keyword.permission <= user.permission) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword);
     await channel.sendEmbed(keywordEmbed);
+    return;
+  }
+
+  const pattern = PATTERNS[arg.toUpperCase()];
+  if (pattern && pattern.permission <= user.permission) {
+    const patternEmbed = createPatternDetailsEmbed(pattern);
+    await channel.sendEmbed(patternEmbed);
     return;
   }
 

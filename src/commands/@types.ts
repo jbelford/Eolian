@@ -8,7 +8,8 @@ export interface Command {
   permission: PERMISSION;
   category: CommandCategory;
   // If using keyword parsing
-  keywords?: Array<Keyword<unknown>>;
+  keywords?: Keyword[];
+  patterns?: Pattern<unknown>[];
   dmAllowed?: boolean;
   usage: CommandUsage[];
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
@@ -30,7 +31,7 @@ export interface CommandParsingStrategy {
   parseCommand(message: string, permission: PERMISSION): ParsedCommand;
 }
 
-export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[]) => CommandOptions;
+export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[], patterns?: string[]) => CommandOptions;
 
 export interface ParsedCommand {
   command: Command;
@@ -83,13 +84,16 @@ export interface KeywordMatchResult<T> {
   args?: T;
 }
 
-export interface Keyword<T> {
+export type Keyword = {
   readonly name: string;
   readonly details: string;
   readonly permission: PERMISSION;
-  readonly usage: string[];
+}
+
+export type Pattern<T> = Keyword & {
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
+  readonly usage: string[];
 
   /**
    * Check that the given text contains the keyword.
@@ -101,28 +105,32 @@ export interface Keyword<T> {
 }
 
 export interface Keywords {
-  [key: string]: Keyword<unknown>;
-  ENABLE: Keyword<boolean>;
-  DISABLE: Keyword<boolean>;
-  CLEAR: Keyword<boolean>;
-  MORE: Keyword<boolean>;
-  LESS: Keyword<boolean>;
-  MY: Keyword<boolean>;
-  SOUNDCLOUD: Keyword<boolean>;
-  SPOTIFY: Keyword<boolean>;
-  YOUTUBE: Keyword<boolean>;
-  PLAYLIST: Keyword<boolean>;
-  ALBUM: Keyword<boolean>;
-  ARTIST: Keyword<boolean>;
-  NEXT: Keyword<boolean>;
-  SHUFFLE: Keyword<boolean>;
-  LIKES: Keyword<boolean>;
-  TRACKS: Keyword<boolean>;
-  TOP: Keyword<RangeArgument>;
-  BOTTOM: Keyword<RangeArgument>;
-  SEARCH: Keyword<string>;
-  IDENTIFIER: Keyword<string>;
-  URL: Keyword<UrlArgument>;
-  NUMBER: Keyword<number>;
-  ARG: Keyword<string[]>;
+  [key:string]: Keyword | undefined;
+  ENABLE: Keyword;
+  DISABLE: Keyword;
+  CLEAR: Keyword;
+  MORE: Keyword;
+  LESS: Keyword;
+  MY: Keyword;
+  SOUNDCLOUD: Keyword;
+  SPOTIFY: Keyword;
+  YOUTUBE: Keyword;
+  PLAYLIST: Keyword;
+  ALBUM: Keyword;
+  ARTIST: Keyword;
+  NEXT: Keyword;
+  SHUFFLE: Keyword;
+  LIKES: Keyword;
+  TRACKS: Keyword;
+}
+
+export interface Patterns {
+  [key:string]: Pattern<unknown> | undefined;
+  TOP: Pattern<RangeArgument>;
+  BOTTOM: Pattern<RangeArgument>;
+  SEARCH: Pattern<string>;
+  IDENTIFIER: Pattern<string>;
+  URL: Pattern<UrlArgument>;
+  NUMBER: Pattern<number>;
+  ARG: Pattern<string[]>;
 }

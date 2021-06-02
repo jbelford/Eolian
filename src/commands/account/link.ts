@@ -2,7 +2,7 @@ import { soundcloud, spotify } from 'api';
 import { SoundCloudUser, SpotifyResourceType } from 'api/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { MESSAGES, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
@@ -86,7 +86,8 @@ export const LINK_COMMAND: Command = {
   details: 'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',
   permission: PERMISSION.USER,
   dmAllowed: true,
-  keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SEARCH, KEYWORDS.URL],
+  keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD],
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   usage: [
     {
       title: `Search for SoundCloud user to link`,

@@ -1,9 +1,9 @@
 import { COMMAND_MAP } from 'commands';
-import { KEYWORDS_SORTED } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand } from './@types';
+import { KEYWORDS, PATTERNS_SORTED } from './keywords';
 
 function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};
@@ -13,21 +13,33 @@ function simpleOptionsStrategy(text: string): CommandOptions {
   return options;
 }
 
-function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = []): CommandOptions {
+function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
   const keywordSet = new Set<string>(keywords);
-  return KEYWORDS_SORTED.filter(keyword => keywordSet.has(keyword.name) && keyword.permission <= permission)
-    .reduce((options, keyword) => {
-      const result = keyword.matchText(text);
+  const patternSet = new Set<string>(patterns);
+
+  const options = PATTERNS_SORTED.filter(pattern => patternSet.has(pattern!.name) && pattern!.permission <= permission)
+    .reduce((options, pattern) => {
+      const result = pattern!.matchText(text);
       if (result.matches) {
-        options[keyword.name] = result.args;
+        options[pattern!.name] = result.args;
         text = result.newText;
       }
       return options;
     }, {} as CommandOptions);
+
+  const split = new Set<string>(text.toLowerCase().split(/\s+/));
+
+  Object.values(KEYWORDS)
+    .filter(keyword => keywordSet.has(keyword!.name) && keyword!.permission <= permission && split.has(keyword!.name.toLowerCase()))
+    .forEach(keyword => {
+      options[keyword!.name] = true;
+    });
+
+  return options;
 }
 
 function getCommandOptionParsingStrategy(command: Command): CommandOptionsParsingStrategy {
-  return command.keywords ? keywordOptionsStrategy : simpleOptionsStrategy;
+  return command.keywords || command.patterns ? keywordOptionsStrategy : simpleOptionsStrategy;
 }
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
@@ -50,7 +62,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     }
 
     const optionParsingFn = getCommandOptionParsingStrategy(command);
-    const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name));
+    const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name), command.patterns?.map(pattern => pattern.name));
 
     return { command, options };
   }

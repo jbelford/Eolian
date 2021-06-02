@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
+import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption, shuffleList, truthySum } from 'common/util';
@@ -81,8 +81,8 @@ export const ADD_COMMAND: Command = {
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST,
     KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.NEXT, KEYWORDS.SHUFFLE,
-    KEYWORDS.SEARCH, KEYWORDS.IDENTIFIER, KEYWORDS.URL, KEYWORDS.TOP, KEYWORDS.BOTTOM,
   ],
+  patterns: [PATTERNS.SEARCH, PATTERNS.IDENTIFIER, PATTERNS.URL, PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [
     {
       title: `Search song and add to top of the queue`,
