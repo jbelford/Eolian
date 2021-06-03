@@ -59,6 +59,8 @@ Below are two very simple examples of this in action. See this repo's Wiki for f
 
 ![Add Album Example](pics/add_album.png)
 
+_Note: Optionally may reconfigure bot to use flag-based syntax if preferred. See the wiki_
+
 
 ## 🔗 Link Spotify and SoundCloud Accounts
 

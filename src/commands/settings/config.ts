@@ -99,6 +99,14 @@ export const CONFIG_COMMAND: Command = {
     {
       title: 'Set default volume config',
       example: 'volume 50'
+    },
+    {
+      title: 'Set syntax preference to keyword based',
+      example: 'syntax keyword'
+    },
+    {
+      title: 'Set syntax preference to traditional',
+      example: 'syntax traditional'
     }
   ],
   execute
