@@ -1,4 +1,5 @@
 import { Track } from 'api/@types';
+import { SyntaxType } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, ServerDTO, ServerQueue, UserDTO } from 'data/@types';
@@ -153,4 +154,5 @@ export interface ServerDetails extends ServerInfo {
   get(): Promise<ServerDTO>;
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;
+  setSyntax(type: SyntaxType): Promise<void>;
 }

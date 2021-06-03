@@ -1,4 +1,5 @@
 import { SoundCloudUser, SpotifyUser } from 'api/@types';
+import { SyntaxType } from 'commands/@types';
 import { COLOR, DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, ServerDTO } from 'data/@types';
@@ -76,7 +77,8 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
 export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): EmbedMessage {
   const volume = dto.volume ?? DEFAULT_VOLUME;
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
-**Volume:** \`${Math.floor(volume * 100)}%\``;
+**Volume:** \`${Math.floor(volume * 100)}%\`
+**Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\``;
   return {
     header: {
       icon: guild.avatar,
@@ -89,6 +91,13 @@ export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): Emb
       text: `See 'help' for the 'Settings' category to configure these settings`
     }
   };
+}
+
+function syntaxTypeToName(type: SyntaxType) {
+  if (type === SyntaxType.KEYWORD) {
+    return 'keyword';
+  }
+  return 'traditional';
 }
 
 export function createBasicEmbed(message: string): EmbedMessage {

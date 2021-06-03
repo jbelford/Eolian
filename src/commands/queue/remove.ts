@@ -38,19 +38,19 @@ export const REMOVE_COMMAND: Command = {
   usage: [
     {
       title: 'Remove the next song in the queue',
-      example: 'next'
+      example: [KEYWORDS.NEXT]
     },
     {
       title: 'Remove the next 10 songs in the queue',
-      example: 'top 10'
+      example: [PATTERNS.TOP.ex('10')]
     },
     {
       title: 'Remove the last 5 songs in the queue',
-      example: 'bottom 5'
+      example: [PATTERNS.BOTTOM.ex('5')]
     },
     {
       title: 'Remove songs 2 to 5 (not including 5)',
-      example: 'top 2:5'
+      example: [PATTERNS.TOP.ex('2:5')]
     }
   ],
   execute

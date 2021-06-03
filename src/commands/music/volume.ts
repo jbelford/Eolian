@@ -43,11 +43,11 @@ export const VOLUME_COMMAND: Command = {
     },
     {
       title: 'Increase the volume',
-      example: 'more'
+      example: [KEYWORDS.MORE]
     },
     {
       title: 'Decrease the volume',
-      example: 'less'
+      example: [KEYWORDS.LESS]
     },
     {
       title: 'Set the volume to 75%',

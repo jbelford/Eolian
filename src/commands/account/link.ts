@@ -91,7 +91,7 @@ export const LINK_COMMAND: Command = {
   usage: [
     {
       title: `Search for SoundCloud user to link`,
-      example: 'soundcloud (john smith)'
+      example: [KEYWORDS.SOUNDCLOUD, PATTERNS.SEARCH.ex('john smith')]
     },
     {
       title: 'Provide URL to SoundCloud user to link',
@@ -99,7 +99,7 @@ export const LINK_COMMAND: Command = {
     },
     {
       title: 'Provide URL to Spotify user to link',
-      example: 'https://open.spotify.com/user/1111111111?si=1111111111111'
+      example: 'https://open.spotify.com/user/1111111111?si=1111111111111',
     }
   ],
   execute

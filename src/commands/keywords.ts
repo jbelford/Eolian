@@ -1,93 +1,42 @@
 import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { KeywordMatchResult, Keywords, Patterns, UrlArgument } from './@types';
+import { ArgumentExample, Keyword, KeywordMatchResult, Keywords, Patterns, SyntaxType, UrlArgument } from './@types';
+
+class KeywordDetails implements Keyword {
+
+  constructor(
+    readonly name: string,
+    readonly details: string,
+    readonly permission: PERMISSION
+  ) {
+  }
+
+  text(type: SyntaxType.KEYWORD): string {
+    return type === SyntaxType.KEYWORD ? this.name.toLowerCase() : `-${this.name.toLowerCase()}`;
+  }
+
+}
 
 export const KEYWORDS: Keywords = {
-  ENABLE: {
-    name: 'ENABLE',
-    details: 'Indicates to enable a particular feature',
-    permission: PERMISSION.OWNER
-  },
-  DISABLE: {
-    name: 'DISABLE',
-    details: 'Indicates to disable a particular feature',
-    permission: PERMISSION.OWNER
-  },
-  CLEAR: {
-    name: 'CLEAR',
-    details: 'Indicates to remove some data',
-    permission: PERMISSION.USER
-  },
-  MORE: {
-    name: 'MORE',
-    details: 'Indicates to increase a value',
-    permission: PERMISSION.USER
-  },
-  LESS: {
-    name: 'LESS',
-    details: 'Indicates to decrease a value',
-    permission: PERMISSION.USER
-  },
-  MY: {
-    name: 'MY',
-    details: 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.',
-    permission: PERMISSION.USER
-  },
-  SOUNDCLOUD: {
-    name: 'SOUNDCLOUD',
-    details: 'Indicates to fetch a resource from SoundCloud if applicable',
-    permission: PERMISSION.USER
-  },
-  SPOTIFY: {
-    name: 'SPOTIFY',
-    details: 'Indicates to fetch a resource from Spotify if applicable',
-    permission: PERMISSION.USER
-  },
-  YOUTUBE: {
-    name: 'YOUTUBE',
-    details: 'Indicates to fetch a resource from YouTube if applicable',
-    permission: PERMISSION.USER
-  },
-  PLAYLIST: {
-    name: 'PLAYLIST',
-    details: 'Indicates to fetch songs from a playlist given a query',
-    permission: PERMISSION.USER
-  },
-  ALBUM: {
-    name: 'ALBUM',
-    details: 'Indicates to fetch songs from an album given a query',
-    permission: PERMISSION.USER
-  },
-  ARTIST: {
-    name: 'ARTIST',
-    details: 'Indicates to fetch songs for an artist given the query',
-    permission: PERMISSION.USER
-  },
-  NEXT: {
-    name: 'NEXT',
-    details: 'Indicates to apply operation to the top of queue',
-    permission: PERMISSION.USER
-  },
-  SHUFFLE: {
-    name: 'SHUFFLE',
-    details: 'Indicates to shuffle the fetched tracks',
-    permission: PERMISSION.USER
-  },
-  LIKES: {
-    name: 'LIKES',
-    details: `Indicates to fetch liked tracks (Only SoundCloud supported).
-Fetching using TOP likes will execute much faster.`,
-    permission: PERMISSION.USER
-  },
-  TRACKS: {
-    name: 'TRACKS',
-    details: 'Indicates to fetch SoundCloud tracks',
-    permission: PERMISSION.USER
-  }
+  ENABLE: new KeywordDetails('ENABLE', 'Indicates to enable a particular feature', PERMISSION.USER),
+  DISABLE: new KeywordDetails('DISABLE', 'Indicates to disable a particular feature', PERMISSION.USER),
+  CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data', PERMISSION.USER),
+  MORE: new KeywordDetails('MORE', 'Indicates to increase a value', PERMISSION.USER),
+  LESS: new KeywordDetails('LESS', 'Indicates to decrease a value', PERMISSION.USER),
+  MY: new KeywordDetails('MY', 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.', PERMISSION.USER),
+  SOUNDCLOUD: new KeywordDetails('SOUNDCLOUD', 'Indicates to fetch a resource from SoundCloud if applicable', PERMISSION.USER),
+  SPOTIFY: new KeywordDetails('SPOTIFY', 'Indicates to fetch a resource from Spotify if applicable', PERMISSION.USER),
+  YOUTUBE: new KeywordDetails('YOUTUBE', 'Indicates to fetch a resource from YouTube if applicable', PERMISSION.USER),
+  PLAYLIST: new KeywordDetails('PLAYLIST', 'Indicates to fetch songs from a playlist given a query', PERMISSION.USER),
+  ALBUM: new KeywordDetails('ALBUM', 'Indicates to fetch songs from an album given a query', PERMISSION.USER),
+  ARTIST: new KeywordDetails('ARTIST', 'Indicates to fetch songs for an artist given the query', PERMISSION.USER),
+  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue', PERMISSION.USER),
+  SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks', PERMISSION.USER),
+  LIKES: new KeywordDetails('LIKES', 'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.', PERMISSION.USER),
+  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks', PERMISSION.USER)
 };
 
 export const PATTERNS: Patterns = {
-
   NUMBER: {
     name: 'NUMBER',
     details: 'Indicates to specify a number',
@@ -97,6 +46,7 @@ export const PATTERNS: Patterns = {
       '0.5',
       '-100'
     ],
+    ex: text => new PassthroughExample(text),
     priority: 1,
     matchText: (text: string) => {
       const match = matchText(text, /\b(-?\d+(\.\d+)?)\b/i);
@@ -108,13 +58,15 @@ export const PATTERNS: Patterns = {
     details: 'Indicates to fetch the range of tracks starting from the beginning in the list',
     permission: PERMISSION.USER,
     usage: [
-      'TOP 100  # Get the first 100 songs',
-      'TOP 4:10  # Get the 4th song to the 10th song',
-      'TOP 5:-5  # Get the 5th song to the 5th last song'
+      '100  # Get the first 100 songs',
+      '4:10  # Get the 4th song to the 10th song',
+      '5:-5  # Get the 5th song to the 5th last song'
     ],
     priority: 2,
-    matchText: (text: string) => {
-      const match = matchText(text, /\bTOP\s+((\d+)(:(-?\d+))?)\b/i);
+    ex: text => new RangeExample(text, 'top'),
+    matchText: (text, type) => {
+      const reg = type === SyntaxType.KEYWORD ? /(^|\s)TOP\s+((\d+)(:(-?\d+))?)/i : /(^|\s)-TOP\s+((\d+)(:(-?\d+))?)/i;
+      const match = matchText(text, reg);
       let args: RangeArgument | undefined;
       if (match.matches && match.args && match.args.length >= 4) {
         args = { start: +match.args[1] };
@@ -128,13 +80,15 @@ export const PATTERNS: Patterns = {
     details: 'Indicates to fetch the range of tracks starting from the end of the list',
     permission: PERMISSION.USER,
     usage: [
-      'BOTTOM 100  # Get the last 100 songs',
-      'BOTTOM 4:10  # Get the 4th last song to the 10th last song',
-      'BOTTOM 5:-5  # Get the 5th last song to the 5th first song'
+      '100  # Get the last 100 songs',
+      '4:10  # Get the 4th last song to the 10th last song',
+      '5:-5  # Get the 5th last song to the 5th first song'
     ],
     priority: 2,
-    matchText: (text: string) => {
-      const match = matchText(text, /\bBOTTOM\s+((\d+)(:(-?\d+))?)\b/i);
+    ex: text => new RangeExample(text, 'bottom'),
+    matchText: (text, type) => {
+      const reg = type === SyntaxType.KEYWORD ? /(^|\s)BOTTOM\s+((\d+)(:(-?\d+))?)/i : /(^|\s)-BOTTOM\s+((\d+)(:(-?\d+))?)/i;
+      const match = matchText(text, reg);
       let args: RangeArgument | undefined;
       if (match.matches && match.args && match.args.length >= 4) {
         args = { start: +match.args[1] };
@@ -151,6 +105,7 @@ export const PATTERNS: Patterns = {
       '/ argument 1 / argument 2 / argument 3 /'
     ],
     priority: 3,
+    ex: text => new PassthroughExample(text),
     matchText: (text: string) => {
       const match = matchGroup(text, /\B\/\s*([^/]+(\/[^/]+)*)\/\B/, 0);
       return { matches: match.matches, newText: match.newText, args: match.args?.split(/\s*\/\s*/g) };
@@ -167,6 +122,7 @@ export const PATTERNS: Patterns = {
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
     priority: 4,
+    ex: text => new PassthroughExample(text),
     matchText: (text: string) => {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.(com|be)(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
       let args: UrlArgument | undefined;
@@ -185,14 +141,16 @@ export const PATTERNS: Patterns = {
     permission: PERMISSION.USER,
     usage: ['[my identifier]', '[music playlist #2]'],
     priority: 5,
+    ex: text => new PassthroughExample(text),
     matchText: (text: string) => matchGroup(text, /\B\[\s*(.*[^\s])\s*\]\B/i, 0),
   },
   SEARCH: {
     name: 'SEARCH',
     details: 'Used for searching.',
     permission: PERMISSION.USER,
-    usage: ['(what is love)', '(deadmau5)'],
+    usage: ['what is love', 'deadmau5'],
     priority: 6,
+    ex: text => new SearchExample(text),
     matchText: (text: string) => matchGroup(text, /\B\(\s*(.*[^\s])\s*\)\B/i, 0),
   }
 };
@@ -219,4 +177,37 @@ function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResul
     }
   }
   return { matches: match.matches, newText: match.newText, args };
+}
+
+class PassthroughExample implements ArgumentExample {
+
+  constructor(private readonly _text: string) {
+  }
+
+  text(): string {
+    return this._text;
+  }
+
+}
+
+class SearchExample implements ArgumentExample {
+
+  constructor(private readonly _text: string) {
+  }
+
+  text(type: SyntaxType): string {
+    return type === SyntaxType.KEYWORD ? `(${this._text})` : this._text;
+  }
+
+}
+
+class RangeExample implements ArgumentExample {
+
+  constructor(private readonly _text: string, private readonly name: string) {
+  }
+
+  text(type: SyntaxType): string {
+    return type === SyntaxType.KEYWORD ? `${this.name} ${this._text}` : `-${this.name} ${this._text}`;
+  }
+
 }

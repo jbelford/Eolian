@@ -1,4 +1,4 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { SETTINGS_CATEGORY } from 'commands/category';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
@@ -6,7 +6,8 @@ import { createServerDetailsEmbed } from 'embed';
 
 const enum CONFIG_OPTIONS {
   PREFIX = 'prefix',
-  VOLUME = 'volume'
+  VOLUME = 'volume',
+  SYNTAX = 'syntax'
 }
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -30,6 +31,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       break;
     case CONFIG_OPTIONS.VOLUME:
       await setVolume(context, value);
+      break;
+    case CONFIG_OPTIONS.SYNTAX:
+      await setSyntax(context, value);
       break;
     default:
       throw new EolianUserError(`There is no config for \`${name}\``);
@@ -59,6 +63,23 @@ async function setVolume(context: CommandContext, volume: string) {
   if (!context.server!.player.isStreaming) {
     context.server!.player.setVolume(value);
   }
+}
+
+async function setSyntax(context: CommandContext, syntax: string) {
+  let type: SyntaxType;
+  switch (syntax.toLowerCase()) {
+    case 'keyword':
+      type = SyntaxType.KEYWORD;
+      break;
+    case 'traditional':
+      type = SyntaxType.TRADITIONAL;
+      break;
+    default:
+      throw new EolianUserError(`Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`);
+  }
+
+  await context.server!.details.setSyntax(type);
+  await context.channel.send(`✨ The server now uses \`${syntax}\` syntax!`);
 }
 
 export const CONFIG_COMMAND: Command = {

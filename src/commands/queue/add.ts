@@ -86,7 +86,7 @@ export const ADD_COMMAND: Command = {
   usage: [
     {
       title: `Search song and add to top of the queue`,
-      example: `(what is love) next`
+      example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.NEXT]
     },
     {
       title: 'Add song from URL',
@@ -98,19 +98,19 @@ export const ADD_COMMAND: Command = {
     },
     {
       title: 'Search for artist and add their top 5 songs',
-      example: 'artist (deadmau5) top 5'
+      example: [KEYWORDS.ARTIST, PATTERNS.SEARCH.ex('deadmau5'), PATTERNS.TOP.ex('5')]
     },
     {
       title: 'Search for album and add songs to queue',
-      example: 'album (the life of pablo)'
+      example: [KEYWORDS.ALBUM, PATTERNS.SEARCH.ex('the life of pablo')]
     },
     {
       title: 'Search for playlist from your linked Spotify account and add songs to top of queue',
-      example: `my spotify playlist (cool playlist) next`
+      example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.PLAYLIST, PATTERNS.SEARCH.ex('cool playlist'), KEYWORDS.NEXT]
     },
     {
       title: `Get likes from your linked SoundCloud account, shuffle them, and add to queue`,
-      example: 'my soundcloud likes shuffled'
+      example: [KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.LIKES, KEYWORDS.SHUFFLE]
     },
   ],
   execute

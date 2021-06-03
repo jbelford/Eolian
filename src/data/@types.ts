@@ -1,4 +1,5 @@
 import { Track } from 'api/@types';
+import { SyntaxType } from 'commands/@types';
 import { AbsRangeArgument, Closable, Idleable } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import EventEmitter from 'events';
@@ -32,6 +33,7 @@ export interface UsersDb extends CollectionDb<UserDTO> {
 export interface ServersDb extends CollectionDb<ServerDTO> {
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
+  setSyntax(id: string, type: SyntaxType): Promise<void>;
 }
 
 export interface DocDTO {
@@ -41,6 +43,7 @@ export interface DocDTO {
 export interface ServerDTO extends DocDTO {
   prefix?: string;
   volume?: number;
+  syntax?: SyntaxType;
 }
 
 export interface UserDTO extends DocDTO {

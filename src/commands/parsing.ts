@@ -2,8 +2,8 @@ import { COMMAND_MAP } from 'commands';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand } from './@types';
-import { KEYWORDS, PATTERNS_SORTED } from './keywords';
+import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand, SyntaxType } from './@types';
+import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from './keywords';
 
 function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};
@@ -19,7 +19,7 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
 
   const options = PATTERNS_SORTED.filter(pattern => patternSet.has(pattern!.name) && pattern!.permission <= permission)
     .reduce((options, pattern) => {
-      const result = pattern!.matchText(text);
+      const result = pattern!.matchText(text, SyntaxType.KEYWORD);
       if (result.matches) {
         options[pattern!.name] = result.args;
         text = result.newText;
@@ -38,8 +38,43 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
   return options;
 }
 
-function getCommandOptionParsingStrategy(command: Command): CommandOptionsParsingStrategy {
-  return command.keywords || command.patterns ? keywordOptionsStrategy : simpleOptionsStrategy;
+function bashKeywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+  const keywordSet = new Set<string>(keywords);
+  const patternSet = new Set<string>(patterns);
+
+  const options = PATTERNS_SORTED.filter(pattern => patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name && pattern!.permission <= permission)
+    .reduce((options, pattern) => {
+      const result = pattern!.matchText(text, SyntaxType.TRADITIONAL);
+      if (result.matches) {
+        options[pattern!.name] = result.args;
+        text = result.newText;
+      }
+      return options;
+    }, {} as CommandOptions);
+
+  const reg = /(^|\s)-(?<keyword>\w+)/g
+  for (const match of text.matchAll(reg)) {
+    if (match.groups) {
+      const name = match.groups['keyword'].toUpperCase();
+      const keyword = KEYWORDS[name];
+      if (keyword && keywordSet.has(keyword.name)) {
+        options[keyword.name] = true;
+      }
+    }
+  }
+  text = text.replace(reg, '').trim();
+
+  if (patternSet.has(PATTERNS.SEARCH.name)) {
+    options.SEARCH = text;
+  }
+
+  return options;
+}
+
+function getCommandOptionParsingStrategy(command: Command, type: SyntaxType): CommandOptionsParsingStrategy {
+  return command.keywords || command.patterns
+    ? type === SyntaxType.KEYWORD ? keywordOptionsStrategy : bashKeywordOptionsStrategy
+    : simpleOptionsStrategy;
 }
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
@@ -48,7 +83,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     return message.trim().charAt(0) === prefix;
   }
 
-  parseCommand(message: string, permission: PERMISSION): ParsedCommand {
+  parseCommand(message: string, permission: PERMISSION, type = SyntaxType.KEYWORD): ParsedCommand {
     let text = message.trim();
 
     const textSplit = text.split(/\s+/g);
@@ -61,7 +96,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
       throw new EolianUserError(`There is no command \`${commandName}\``);
     }
 
-    const optionParsingFn = getCommandOptionParsingStrategy(command);
+    const optionParsingFn = getCommandOptionParsingStrategy(command, type);
     const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name), command.patterns?.map(pattern => pattern.name));
 
     return { command, options };
@@ -72,4 +107,3 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 export function createCommandParsingStrategy(): CommandParsingStrategy {
   return new KeywordParsingStrategy();
 }
-

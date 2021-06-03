@@ -1,3 +1,4 @@
+import { SyntaxType } from 'commands/@types';
 import { Collection } from 'mongodb';
 import { CollectionDb, Identifier, ServerDTO, ServersDb, UserDTO, UsersDb } from './@types';
 
@@ -80,6 +81,10 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
 
   async setVolume(id: string, volume: number): Promise<void> {
     await this.setProperty(id, 'volume', volume);
+  }
+
+  async setSyntax(id: string, type: SyntaxType): Promise<void> {
+    await this.setProperty(id, 'syntax', type);
   }
 
 }

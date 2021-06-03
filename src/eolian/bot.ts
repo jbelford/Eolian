@@ -1,4 +1,4 @@
-import { CommandContext, CommandParsingStrategy } from 'commands/@types';
+import { CommandContext, CommandParsingStrategy, SyntaxType } from 'commands/@types';
 import { DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -162,8 +162,15 @@ export class DiscordEolianBot implements EolianBot {
         return;
       }
 
+      let type: SyntaxType | undefined;
+      if (guild) {
+        const details = this.getGuildDetails(guild);
+        const dto = await details.get();
+        type = dto.syntax;
+      }
+
       const permission = getPermissionLevel(author, member);
-      const { command, options } = this.parser.parseCommand(removeMentions(content), permission);
+      const { command, options } = this.parser.parseCommand(removeMentions(content), permission, type);
 
       if (channel instanceof DMChannel) {
         if (!command.dmAllowed) {

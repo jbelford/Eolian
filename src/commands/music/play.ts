@@ -76,7 +76,7 @@ You may optionally provide a SEARCH or URL pattern to play a song right away.`,
     },
     {
       title: 'Start playing song from SEARCH',
-      example: '(what is love)'
+      example: [PATTERNS.SEARCH.ex('what is love')]
     }
   ],
   execute

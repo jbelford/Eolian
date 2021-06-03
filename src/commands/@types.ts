@@ -17,7 +17,7 @@ export interface Command {
 
 export interface CommandUsage {
   title?: string;
-  example: string;
+  example: ArgumentExample[] | string;
 }
 
 export interface CommandCategory {
@@ -28,7 +28,7 @@ export interface CommandCategory {
 
 export interface CommandParsingStrategy {
   messageInvokesBot(message: string, prefix?: string): boolean;
-  parseCommand(message: string, permission: PERMISSION): ParsedCommand;
+  parseCommand(message: string, permission: PERMISSION, type?: SyntaxType): ParsedCommand;
 }
 
 export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[], patterns?: string[]) => CommandOptions;
@@ -84,16 +84,21 @@ export interface KeywordMatchResult<T> {
   args?: T;
 }
 
-export type Keyword = {
+export interface Keyword extends ArgumentExample {
   readonly name: string;
   readonly details: string;
   readonly permission: PERMISSION;
 }
 
-export type Pattern<T> = Keyword & {
+export interface Pattern<T> {
+  readonly name: string;
+  readonly details: string;
+  readonly permission: PERMISSION;
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
   readonly usage: string[];
+
+  ex(text: string): ArgumentExample;
 
   /**
    * Check that the given text contains the keyword.
@@ -101,7 +106,7 @@ export type Pattern<T> = Keyword & {
    *
    * @param text
    */
-  matchText(text: string): KeywordMatchResult<T>;
+  matchText(text: string, type: SyntaxType): KeywordMatchResult<T>;
 }
 
 export interface Keywords {
@@ -133,4 +138,13 @@ export interface Patterns {
   URL: Pattern<UrlArgument>;
   NUMBER: Pattern<number>;
   ARG: Pattern<string[]>;
+}
+
+export const enum SyntaxType {
+  KEYWORD = 0,
+  TRADITIONAL
+}
+
+export interface ArgumentExample {
+  text(type: SyntaxType): string;
 }

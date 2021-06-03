@@ -35,7 +35,7 @@ export const ACCOUNT_COMMAND: Command = {
     },
     {
       title: `Remove all links and identifiers`,
-      example: `clear`
+      example: [KEYWORDS.CLEAR]
     }
   ],
   execute

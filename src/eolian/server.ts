@@ -1,3 +1,4 @@
+import { SyntaxType } from 'commands/@types';
 import { DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
 import { ServerDTO, ServersDb } from 'data/@types';
@@ -31,7 +32,7 @@ export class DiscordGuild implements ServerDetails {
     if (!this.configCache) {
       this.configCache = await this.servers.get(this.id);
       if (!this.configCache) {
-        this.configCache = { _id: this.id, prefix: environment.cmdToken, volume: DEFAULT_VOLUME };
+        this.configCache = { _id: this.id, prefix: environment.cmdToken, volume: DEFAULT_VOLUME, syntax: SyntaxType.KEYWORD };
       }
     }
     return this.configCache;
@@ -57,6 +58,13 @@ export class DiscordGuild implements ServerDetails {
       this.configCache.volume = volume;
     }
     await this.servers.setVolume(this.id, volume);
+  }
+
+  async setSyntax(type: SyntaxType): Promise<void> {
+    if (this.configCache) {
+      this.configCache.syntax = type;
+    }
+    await this.servers.setSyntax(this.id, type);
   }
 
 }

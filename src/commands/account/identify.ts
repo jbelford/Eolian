@@ -50,11 +50,11 @@ export const IDENTIFY_COMMAND: Command = {
   usage: [
     {
       title: `Search playlist from Spotify and assign it to identifier`,
-      example: 'spotify playlist (retrowave) [retro]'
+      example: [KEYWORDS.SPOTIFY, KEYWORDS.PLAYLIST, PATTERNS.SEARCH.ex('retrowave'), PATTERNS.IDENTIFIER.ex('retro')]
     },
     {
       title: `Delete an identifier`,
-      example: '[retro] clear'
+      example: [PATTERNS.IDENTIFIER.ex('retro'), KEYWORDS.CLEAR]
     }
   ],
   execute

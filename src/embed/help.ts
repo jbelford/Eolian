@@ -1,5 +1,5 @@
 import { COMMANDS } from 'commands';
-import { Command, CommandCategory, Keyword, Pattern } from 'commands/@types';
+import { Command, CommandCategory, Keyword, Pattern, SyntaxType } from 'commands/@types';
 import { COLOR, GITHUB_PAGE_WIKI, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EmbedMessage } from 'eolian/@types';
@@ -46,7 +46,7 @@ ${helpFooter}
   return embed;
 }
 
-export function createCommandDetailsEmbed(command: Command): EmbedMessage {
+export function createCommandDetailsEmbed(command: Command, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -74,12 +74,15 @@ export function createCommandDetailsEmbed(command: Command): EmbedMessage {
 
   embed.description += helpFooter;
 
-  embed.fields = command.usage.map(({ title, example }, idx) => ({ name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`, value: `\`\`\`\n${command.name} ${example}\n\`\`\``}));
+  embed.fields = command.usage.map(({ title, example }, idx) => ({
+    name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`,
+    value: `\`\`\`\n${command.name} ${typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ')}\n\`\`\``
+  }));
 
   return embed;
 }
 
-export function createKeywordDetailsEmbed(keyword: Keyword): EmbedMessage {
+export function createKeywordDetailsEmbed(keyword: Keyword, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -88,12 +91,12 @@ export function createKeywordDetailsEmbed(keyword: Keyword): EmbedMessage {
     title: keyword.name,
     description: `${keyword.details}\n\n`
   };
-  embed.description += '**Example Usage:**\n```\n' + keyword.name.toLowerCase() + '```';
+  embed.description += '**Example Usage:**\n```\n' + keyword.text(type) + '```';
   embed.description += `\n\n${helpFooter}`;
   return embed;
 }
 
-export function createPatternDetailsEmbed(keyword: Pattern<unknown>): EmbedMessage {
+export function createPatternDetailsEmbed(keyword: Pattern<unknown>, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
@@ -102,7 +105,7 @@ export function createPatternDetailsEmbed(keyword: Pattern<unknown>): EmbedMessa
     title: keyword.name,
     description: `${keyword.details}\n\n`
   };
-  embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => `${example}`).join('\n') + '```';
+  embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => keyword.ex(example).text(type)).join('\n') + '```';
   embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
   embed.description += `\n\n${helpFooter}`;
   return embed;

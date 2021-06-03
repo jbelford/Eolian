@@ -61,19 +61,19 @@ export const LIST_COMMAND: Command = {
     },
     {
       title: 'Clear the queue',
-      example: 'clear'
+      example: [KEYWORDS.CLEAR]
     },
     {
       title: 'Show the top 10 songs in the queue',
-      example: 'top 10'
+      example: [PATTERNS.TOP.ex('10')]
     },
     {
       title: 'Show the last 10 songs in the queue',
-      example: 'bottom 10'
+      example: [PATTERNS.BOTTOM.ex('10')]
     },
     {
       title: 'Shuffle the queue',
-      example: 'shuffle'
+      example: [KEYWORDS.SHUFFLE]
     }
   ],
   execute

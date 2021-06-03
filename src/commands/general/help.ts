@@ -1,5 +1,5 @@
 import { COMMAND_MAP } from 'commands';
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
@@ -34,23 +34,29 @@ async function execute({ user, channel, server }: CommandContext, { ARG }: Comma
     return;
   }
 
+  let type = SyntaxType.KEYWORD;
+  if (server) {
+    const details = await server.details.get();
+    type = details.syntax ?? SyntaxType.KEYWORD;
+  }
+
   const command = COMMAND_MAP[arg];
   if (command && command.permission <= user.permission) {
-    const commandEmbed = createCommandDetailsEmbed(command);
+    const commandEmbed = createCommandDetailsEmbed(command, type);
     await channel.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
   if (keyword && keyword.permission <= user.permission) {
-    const keywordEmbed = createKeywordDetailsEmbed(keyword);
+    const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await channel.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
   if (pattern && pattern.permission <= user.permission) {
-    const patternEmbed = createPatternDetailsEmbed(pattern);
+    const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await channel.sendEmbed(patternEmbed);
     return;
   }

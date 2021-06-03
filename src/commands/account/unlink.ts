@@ -33,15 +33,15 @@ export const UNLINK_COMMAND: Command = {
   usage: [
     {
       title: 'Unlink SoundCloud account',
-      example: 'soundcloud',
+      example: [KEYWORDS.SOUNDCLOUD]
     },
     {
       title: 'Unlink Spotify account',
-      example: 'spotify'
+      example: [KEYWORDS.SPOTIFY]
     },
     {
       title: 'Unlink Spotify and SoundCloud',
-      example: 'soundcloud spotify'
+      example: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY]
     }
   ],
   execute
