@@ -76,7 +76,7 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
   }
   text = text.replace(reg, '').trim();
 
-  if (patternSet.has(PATTERNS.SEARCH.name)) {
+  if (patternSet.has(PATTERNS.SEARCH.name) && text.length) {
     options.SEARCH = text;
   }
 
