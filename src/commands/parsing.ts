@@ -17,48 +17,60 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
-  const options = PATTERNS_SORTED.filter(pattern => patternSet.has(pattern!.name) && pattern!.permission <= permission)
-    .reduce((options, pattern) => {
+  const options: CommandOptions = {};
+  for (const pattern of PATTERNS_SORTED) {
+    if (pattern!.permission <= permission && patternSet.has(pattern!.name)) {
       const result = pattern!.matchText(text, SyntaxType.KEYWORD);
       if (result.matches) {
         options[pattern!.name] = result.args;
         text = result.newText;
       }
-      return options;
-    }, {} as CommandOptions);
+    }
+  }
 
   const split = new Set<string>(text.toLowerCase().split(/\s+/));
 
-  Object.values(KEYWORDS)
-    .filter(keyword => keywordSet.has(keyword!.name) && keyword!.permission <= permission && split.has(keyword!.name.toLowerCase()))
-    .forEach(keyword => {
-      options[keyword!.name] = true;
-    });
+  for (const keyword of Object.values(KEYWORDS)) {
+    if (keyword!.permission <= permission && split.has(keyword!.name.toLowerCase())) {
+      if (keywordSet.has(keyword!.name)) {
+        options[keyword!.name] = true;
+      } else {
+        throw new EolianUserError(`This command does not accept the \`${keyword!.name}\` keyword. Try again without it.`);
+      }
+    }
+  }
 
   return options;
 }
 
-function bashKeywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
-  const options = PATTERNS_SORTED.filter(pattern => patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name && pattern!.permission <= permission)
-    .reduce((options, pattern) => {
+  const options: CommandOptions = {};
+  for (const pattern of PATTERNS_SORTED) {
+    if (pattern!.permission <= permission && patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name) {
       const result = pattern!.matchText(text, SyntaxType.TRADITIONAL);
       if (result.matches) {
         options[pattern!.name] = result.args;
         text = result.newText;
       }
-      return options;
-    }, {} as CommandOptions);
+    }
+  }
 
-  const reg = /(^|\s)-(?<keyword>\w+)/g
+  const reg = /(^|\s)-(?<keyword>\w+)/g;
   for (const match of text.matchAll(reg)) {
     if (match.groups) {
       const name = match.groups['keyword'].toUpperCase();
       const keyword = KEYWORDS[name];
-      if (keyword && keywordSet.has(keyword.name)) {
-        options[keyword.name] = true;
+      if (keyword) {
+        if (keywordSet.has(keyword.name)) {
+          options[keyword.name] = true;
+        } else {
+          throw new EolianUserError(`This command does not accept the \`${keyword.name}\` keyword. Try again without it.`);
+        }
+      } else {
+        throw new EolianUserError(`Unrecognized keyword \`${name}\`. Try again.`);
       }
     }
   }
@@ -73,7 +85,7 @@ function bashKeywordOptionsStrategy(text: string, permission: PERMISSION, keywor
 
 function getCommandOptionParsingStrategy(command: Command, type: SyntaxType): CommandOptionsParsingStrategy {
   return command.keywords || command.patterns
-    ? type === SyntaxType.KEYWORD ? keywordOptionsStrategy : bashKeywordOptionsStrategy
+    ? type === SyntaxType.KEYWORD ? keywordOptionsStrategy : traditionalOptionsStrategy
     : simpleOptionsStrategy;
 }
 
