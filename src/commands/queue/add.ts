@@ -4,10 +4,21 @@ import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption, shuffleList, truthySum } from 'common/util';
-import { IdentifierType } from 'data/@types';
+import { Identifier, IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 
+
+export function createSelectedMessage(name: string, authors: string[], identifier: Identifier): string {
+  let text = `Selected **${name}**`;
+  if (identifier.type !== IdentifierType.ARTIST) {
+    text += ` by **${authors.join(',')}**`;
+  }
+  const typeName = getEnumName(IdentifierType, identifier.type)!;
+  const sourceName = getEnumName(SOURCE, identifier.src)!;
+  text += ` (**${typeName}** from **${sourceName}**)`;
+  return text;
+}
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.SEARCH, options.URL, options.IDENTIFIER);
@@ -27,16 +38,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.channel.send(`🔎 Resolved identifier ${identifier.url}\n(**${typeName}** from **${srcName}**)`);
+    await context.channel.send(`🔎 Resolved identifier ${identifier.url}\n 💡 **${typeName}** from **${srcName}**`);
 
     fetcher = getSourceFetcher(identifier, options, context.channel);
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      const authors = resource.authors.join(',');
-      const typeName = getEnumName(IdentifierType, resource.identifier.type);
-      const sourceName = getEnumName(SOURCE, resource.identifier.src);
-      await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
+      const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
+      await context.channel.send(`🔎 ${msg}`);
       fetcher = resource.fetcher;
     }
   }
@@ -59,8 +68,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       await context.server!.queue.add(tracks, options.NEXT);
 
       const bodyText = tracks.length > 1
-        ? `Successfully added ${tracks.length} songs`
-        : `Successfully added **${tracks[0].title}**`;
+        ? `Added ${tracks.length} songs`
+        : `Added **${tracks[0].title}**`;
       const endText = options.NEXT
         ? 'to be played next!'
         : 'to the queue!';

@@ -21,7 +21,7 @@ switch (type) {
   case IdentifierType.TRACKS:
   case IdentifierType.ARTIST:
     return new SoundCloudArtistFetcher(id);
-  case IdentifierType.FAVORITES:
+  case IdentifierType.LIKES:
     return new SoundCloudFavoritesFetcher(id, params, channel);
   case IdentifierType.PLAYLIST:
     return new SoundCloudPlaylistFetcher(id);

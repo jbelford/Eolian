@@ -57,6 +57,7 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
     const user = await this.getSoundCloudUser();
     const resource = createSoundCloudUser(user);
+    resource.name = 'Posted Tracks';
     resource.identifier.type = IdentifierType.TRACKS;
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;

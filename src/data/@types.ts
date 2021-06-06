@@ -62,7 +62,7 @@ export interface Identifier {
 export enum IdentifierType {
   PLAYLIST = 0,
   ALBUM,
-  FAVORITES,
+  LIKES,
   ARTIST,
   SONG,
   TRACKS

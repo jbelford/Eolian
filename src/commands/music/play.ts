@@ -1,9 +1,9 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
-import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
+import { createSelectedMessage } from 'commands/queue/add';
+import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
 import { getSourceResolver } from 'resolvers';
 
 
@@ -17,10 +17,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (options.SEARCH || options.URL) {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      const authors = resource.authors.join(',');
-      const typeName = getEnumName(IdentifierType, resource.identifier.type);
-      const sourceName = getEnumName(SOURCE, resource.identifier.src);
-      await context.channel.send(`📍 Selected **${resource.name}** by **${authors}**\n(**${typeName}** from **${sourceName}**)`);
+      const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
+      await context.channel.send(`✨ ${msg} to be played immediately!`);
 
       const { tracks } = await resource.fetcher.fetch();
       if (tracks.length > 0) {
@@ -39,17 +37,18 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   let voice = context.client.getVoice();
   if (!voice || voice.channelId !== userVoice.id) {
-    await userVoice.join();
     reactionChain = reactionChain.then(() => context.message.react('👋'));
+    await userVoice.join();
     voice = context.client.getVoice();
   }
 
   if (voice) {
     if (!voice.player.isStreaming) {
       context.server!.display.player.setChannel(context.channel);
-      await voice.player.play();
       reactionChain = reactionChain.then(() => context.message.react('🎵'));
+      await voice.player.play();
     } else if (added) {
+      reactionChain = reactionChain.then(() => context.message.react('👌'));
       await voice.player.skip();
     }
   }

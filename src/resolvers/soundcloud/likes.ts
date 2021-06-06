@@ -23,12 +23,12 @@ export function createSoundCloudLikes(
     params: CommandOptions,
     channel: ContextTextChannel): ResolvedResource {
   return {
-    name: user.username,
+    name: 'Liked Tracks',
     authors: [user.username],
     identifier: {
       id: user.id.toString(),
       src: SOURCE.SOUNDCLOUD,
-      type: IdentifierType.FAVORITES,
+      type: IdentifierType.LIKES,
       url: `${user.permalink_url}/likes`
     },
     fetcher: new SoundCloudFavoritesFetcher(user.id, params, channel, user)
