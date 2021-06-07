@@ -6,7 +6,9 @@ export class ButtonRegistry {
   private readonly registry = new Map<string, Map<string, EmbedMessageButton>>();
 
   register(messageId: string, buttons: Map<string, EmbedMessageButton>): void {
-    logger.info('Registered buttons for message %s', messageId);
+    if (!this.registry.has(messageId)) {
+      logger.info('Registered buttons for message %s', messageId);
+    }
     this.registry.set(messageId, buttons);
   }
 
