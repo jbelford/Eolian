@@ -11,8 +11,8 @@ import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { logger } from 'common/logger';
-import { createDatabase, createMemoryStore } from 'data';
-import { AppDatabase, MemoryStore } from 'data/@types';
+import { createDatabase } from 'data';
+import { AppDatabase } from 'data/@types';
 import { DiscordEolianBot, WebServer } from 'eolian';
 import { EolianBot } from 'eolian/@types';
 import nodeCleanup from 'node-cleanup';
@@ -22,16 +22,15 @@ const resources: Closable[] = [];
 (async () => {
   try {
     const db: AppDatabase = await createDatabase();
-    const store: MemoryStore = await createMemoryStore();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
-    const bot: EolianBot = new DiscordEolianBot({ db, store, parser });
+    const bot: EolianBot = new DiscordEolianBot({ db, parser });
 
     await bot.start();
 
     const server = new WebServer();
     server.start();
 
-    resources.push(db, store, bot, server);
+    resources.push(db, bot, server);
   } catch (e) {
     logger.error(`Something went horribly wrong: ${e.stack || e}`);
   }

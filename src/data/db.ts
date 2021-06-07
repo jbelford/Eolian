@@ -18,6 +18,7 @@ class MongoDatabase implements AppDatabase {
   async close(): Promise<void> {
     await this.client.close();
   }
+
 }
 
 export async function createDatabase() : Promise<AppDatabase> {

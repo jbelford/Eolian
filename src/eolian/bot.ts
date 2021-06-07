@@ -3,8 +3,8 @@ import { DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMI
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { LockManager } from 'data';
-import { AppDatabase, MemoryStore, MusicQueueCache } from 'data/@types';
+import { InMemoryQueues, LockManager } from 'data';
+import { AppDatabase, MusicQueueCache } from 'data/@types';
 import ButtonEvent from 'discord-buttons/typings/v12/Classes/INTERACTION_CREATE';
 import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
@@ -21,10 +21,10 @@ import { DiscordUser } from './user';
 
 export interface DiscordEolianBotArgs {
   db: AppDatabase,
-  store: MemoryStore,
   parser: CommandParsingStrategy,
 }
 
+const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 const USER_COMMAND_LOCK_TIMEOUT = 60;
 
@@ -36,14 +36,13 @@ export class DiscordEolianBot implements EolianBot {
   private readonly guildMap = new Map<string, ServerDetails>();
 
   private readonly db: AppDatabase;
-  private readonly queues: MusicQueueCache;
+  private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
   private readonly servers: ServerStateStore = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
   constructor(args: DiscordEolianBotArgs) {
     this.parser = args.parser;
     this.db = args.db;
-    this.queues = args.store.queue;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
