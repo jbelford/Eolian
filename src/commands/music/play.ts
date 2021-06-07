@@ -11,6 +11,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const userVoice = context.user.getVoice();
   if (!userVoice) {
     throw new EolianUserError('You need to be in a voice channel!');
+  } else if (!userVoice.joinable) {
+    throw new EolianUserError('I do not have permission to join your voice channel!');
   }
 
   let added = false;

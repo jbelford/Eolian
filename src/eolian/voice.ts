@@ -12,6 +12,10 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
     return this.channel.id;
   }
 
+  get joinable(): boolean {
+    return this.channel.joinable;
+  }
+
   async join(): Promise<void> {
     await this.channel.join();
   }

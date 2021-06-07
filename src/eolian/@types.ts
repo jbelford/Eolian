@@ -52,6 +52,7 @@ export type ContextMessageReaction = {
 
 export interface ContextVoiceChannel {
   readonly id: string;
+  readonly joinable: boolean;
   join(): Promise<void>;
 }
 
