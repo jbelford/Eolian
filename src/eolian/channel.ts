@@ -1,5 +1,6 @@
 import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
+import BaseMessageComponent from 'discord-buttons/typings/v12/Classes/interfaces/BaseMessageComponent';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
@@ -111,14 +112,12 @@ export class DiscordTextChannel implements ContextTextChannel {
     return collector;
   }
 
-  // Using discord buttons is still very new. As such we have to use `any` type to get around this
-  // When discord buttons mature and are included in base discord.js - we can refactor this
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
         const rich = mapDiscordEmbed(embed);
 
-        const messageOptions: MessageOptions & { components?: any[] } = { embed: rich };
+        const messageOptions: MessageOptions & { components?: BaseMessageComponent[] } = { embed: rich };
 
         let buttonMapping: DiscordButtonMapping | undefined;
         if (embed.buttons) {
