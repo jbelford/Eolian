@@ -5,6 +5,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
+import registerDiscordButtons from 'discord-buttons';
 import ButtonEvent from 'discord-buttons/typings/v12/Classes/INTERACTION_CREATE';
 import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
@@ -45,8 +46,7 @@ export class DiscordEolianBot implements EolianBot {
     this.db = args.db;
 
     this.client = new Client(EOLIAN_CLIENT_OPTIONS);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require('discord-buttons')(this.client);
+    registerDiscordButtons(this.client);
 
     this.client.once(DiscordEvents.READY, this.onReadyHandler);
     this.client.on(DiscordEvents.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
