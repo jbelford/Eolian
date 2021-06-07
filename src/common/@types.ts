@@ -12,6 +12,7 @@ export interface AppEnv {
   debug: boolean;
   cmdToken: string;
   owners: string[];
+  queueLimit: number;
   tokens: {
     discord: string;
     youtube: string;

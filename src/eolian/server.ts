@@ -32,7 +32,13 @@ export class DiscordGuild implements ServerDetails {
     if (!this.configCache) {
       this.configCache = await this.servers.get(this.id);
       if (!this.configCache) {
-        this.configCache = { _id: this.id, prefix: environment.cmdToken, volume: DEFAULT_VOLUME, syntax: SyntaxType.KEYWORD };
+        this.configCache = {
+          _id: this.id,
+          prefix: environment.cmdToken,
+          volume: DEFAULT_VOLUME,
+          syntax: SyntaxType.KEYWORD,
+          queueLimit: environment.queueLimit
+        };
       }
     }
     return this.configCache;

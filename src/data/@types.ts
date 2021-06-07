@@ -44,6 +44,7 @@ export interface ServerDTO extends DocDTO {
   prefix?: string;
   volume?: number;
   syntax?: SyntaxType;
+  queueLimit?: number;
 }
 
 export interface UserDTO extends DocDTO {

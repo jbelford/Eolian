@@ -2,6 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { getRangeOption, shuffleList, truthySum } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
@@ -50,36 +51,44 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     }
   }
 
-  if (fetcher) {
-    // eslint-disable-next-line prefer-const
-    let { tracks, rangeOptimized } = await fetcher.fetch();
-    if (tracks.length > 0) {
-      if (!rangeOptimized) {
-        const range = getRangeOption(options, tracks.length);
-        if (range) {
-          tracks = tracks.slice(range.start, range.stop);
-        }
-      }
+  if (!fetcher) {
+    throw new EolianUserError(`Could not find any tracks to add to the queue! Please try again.`);
+  }
 
-      if (options.SHUFFLE) {
-        shuffleList(tracks);
-      }
+  // eslint-disable-next-line prefer-const
+  let { tracks, rangeOptimized } = await fetcher.fetch();
+  if (!tracks.length) {
+    throw new EolianUserError('No tracks at the provided resource! Please try again.');
+  }
 
-      await context.server!.queue.add(tracks, options.NEXT);
-
-      const bodyText = tracks.length > 1
-        ? `Added ${tracks.length} songs`
-        : `Added **${tracks[0].title}**`;
-      const endText = options.NEXT
-        ? 'to be played next!'
-        : 'to the queue!';
-      await context.channel.send(`✨ ${bodyText} ${endText}`);
-
-      return;
+  if (!rangeOptimized) {
+    const range = getRangeOption(options, tracks.length);
+    if (range) {
+      tracks = tracks.slice(range.start, range.stop);
     }
   }
 
-  throw new EolianUserError(`Could not find any tracks to add to the queue! Please try again.`);
+  if (options.SHUFFLE) {
+    shuffleList(tracks);
+  }
+
+  const details = await context.server!.details.get();
+  const queueSize = await context.server!.queue.size();
+  const queueLimit = details.queueLimit ?? environment.queueLimit;
+  if (queueSize + tracks.length > queueLimit) {
+    throw new EolianUserError(`Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`);
+  }
+
+  await context.server!.queue.add(tracks, options.NEXT);
+
+  const bodyText = tracks.length > 1
+    ? `Added ${tracks.length} songs`
+    : `Added **${tracks[0].title}**`;
+  const endText = options.NEXT
+    ? 'to be played next!'
+    : 'to the queue!';
+  await context.channel.send(`✨ ${bodyText} ${endText}`);
+
 }
 
 export const ADD_COMMAND: Command = {

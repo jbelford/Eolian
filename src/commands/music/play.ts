@@ -3,6 +3,7 @@ import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { createSelectedMessage } from 'commands/queue/add';
 import { PERMISSION } from 'common/constants';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
 
@@ -24,6 +25,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
       const { tracks } = await resource.fetcher.fetch();
       if (tracks.length > 0) {
+        const details = await context.server!.details.get();
+        const queueSize = await context.server!.queue.size();
+        const queueLimit = details.queueLimit ?? environment.queueLimit;
+        if (queueSize + tracks.length > queueLimit) {
+          throw new EolianUserError(`Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`);
+        }
         await context.server!.queue.add(tracks, true);
         added = true;
       }

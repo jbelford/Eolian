@@ -10,6 +10,17 @@ function getEnv(name: string, defaultValue?: string): string {
   process.exit(1);
 }
 
+function getNumberEnv(name: string, defaultValue?: number): number {
+  if (name in process.env) {
+    const value = +(process.env[name] as string);
+    if (!isNaN(value)) return value;
+  } else if (defaultValue) {
+    return defaultValue;
+  }
+  console.log(`Missing or bad env: ${name}`);
+  process.exit(1);
+}
+
 function getArrayEnv(name: string): string[] {
   return getEnv(name, '').split(',').map(s => s.trim());
 }
@@ -19,6 +30,7 @@ export const environment: AppEnv = {
   debug: getEnv('DEBUG_ENABLED') === 'true',
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
+  queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
   tokens: {
     discord: getEnv('DISCORD_TOKEN'),
     youtube: getEnv('YOUTUBE_TOKEN'),
