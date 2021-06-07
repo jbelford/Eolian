@@ -21,6 +21,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
   }
 
   async set(guildId: string, context: ServerState): Promise<void> {
+    logger.info('%s storing guild state', guildId);
     await this.cache.set(guildId, context, this.ttl);
   }
 
