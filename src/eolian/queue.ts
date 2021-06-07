@@ -7,6 +7,7 @@ import { EventEmitter } from 'events';
 export class GuildQueue extends EventEmitter implements ServerQueue {
 
   private lastUpdated = Date.now();
+  private _count: number | undefined;
 
   constructor(
       private readonly queue: MusicQueueCache,
@@ -18,22 +19,44 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return Date.now() - this.lastUpdated >= IDLE_TIMEOUT * 1000;
   }
 
-  unpop(count: number): Promise<boolean> {
-    return this.queue.unpop(this.guildId, count);
+  async size(): Promise<number> {
+    if (this._count === undefined) {
+      const tracks = await this.queue.get(this.guildId);
+      this._count = tracks.length;
+    }
+    return this._count;
   }
 
-  get(limit?: number | undefined): Promise<Track[]> {
-    return this.queue.get(this.guildId, limit);
+  async unpop(count: number): Promise<boolean> {
+    const succeed = await this.queue.unpop(this.guildId, count);
+    if (succeed && this._count !== undefined) {
+      this._count += Math.max(0, count);
+    }
+    return succeed;
+  }
+
+  async get(limit?: number | undefined): Promise<Track[]> {
+    const tracks = await this.queue.get(this.guildId, limit);
+    if (!limit) {
+      this._count = tracks.length;
+    }
+    return tracks;
   }
 
   async remove(range: AbsRangeArgument): Promise<number> {
     const removed = await this.queue.remove(this.guildId, range);
+    if (this._count !== undefined) {
+      this._count -= removed;
+    }
     this.emitRemove();
     return removed;
   }
 
   async add(tracks: Track[], head?: boolean | undefined): Promise<void> {
     await this.queue.add(this.guildId, tracks, head);
+    if (this._count !== undefined) {
+      this._count += tracks.length;
+    }
     this.emitAdd();
   }
 
@@ -45,12 +68,16 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
 
   async clear(): Promise<boolean> {
     const cleared = await this.queue.clear(this.guildId);
+    this._count = 0;
     this.emitRemove();
     return cleared;
   }
 
   async pop(): Promise<Track | undefined> {
     const popped = await this.queue.pop(this.guildId);
+    if (popped && this._count !== undefined) {
+      this._count--;
+    }
     this.emitUpdate();
     return popped;
   }

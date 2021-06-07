@@ -85,6 +85,7 @@ export interface MusicQueueCache {
 }
 
 export interface ServerQueue extends EventEmitter, Idleable {
+  size(): Promise<number>;
   unpop(count: number): Promise<boolean>;
   get(limit?: number): Promise<Track[]>;
   remove(range: AbsRangeArgument): Promise<number>;
