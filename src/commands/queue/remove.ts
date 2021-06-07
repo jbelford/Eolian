@@ -21,7 +21,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  const queueLength = (await context.server!.queue.get()).length;
+  const queueLength = await context.server!.queue.size();
   const range = getRangeOption(options, queueLength)!;
 
   const removed = await context.server!.queue.remove(range);
