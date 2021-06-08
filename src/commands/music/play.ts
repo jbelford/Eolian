@@ -37,8 +37,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     }
   }
 
-  const next = await context.server!.queue.peek();
-  if (!next) {
+  const queueLength = await context.server!.queue.size();
+  if (!queueLength) {
     throw new EolianUserError('There are no songs in the queue!');
   }
 

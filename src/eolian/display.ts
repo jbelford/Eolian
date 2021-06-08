@@ -180,7 +180,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private async updateMessage(editOnly = false): Promise<void> {
     if (this.channel && this.track && (!editOnly || this.message)) {
-      const [next, prev] = await Promise.all([this.player.queue.peek(), this.player.queue.peekReverse(1)]);
+      const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       embed.buttons = [
         { emoji: '⏏', onClick: this.queueHandler, disabled: !next },

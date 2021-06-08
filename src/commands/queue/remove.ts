@@ -13,6 +13,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError('You must provide only 1 of TOP, BOTTOM, or NEXT keywords!');
   }
 
+  const queueLength = await context.server!.queue.size();
+  if (queueLength === 0) {
+    throw new EolianUserError('Queue is already empty!');
+  }
+
   await context.message.react('🌪');
 
   if (options.NEXT) {
@@ -21,7 +26,6 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  const queueLength = await context.server!.queue.size();
   const range = getRangeOption(options, queueLength)!;
 
   const removed = await context.server!.queue.remove(range);
