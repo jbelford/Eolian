@@ -168,7 +168,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   async pause(): Promise<void> {
     if (this.isStreaming && !this.paused) {
       this.lastUsed = Date.now();
-      this.dispatcher!.pause();
+      this.dispatcher!.pause(true);
     }
   }
 
