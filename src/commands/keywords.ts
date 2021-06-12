@@ -12,7 +12,7 @@ class KeywordDetails implements Keyword {
   ) {
   }
 
-  text(type: SyntaxType.KEYWORD): string {
+  text(type: SyntaxType): string {
     return type === SyntaxType.KEYWORD ? this.name.toLowerCase() : `-${this.name.toLowerCase()}`;
   }
 
