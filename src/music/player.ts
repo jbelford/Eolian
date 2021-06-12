@@ -35,8 +35,8 @@ const PLAYER_TIMEOUT = 1000 * 60 * 3;
  *
  * Stream pipeline:
  *
- *   ------------------------------------- Replace all of these when force skipped -----------------------------
- *  |                                                                                                          |
+ *   ----------------------- Replace all of these when force skipped ----------------------
+ *  |                                                                                     |
  *  Song readable stream -> PCM transformer (ffmpeg) -> Volume Transform -> Opus Encoder -> Passthrough -> Dispatcher
  * |                                                 |
  * ------- Replace these 2 when song ends -----------
@@ -140,9 +140,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
       // We manage volume directly so set false
       this.dispatcher = connection.play(input, { seek: 0, volume: false, type: 'opus' });
-      this.dispatcher.on('error', this.streamErrorHandler);
+      this.dispatcher.once('error', this.streamErrorHandler);
       this.dispatcher.once('close', this.cleanup);
-      this.dispatcher.on('finish', () => {
+      this.dispatcher.once('finish', () => {
         this.connectionProvider.get()?.disconnect();
       });
     } catch (e) {
