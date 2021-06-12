@@ -4,11 +4,19 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createServerDetailsEmbed } from 'embed';
 
-const enum CONFIG_OPTIONS {
+const enum CONFIG_OPTION {
   PREFIX = 'prefix',
   VOLUME = 'volume',
   SYNTAX = 'syntax'
 }
+
+type ConfigSetFunc = (context: CommandContext, value: string) => Promise<void>;
+
+const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
+  [CONFIG_OPTION.PREFIX, setPrefix],
+  [CONFIG_OPTION.VOLUME, setVolume],
+  [CONFIG_OPTION.SYNTAX, setSyntax]
+]);
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.ARG) {
@@ -25,19 +33,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const name = options.ARG[0].toLowerCase();
   const value = options.ARG[1].toLowerCase();
 
-  switch (name) {
-    case CONFIG_OPTIONS.PREFIX:
-      await setPrefix(context, value);
-      break;
-    case CONFIG_OPTIONS.VOLUME:
-      await setVolume(context, value);
-      break;
-    case CONFIG_OPTIONS.SYNTAX:
-      await setSyntax(context, value);
-      break;
-    default:
-      throw new EolianUserError(`There is no config for \`${name}\``);
+  const setFn = configSetMap.get(name as CONFIG_OPTION);
+  if (!setFn) {
+    throw new EolianUserError(`There is no config for \`${name}\``);
   }
+
+  await setFn(context, value);
 }
 
 async function setPrefix(context: CommandContext, prefix: string) {
