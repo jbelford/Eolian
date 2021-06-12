@@ -77,7 +77,7 @@ async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCl
   await context.user.setSoundCloud(soundCloudUser.id);
   await context.channel.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
     + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
-    + ` to use your playlists, favorites, and tracks.`);
+    + ` to use your playlists, likes, and tracks.`);
 }
 
 export const LINK_COMMAND: Command = {

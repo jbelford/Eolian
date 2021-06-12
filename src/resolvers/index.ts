@@ -62,7 +62,7 @@ function getTracksResolver(context: CommandContext, params: CommandOptions) {
 
 function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
-    context.channel.send('(Psst.. The FAVORITES keyword is only for SoundCloud.)');
+    context.channel.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
   }
   return new SoundCloudFavoritesResolver(context, params);
 }

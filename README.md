@@ -64,7 +64,7 @@ _Note: Optionally may reconfigure bot to use flag-based syntax if preferred. See
 
 ## 🔗 Link Spotify and SoundCloud Accounts
 
-You can link a Spotify and/or SoundCloud account to your profile. This allows you to query your own public tracks / favorites / playlists.
+You can link a Spotify and/or SoundCloud account to your profile. This allows you to query your own public tracks / likes / playlists.
 
 Here is an example of searching my own public playlists on Spotify.
 
