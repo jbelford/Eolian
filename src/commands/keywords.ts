@@ -1,6 +1,7 @@
-import { RangeArgument } from 'common/@types';
+import { AbsRangeArgument, RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { ArgumentExample, Keyword, KeywordMatchResult, Keywords, Patterns, SyntaxType, UrlArgument } from './@types';
+import { convertRangeToAbsolute } from 'common/util';
+import { ArgumentExample, CommandOptions, Keyword, KeywordMatchResult, Keywords, Patterns, SyntaxType, UrlArgument } from './@types';
 
 class KeywordDetails implements Keyword {
 
@@ -210,4 +211,15 @@ class RangeExample implements ArgumentExample {
     return type === SyntaxType.KEYWORD ? `${this.name} ${this._text}` : `-${this.name} ${this._text}`;
   }
 
+}
+
+
+export function getRangeOption(options: CommandOptions, total: number): AbsRangeArgument | undefined {
+  let range: AbsRangeArgument | undefined;
+  if (options.TOP) {
+    range = convertRangeToAbsolute(options.TOP, total);
+  } else if (options.BOTTOM) {
+    range = convertRangeToAbsolute(options.BOTTOM, total, true);
+  }
+  return range;
 }

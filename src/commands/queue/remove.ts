@@ -1,9 +1,9 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { getRangeOption, KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { getRangeOption, truthySum } from 'common/util';
+import { truthySum } from 'common/util';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT);

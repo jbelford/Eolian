@@ -1,4 +1,3 @@
-import { CommandOptions } from 'commands/@types';
 import * as fuzz from 'fuzzball';
 import { AbsRangeArgument, RangeArgument } from './@types';
 
@@ -16,7 +15,7 @@ export function truthySum(...values: unknown[]): number {
   return values.map(value => +!!value).reduce((prev, curr) => prev + curr, 0);
 }
 
-function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boolean): AbsRangeArgument {
+export function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boolean): AbsRangeArgument {
   let newStart = 0;
   let newStop = max;
 
@@ -39,16 +38,6 @@ function convertRangeToAbsolute(range: RangeArgument, max: number, reverse?: boo
   }
 
   return { start: Math.min(newStart, newStop), stop: Math.max(newStart, newStop) };
-}
-
-export function getRangeOption(options: CommandOptions, total: number): AbsRangeArgument | undefined {
-  let range: AbsRangeArgument | undefined;
-  if (options.TOP) {
-    range = convertRangeToAbsolute(options.TOP, total);
-  } else if (options.BOTTOM) {
-    range = convertRangeToAbsolute(options.BOTTOM, total, true);
-  }
-  return range;
 }
 
 export function sleep(ms: number): Promise<void> {

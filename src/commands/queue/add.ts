@@ -1,10 +1,10 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { getRangeOption, KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { getRangeOption, shuffleList, truthySum } from 'common/util';
+import { shuffleList, truthySum } from 'common/util';
 import { Identifier, IdentifierType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';

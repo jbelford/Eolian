@@ -1,8 +1,7 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { getRangeOption, KEYWORDS, PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
-import { getRangeOption } from 'common/util';
 
 
 async function executeClearQueue(context: CommandContext): Promise<void> {
