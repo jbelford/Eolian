@@ -146,7 +146,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       if (duration) {
         sorted.sort((a, b) => {
-          if (a.score != b.score) {
+          if (Math.abs(a.score - b.score) > 2) {
             return b.score - a.score;
           }
           const durationA = toSeconds(parse(videos[a.key].duration)) * 1000;
