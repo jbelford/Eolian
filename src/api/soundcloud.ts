@@ -1,4 +1,3 @@
-import { youtube } from 'api';
 import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
@@ -6,7 +5,7 @@ import { logger } from 'common/logger';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track } from './@types';
+import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track, YouTubeApi } from './@types';
 
 const SOUNDCLOUD_API = 'https://api.soundcloud.com';
 const TRACKS_PARAMS = {
@@ -15,7 +14,7 @@ const TRACKS_PARAMS = {
 
 export class SoundCloudApiImpl implements SoundCloudApi {
 
-  constructor(private readonly token: string) {}
+  constructor(private readonly token: string, private readonly youtube: YouTubeApi) {}
 
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
@@ -161,7 +160,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     // Use youtube for premium songs
     if (!track.stream) {
-      return youtube.searchStream(track);
+      return this.youtube.searchStream(track);
     }
 
     logger.info('Getting soundcloud stream %s', track.url);

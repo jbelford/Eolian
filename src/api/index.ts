@@ -6,10 +6,10 @@ import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';
 
-export const bing: BingApi = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
-export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud);
-export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret);
-export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube);
+const bing: BingApi = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
+export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube, bing);
+export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud, youtube);
+export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret, youtube);
 
 export function getTrackStream(track: Track) : Promise<StreamData | undefined> {
   switch (track.src) {

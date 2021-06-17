@@ -1,10 +1,9 @@
-import { youtube } from 'api';
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import requestPromise from 'request-promise-native';
-import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track } from './@types';
+import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track, YouTubeApi } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
   V1 = 'v1'
@@ -19,7 +18,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   private expiration = 0;
   private accessToken?: string;
 
-  constructor(private readonly clientId: string, private readonly clientSecret: string) {
+  constructor(private readonly clientId: string, private readonly clientSecret: string, private readonly youtube: YouTubeApi) {
   }
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
@@ -190,7 +189,7 @@ export class SpotifyApiImpl implements SpotifyApi {
       }
     }
 
-    return youtube.searchStream(trackCopy);
+    return this.youtube.searchStream(trackCopy);
   }
 
   private async searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {

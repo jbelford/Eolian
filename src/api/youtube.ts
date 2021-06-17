@@ -1,4 +1,3 @@
-import { bing } from 'api';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
@@ -7,7 +6,7 @@ import { decode } from 'html-entities';
 import { parse, toSeconds } from 'iso8601-duration';
 import querystring from 'querystring';
 import ytdl from 'ytdl-core';
-import { BingVideo, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { BingApi, BingVideo, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
@@ -20,7 +19,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string) {
+  constructor(token: string, private readonly bing: BingApi) {
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
 
@@ -141,7 +140,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchBing(name: string, artist: string, duration?: number): Promise<BingVideo[]> {
     const query = `${artist} ${name}`;
-    let videos = await bing.searchVideos(query, 'YouTube', 15);
+    let videos = await this.bing.searchVideos(query, 'YouTube', 15);
     if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       if (duration) {
