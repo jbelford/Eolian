@@ -282,6 +282,7 @@ export function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, play
     title: track.name,
     src: SOURCE.SPOTIFY,
     url: track.external_urls.spotify,
-    artwork
+    artwork,
+    duration: track.duration_ms
   };
 }

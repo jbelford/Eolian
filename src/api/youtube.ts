@@ -4,6 +4,7 @@ import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
+import { parse, toSeconds } from 'iso8601-duration';
 import querystring from 'querystring';
 import ytdl from 'ytdl-core';
 import { BingVideo, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
@@ -138,11 +139,21 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchBing(name: string, artist: string): Promise<BingVideo[]> {
+  async searchBing(name: string, artist: string, duration?: number): Promise<BingVideo[]> {
     const query = `${artist} ${name}`;
     let videos = await bing.searchVideos(query, 'YouTube', 15);
     if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
+      if (duration) {
+        sorted.sort((a, b) => {
+          if (a.score != b.score) {
+            return b.score - a.score;
+          }
+          const durationA = toSeconds(parse(videos[a.key].duration)) * 1000;
+          const durationB = toSeconds(parse(videos[b.key].duration)) * 1000;
+          return Math.abs(durationA - duration) - Math.abs(durationB - duration);
+        })
+      }
       videos = sorted.map(scored => videos[scored.key]);
     } else {
       logger.warn(`Failed to fetch YouTube track for query: %s`, query);
@@ -151,7 +162,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const videos = await this.searchBing(track.title, track.poster);
+    const videos = await this.searchBing(track.title, track.poster, track.duration);
     if (videos.length > 0) {
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
       logger.info(`Searched stream '${track.poster} ${track.title}' selected '${video.contentUrl}'`);

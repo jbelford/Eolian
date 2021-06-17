@@ -229,6 +229,7 @@ export interface Track {
   stream?: string;
   artwork?: string;
   src: SOURCE;
+  duration?: number;
 }
 
 export interface StreamData {

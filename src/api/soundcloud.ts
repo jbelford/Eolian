@@ -212,6 +212,7 @@ export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
     url: track.permalink_url,
     stream: track.streamable && track.access === 'playable' ? track.stream_url : undefined,
     title: track.title,
-    artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500')
+    artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
+    duration: track.duration
   };
 }
