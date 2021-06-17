@@ -53,7 +53,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const video = response.data.items[0];
       return mapVideoResponse(video);
     } catch (e) {
-      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      logger.warn(`Failed to fetch YouTube playlist: id: %s`, id);
       throw e;
     }
   }
@@ -68,7 +68,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const playlist = response.data.items[0];
       return mapPlaylistResponse(playlist);
     } catch (e) {
-      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      logger.warn(`Failed to fetch YouTube playlist: id: %s`, id);
       throw e;
     }
   }
@@ -88,7 +88,7 @@ export class YouTubeApiImpl implements YouTubeApi {
         items = items.concat(response.data.items || []);
       }
     } catch (e) {
-      logger.warn(`Failed to fetch YouTube playlist: id: ${id}`);
+      logger.warn(`Failed to fetch YouTube playlist: id: %s`, id);
       throw e;
     }
 
@@ -105,7 +105,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
       return response.data.items.map(mapPlaylistResponse);
     } catch (e) {
-      logger.warn(`Failed to search YouTube playlists: query: ${query}`);
+      logger.warn(`Failed to search YouTube playlists: query: %s`, query);
       throw e;
     }
   }
@@ -132,7 +132,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
       return videos.slice(0, 5);
     } catch (e) {
-      logger.warn(`Failed to search YouTube videos: query: ${query}`);
+      logger.warn(`Failed to search YouTube videos: query: %s`, query);
       throw e;
     }
   }
@@ -144,7 +144,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       videos = sorted.map(scored => videos[scored.key]);
     } else {
-      logger.warn(`Failed to fetch YouTube track for query: ${query}`);
+      logger.warn(`Failed to fetch YouTube track for query: %s`, query);
     }
     return videos;
   }
