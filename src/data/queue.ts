@@ -1,8 +1,8 @@
 import { Track } from 'api/@types';
 import { AbsRangeArgument } from 'common/@types';
 import { shuffleList } from 'common/util';
-import { EolianCache, MusicQueueCache } from './@types';
-import { InMemoryCache } from './cache';
+import { ListCache, MusicQueueCache } from './@types';
+import { InMemoryListCache } from './cache';
 
 const MAX_PREV = 10;
 
@@ -11,47 +11,41 @@ const MAX_PREV = 10;
  */
 export class InMemoryQueues implements MusicQueueCache {
 
-  private readonly cache: EolianCache<Track[]>;
+  private readonly cache: ListCache<Track>;
 
   constructor(ttl: number) {
-    this.cache = new InMemoryCache(ttl);
+    this.cache = new InMemoryListCache(ttl);
   }
 
-  async unpop(guildId: string, count: number): Promise<boolean> {
-    count = Math.max(0, count);
-    const list = await this.getPrev(guildId);
-    if (list.length < count) {
-      return false;
-    }
-
-    const tracks = list.splice(Math.max(0, list.length - count), count);
-    await this.setPrev(guildId, list);
-    await this.add(guildId, tracks, true);
-
-    return true;
+  async size(guildId: string): Promise<number> {
+    return this.cache.size(guildId);
   }
 
   async get(guildId: string, limit?: number): Promise<Track[]> {
-    const list = await this.cache.get(guildId) || [];
-    return limit ? list.slice(0, limit) : list;
+    if (limit) {
+      return await this.cache.range(guildId, 0, limit);
+    } else {
+      return await this.cache.get(guildId);
+    }
   }
 
   async remove(guildId: string, range: AbsRangeArgument): Promise<number> {
-    const list = await this.cache.get(guildId) || [];
-    const newList = list.slice(0, range.start).concat(list.slice(range.stop));
-    await this.cache.set(guildId, newList);
-    return range.stop - range.start;
+    return await this.cache.remove(guildId, range.start, range.stop - range.start);
   }
 
   async add(guildId: string, tracks: Track[], head = false): Promise<void> {
-    const list = await this.cache.get(guildId) || [];
-    const newList = head ? tracks.concat(list) : list.concat(tracks);
-    await this.cache.set(guildId, newList);
+    if (head) {
+      await this.cache.lpush(guildId, tracks);
+    } else {
+      await this.cache.rpush(guildId, tracks);
+    }
   }
 
   async shuffle(guildId: string): Promise<boolean> {
     const list = await this.cache.get(guildId);
-    if (!list) return false;
+    if (list.length === 0) {
+      return false;
+    }
 
     await this.cache.set(guildId, shuffleList(list));
 
@@ -59,47 +53,51 @@ export class InMemoryQueues implements MusicQueueCache {
   }
 
   async clear(guildId: string): Promise<boolean> {
-    await this.cache.del(`${guildId}_prev`);
+    await this.cache.del(this.prevKey(guildId));
     return this.cache.del(guildId);
   }
 
   async pop(guildId: string): Promise<Track | undefined> {
-    const list = await this.cache.get(guildId) || [];
-    if (!list.length) {
-      return;
+    const track = await this.cache.lpop(guildId);
+    if (track.length) {
+      this.addPrev(guildId, track[0]);
+      return track[0];
     }
-
-    const track = list.shift()!;
-    this.addPrev(guildId, track);
-    await this.cache.set(guildId, list);
-    return track;
+    return undefined;
   }
 
   async peek(guildId: string): Promise<Track | undefined> {
-    const list = await this.cache.get(guildId) || [];
-    return list.length ? list[0] : undefined;
+    return await this.cache.peek(guildId);
+  }
+
+  async unpop(guildId: string, count: number): Promise<boolean> {
+    count = Math.max(0, count);
+    const size = await this.cache.size(this.prevKey(guildId));
+    if (size < count) {
+      return false;
+    }
+
+    const prev = await this.cache.rpop(this.prevKey(guildId), count);
+    if (prev) {
+      await this.cache.lpush(guildId, prev);
+    }
+
+    return true;
   }
 
   async peekReverse(guildId: string, idx = 0): Promise<Track | undefined> {
-    const list = await this.cache.get(`${guildId}_prev`) || [];
-    return list.length ? list[idx] : undefined;
-  }
-
-  private async getPrev(guildId: string): Promise<Track[]> {
-    return await this.cache.get(`${guildId}_prev`) || [];
-  }
-
-  private async setPrev(guildId: string, tracks: Track[]): Promise<void> {
-    await this.cache.set(`${guildId}_prev`, tracks);
+    return this.cache.peek(this.prevKey(guildId), idx);
   }
 
   private async addPrev(guildId: string, track: Track): Promise<void> {
-    let tracks = await this.getPrev(guildId);
+    let tracks = await this.cache.get(this.prevKey(guildId));
     tracks.push(track);
     if (tracks.length === MAX_PREV) {
       tracks = tracks.slice(1);
     }
-    await this.setPrev(guildId, tracks);
+    await this.cache.set(this.prevKey(guildId), tracks);
   }
+
+  private prevKey = (guildId: string) => `${guildId}_prev`;
 
 }

@@ -73,7 +73,22 @@ export interface MemoryStore extends Closable {
   readonly queue: MusicQueueCache;
 }
 
+export interface ListCache<V> extends Closable {
+  size(key: string): Promise<number>;
+  lpop(key: string, count?: number): Promise<V[]>;
+  rpop(key: string, count?: number): Promise<V[]>;
+  lpush(key: string, items: V[]): Promise<void>;
+  rpush(key: string, items: V[]): Promise<void>;
+  peek(key: string, idx?: number): Promise<V | undefined>;
+  get(key: string): Promise<V[]>;
+  set(key: string, items: V[]): Promise<void>;
+  del(key: string): Promise<boolean>;
+  range(key: string, offset: number, count: number): Promise<V[]>;
+  remove(key: string, offset: number, count: number): Promise<number>;
+}
+
 export interface MusicQueueCache {
+  size(guildId: string): Promise<number>;
   unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, limit?: number): Promise<Track[]>;
   remove(guildId: string, range: AbsRangeArgument): Promise<number>
