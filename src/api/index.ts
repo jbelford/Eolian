@@ -1,10 +1,12 @@
 import { SOURCE } from 'common/constants';
 import { environment } from 'common/env';
-import { SoundCloudApi, SpotifyApi, StreamData, Track, YouTubeApi } from './@types';
+import { BingApi, SoundCloudApi, SpotifyApi, StreamData, Track, YouTubeApi } from './@types';
+import { BingApiImpl } from './bing';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';
 
+export const bing: BingApi = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
 export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud);
 export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret);
 export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube);

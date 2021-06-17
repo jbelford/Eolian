@@ -15,6 +15,10 @@ export interface AppEnv {
   queueLimit: number;
   tokens: {
     discord: string;
+    bing: {
+      key: string;
+      configId: string;
+    };
     youtube: string;
     soundcloud: string;
     spotify: {

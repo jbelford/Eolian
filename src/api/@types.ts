@@ -192,7 +192,6 @@ export interface YouTubeApi extends StreamFetcher {
   getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
-  searchSong(name: string, artist: string): Promise<YoutubeVideo[]>;
   searchStream(track: Track): Promise<StreamData | undefined>;
 }
 
@@ -235,4 +234,21 @@ export interface Track {
 export interface StreamData {
   readable: Readable,
   details: Track
+}
+
+export interface BingApi {
+  searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;
+}
+
+export interface BingVideoPublisher {
+  name: string;
+}
+
+export interface BingVideo {
+  id: string;
+  name: string;
+  duration: string;
+  contentUrl: string;
+  publisher: BingVideoPublisher[]
+  creator: BingVideoPublisher
 }

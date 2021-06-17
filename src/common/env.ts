@@ -33,6 +33,10 @@ export const environment: AppEnv = {
   queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
   tokens: {
     discord: getEnv('DISCORD_TOKEN'),
+    bing: {
+      key: getEnv('BING_TOKEN'),
+      configId: getEnv('BING_CONFIG_ID'),
+    },
     youtube: getEnv('YOUTUBE_TOKEN'),
     soundcloud: getEnv('SOUNDCLOUD_TOKEN'),
     spotify: {

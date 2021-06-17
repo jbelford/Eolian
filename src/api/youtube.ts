@@ -1,3 +1,4 @@
+import { bing } from 'api';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
@@ -5,7 +6,7 @@ import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
 import querystring from 'querystring';
 import ytdl from 'ytdl-core';
-import { StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { BingVideo, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
@@ -137,9 +138,9 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchSong(name: string, artist: string): Promise<YoutubeVideo[]> {
+  async searchBing(name: string, artist: string): Promise<BingVideo[]> {
     const query = `${artist} ${name}`;
-    let videos = await this.searchVideos(query);
+    let videos = await bing.searchVideos(query, 'YouTube', 15);
     if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
       videos = sorted.map(scored => videos[scored.key]);
@@ -150,11 +151,11 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const videos = await this.searchSong(track.title, track.poster);
+    const videos = await this.searchBing(track.title, track.poster);
     if (videos.length > 0) {
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
-      logger.info(`Searched stream '${track.poster} ${track.title}' selected '${video.url}'`);
-      const youtubeTrack = mapYouTubeVideo(video);
+      logger.info(`Searched stream '${track.poster} ${track.title}' selected '${video.contentUrl}'`);
+      const youtubeTrack = mapBingToTrack(video);
       return this.getStream(youtubeTrack);
     }
     return undefined;
@@ -196,8 +197,8 @@ function mapPlaylistResponse(playlist: youtube_v3.Schema$Playlist | youtube_v3.S
   };
 }
 
-function mapVideoToName(video: YoutubeVideo) {
-  return `${video.channelName} ${video.name}`;
+function mapVideoToName(video: BingVideo) {
+  return `${video.creator.name} ${video.name}`;
 }
 
 export function mapYouTubeVideo(video: YoutubeVideo): Track {
@@ -210,4 +211,15 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
     stream: video.url,
     artwork: video.artwork
   };
+}
+
+export function mapBingToTrack(video: BingVideo): Track {
+  return {
+    id: video.id,
+    poster: video.creator.name,
+    src: SOURCE.YOUTUBE,
+    url: video.contentUrl,
+    title: video.name,
+    stream: video.contentUrl
+  }
 }
