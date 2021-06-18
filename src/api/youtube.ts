@@ -6,7 +6,7 @@ import { decode } from 'html-entities';
 import { parse, toSeconds } from 'iso8601-duration';
 import querystring from 'querystring';
 import ytdl from 'ytdl-core';
-import { BingApi, BingVideo, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { BingApi, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
@@ -138,11 +138,23 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchBing(name: string, artist: string, duration?: number): Promise<BingVideo[]> {
+  async searchSong(name: string, artist: string): Promise<Track[]> {
     const query = `${artist} ${name}`;
-    let videos = await this.bing.searchVideos(query, 'YouTube', 15);
+    let videos = await this.searchVideos(query);
     if (videos.length) {
-      const sorted = await fuzzyMatch(query, videos.map(mapVideoToName));
+      const sorted = await fuzzyMatch(query, videos.map(video => `${video.channelName} ${video.name}`));
+      videos = sorted.map(scored => videos[scored.key]);
+    } else {
+      logger.warn(`Failed to fetch YouTube track for query: %s`, query);
+    }
+    return videos.map(mapYouTubeVideo);
+  }
+
+  async searchBing(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]> {
+    const query = `${artist} ${name}`;
+    const videos = await this.bing.searchVideos(query, 'YouTube', 15);
+    if (videos.length) {
+      const sorted = await fuzzyMatch(query, videos.map(video => `${video.creator.name} ${video.name}`));
       if (duration) {
         sorted.sort((a, b) => {
           if (Math.abs(a.score - b.score) > 2) {
@@ -151,22 +163,40 @@ export class YouTubeApiImpl implements YouTubeApi {
           const durationA = toSeconds(parse(videos[a.key].duration)) * 1000;
           const durationB = toSeconds(parse(videos[b.key].duration)) * 1000;
           return Math.abs(durationA - duration) - Math.abs(durationB - duration);
-        })
+        });
       }
-      videos = sorted.map(scored => videos[scored.key]);
+      return sorted.map(scored => ({ ...videos[scored.key], score: scored.score }))
+        .map(video => ({
+            id: video.id,
+            poster: video.creator.name,
+            src: SOURCE.YOUTUBE,
+            url: video.contentUrl,
+            title: video.name,
+            stream: video.contentUrl,
+            score: video.score
+        }));
     } else {
       logger.warn(`Failed to fetch YouTube track for query: %s`, query);
     }
-    return videos;
+    return [];
   }
 
   async searchStream(track: Track): Promise<StreamData | undefined> {
-    const videos = await this.searchBing(track.title, track.poster, track.duration);
-    if (videos.length > 0) {
-      const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.name)) ?? videos[0];
-      logger.info(`Searched stream '${track.poster} ${track.title}' selected '${video.contentUrl}'`);
-      const youtubeTrack = mapBingToTrack(video);
-      return this.getStream(youtubeTrack);
+    const tracks = await this.searchBing(track.title, track.poster, track.duration);
+    if (tracks.length > 0) {
+      let video: Track & { score?: number } = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+      logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+      // Fallback on YouTube we get bad results
+      if (video.score! < 72) {
+        const videos = await this.searchSong(track.title, track.poster);
+        if (videos.length > 0) {
+          video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+          logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}'`);
+        }
+      }
+      if (video) {
+        return this.getStream(video);
+      }
     }
     return undefined;
   }
@@ -207,10 +237,6 @@ function mapPlaylistResponse(playlist: youtube_v3.Schema$Playlist | youtube_v3.S
   };
 }
 
-function mapVideoToName(video: BingVideo) {
-  return `${video.creator.name} ${video.name}`;
-}
-
 export function mapYouTubeVideo(video: YoutubeVideo): Track {
   return {
     id: video.id,
@@ -221,15 +247,4 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
     stream: video.url,
     artwork: video.artwork
   };
-}
-
-export function mapBingToTrack(video: BingVideo): Track {
-  return {
-    id: video.id,
-    poster: video.creator.name,
-    src: SOURCE.YOUTUBE,
-    url: video.contentUrl,
-    title: video.name,
-    stream: video.contentUrl
-  }
 }
