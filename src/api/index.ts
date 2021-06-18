@@ -1,6 +1,6 @@
 import { SOURCE } from 'common/constants';
 import { environment } from 'common/env';
-import { BingApi, SoundCloudApi, SpotifyApi, StreamData, Track, YouTubeApi } from './@types';
+import { BingApi, SoundCloudApi, SpotifyApi, StreamSource, Track, YouTubeApi } from './@types';
 import { BingApiImpl } from './bing';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
@@ -11,12 +11,12 @@ export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube
 export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud, youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret, youtube);
 
-export function getTrackStream(track: Track, seek?: number) : Promise<StreamData | undefined> {
+export function getTrackStream(track: Track) : Promise<StreamSource | undefined> {
   switch (track.src) {
     case SOURCE.SOUNDCLOUD:
       return soundcloud.getStream(track);
     case SOURCE.YOUTUBE:
-      return youtube.getStream(track, seek);
+      return youtube.getStream(track);
     case SOURCE.SPOTIFY:
       return spotify.getStream(track);
     default:

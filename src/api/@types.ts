@@ -3,7 +3,7 @@ import { SOURCE } from 'common/constants';
 import { Readable } from 'stream';
 
 interface StreamFetcher {
-  getStream(track: Track, seek?: number): Promise<StreamData | undefined>;
+  getStream(track: Track): Promise<StreamSource | undefined>;
 }
 
 export interface SoundCloudApi extends StreamFetcher {
@@ -192,7 +192,7 @@ export interface YouTubeApi extends StreamFetcher {
   getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
   searchVideos(query: string): Promise<YoutubeVideo[]>;
-  searchStream(track: Track): Promise<StreamData | undefined>;
+  searchStream(track: Track): Promise<StreamSource | undefined>;
 }
 
 export interface YouTubeUrlDetails {
@@ -232,9 +232,8 @@ export interface Track {
   readonly duration?: number;
 }
 
-export interface StreamData {
-  readable: Readable,
-  details: Track
+export interface StreamSource {
+  get(seek?: number): Promise<Readable>;
 }
 
 export interface BingApi {

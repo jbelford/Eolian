@@ -1,5 +1,5 @@
 import { getTrackStream } from 'api';
-import { Track } from 'api/@types';
+import { StreamSource, Track } from 'api/@types';
 import { logger } from 'common/logger';
 import EventEmitter from 'events';
 import prism from 'prism-media';
@@ -13,6 +13,7 @@ export class SongStream extends EventEmitter {
   private songStream?: Readable;
   private pcmTransform?: Duplex;
   private output = new PassThrough();
+  private source?: StreamSource;
   private startTime = 0;
   private attempts = 0;
 
@@ -38,12 +39,20 @@ export class SongStream extends EventEmitter {
     if (this.startTime > 0) {
       seek = Math.min(0, Date.now() - this.startTime);
     }
-    const stream = await getTrackStream(this.track, seek);
-    if (!stream) {
+
+    if (!this.source) {
+      this.source = await getTrackStream(this.track);
+      if (!this.source) {
+        throw new Error('Failed to get stream source!');
+      }
+    }
+
+    const stream = await this.source.get(seek);
+    if (!this.stream) {
       throw new Error('Failed to get stream!');
     }
 
-    this.songStream = stream.readable
+    this.songStream = stream
       .once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 

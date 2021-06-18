@@ -4,9 +4,10 @@ import { fuzzyMatch } from 'common/util';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
 import { parse, toSeconds } from 'iso8601-duration';
+import { Readable } from 'node:stream';
 import querystring from 'querystring';
 import ytdl from 'ytdl-core';
-import { BingApi, StreamData, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
@@ -181,7 +182,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     return [];
   }
 
-  async searchStream(track: Track): Promise<StreamData | undefined> {
+  async searchStream(track: Track): Promise<StreamSource | undefined> {
     const tracks = await this.searchBing(track.title, track.poster, track.duration);
     if (tracks.length > 0) {
       let video: Track & { score?: number } = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
@@ -201,19 +202,11 @@ export class YouTubeApiImpl implements YouTubeApi {
     return undefined;
   }
 
-  async getStream(track: Track, seek?: number): Promise<StreamData | undefined> {
+  async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
-
-    logger.info('Getting youtube stream %s', track.url);
-
-    const options: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio' };
-    if (seek) {
-      options.begin = seek;
-    }
-    const stream = ytdl(track.url, options);
-    return { readable: stream, details: track };
+    return new YouTubeStreamSource(track.url);
   }
 
 }
@@ -251,4 +244,22 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
     stream: video.url,
     artwork: video.artwork
   };
+}
+
+class YouTubeStreamSource implements StreamSource {
+
+  constructor(private readonly url: string) {
+  }
+
+  async get(seek?: number): Promise<Readable> {
+    logger.info('Getting youtube stream %s', this.url);
+
+    const options: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio' };
+    if (seek) {
+      options.begin = seek;
+    }
+    const stream = ytdl(this.url, options);
+    return stream;
+  }
+
 }

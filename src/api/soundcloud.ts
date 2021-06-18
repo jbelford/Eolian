@@ -5,7 +5,8 @@ import { logger } from 'common/logger';
 import querystring from 'querystring';
 import request from 'request';
 import requestp from 'request-promise-native';
-import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamData, Track, YouTubeApi } from './@types';
+import { Readable } from 'stream';
+import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamSource, Track, YouTubeApi } from './@types';
 
 const SOUNDCLOUD_API = 'https://api.soundcloud.com';
 const TRACKS_PARAMS = {
@@ -153,34 +154,19 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     return items;
   }
 
-  getStream(track: Track): Promise<StreamData | undefined> {
+  async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.SOUNDCLOUD) {
       throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
     }
 
     // Use youtube for premium songs
     if (!track.stream) {
-      return this.youtube.searchStream(track);
+      return await this.youtube.searchStream(track);
     }
 
     logger.info('Getting soundcloud stream %s', track.url);
 
-    return new Promise<StreamData>((resolve, reject) => {
-      const stream = request(`${track.stream}?client_id=${this.token}`);
-      stream.once('response', resp => {
-        if (resp.statusCode < 200 || resp.statusCode >= 400) {
-          logger.warn(`Error occured on request: %s`, track.stream);
-          return reject(resp.statusMessage);
-        }
-
-        const contentLength = Number(resp.headers["content-length"]);
-        if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
-
-        resp.pause();
-
-        resolve({ readable: resp, details: track });
-      });
-    });
+    return new SoundCloudStreamSource(this.token, track.url, track.stream);
   }
 
   private async get<T>(endpoint: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
@@ -214,4 +200,34 @@ export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
     artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
     duration: track.duration
   };
+}
+
+class SoundCloudStreamSource implements StreamSource {
+
+  constructor(private readonly token: string,
+    private readonly url: string,
+    private readonly stream: string) {
+  }
+
+  get(): Promise<Readable> {
+    logger.info('Getting soundcloud stream %s', this.url);
+
+    return new Promise<Readable>((resolve, reject) => {
+      const stream = request(`${this.stream}?client_id=${this.token}`);
+      stream.once('response', resp => {
+        if (resp.statusCode < 200 || resp.statusCode >= 400) {
+          logger.warn(`Error occured on request: %s`, this.stream);
+          return reject(resp.statusMessage);
+        }
+
+        const contentLength = Number(resp.headers["content-length"]);
+        if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
+
+        resp.pause();
+
+        resolve(resp);
+      });
+    });
+  }
+
 }

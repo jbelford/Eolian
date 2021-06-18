@@ -3,7 +3,7 @@ import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import requestPromise from 'request-promise-native';
-import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamData, Track, YouTubeApi } from './@types';
+import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamSource, Track, YouTubeApi } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
   V1 = 'v1'
@@ -166,7 +166,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getStream(track: Track): Promise<StreamData | undefined> {
+  getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.SPOTIFY) {
       throw new Error(`Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`);
     }
