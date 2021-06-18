@@ -1,6 +1,6 @@
 import { Track } from 'api/@types';
 import { SyntaxType } from 'commands/@types';
-import { AbsRangeArgument, Closable, Idleable } from 'common/@types';
+import { Closable, Idleable } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import EventEmitter from 'events';
 
@@ -91,7 +91,7 @@ export interface MusicQueueCache {
   size(guildId: string): Promise<number>;
   unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, index: number, count: number): Promise<Track[]>;
-  remove(guildId: string, range: AbsRangeArgument): Promise<number>
+  remove(guildId: string, index: number, count: number): Promise<number>
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;
   clear(guildId: string): Promise<boolean>;
@@ -104,7 +104,7 @@ export interface ServerQueue extends EventEmitter, Idleable {
   size(): Promise<number>;
   unpop(count: number): Promise<boolean>;
   get(index: number, count: number): Promise<Track[]>;
-  remove(range: AbsRangeArgument): Promise<number>;
+  remove(index: number, count: number): Promise<number>;
   add(tracks: Track[], head?: boolean): Promise<void>;
   shuffle(): Promise<boolean>;
   clear(): Promise<boolean>;

@@ -28,7 +28,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const range = getRangeOption(options, queueLength)!;
 
-  const removed = await context.server!.queue.remove(range);
+  const removed = await context.server!.queue.remove(range.start, range.stop - range.start);
   await context.message.reply(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);
 }
 

@@ -1,5 +1,4 @@
 import { Track } from 'api/@types';
-import { AbsRangeArgument } from 'common/@types';
 import { shuffleList } from 'common/util';
 import { ListCache, MusicQueueCache } from './@types';
 import { InMemoryListCache } from './cache';
@@ -25,8 +24,8 @@ export class InMemoryQueues implements MusicQueueCache {
     return await this.cache.range(guildId, index, count);
   }
 
-  async remove(guildId: string, range: AbsRangeArgument): Promise<number> {
-    return await this.cache.remove(guildId, range.start, range.stop - range.start);
+  async remove(guildId: string, index: number, count: number): Promise<number> {
+    return await this.cache.remove(guildId, index, count);
   }
 
   async add(guildId: string, tracks: Track[], head = false): Promise<void> {

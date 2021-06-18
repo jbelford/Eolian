@@ -1,5 +1,4 @@
 import { Track } from 'api/@types';
-import { AbsRangeArgument } from 'common/@types';
 import { IDLE_TIMEOUT } from 'common/constants';
 import { MusicQueueCache, ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
@@ -30,8 +29,8 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return await this.queue.get(this.guildId, index, count);
   }
 
-  async remove(range: AbsRangeArgument): Promise<number> {
-    const removed = await this.queue.remove(this.guildId, range);
+  async remove(index: number, count: number): Promise<number> {
+    const removed = await this.queue.remove(this.guildId, index, count);
     this.emitRemove();
     return removed;
   }
