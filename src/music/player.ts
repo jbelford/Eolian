@@ -181,6 +181,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       if (nextTrack) {
         this.streamFetcher = new SongStream(nextTrack, this.nightcore);
         this.streamFetcher.once('error', this.streamErrorHandler);
+        this.streamFetcher.on('retry', this.onRetryHandler);
         return await this.streamFetcher.getStream();
       }
     } catch (e) {
@@ -256,6 +257,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
     } catch (e) {
       this.streamErrorHandler(e);
     }
+  };
+
+  private onRetryHandler = () => {
+    this.emit('retry');
   };
 
   private async popNext(): Promise<void> {

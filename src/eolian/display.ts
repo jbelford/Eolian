@@ -135,6 +135,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
     this.player.on('error', this.onErrorHandler);
+    this.player.on('retry', this.onRetryHandler);
     this.player.queue.on('add', this.onQueueUpdateHandler);
     this.player.queue.on('remove', this.onQueueUpdateHandler);
   }
@@ -145,6 +146,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.player.removeListener('error', this.onErrorHandler);
+    this.player.removeListener('retry', this.onRetryHandler);
     this.player.queue.removeListener('add', this.onQueueUpdateHandler);
     this.player.queue.removeListener('remove', this.onQueueUpdateHandler);
     this.channel = null;
@@ -229,6 +231,12 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       this.track = null;
       await this.safeDelete();
       await this.channel?.send(`Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`);
+    }
+  };
+
+  private onRetryHandler = async () => {
+    if (this.track) {
+      await this.channel?.send('Whoops! Something bad happened. Retrying.. this song may restart 😅');
     }
   };
 
