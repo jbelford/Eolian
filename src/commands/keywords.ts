@@ -69,9 +69,9 @@ export const PATTERNS: Patterns = {
       const reg = type === SyntaxType.KEYWORD ? /(^|\s)TOP\s+((\d+)(:(-?\d+))?)/i : /(^|\s)-TOP\s+((\d+)(:(-?\d+))?)/i;
       const match = matchText(text, reg);
       let args: RangeArgument | undefined;
-      if (match.matches && match.args && match.args.length >= 4) {
-        args = { start: +match.args[1] };
-        if (match.args[3]) args.stop = +match.args[3];
+      if (match.matches && match.args && match.args.length >= 5) {
+        args = { start: +match.args[2] };
+        if (match.args[3]) args.stop = +match.args[4];
       }
       return { matches: match.matches, newText: match.newText, args };
     },
@@ -91,9 +91,9 @@ export const PATTERNS: Patterns = {
       const reg = type === SyntaxType.KEYWORD ? /(^|\s)BOTTOM\s+((\d+)(:(-?\d+))?)/i : /(^|\s)-BOTTOM\s+((\d+)(:(-?\d+))?)/i;
       const match = matchText(text, reg);
       let args: RangeArgument | undefined;
-      if (match.matches && match.args && match.args.length >= 4) {
-        args = { start: +match.args[1] };
-        if (match.args[3]) args.stop = +match.args[3];
+      if (match.matches && match.args && match.args.length >= 5) {
+        args = { start: +match.args[2] };
+        if (match.args[3]) args.stop = +match.args[4];
       }
       return { matches: match.matches, newText: match.newText, args };
     },
