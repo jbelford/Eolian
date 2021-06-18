@@ -18,9 +18,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return executeClearQueue(context);
   }
 
-  let tracks = await context.server!.queue.get();
-
-  if (tracks.length === 0) {
+  const size = await context.server!.queue.size();
+  if (size === 0) {
     await context.channel.send('🕳 The queue is empty!');
     return;
   }
@@ -31,19 +30,16 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  const total = tracks.length;
-  const range = getRangeOption(options, total);
-  if (range) {
-    tracks = tracks.slice(range.start, range.stop);
-  }
+  const range = getRangeOption(options, size) ?? { start: 0, stop: 15 };
 
+  const tracks = await context.server!.queue.get(range.start, range.stop - range.start);
   if (tracks.length === 0) {
     await context.channel.send('🕳 The provided range is empty!');
     return;
   }
 
   context.server!.display.queue.setChannel(context.channel);
-  await context.server!.display.queue.send(tracks, range ? range.start : 0, total);
+  await context.server!.display.queue.send(tracks, range ? range.start : 0, size);
 }
 
 export const LIST_COMMAND: Command = {

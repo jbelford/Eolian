@@ -26,8 +26,8 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return await this.queue.unpop(this.guildId, count);
   }
 
-  async get(limit?: number | undefined): Promise<Track[]> {
-    return await this.queue.get(this.guildId, limit);
+  async get(index: number, count: number): Promise<Track[]> {
+    return await this.queue.get(this.guildId, index, count);
   }
 
   async remove(range: AbsRangeArgument): Promise<number> {

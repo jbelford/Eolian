@@ -72,17 +72,18 @@ export class DiscordQueueDisplay implements QueueDisplay {
       this.updating = true;
       try {
         if (this.message) {
-          const tracks = await this.queue.get();
-          if (this.start >= tracks.length) {
+          const size = await this.queue.size();
+          if (this.start >= size) {
             this.start = 0;
           } else if (this.start < 0) {
-            this.start = Math.max(0, tracks.length - QUEUE_PAGE_LENGTH);
+            this.start = Math.max(0, size - QUEUE_PAGE_LENGTH);
           }
-          if (tracks.length) {
-            const pagingButtonsDisabled = tracks.length <= QUEUE_PAGE_LENGTH;
-            const newEmbed = createQueueEmbed(tracks.slice(this.start, this.start + QUEUE_PAGE_LENGTH), this.start, tracks.length);
+          if (size) {
+            const tracks = await this.queue.get(this.start, QUEUE_PAGE_LENGTH);
+            const pagingButtonsDisabled = size <= QUEUE_PAGE_LENGTH;
+            const newEmbed = createQueueEmbed(tracks, this.start, size);
             newEmbed.buttons = [
-              { emoji: '🔀', onClick: this.shuffleHandler, disabled: tracks.length <= 1 },
+              { emoji: '🔀', onClick: this.shuffleHandler, disabled: size <= 1 },
               { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
               { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
             ];
@@ -285,9 +286,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       this.queueAhead = false;
     } else if (this.channel) {
       this.queueDisplay.setChannel(this.channel);
-      const tracks = await this.player.queue.get();
-      if (tracks.length) {
-        this.queueDisplay.send(tracks);
+      const size = await this.player.queue.size();
+      if (size > 0) {
+        const tracks = await this.player.queue.get(0, QUEUE_PAGE_LENGTH);
+        this.queueDisplay.send(tracks, 0, size);
         this.queueAhead = true;
       }
     }

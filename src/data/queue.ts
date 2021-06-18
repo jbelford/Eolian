@@ -21,12 +21,8 @@ export class InMemoryQueues implements MusicQueueCache {
     return this.cache.size(guildId);
   }
 
-  async get(guildId: string, limit?: number): Promise<Track[]> {
-    if (limit) {
-      return await this.cache.range(guildId, 0, limit);
-    } else {
-      return await this.cache.get(guildId);
-    }
+  async get(guildId: string, index: number, count: number): Promise<Track[]> {
+    return await this.cache.range(guildId, index, count);
   }
 
   async remove(guildId: string, range: AbsRangeArgument): Promise<number> {
