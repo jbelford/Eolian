@@ -26,10 +26,8 @@ export interface Player extends EventEmitter, Idleable, Closable {
 
   /**
    * Stops the player from streaming.
-   *
-   * Note: This does not close the player resource.
    */
-  stop(): Promise<void>;
+  stop(): void;
 
   /**
    * Tells the player to pause the stream.

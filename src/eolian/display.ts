@@ -283,7 +283,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   });
 
   private stopHandler: MessageButtonOnClickHandler = this.lock(async () => {
-    await this.player.stop();
+    this.player.stop();
     await this.onEndHandler();
     return false;
   });

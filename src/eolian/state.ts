@@ -39,7 +39,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
         logger.info('%s stopping partially idle guild state', key);
         if (value.player.idle) {
           await value.display.player.removeIdle();
-          await value.player.stop();
+          value.player.stop();
         } else if (value.queue.idle) {
           await value.display.queue.removeIdle();
         }

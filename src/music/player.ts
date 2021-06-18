@@ -57,12 +57,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     super();
   }
 
-  private cleanup = (err?: Error) => {
-    if (err) {
-      logger.warn(`Cleanup stream due to error: %s`, err);
-      this.emitError();
-    }
-
+  private cleanup = () => {
     if (this.timeoutCheck) {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
@@ -99,8 +94,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   async close(): Promise<void> {
-    this.removeAllListeners();
-    await this.stop();
+    this.stop();
   }
 
   setVolume(value: number): void {
@@ -147,15 +141,16 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async skip(): Promise<void> {
     if (this.isStreaming) {
-      if (await this.queue.peek()) {
+      const size = await this.queue.size();
+      if (size > 0) {
         await this.startNewStream().catch(this.streamErrorHandler);
       } else {
-        await this.stop();
+        this.stop();
       }
     }
   }
 
-  async stop(): Promise<void> {
+  stop(): void {
     this.connectionProvider.get()?.disconnect();
   }
 
@@ -285,6 +280,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return this.emit('volume');
   }
 
-  private streamErrorHandler = (err: Error) => this.cleanup(err);
+  private streamErrorHandler = (err: Error) => {
+    logger.warn(`Cleanup stream due to error: %s`, err);
+    this.stop();
+    this.emitError();
+  }
   private disconnectHandler = () => this.emitDone();
 }
