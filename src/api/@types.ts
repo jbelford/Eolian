@@ -3,7 +3,7 @@ import { SOURCE } from 'common/constants';
 import { Readable } from 'stream';
 
 interface StreamFetcher {
-  getStream(track: Track): Promise<StreamData | undefined>;
+  getStream(track: Track, seek?: number): Promise<StreamData | undefined>;
 }
 
 export interface SoundCloudApi extends StreamFetcher {

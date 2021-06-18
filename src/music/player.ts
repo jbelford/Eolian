@@ -1,4 +1,3 @@
-import { getTrackStream } from 'api';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT } from 'common/constants';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
@@ -6,8 +5,8 @@ import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
 import { Player } from 'music/@types';
 import prism, { VolumeTransformer } from 'prism-media';
-import { Duplex, PassThrough, Readable, Transform } from 'stream';
-
+import { PassThrough, Readable, Transform } from 'stream';
+import { SongStream } from './stream';
 
 export class DiscordVoiceConnectionProvider {
 
@@ -26,8 +25,6 @@ export class DiscordVoiceConnectionProvider {
 
 }
 
-const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
-const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 
@@ -46,8 +43,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private lastUsed = Date.now();
   private timeoutCheck: NodeJS.Timeout | null = null;
-  private songStream: Readable | null = null;
-  private pcmTransform: Duplex | null = null;
+  private streamFetcher: SongStream | null = null;
   private volumeTransform: VolumeTransformer | null = null;
   private opusStream: Transform | null = null;
   private inputStream: PassThrough | null = null;
@@ -71,14 +67,12 @@ export class DiscordPlayer extends EventEmitter implements Player {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
     }
-    this.songStream?.destroy();
-    this.pcmTransform?.destroy();
+    this.streamFetcher?.cleanup();
     this.volumeTransform?.destroy();
     this.opusStream?.destroy();
     this.dispatcher?.destroy();
     this.inputStream = null;
-    this.songStream = null;
-    this.pcmTransform = null;
+    this.streamFetcher = null;
     this.volumeTransform = null;
     this.opusStream = null;
     this.dispatcher = null;
@@ -180,25 +174,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   private async getNextStream(): Promise<Readable | null> {
-    this.songStream?.destroy();
-    this.pcmTransform?.destroy();
-    this.songStream = null;
-    this.pcmTransform = null;
-
     try {
+      this.streamFetcher?.cleanup();
+      this.streamFetcher = null;
       const nextTrack = await this.queue.peek();
       if (nextTrack) {
-        const stream = await getTrackStream(nextTrack);
-        if (stream) {
-          this.songStream = stream.readable;
-          this.pcmTransform = new prism.FFmpeg({ args: this.nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
-          return this.songStream
-              .once('error', this.streamErrorHandler)
-              .once('close', () => logger.debug(`Song stream closed`))
-            .pipe(this.pcmTransform)
-              .once('error', this.streamErrorHandler)
-              .once('close', () => logger.debug(`PCM transform closed`));
-        }
+        this.streamFetcher = new SongStream(nextTrack, this.nightcore);
+        this.streamFetcher.once('error', this.streamErrorHandler);
+        return await this.streamFetcher.getStream();
       }
     } catch (e) {
       logger.warn('Error occured getting next stream: %s', e);
@@ -254,8 +237,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private streamEndHandler = async () => {
     try {
-        if (this.pcmTransform) {
-          this.pcmTransform.unpipe(this.volumeTransform!);
+        if (this.streamFetcher?.stream) {
+          this.streamFetcher.stream.unpipe(this.volumeTransform!);
         }
         if (this.hasPeopleListening()) {
           const readable = await this.getNextStream();

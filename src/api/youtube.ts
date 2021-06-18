@@ -201,14 +201,18 @@ export class YouTubeApiImpl implements YouTubeApi {
     return undefined;
   }
 
-  async getStream(track: Track): Promise<StreamData | undefined> {
+  async getStream(track: Track, seek?: number): Promise<StreamData | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
 
     logger.info('Getting youtube stream %s', track.url);
 
-    const stream = ytdl(track.url, { filter: 'audioonly', quality: 'highestaudio' });
+    const options: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio' };
+    if (seek) {
+      options.begin = seek;
+    }
+    const stream = ytdl(track.url, options);
     return { readable: stream, details: track };
   }
 
