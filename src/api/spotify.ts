@@ -182,11 +182,8 @@ export class SpotifyApiImpl implements SpotifyApi {
 
       // Remove 'remastered' as it often leads to flaky search results
       const noRemastered = extra.replace(/\s*remastered\s*/i, '');
-      if (noRemastered.length) {
-        trackCopy.title = `${title} (${extra})`;
-      } else {
-        trackCopy.title = title;
-      }
+      // @ts-ignore Irgnore readonly because we are creating a new object here
+      trackCopy.title = noRemastered.length ? `${title} (${extra})` : title;
     }
 
     return this.youtube.searchStream(trackCopy);

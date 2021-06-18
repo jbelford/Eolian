@@ -222,14 +222,14 @@ export const enum YouTubeResourceType {
 }
 
 export interface Track {
-  id: string;
-  title: string;
-  poster: string;
-  url: string;
-  stream?: string;
-  artwork?: string;
-  src: SOURCE;
-  duration?: number;
+  readonly id: string;
+  readonly title: string;
+  readonly poster: string;
+  readonly url: string;
+  readonly stream?: string;
+  readonly artwork?: string;
+  readonly src: SOURCE;
+  readonly duration?: number;
 }
 
 export interface StreamData {
