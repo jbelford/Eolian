@@ -148,19 +148,29 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
   }
 
   get(id: string): T | undefined {
-    return this.map.get(id)?.value;
+    let val: T | undefined;
+    const node = this.map.get(id);
+    if (node) {
+      if (node.prev) {
+        this.remove(node);
+        this.push(node);
+      }
+      val = node.value;
+    }
+    return val;
   }
 
   set(id: string, val: T): void {
-    if (this.map.size === this.size) {
-      this.removeLast();
+    if (this.map.size === this.size && this.tail) {
+      this.map.delete(this.tail.id);
+      this.remove(this.tail);
     }
     const node = new CacheNode(id, val);
-    this.pushNode(node);
+    this.push(node);
     this.map.set(id, node);
   }
 
-  private pushNode(node: CacheNode<T>) {
+  private push(node: CacheNode<T>) {
     if (!this.head) {
       this.head = node;
       this.tail = this.head;
@@ -171,17 +181,19 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
     }
   }
 
-  private removeLast() {
-    if (this.tail) {
-      this.map.delete(this.tail.id);
-      if (this.tail.prev) {
-        this.tail = this.tail.prev;
-        this.tail.next = undefined;
-      } else {
-        this.tail = undefined;
-        this.head = undefined;
-      }
+  private remove(node: CacheNode<T>) {
+    if (node.prev) {
+      node.prev.next = node.next;
+    } else {
+      this.head = node.next;
     }
+    if (node.next) {
+      node.next.prev = node.prev;
+    } else {
+      this.tail = node.prev;
+    }
+    node.prev = undefined;
+    node.next = undefined;
   }
 
 }

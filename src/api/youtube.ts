@@ -187,7 +187,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     return [];
   }
 
-  async searchVideo(track: Track): Promise<Track | undefined> {
+  async searchStreamVideo(track: Track): Promise<Track | undefined> {
     const tracks = await this.searchBing(track.title, track.poster, track.duration);
     if (tracks.length === 0) {
       return undefined;
@@ -209,7 +209,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     const cacheId = `${track.src}_${track.id}`;
     let video = this.cache.get(cacheId);
     if (!video) {
-      video = await this.searchVideo(track);
+      video = await this.searchStreamVideo(track);
       if (video) {
         this.cache.set(cacheId, video);
       }
