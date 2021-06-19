@@ -7,7 +7,7 @@ import { SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';
 
 const bing: BingApi = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
-export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube, bing);
+export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube, environment.youtubeCacheLimit, bing);
 export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud, youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret, youtube);
 

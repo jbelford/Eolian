@@ -1,6 +1,8 @@
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
+import { InMemoryLRUCache } from 'data';
+import { MemoryCache } from 'data/@types';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
 import { parse, toSeconds } from 'iso8601-duration';
@@ -19,9 +21,11 @@ const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+vi
 
 export class YouTubeApiImpl implements YouTubeApi {
 
+  private readonly cache: MemoryCache<Track>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, private readonly bing: BingApi) {
+  constructor(token: string, cacheSize: number, private readonly bing: BingApi) {
+    this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
 
@@ -183,24 +187,34 @@ export class YouTubeApiImpl implements YouTubeApi {
     return [];
   }
 
-  async searchStream(track: Track): Promise<StreamSource | undefined> {
+  async searchVideo(track: Track): Promise<Track | undefined> {
     const tracks = await this.searchBing(track.title, track.poster, track.duration);
-    if (tracks.length > 0) {
-      let video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-      logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
-      // Fallback on YouTube we get bad results
-      if (video.score! < SEARCH_MIN_SCORE) {
-        const videos = await this.searchSong(track.title, track.poster);
-        if (videos.length > 0) {
-          video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-          logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
-        }
-      }
-      if (video) {
-        return this.getStream(video);
+    if (tracks.length === 0) {
+      return undefined;
+    }
+    let video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+    logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+    // Fallback on YouTube we get bad results
+    if (video.score! < SEARCH_MIN_SCORE) {
+      const videos = await this.searchSong(track.title, track.poster);
+      if (videos.length > 0) {
+        video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+        logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
       }
     }
-    return undefined;
+    return video;
+  }
+
+  async searchStream(track: Track): Promise<StreamSource | undefined> {
+    const cacheId = `${track.src}_${track.id}`;
+    let video = this.cache.get(cacheId);
+    if (!video) {
+      video = await this.searchVideo(track);
+      if (video) {
+        this.cache.set(cacheId, video);
+      }
+    }
+    return video ? await this.getStream(video) : undefined;
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {

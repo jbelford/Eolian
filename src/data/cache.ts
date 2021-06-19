@@ -1,5 +1,5 @@
 import NodeCache from 'node-cache';
-import { EolianCache, ListCache } from './@types';
+import { EolianCache, ListCache, MemoryCache } from './@types';
 
 export class InMemoryCache<V> implements EolianCache<V> {
 
@@ -122,6 +122,66 @@ export class InMemoryListCache<V> implements ListCache<V> {
 
   async close(): Promise<void> {
     await this.cache.close();
+  }
+
+}
+
+class CacheNode<T> {
+
+  prev?: CacheNode<T>;
+  next?: CacheNode<T>;
+
+  constructor(
+    readonly id: string,
+    readonly value: T) {
+  }
+
+}
+
+export class InMemoryLRUCache<T> implements MemoryCache<T> {
+
+  private map = new Map<string, CacheNode<T>>();
+  private head?: CacheNode<T>;
+  private tail?: CacheNode<T>;
+
+  constructor(private readonly size: number) {
+  }
+
+  get(id: string): T | undefined {
+    return this.map.get(id)?.value;
+  }
+
+  set(id: string, val: T): void {
+    if (this.map.size === this.size) {
+      this.removeLast();
+    }
+    const node = new CacheNode(id, val);
+    this.pushNode(node);
+    this.map.set(id, node);
+  }
+
+  private pushNode(node: CacheNode<T>) {
+    if (!this.head) {
+      this.head = node;
+      this.tail = this.head;
+    } else {
+      this.head.prev = node;
+      node.next = this.head;
+      this.head = node;
+    }
+  }
+
+  private removeLast() {
+    if (this.tail) {
+      this.map.delete(this.tail.id);
+      if (this.tail.prev) {
+        this.tail = this.tail.prev;
+        this.tail.next = undefined;
+      } else {
+        this.tail = undefined;
+        this.head = undefined;
+      }
+    }
   }
 
 }

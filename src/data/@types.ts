@@ -11,6 +11,11 @@ export interface EolianCache<V> extends Closable {
   refreshTTL(key: string): Promise<boolean>;
 }
 
+export interface MemoryCache<T> {
+  get(id: string): T | undefined;
+  set(id: string, val: T): void;
+}
+
 export interface AppDatabase extends Closable {
   readonly users: UsersDb;
   readonly servers: ServersDb;

@@ -31,6 +31,7 @@ export const environment: AppEnv = {
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
   queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
+  youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
   tokens: {
     discord: getEnv('DISCORD_TOKEN'),
     bing: {

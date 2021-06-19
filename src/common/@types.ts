@@ -13,6 +13,7 @@ export interface AppEnv {
   cmdToken: string;
   owners: string[];
   queueLimit: number;
+  youtubeCacheLimit: number;
   tokens: {
     discord: string;
     bing: {
