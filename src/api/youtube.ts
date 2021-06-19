@@ -12,6 +12,7 @@ import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDe
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
 
+const SEARCH_MIN_SCORE = 72;
 const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
@@ -139,16 +140,16 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchSong(name: string, artist: string): Promise<Track[]> {
+  async searchSong(name: string, artist: string): Promise<(Track & { score: number })[]> {
     const query = `${artist} ${name}`;
-    let videos = await this.searchVideos(query);
+    const videos = await this.searchVideos(query);
     if (videos.length) {
       const sorted = await fuzzyMatch(query, videos.map(video => `${video.channelName} ${video.name}`));
-      videos = sorted.map(scored => videos[scored.key]);
+      return sorted.map(scored => ({ ...mapYouTubeVideo(videos[scored.key]), score: scored.score }));
     } else {
       logger.warn(`Failed to fetch YouTube track for query: %s`, query);
     }
-    return videos.map(mapYouTubeVideo);
+    return [];
   }
 
   async searchBing(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]> {
@@ -185,14 +186,14 @@ export class YouTubeApiImpl implements YouTubeApi {
   async searchStream(track: Track): Promise<StreamSource | undefined> {
     const tracks = await this.searchBing(track.title, track.poster, track.duration);
     if (tracks.length > 0) {
-      let video: Track & { score?: number } = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+      let video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
       logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
       // Fallback on YouTube we get bad results
-      if (video.score! < 72) {
+      if (video.score! < SEARCH_MIN_SCORE) {
         const videos = await this.searchSong(track.title, track.poster);
         if (videos.length > 0) {
           video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-          logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}'`);
+          logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
         }
       }
       if (video) {
