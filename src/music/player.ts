@@ -43,7 +43,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private lastUsed = Date.now();
   private timeoutCheck: NodeJS.Timeout | null = null;
-  private streamFetcher: SongStream | null = null;
+  private songStream: SongStream | null = null;
   private volumeTransform: VolumeTransformer | null = null;
   private opusStream: Transform | null = null;
   private inputStream: PassThrough | null = null;
@@ -62,12 +62,12 @@ export class DiscordPlayer extends EventEmitter implements Player {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
     }
-    this.streamFetcher?.cleanup();
+    this.songStream?.cleanup();
     this.volumeTransform?.destroy();
     this.opusStream?.destroy();
     this.dispatcher?.destroy();
     this.inputStream = null;
-    this.streamFetcher = null;
+    this.songStream = null;
     this.volumeTransform = null;
     this.opusStream = null;
     this.dispatcher = null;
@@ -170,14 +170,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private async getNextStream(): Promise<Readable | null> {
     try {
-      this.streamFetcher?.cleanup();
-      this.streamFetcher = null;
+      this.songStream?.cleanup();
+      this.songStream = null;
       const nextTrack = await this.queue.peek();
       if (nextTrack) {
-        this.streamFetcher = new SongStream(nextTrack, this.nightcore);
-        this.streamFetcher.once('error', this.streamErrorHandler);
-        this.streamFetcher.on('retry', this.onRetryHandler);
-        return await this.streamFetcher.getStream();
+        this.songStream = new SongStream(nextTrack, this.nightcore);
+        this.songStream.once('error', this.streamErrorHandler);
+        this.songStream.on('retry', this.onRetryHandler);
+        return await this.songStream.getStream();
       }
     } catch (e) {
       logger.warn('Error occured getting next stream: %s', e);
@@ -233,8 +233,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private streamEndHandler = async () => {
     try {
-        if (this.streamFetcher?.stream) {
-          this.streamFetcher.stream.unpipe(this.volumeTransform!);
+        if (this.songStream?.stream) {
+          this.songStream.stream.unpipe(this.volumeTransform!);
         }
         if (this.hasPeopleListening()) {
           const readable = await this.getNextStream();
