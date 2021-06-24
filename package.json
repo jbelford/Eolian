@@ -42,7 +42,7 @@
     "request-promise-native": "^1.0.9",
     "utf-8-validate": "^5.0.5",
     "winston": "^3.3.3",
-    "ytdl-core": "^4.8.2"
+    "ytdl-core": "git://github.com/jbelford/node-ytdl-core.git#313333a6eef74f57c106bd8a3c32396770cf128e"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
