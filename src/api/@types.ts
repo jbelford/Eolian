@@ -206,6 +206,7 @@ export interface YoutubeVideo {
   name: string;
   url: string;
   artwork: string;
+  isLive?: boolean;
 }
 
 export interface YoutubePlaylist {
@@ -230,6 +231,7 @@ export interface Track {
   readonly artwork?: string;
   readonly src: SOURCE;
   readonly duration?: number;
+  readonly live?: boolean;
 }
 
 export interface StreamSource {

@@ -21,7 +21,7 @@ const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+vi
 
 export class YouTubeApiImpl implements YouTubeApi {
 
-  private readonly cache: MemoryCache<string>;
+  private readonly cache: MemoryCache<{ url: string, live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
   constructor(token: string, cacheSize: number, private readonly bing: BingApi) {
@@ -207,22 +207,22 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchStream(track: Track): Promise<StreamSource | undefined> {
     const cacheId = `${track.src}_${track.id}`;
-    let url = this.cache.get(cacheId);
-    if (!url) {
+    let result = this.cache.get(cacheId);
+    if (!result) {
       const video = await this.searchStreamVideo(track);
       if (video) {
-        url = video.url;
-        this.cache.set(cacheId, url);
+        result = { url: video.url, live: !!video.live };
+        this.cache.set(cacheId, result);
       }
     }
-    return url ? new YouTubeStreamSource(url) : undefined;
+    return result ? new YouTubeStreamSource(result.url, result.live) : undefined;
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
-    return new YouTubeStreamSource(track.url);
+    return new YouTubeStreamSource(track.url, !!track.live);
   }
 
 }
@@ -235,7 +235,8 @@ function mapVideoResponse(video: youtube_v3.Schema$Video | youtube_v3.Schema$Pla
     name: decode(video.snippet!.title!),
     channelName: decode(video.snippet!.channelTitle!),
     url: `https://www.youtube.com/watch?v=${id}`,
-    artwork: thumbnails.maxres?.url ?? thumbnails.standard?.url ?? thumbnails.medium?.url ?? thumbnails.default!.url!
+    artwork: thumbnails.maxres?.url ?? thumbnails.standard?.url ?? thumbnails.medium?.url ?? thumbnails.default!.url!,
+    isLive: (video.snippet as youtube_v3.Schema$VideoSnippet).liveBroadcastContent === 'live'
   };
 }
 
@@ -258,21 +259,26 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
     url: video.url,
     title: video.name,
     stream: video.url,
-    artwork: video.artwork
+    artwork: video.artwork,
+    live: video.isLive
   };
 }
 
 class YouTubeStreamSource implements StreamSource {
 
-  constructor(private readonly url: string) {
+  constructor(private readonly url: string, private readonly isLive: boolean) {
   }
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s', this.url);
 
-    const options: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio' };
-    if (seek) {
-      options.begin = seek;
+    const options: ytdl.downloadOptions = { quality: 'highestaudio' };
+    // Live stream content we can't fetch 'audioonly'
+    if (!this.isLive) {
+      options.filter = 'audioonly';
+      if (seek) {
+        options.begin = seek;
+      }
     }
     const stream = ytdl(this.url, options);
     return stream;
