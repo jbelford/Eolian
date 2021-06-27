@@ -56,7 +56,7 @@ export class SongStream extends EventEmitter {
       .once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 
-    const ffmpeg = new prism.FFmpeg({ args: this.nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
+    const ffmpeg = new prism.FFmpeg({ args: !this.track.live && this.nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
     this.pcmTransform = this.songStream.pipe(ffmpeg)
         .once('error', (err: Error) => this.cleanup(err))
         .once('close', () => logger.debug(`PCM transform closed`));

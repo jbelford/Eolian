@@ -32,7 +32,9 @@ export function createPlayingEmbed(track: Track, volume: number, nightcore: bool
     image: track.artwork,
     url: track.url
   };
-  if (nightcore) {
+  if (track.live) {
+    embed.header!.text += ` ⚡ Live Stream`;
+  } else if (nightcore) {
     embed.header!.text += ` ⚡ Nightcore`;
   }
   return embed;
