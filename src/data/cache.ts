@@ -131,9 +131,20 @@ class CacheNode<T> {
   prev?: CacheNode<T>;
   next?: CacheNode<T>;
 
-  constructor(
-    readonly id: string,
-    readonly value: T) {
+  constructor(private _id: string, private _value: T) {
+  }
+
+  get id(): string {
+    return this._id;
+  }
+
+  get value(): T {
+    return this._value;
+  }
+
+  reset(id: string, value: T) {
+    this._id = id;
+    this._value = value;
   }
 
 }
@@ -161,11 +172,15 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
   }
 
   set(id: string, val: T): void {
+    let node: CacheNode<T>;
     if (this.map.size === this.size && this.tail) {
-      this.map.delete(this.tail.id);
-      this.remove(this.tail);
+      node = this.tail;
+      this.map.delete(node.id);
+      this.remove(node);
+      node.reset(id, val);
+    } else {
+      node = new CacheNode(id, val);
     }
-    const node = new CacheNode(id, val);
     this.push(node);
     this.map.set(id, node);
   }
