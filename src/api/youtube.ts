@@ -14,7 +14,7 @@ import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDe
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
 
-const SEARCH_MIN_SCORE = 72;
+const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
