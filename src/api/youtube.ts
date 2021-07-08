@@ -86,7 +86,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     try {
       logger.info(`YouTube HTTP: playlistItems.list ${id}`);
       // @ts-ignore Typescript is dumb
-      let response = await this.youtube.playlistItems.list({ playlistId: id, part: 'id,snippet,contentDetails' });
+      let response = await this.youtube.playlistItems.list({ playlistId: id, part: 'id,snippet,contentDetails,status' });
       items = response.data.items || [];
       while (response.data.nextPageToken) {
         const params = { playlistId: id, part: 'id,snippet,contentDetails', pageToken: response.data.nextPageToken };
@@ -229,7 +229,8 @@ export class YouTubeApiImpl implements YouTubeApi {
 
 function mapVideoResponse(video: youtube_v3.Schema$Video | youtube_v3.Schema$PlaylistItem | youtube_v3.Schema$SearchResult): YoutubeVideo {
   const thumbnails = video.snippet!.thumbnails!;
-  const id = typeof video.id! === 'string' ? video.id! : video.id!.videoId!;
+  const id = (video as youtube_v3.Schema$PlaylistItem).snippet?.resourceId?.videoId
+    ?? (typeof video.id! === 'string' ? video.id! : video.id!.videoId!);
   return {
     id,
     name: decode(video.snippet!.title!),
