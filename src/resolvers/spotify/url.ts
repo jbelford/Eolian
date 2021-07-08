@@ -37,6 +37,9 @@ export class SpotifyUrlResolver implements SourceResolver {
         }
         case SpotifyResourceType.TRACK: {
           const track = await spotify.getTrack(resourceDetails.id);
+          if (track.is_local) {
+            throw new EolianUserError(`Local Spotify tracks are not valid for this operation`);
+          }
           return createSpotifyTrack(track);
         }
         case SpotifyResourceType.USER: {
@@ -56,12 +59,12 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
     name: track.name,
     authors: track.artists.map(artist => artist.name),
     identifier: {
-      id: track.id,
+      id: track.id!,
       src: SOURCE.SPOTIFY,
       type: IdentifierType.SONG,
       url: track.external_urls.spotify
     },
-    fetcher: new SpotifySongFetcher(track.id, track)
+    fetcher: new SpotifySongFetcher(track.id!, track)
   };
 }
 

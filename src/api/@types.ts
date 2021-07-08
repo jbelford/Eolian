@@ -155,7 +155,7 @@ export interface SpotifyImageObject {
 }
 
 export interface SpotifyTrack {
-  id: string;
+  id?: string;
   name: string;
   album: SpotifyAlbum;
   artists: SpotifyArtist[];
@@ -223,7 +223,7 @@ export const enum YouTubeResourceType {
 }
 
 export interface Track {
-  readonly id: string;
+  readonly id?: string;
   readonly title: string;
   readonly poster: string;
   readonly url: string;

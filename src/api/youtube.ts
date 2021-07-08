@@ -206,7 +206,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStream(track: Track): Promise<StreamSource | undefined> {
-    const cacheId = `${track.src}_${track.id}`;
+    const cacheId = `${track.src}_` + (track.id ?? `${track.title}_${track.poster}`);
     let result = this.cache.get(cacheId);
     if (!result) {
       const video = await this.searchStreamVideo(track);
