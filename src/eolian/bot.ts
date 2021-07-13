@@ -129,7 +129,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private async isBotInvoked(message: Message) {
-    let invoked = message.mentions.has(this.client.user!);
+    let invoked = message.mentions.has(this.client.user!, { ignoreEveryone: true });
     if (!invoked) {
       let prefix: string | undefined;
       if (message.guild) {
