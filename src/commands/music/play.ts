@@ -89,7 +89,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 export const PLAY_COMMAND: Command = {
   name: 'play',
   details: `Join the current channel. Starts playing first song in the queue if not already.
-You may optionally provide a SEARCH or URL pattern to play a song right away.`,
+You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
