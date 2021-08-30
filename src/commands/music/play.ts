@@ -2,10 +2,12 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { createSelectedMessage } from 'commands/queue/add';
-import { PERMISSION } from 'common/constants';
+import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { getSourceResolver } from 'resolvers';
+import { IdentifierType } from 'data/@types';
+import { getSourceFetcher, getSourceResolver } from 'resolvers';
+import { SourceFetcher } from 'resolvers/@types';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -16,24 +18,43 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError('I do not have permission to join your voice channel!');
   }
 
-  let added = false;
-  if (options.SEARCH || options.URL) {
+  let fetcher: SourceFetcher | undefined;
+  if (options.IDENTIFIER) {
+    const user = await context.user.get();
+    if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
+      throw new EolianUserError(`That identifier is unrecognized!`);
+    }
+    const identifier = user.identifiers[options.IDENTIFIER];
+    if (identifier.type !== IdentifierType.SONG) {
+      throw new EolianUserError(`Use the \`add\` command instead!`);
+    }
+
+    const typeName = getEnumName(IdentifierType, identifier.type);
+    const srcName = getEnumName(SOURCE, identifier.src);
+    await context.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
+
+    fetcher = getSourceFetcher(identifier, options, context.channel);
+  } else if (options.SEARCH || options.URL) {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
       const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
       await context.channel.send(`✨ ${msg} to be played immediately!`);
+      fetcher = resource.fetcher;
+    }
+  }
 
-      const { tracks } = await resource.fetcher.fetch();
-      if (tracks.length > 0) {
-        const details = await context.server!.details.get();
-        const queueSize = await context.server!.queue.size();
-        const queueLimit = details.queueLimit ?? environment.queueLimit;
-        if (queueSize + tracks.length > queueLimit) {
-          throw new EolianUserError(`Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`);
-        }
-        await context.server!.queue.add(tracks, true);
-        added = true;
+  let added = false;
+  if (fetcher) {
+    const { tracks } = await fetcher.fetch();
+    if (tracks.length > 0) {
+      const details = await context.server!.details.get();
+      const queueSize = await context.server!.queue.size();
+      const queueLimit = details.queueLimit ?? environment.queueLimit;
+      if (queueSize + tracks.length > queueLimit) {
+        throw new EolianUserError(`Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`);
       }
+      await context.server!.queue.add(tracks, true);
+      added = true;
     }
   }
 
@@ -72,7 +93,7 @@ You may optionally provide a SEARCH or URL pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
-  patterns: [PATTERNS.SEARCH, PATTERNS.URL],
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   usage: [
     {
       title: 'Join voice channel and start playing (if not already)',

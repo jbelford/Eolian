@@ -39,7 +39,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.channel.send(`🔎 Resolved identifier ${identifier.url}\n 💡 **${typeName}** from **${srcName}**`);
+    await context.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
 
     fetcher = getSourceFetcher(identifier, options, context.channel);
   } else {
