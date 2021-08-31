@@ -7,7 +7,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption } from 'embed/@types';
-import { ContextMessage, ContextTextChannel, ContextUser, MessageButtonOnClickHandler } from 'eolian/@types';
+import { ContextMessage, ContextTextChannel, ContextUser, MessageButtonOnClickHandler } from 'framework/@types';
 
 
 class PollMessage implements Closable {

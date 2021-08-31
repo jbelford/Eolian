@@ -1,6 +1,6 @@
 import { CommandOptions } from 'commands/@types';
 import { IdentifierType } from 'data/@types';
-import { ContextTextChannel } from 'eolian/@types';
+import { ContextTextChannel } from 'framework/@types';
 import { SourceFetcher } from 'resolvers/@types';
 import { SpotifyAlbumFetcher } from './album';
 import { SpotifyArtistFetcher } from './artist';

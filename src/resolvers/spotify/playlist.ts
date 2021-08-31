@@ -6,8 +6,8 @@ import { getRangeOption } from 'commands/keywords';
 import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
-import { DownloaderDisplay } from 'eolian';
-import { ContextTextChannel } from 'eolian/@types';
+import { DownloaderDisplay } from 'framework';
+import { ContextTextChannel } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 

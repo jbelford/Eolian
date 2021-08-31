@@ -2,7 +2,7 @@ import { COMMANDS } from 'commands';
 import { Command, CommandCategory, Keyword, Pattern, SyntaxType } from 'commands/@types';
 import { COLOR, GITHUB_PAGE_WIKI, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
-import { EmbedMessage } from 'eolian/@types';
+import { EmbedMessage } from 'framework/@types';
 
 const helpFooter = `_Want to know more? [See the Wiki](${GITHUB_PAGE_WIKI})_`;
 

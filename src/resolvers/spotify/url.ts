@@ -5,7 +5,7 @@ import { CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
-import { ContextTextChannel } from 'eolian/@types';
+import { ContextTextChannel } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 import { createSpotifyAlbum } from './album';
 import { createSpotifyArtist } from './artist';

@@ -6,8 +6,8 @@ import { getRangeOption } from 'commands/keywords';
 import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { IdentifierType } from 'data/@types';
-import { DownloaderDisplay } from 'eolian';
-import { ContextTextChannel } from 'eolian/@types';
+import { DownloaderDisplay } from 'framework';
+import { ContextTextChannel } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistResolver } from './artist';
 

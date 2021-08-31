@@ -1,5 +1,5 @@
 import { COLOR } from 'common/constants';
-import { EmbedMessage } from 'eolian/@types';
+import { EmbedMessage } from 'framework/@types';
 import { PollOption } from './@types';
 
 export function createPollQuestionEmbed(question: string, options: PollOption[], username: string, pic?: string): EmbedMessage {

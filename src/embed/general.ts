@@ -3,7 +3,7 @@ import { SyntaxType } from 'commands/@types';
 import { COLOR, DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, ServerDTO } from 'data/@types';
-import { ContextUser, EmbedMessage, ServerInfo } from 'eolian/@types';
+import { ContextUser, EmbedMessage, ServerInfo } from 'framework/@types';
 import { SelectionOption } from './@types';
 
 export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {

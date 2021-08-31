@@ -2,7 +2,7 @@ import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
-import { ContextTextChannel } from 'eolian/@types';
+import { ContextTextChannel } from 'framework/@types';
 import { SourceFetcher, SourceResolver } from './@types';
 import { getSoundCloudSourceFetcher, SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
 import { getSpotifySourceFetcher, SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
