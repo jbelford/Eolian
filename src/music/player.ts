@@ -130,12 +130,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.dispatcher = connection.play(input, { seek: 0, volume: false, type: 'opus' });
       this.dispatcher.once('error', this.streamErrorHandler);
       this.dispatcher.once('close', this.cleanup);
-      this.dispatcher.once('finish', () => {
-        this.connectionProvider.get()?.disconnect();
-      });
+      this.dispatcher.once('finish', () => this.stop());
     } catch (e) {
       this.streamErrorHandler(e);
-      this.connectionProvider.get()?.disconnect();
     }
   }
 
@@ -151,6 +148,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   stop(): void {
+    this.cleanup();
     this.connectionProvider.get()?.disconnect();
   }
 
