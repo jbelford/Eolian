@@ -21,7 +21,7 @@ export class BingApiImpl implements BingApi {
         return response.value.filter(video => !!video.creator);
       }
     } catch (e) {
-      logger.warn('Failed to search Bing videos: %s', query);
+      logger.warn('Failed to search Bing videos: %s\n%s', query, e);
       throw e;
     }
   }

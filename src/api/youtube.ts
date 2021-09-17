@@ -187,20 +187,33 @@ export class YouTubeApiImpl implements YouTubeApi {
     return [];
   }
 
+  private async searchSongSorted(track: Track): Promise<Track & { score: number } | undefined> {
+    const videos = await this.searchSong(track.title, track.poster);
+    if (videos.length > 0) {
+      const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title));
+      if (video) {
+        logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+        return video;
+      }
+    }
+    return undefined;
+  }
+
   async searchStreamVideo(track: Track): Promise<Track | undefined> {
-    const tracks = await this.searchBing(track.title, track.poster, track.duration);
-    if (tracks.length === 0) {
-      return undefined;
+    let tracks: Array<Track & { score: number}>;
+    try {
+      tracks = await this.searchBing(track.title, track.poster, track.duration);
+      if (tracks.length === 0) {
+        return undefined;
+      }
+    } catch (e) {
+      return await this.searchSongSorted(track);
     }
     let video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
     logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
     // Fallback on YouTube we get bad results
     if (video.score! < SEARCH_MIN_SCORE) {
-      const videos = await this.searchSong(track.title, track.poster);
-      if (videos.length > 0) {
-        video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-        logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
-      }
+      video = await this.searchSongSorted(track) ?? video;
     }
     return video;
   }
