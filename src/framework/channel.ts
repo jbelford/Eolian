@@ -1,6 +1,6 @@
 import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
-import BaseMessageComponent from 'discord-buttons/typings/v12/Classes/interfaces/BaseMessageComponent';
+import { BaseMessageComponent } from 'discord-buttons';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';

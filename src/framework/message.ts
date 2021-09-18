@@ -1,14 +1,12 @@
 import { logger } from 'common/logger';
-import { MessageActionRow, MessageButton } from 'discord-buttons';
-import BaseMessageComponent from 'discord-buttons/typings/v12/Classes/interfaces/BaseMessageComponent';
-import { default as MessageActionRowType } from 'discord-buttons/typings/v12/Classes/MessageActionRow';
+import { BaseMessageComponent, MessageActionRow, MessageButton } from 'discord-buttons';
 import { Message, MessageEditOptions, MessageEmbed } from 'discord.js';
 import { ButtonStyle, ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;
-  components: MessageActionRowType[];
+  components: MessageActionRow[];
 }
 
 export class DiscordMessage implements ContextMessage {
@@ -140,13 +138,13 @@ export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
 }
 
 export interface DiscordButtonMapping {
-  rows: MessageActionRowType[];
+  rows: MessageActionRow[];
   mapping: Map<string, EmbedMessageButton>;
 }
 
 export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordButtonMapping {
   const buttonMap = new Map<string, EmbedMessageButton>();
-  const buttonRows: MessageActionRowType[] = [];
+  const buttonRows: MessageActionRow[] = [];
 
   const messageButtons = buttons.map((button, idx) => {
     const id = `button_${idx}`;
@@ -159,7 +157,7 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
   })
 
   for (let i = 0; i < buttons.length; i += 5) {
-    const row = new MessageActionRow().addComponent(messageButtons.slice(i, i + 5));
+    const row = new MessageActionRow().addComponents(...messageButtons.slice(i, i + 5));
     buttonRows.push(row);
   }
 
