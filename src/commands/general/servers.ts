@@ -17,7 +17,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     start = Math.max(0, servers.length - PAGE_LENGTH);
   }
 
-  let response = `Total Servers: ${servers.length}\n` + '```'
+  const members = servers.reduce((sum, server) => sum + server.members, 0);
+  let response = `Total Servers: ${servers.length}\nTotal Users: ${members}\n` + '```'
   response += servers.slice(start, start + PAGE_LENGTH).map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`).join('\n');
   response += '\n```';
 
