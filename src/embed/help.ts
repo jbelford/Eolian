@@ -33,7 +33,7 @@ export function createCommandListEmbed(category: CommandCategory, permission: PE
 
   const commands = COMMANDS.filter(cmd => cmd.category.name === category.name)
     .filter(cmd => cmd.permission <= permission)
-    .map(cmd => cmd.name);
+    .map(cmd => cmd.new ? `${cmd.name} *NEW*` : cmd.name);
 
   embed.description += `\`\`\`
 ${commands.join('\n')}

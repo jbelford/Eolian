@@ -11,6 +11,7 @@ export interface Command {
   keywords?: Keyword[];
   patterns?: Pattern<unknown>[];
   dmAllowed?: boolean;
+  new?: boolean;
   usage: CommandUsage[];
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }

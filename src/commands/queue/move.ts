@@ -58,6 +58,7 @@ export const MOVE_COMMAND: Command = {
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.NEXT],
   patterns: [PATTERNS.NUMBER, PATTERNS.TOP, PATTERNS.BOTTOM],
+  new: true,
   usage: [
     {
       title: 'Move 5th song to play next',
