@@ -97,6 +97,7 @@ export interface MusicQueueCache {
   unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, index: number, count: number): Promise<Track[]>;
   remove(guildId: string, index: number, count: number): Promise<number>
+  move(guildId: string, to: number, from: number, count: number): Promise<void>;
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;
   clear(guildId: string): Promise<boolean>;
@@ -110,6 +111,7 @@ export interface ServerQueue extends EventEmitter, Idleable {
   unpop(count: number): Promise<boolean>;
   get(index: number, count: number): Promise<Track[]>;
   remove(index: number, count: number): Promise<number>;
+  move(to: number, from: number, count: number): Promise<void>;
   add(tracks: Track[], head?: boolean): Promise<void>;
   shuffle(): Promise<boolean>;
   clear(): Promise<boolean>;

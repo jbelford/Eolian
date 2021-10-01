@@ -28,6 +28,15 @@ export class InMemoryQueues implements MusicQueueCache {
     return await this.cache.remove(guildId, index, count);
   }
 
+  async move(guildId: string, to: number, from: number, count: number): Promise<void> {
+    let list = await this.cache.get(guildId);
+    if (list.length > 0) {
+      const tracks = list.splice(from, count);
+      list = list.slice(0, to).concat(tracks).concat(list.slice(to));
+      await this.cache.set(guildId, list);
+    }
+  }
+
   async add(guildId: string, tracks: Track[], head = false): Promise<void> {
     if (head) {
       await this.cache.lpush(guildId, tracks);

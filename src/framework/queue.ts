@@ -35,6 +35,11 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return removed;
   }
 
+  async move(to: number, from: number, count: number): Promise<void> {
+    await this.queue.move(this.guildId, to, from, count);
+    this.emitUpdate();
+  }
+
   async add(tracks: Track[], head?: boolean | undefined): Promise<void> {
     await this.queue.add(this.guildId, tracks, head);
     this.emitAdd();
