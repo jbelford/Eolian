@@ -45,7 +45,7 @@ export class InMemoryListCache<V> implements ListCache<V> {
   private cache: EolianCache<V[]>;
 
   constructor(private readonly ttl: number) {
-    this.cache = new InMemoryCache<V[]>(ttl, false);
+    this.cache = new InMemoryCache<V[]>(ttl, false, key => this.counts.delete(key));
   }
 
   async size(key: string): Promise<number> {
