@@ -68,7 +68,7 @@ export interface CommandOptions {
   BOTTOM?: RangeArgument;
   SEARCH?: string;
   IDENTIFIER?: string;
-  NUMBER?: number;
+  NUMBER?: number[];
   URL?: UrlArgument;
   ARG?: string[];
 }
@@ -136,7 +136,7 @@ export interface Patterns {
   SEARCH: Pattern<string>;
   IDENTIFIER: Pattern<string>;
   URL: Pattern<UrlArgument>;
-  NUMBER: Pattern<number>;
+  NUMBER: Pattern<number[]>;
   ARG: Pattern<string[]>;
 }
 

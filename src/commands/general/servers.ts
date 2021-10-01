@@ -9,8 +9,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const servers = context.client.getServers();
 
   let start = 0;
-  if (options.NUMBER && options.NUMBER >= 0) {
-    start = options.NUMBER * PAGE_LENGTH;
+  if (options.NUMBER && options.NUMBER[0] >= 0) {
+    start = options.NUMBER[0] * PAGE_LENGTH;
   }
 
   if (start >= servers.length) {

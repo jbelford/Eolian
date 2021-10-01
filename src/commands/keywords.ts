@@ -45,13 +45,14 @@ export const PATTERNS: Patterns = {
     usage: [
       '50',
       '0.5',
-      '-100'
+      '-100',
+      '10 11'
     ],
     ex: text => new PassthroughExample(text),
     priority: 1,
     matchText: (text: string) => {
-      const match = matchText(text, /\b(-?\d+(\.\d+)?)\b/i);
-      return { matches: match.matches, newText: match.newText, args: match.args ? +match.args[0] : undefined };
+      const match = matchAll(text, /(?<=\s|^)(-?\d+(\.\d+)?)(?=\s|$)/g, 0);
+      return { matches: match.matches, newText: match.newText, args: match.args ? match.args.map(a => +a) : undefined };
     },
   },
   TOP: {
@@ -166,6 +167,17 @@ function matchText(text: string, reg: RegExp): KeywordMatchResult<string[]> {
     match.args = regArr.slice(1).map(group => group && group.trim());
   }
   return match;
+}
+
+function matchAll(text: string, reg: RegExp, group: number): KeywordMatchResult<string[]> {
+  const matches = text.matchAll(reg);
+  const result: KeywordMatchResult<string[]> = { matches: false, newText: text, args: [] };
+  for (const match of matches) {
+    result.matches = true;
+    result.newText = result.newText.replace(match[0], '');
+    result.args!.push(match[group + 1]);
+  }
+  return result;
 }
 
 function matchGroup(text: string, reg: RegExp, group: number): KeywordMatchResult<string> {

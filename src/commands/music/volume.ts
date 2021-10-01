@@ -12,10 +12,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   } else if (options.LESS) {
     volume = Math.max(0, volume - 0.1);
   } else if (options.NUMBER) {
-    if (options.NUMBER < 0 || options.NUMBER > 100) {
+    if (options.NUMBER[0] < 0 || options.NUMBER[0] > 100) {
       throw new EolianUserError('Volume must be between 0-100!');
     }
-    volume = options.NUMBER / 100;
+    volume = options.NUMBER[0] / 100;
   }
 
   if (context.server!.player.volume != volume) {
