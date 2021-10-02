@@ -214,7 +214,7 @@ class SoundCloudRequest {
   }
 
   async getAysnc(uri: string): Promise<request.Request> {
-    this.checkAndUpdateToken();
+    await this.checkAndUpdateToken();
     return request(uri, { auth: { bearer: this.accessToken }});
   }
 
