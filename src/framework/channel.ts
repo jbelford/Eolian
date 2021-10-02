@@ -22,7 +22,7 @@ export class DiscordTextChannel implements ContextTextChannel {
   get sendable(): boolean {
     let value = !this.channel.deleted;
     if (this.channel.type === DiscordChannel.TEXT) {
-      const permissions = (this.channel as TextChannel).permissionsFor(this.channel.client.user!);
+      const permissions = (this.channel as TextChannel).permissionsFor(this.channel.guild.me!);
       value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES);
     }
     return value;
