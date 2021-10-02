@@ -4,7 +4,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import querystring from 'querystring';
 import request from 'request';
-import requestp from 'request-promise-native';
+import requestPromise from 'request-promise-native';
 import { Readable } from 'stream';
 import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamSource, Track, YouTubeApi } from './@types';
 
@@ -15,7 +15,11 @@ const TRACKS_PARAMS = {
 
 export class SoundCloudApiImpl implements SoundCloudApi {
 
-  constructor(private readonly token: string, private readonly youtube: YouTubeApi) {}
+  private scReq: SoundCloudRequest;
+
+  constructor(clientId: string, clientSecret: string, private readonly youtube: YouTubeApi) {
+    this.scReq = new SoundCloudRequest(clientId, clientSecret)
+  }
 
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
@@ -48,7 +52,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   private async _resolve(url: string, options = {}): Promise<SoundCloudResource> {
     let resource: SoundCloudResource | SoundCloudResource[];
     try {
-      resource = await this.get('resolve', { url, ...options });
+      resource = await this.scReq.get('resolve', { url, ...options });
     } catch (e) {
       logger.warn('Failed to resolve URL from SoundCloud: url: %s options: %s', url, options);
       throw e;
@@ -73,7 +77,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getUser(id: number): Promise<SoundCloudUser> {
     try {
-      const user: SoundCloudUser = await this.get(`users/${id}`);
+      const user: SoundCloudUser = await this.scReq.get(`users/${id}`);
       return user;
     } catch (e) {
       logger.warn('Failed to fetch SoundCloud user profile: id: %d', id);
@@ -84,7 +88,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getTrack(id: number): Promise<SoundCloudTrack> {
     try {
-      return await this.get<SoundCloudTrack>(`tracks/${id}`);
+      return await this.scReq.get<SoundCloudTrack>(`tracks/${id}`);
     } catch (e) {
       logger.warn('Failed to fetch SoundCloud track: id: %d', id);
       throw e;
@@ -93,7 +97,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
   async getPlaylist(id: number): Promise<SoundCloudPlaylist> {
     try {
-      return await this.get<SoundCloudPlaylist>(`playlists/${id}`, TRACKS_PARAMS);
+      return await this.scReq.get<SoundCloudPlaylist>(`playlists/${id}`, TRACKS_PARAMS);
     } catch (e) {
       logger.warn('Failed to fetch SoundCloud playlist: id: %d', id);
       throw e;
@@ -130,16 +134,16 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     if (options.total) {
       limit = Math.min(limit, options.total);
     }
-    let result = await this.get<SoundCloudPaginatedResult<T>>(path, { ...params, linked_partitioning: true, limit });
+    let result = await this.scReq.get<SoundCloudPaginatedResult<T>>(path, { ...params, linked_partitioning: true, limit });
     items = items.concat(result.collection);
 
     options.progress?.update(items.length);
 
-    const extraParams = querystring.stringify({ ...params, client_id: this.token });
+    const extraParams = querystring.stringify({ ...params });
 
     let requests = 1;
     while (result.next_href && (!options.total || items.length < options.total) && (!options.requestLimit || requests < options.requestLimit)) {
-      result = await this.getUri<SoundCloudPaginatedResult<T>>(`${result.next_href}&${extraParams}`);
+      result = await this.scReq.getUri<SoundCloudPaginatedResult<T>>(`${result.next_href}&${extraParams}`);
       items = items.concat(result.collection);
       options.progress?.update(items.length);
       requests++;
@@ -166,18 +170,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     logger.info('Getting soundcloud stream %s', track.url);
 
-    return new SoundCloudStreamSource(this.token, track.url, track.stream);
-  }
-
-  private async get<T>(endpoint: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
-    params.client_id = this.token;
-    return this.getUri<T>(`${SOUNDCLOUD_API}/${endpoint}?${querystring.stringify(params)}`);
-  }
-
-  private async getUri<T>(uri: string): Promise<T> {
-    logger.info(`SoundCloud HTTP: %s`, uri);
-    const data = await requestp(uri);
-    return JSON.parse(data);
+    return new SoundCloudStreamSource(this.scReq, track.url, track.stream);
   }
 
 }
@@ -202,9 +195,54 @@ export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
   };
 }
 
+class SoundCloudRequest {
+
+  private expiration = 0;
+  private accessToken?: string;
+
+  constructor(private clientId: string, private clientSecret: string) {
+  }
+
+  async get<T>(endpoint: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
+    return this.getUri<T>(`${SOUNDCLOUD_API}/${endpoint}?${querystring.stringify(params)}`);
+  }
+
+  async getUri<T>(uri: string): Promise<T> {
+    logger.info(`SoundCloud HTTP: %s`, uri);
+    await this.checkAndUpdateToken();
+    return await requestPromise(uri, { json: true, auth: { bearer: this.accessToken }});
+  }
+
+  async getAysnc(uri: string): Promise<request.Request> {
+    this.checkAndUpdateToken();
+    return request(uri, { auth: { bearer: this.accessToken }});
+  }
+
+  private async checkAndUpdateToken() {
+    if (Date.now() + 10000 >= this.expiration) {
+      const data = await this.getToken();
+      this.accessToken = data.access_token;
+      this.expiration = Date.now() + data.expires_in * 1000;
+    }
+  }
+
+  private async getToken(): Promise<{ access_token: string, expires_in: number }> {
+    const tokenUrl = `${SOUNDCLOUD_API}/oauth2/token`;
+
+    logger.info(`SoundCloud HTTP: %s`, tokenUrl);
+
+    const form = { client_id: this.clientId, client_secret: this.clientSecret, grant_type: 'client_credentials' };
+
+    const resp = await requestPromise(tokenUrl, { method: 'post', form, json: true });
+
+    return resp;
+  }
+
+}
+
 class SoundCloudStreamSource implements StreamSource {
 
-  constructor(private readonly token: string,
+  constructor(private readonly scReq: SoundCloudRequest,
     private readonly url: string,
     private readonly stream: string) {
   }
@@ -213,20 +251,21 @@ class SoundCloudStreamSource implements StreamSource {
     logger.info('Getting soundcloud stream %s', this.url);
 
     return new Promise<Readable>((resolve, reject) => {
-      const stream = request(`${this.stream}?client_id=${this.token}`);
-      stream.once('response', resp => {
-        if (resp.statusCode < 200 || resp.statusCode >= 400) {
-          logger.warn(`Error occured on request: %s`, this.stream);
-          return reject(resp.statusMessage);
-        }
+      this.scReq.getAysnc(this.stream).then(stream => {
+        stream.once('response', resp => {
+          if (resp.statusCode < 200 || resp.statusCode >= 400) {
+            logger.warn(`Error occured on request: %s`, this.stream);
+            return reject(resp.statusMessage);
+          }
 
-        const contentLength = Number(resp.headers["content-length"]);
-        if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
+          const contentLength = Number(resp.headers["content-length"]);
+          if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
 
-        resp.pause();
+          resp.pause();
 
-        resolve(resp);
-      });
+          resolve(resp);
+        });
+      }, reject);
     });
   }
 

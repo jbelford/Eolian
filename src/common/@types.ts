@@ -21,7 +21,10 @@ export interface AppEnv {
       configId: string;
     };
     youtube: string;
-    soundcloud: string;
+    soundcloud: {
+      clientId: string;
+      clientSecret: string;
+    };
     spotify: {
       clientId: string;
       clientSecret: string;
