@@ -145,9 +145,9 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private async onBotInvoked(message: Message): Promise<void> {
+    const start = Date.now();
     const { author, content, channel, member, guild } = message;
-
-    logger.info(`Message event received: '%s'`, content);
+    logger.info(`[%s] Message event received: '%s'`, author.id, content);
 
     // @ts-ignore
     const context: CommandContext = {};
@@ -200,6 +200,8 @@ export class DiscordEolianBot implements EolianBot {
       if (!userError) {
         throw e;
       }
+    } finally {
+      logger.info(`[%s] Message event finished (%d ms)`, author.id, Date.now() - start);
     }
   }
 
