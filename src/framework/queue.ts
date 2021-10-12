@@ -23,25 +23,27 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   async setLoopMode(enabled: boolean): Promise<void> {
-      if (this.loopEnabled != enabled) {
-        this.loopEnabled = enabled;
-        if (this.loopEnabled) {
-          await this.queue.clearPrev(this.guildId);
-        }
-        this.emitUpdate();
-      }
+    if (this.loopEnabled != enabled) {
+      this.loopEnabled = enabled;
+      this.emitUpdate();
+    }
   }
 
-  async size(): Promise<number> {
-    return this.queue.size(this.guildId);
+  async size(loop = false): Promise<number> {
+    return this.queue.size(this.guildId, loop && this.loop);
   }
 
   async unpop(count: number): Promise<boolean> {
-    return await this.queue.unpop(this.guildId, count, this.loopEnabled);
+    return await this.queue.unpop(this.guildId, count);
   }
 
-  async get(index: number, count: number): Promise<Track[]> {
-    return await this.queue.get(this.guildId, index, count);
+  async get(index: number, count: number): Promise<[Track[], Track[]]> {
+    const tracks = await this.queue.get(this.guildId, index, count);
+    if (this.loop && tracks.length < count) {
+      const loopTracks = await this.queue.getLoop(this.guildId, count - tracks.length);
+      return [tracks, loopTracks];
+    }
+    return [tracks, []];
   }
 
   async remove(index: number, count: number): Promise<number> {
@@ -73,17 +75,17 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   async pop(): Promise<Track | undefined> {
-    const popped = await this.queue.pop(this.guildId, this.loopEnabled);
+    const popped = await this.queue.pop(this.guildId, this.loop);
     this.emitUpdate();
     return popped;
   }
 
   peek(): Promise<Track | undefined> {
-    return this.queue.peek(this.guildId);
+    return this.queue.peek(this.guildId, this.loop);
   }
 
   peekReverse(idx: number): Promise<Track | undefined> {
-    return this.queue.peekReverse(this.guildId, idx, this.loopEnabled);
+    return this.queue.peekReverse(this.guildId, idx);
   }
 
   private emitUpdate = () => {

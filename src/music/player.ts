@@ -138,7 +138,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async skip(): Promise<void> {
     if (this.isStreaming) {
-      const size = await this.queue.size();
+      const size = await this.queue.size(true);
       if (size > 0) {
         await this.startNewStream().catch(this.streamErrorHandler);
       } else {

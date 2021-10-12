@@ -87,8 +87,14 @@ export class InMemoryListCache<V> implements ListCache<V> {
     await this.set(key, values);
   }
 
-  async peek(key: string, idx = 0): Promise<V | undefined> {
+  async lpeek(key: string, idx = 0): Promise<V | undefined> {
     const values = await this.get(key);
+    return idx >= 0 && idx < values.length ? values[idx] : undefined;
+  }
+
+  async rpeek(key: string, idx = 0): Promise<V | undefined> {
+    const values = await this.get(key);
+    idx = values.length - 1 - idx;
     return idx >= 0 && idx < values.length ? values[idx] : undefined;
   }
 

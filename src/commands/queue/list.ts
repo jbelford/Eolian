@@ -18,7 +18,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return executeClearQueue(context);
   }
 
-  const size = await context.server!.queue.size();
+  const size = await context.server!.queue.size(true);
   if (size === 0) {
     await context.channel.send('🕳 The queue is empty!');
     return;
@@ -32,14 +32,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const range = getRangeOption(options, size) ?? { start: 0, stop: 15 };
 
-  const tracks = await context.server!.queue.get(range.start, range.stop - range.start);
-  if (tracks.length === 0) {
+  const [tracks, loop] = await context.server!.queue.get(range.start, range.stop - range.start);
+  if (tracks.length + loop.length === 0) {
     await context.channel.send('🕳 The provided range is empty!');
     return;
   }
 
   context.server!.display.queue.setChannel(context.channel);
-  await context.server!.display.queue.send(tracks, range ? range.start : 0, size);
+  await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size);
 }
 
 export const LIST_COMMAND: Command = {

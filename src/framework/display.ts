@@ -38,7 +38,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
     this.channel = channel;
   }
 
-  async send(tracks: Track[], start = 0, total = tracks.length): Promise<void> {
+  async send(tracks: Track[], loop: Track[], start = 0, total = tracks.length): Promise<void> {
     if (!this.channel) {
       throw new Error('Channel is not set!');
     }
@@ -48,7 +48,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
     const messageDelete = this.message ? this.message.delete() :Promise.resolve();
 
     const pagingButtonsDisabled = total <= QUEUE_PAGE_LENGTH;
-    const embed = createQueueEmbed(tracks.slice(0, QUEUE_PAGE_LENGTH), this.start, total, this.queue.loop);
+    tracks = tracks.slice(0, QUEUE_PAGE_LENGTH);
+    loop = loop.slice(0, QUEUE_PAGE_LENGTH - tracks.length);
+    const embed = createQueueEmbed(tracks, loop, this.start, total, this.queue.loop);
     embed.buttons = [
       { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1 },
       { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
@@ -79,9 +81,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
             this.start = Math.max(0, size - QUEUE_PAGE_LENGTH);
           }
           if (size) {
-            const tracks = await this.queue.get(this.start, QUEUE_PAGE_LENGTH);
+            const [tracks, loop] = await this.queue.get(this.start, QUEUE_PAGE_LENGTH);
             const pagingButtonsDisabled = size <= QUEUE_PAGE_LENGTH;
-            const newEmbed = createQueueEmbed(tracks, this.start, size, this.queue.loop);
+            const newEmbed = createQueueEmbed(tracks, loop, this.start, size, this.queue.loop);
             newEmbed.buttons = [
               { emoji: '🔀', onClick: this.shuffleHandler, disabled: size <= 1 },
               { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
@@ -296,8 +298,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       this.queueDisplay.setChannel(this.channel);
       const size = await this.player.queue.size();
       if (size > 0) {
-        const tracks = await this.player.queue.get(0, QUEUE_PAGE_LENGTH);
-        this.queueDisplay.send(tracks, 0, size);
+        const [tracks, loop] = await this.player.queue.get(0, QUEUE_PAGE_LENGTH);
+        this.queueDisplay.send(tracks, loop, 0, size);
         this.queueAhead = true;
       }
     }

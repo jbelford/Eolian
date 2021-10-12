@@ -16,12 +16,22 @@ export class InMemoryQueues implements MusicQueueCache {
     this.cache = new InMemoryListCache(ttl);
   }
 
-  async size(guildId: string): Promise<number> {
-    return this.cache.size(guildId);
+  async size(guildId: string, loop = false): Promise<number> {
+    let size = await this.cache.size(guildId);
+    if (loop) {
+      size += await this.cache.size(this.prevKey(guildId));
+    }
+    return size;
   }
 
   async get(guildId: string, index: number, count: number): Promise<Track[]> {
     return await this.cache.range(guildId, index, count);
+  }
+
+  async getLoop(guildId: string, count: number): Promise<Track[]> {
+    const key = this.prevKey(guildId);
+    const size = await this.cache.size(key);
+    return await this.cache.range(key, Math.max(0, size - count), Math.min(count, size));
   }
 
   async remove(guildId: string, index: number, count: number): Promise<number> {
@@ -66,25 +76,28 @@ export class InMemoryQueues implements MusicQueueCache {
   }
 
   async pop(guildId: string, loop = false): Promise<Track | undefined> {
-    const track = await this.cache.lpop(guildId);
+    let track = await this.cache.lpop(guildId);
+    if (!track.length && loop) {
+      track = await this.cache.lpop(this.prevKey(guildId));
+    }
     if (track.length) {
-      if (loop) {
-        await this.add(guildId, track);
-      } else {
-        await this.addPrev(guildId, track[0]);
-      }
+      await this.addPrev(guildId, track[0], loop);
       return track[0];
     }
     return undefined;
   }
 
-  async peek(guildId: string): Promise<Track | undefined> {
-    return await this.cache.peek(guildId);
+  async peek(guildId: string, loop = false): Promise<Track | undefined> {
+    let track = await this.cache.lpeek(guildId);
+    if (loop && !track) {
+      track = await this.cache.lpeek(this.prevKey(guildId));
+    }
+    return track;
   }
 
-  async unpop(guildId: string, count: number, loop = false): Promise<boolean> {
+  async unpop(guildId: string, count: number): Promise<boolean> {
     count = Math.max(0, count);
-    const key = loop ? guildId : this.prevKey(guildId);
+    const key = this.prevKey(guildId);
     const size = await this.cache.size(key);
     if (size < count) {
       return false;
@@ -98,25 +111,21 @@ export class InMemoryQueues implements MusicQueueCache {
     return true;
   }
 
-  async peekReverse(guildId: string, idx = 0, loop = false): Promise<Track | undefined> {
-    let key: string;
-    if (loop) {
-      key = guildId;
-      idx = (await this.size(key)) - 1 - idx;
-    } else {
-      key = this.prevKey(guildId);
-    }
-
-    return this.cache.peek(key, idx);
+  async peekReverse(guildId: string, idx = 0): Promise<Track | undefined> {
+    return this.cache.rpeek(this.prevKey(guildId), idx);
   }
 
-  private async addPrev(guildId: string, track: Track): Promise<void> {
-    let tracks = await this.cache.get(this.prevKey(guildId));
-    tracks.push(track);
-    if (tracks.length === MAX_PREV) {
-      tracks = tracks.slice(1);
+  private async addPrev(guildId: string, track: Track, loop: boolean): Promise<void> {
+    if (loop) {
+      await this.cache.rpush(this.prevKey(guildId), [track]);
+    } else {
+      let tracks = await this.cache.get(this.prevKey(guildId));
+      tracks.push(track);
+      if (tracks.length >= MAX_PREV) {
+        tracks = tracks.slice(tracks.length - MAX_PREV + 1);
+      }
+      await this.cache.set(this.prevKey(guildId), tracks);
     }
-    await this.cache.set(this.prevKey(guildId), tracks);
   }
 
   private prevKey = (guildId: string) => `${guildId}_prev`;

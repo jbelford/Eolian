@@ -131,7 +131,7 @@ export interface PlayerDisplay extends Display {
 
 export interface QueueDisplay extends Display {
   setChannel(channel: ContextTextChannel): void;
-  send(tracks: Track[], start?: number, total?: number): Promise<void>;
+  send(tracks: Track[], loop: Track[], start?: number, total?: number): Promise<void>;
   delete(): Promise<void>;
 }
 

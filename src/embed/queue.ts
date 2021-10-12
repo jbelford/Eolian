@@ -2,21 +2,37 @@ import { Track } from 'api/@types';
 import { COLOR, getIcon, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'framework/@types';
 
-export function createQueueEmbed(tracks: Track[], start: number, total: number, loop: boolean) : EmbedMessage {
+function trackNameFormat(track: Track) {
+  return `[${track.title.replace(/\*/g, '\\*')}](${track.url})`;
+}
+
+export function createQueueEmbed(tracks: Track[], loopTracks: Track[], start: number, total: number, loop: boolean) : EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.SELECTION,
     header: {
       text: '🎶 Music Queue 🎶'
     },
-    title: `${start + 1}. ${tracks[0].title}`,
-    description: `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. [${t.title.replace(/\*/g, '\\*')}](${t.url})**`).join('\n'),
-    url: tracks[0].url,
+    description: '',
     thumbnail: tracks.find(t => t.artwork)?.artwork,
     footer: {
       text: total > 1 ? `There are ${total} songs in the queue total`
         : `There is only 1 song in the queue`
     }
   };
+
+  if (tracks.length) {
+    embed.title = `${start + 1}. ${tracks[0].title}`;
+    embed.description += `from ${tracks[0].poster}\n\n` + tracks.slice(1).map((t, i) => `**${i + start + 2}. ${trackNameFormat(t)}**`).join('\n');
+    embed.url = tracks[0].url;
+  } else {
+    embed.title = `No songs in the queue!`;
+  }
+
+  if (loopTracks.length) {
+    embed.description += '\n🔁 **Upcoming Loop Tracks** 🔁\n'
+    embed.description += loopTracks.map(t => `**${trackNameFormat(t)}**`).join('\n');
+  }
+
   if (loop) {
     embed.header!.text! += ' Looping 🔁'
   }

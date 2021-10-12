@@ -84,7 +84,8 @@ export interface ListCache<V> extends Closable {
   rpop(key: string, count?: number): Promise<V[]>;
   lpush(key: string, items: V[]): Promise<void>;
   rpush(key: string, items: V[]): Promise<void>;
-  peek(key: string, idx?: number): Promise<V | undefined>;
+  lpeek(key: string, idx?: number): Promise<V | undefined>;
+  rpeek(key: string, idx?: number): Promise<V | undefined>;
   get(key: string): Promise<V[]>;
   set(key: string, items: V[]): Promise<void>;
   del(key: string): Promise<boolean>;
@@ -93,26 +94,27 @@ export interface ListCache<V> extends Closable {
 }
 
 export interface MusicQueueCache {
-  size(guildId: string): Promise<number>;
+  size(guildId: string, loop?: boolean): Promise<number>;
   pop(guildId: string, loop?: boolean): Promise<Track | undefined>;
-  unpop(guildId: string, count: number, loop?: boolean): Promise<boolean>;
+  unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, index: number, count: number): Promise<Track[]>;
+  getLoop(guildId: string, count: number): Promise<Track[]>;
   remove(guildId: string, index: number, count: number): Promise<number>
   move(guildId: string, to: number, from: number, count: number): Promise<void>;
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;
   clear(guildId: string): Promise<boolean>;
   clearPrev(guildId: string): Promise<void>;
-  peek(guildId: string): Promise<Track | undefined>;
-  peekReverse(guildId: string, idx: number, loop?: boolean): Promise<Track | undefined>;
+  peek(guildId: string, loop?: boolean): Promise<Track | undefined>;
+  peekReverse(guildId: string, idx: number): Promise<Track | undefined>;
 }
 
 export interface ServerQueue extends EventEmitter, Idleable {
   loop: boolean;
   setLoopMode(enabled: boolean): Promise<void>;
-  size(): Promise<number>;
+  size(loop?: boolean): Promise<number>;
   unpop(count: number): Promise<boolean>;
-  get(index: number, count: number): Promise<Track[]>;
+  get(index: number, count: number): Promise<[Track[], Track[]]>;
   remove(index: number, count: number): Promise<number>;
   move(to: number, from: number, count: number): Promise<void>;
   add(tracks: Track[], head?: boolean): Promise<void>;
