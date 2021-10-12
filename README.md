@@ -19,7 +19,7 @@ https://discord.com/api/oauth2/authorize?client_id=600199818387914752&permission
 
 You can try out the bot at this server
 
-https://discord.gg/4BMkBHWT
+https://discord.gg/pzD6UyrCTn
 
 # 🎇 Features
 
