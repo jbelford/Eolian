@@ -80,7 +80,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
           } else if (this.start < 0) {
             this.start = Math.max(0, size - QUEUE_PAGE_LENGTH);
           }
-          if (size) {
+          if (size || this.queue.loop) {
             const [tracks, loop] = await this.queue.get(this.start, QUEUE_PAGE_LENGTH);
             const pagingButtonsDisabled = size <= QUEUE_PAGE_LENGTH;
             const newEmbed = createQueueEmbed(tracks, loop, this.start, size, this.queue.loop);
@@ -188,7 +188,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       embed.buttons = [
-        { emoji: '⏏', onClick: this.queueHandler, disabled: !next },
+        { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev) },
         { emoji: '⏯', onClick: this.onPauseResumeHandler },
         { emoji: '⏪', onClick: this.backHandler, disabled: !prev },
         { emoji: '⏩', onClick: this.skipHandler },
@@ -297,7 +297,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     } else if (this.channel) {
       this.queueDisplay.setChannel(this.channel);
       const size = await this.player.queue.size();
-      if (size > 0) {
+      if (size > 0 || this.player.queue.loop) {
         const [tracks, loop] = await this.player.queue.get(0, QUEUE_PAGE_LENGTH);
         this.queueDisplay.send(tracks, loop, 0, size);
         this.queueAhead = true;
