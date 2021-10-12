@@ -48,7 +48,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
     const messageDelete = this.message ? this.message.delete() :Promise.resolve();
 
     const pagingButtonsDisabled = total <= QUEUE_PAGE_LENGTH;
-    const embed = createQueueEmbed(tracks.slice(0, QUEUE_PAGE_LENGTH), this.start, total);
+    const embed = createQueueEmbed(tracks.slice(0, QUEUE_PAGE_LENGTH), this.start, total, this.queue.loop);
     embed.buttons = [
       { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1 },
       { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
@@ -81,7 +81,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
           if (size) {
             const tracks = await this.queue.get(this.start, QUEUE_PAGE_LENGTH);
             const pagingButtonsDisabled = size <= QUEUE_PAGE_LENGTH;
-            const newEmbed = createQueueEmbed(tracks, this.start, size);
+            const newEmbed = createQueueEmbed(tracks, this.start, size, this.queue.loop);
             newEmbed.buttons = [
               { emoji: '🔀', onClick: this.shuffleHandler, disabled: size <= 1 },
               { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },

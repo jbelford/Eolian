@@ -6,6 +6,7 @@ import { EventEmitter } from 'events';
 export class GuildQueue extends EventEmitter implements ServerQueue {
 
   private lastUpdated = Date.now();
+  private loopEnabled = false;
 
   constructor(
       private readonly queue: MusicQueueCache,
@@ -17,12 +18,26 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     return Date.now() - this.lastUpdated >= IDLE_TIMEOUT * 1000;
   }
 
+  get loop(): boolean {
+    return this.loopEnabled;
+  }
+
+  async setLoopMode(enabled: boolean): Promise<void> {
+      if (this.loopEnabled != enabled) {
+        this.loopEnabled = enabled;
+        if (this.loopEnabled) {
+          await this.queue.clearPrev(this.guildId);
+        }
+        this.emitUpdate();
+      }
+  }
+
   async size(): Promise<number> {
     return this.queue.size(this.guildId);
   }
 
   async unpop(count: number): Promise<boolean> {
-    return await this.queue.unpop(this.guildId, count);
+    return await this.queue.unpop(this.guildId, count, this.loopEnabled);
   }
 
   async get(index: number, count: number): Promise<Track[]> {
@@ -58,7 +73,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   async pop(): Promise<Track | undefined> {
-    const popped = await this.queue.pop(this.guildId);
+    const popped = await this.queue.pop(this.guildId, this.loopEnabled);
     this.emitUpdate();
     return popped;
   }
@@ -68,7 +83,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   peekReverse(idx: number): Promise<Track | undefined> {
-    return this.queue.peekReverse(this.guildId, idx);
+    return this.queue.peekReverse(this.guildId, idx, this.loopEnabled);
   }
 
   private emitUpdate = () => {

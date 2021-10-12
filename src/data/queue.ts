@@ -57,14 +57,22 @@ export class InMemoryQueues implements MusicQueueCache {
   }
 
   async clear(guildId: string): Promise<boolean> {
-    await this.cache.del(this.prevKey(guildId));
+    await this.clearPrev(guildId);
     return this.cache.del(guildId);
   }
 
-  async pop(guildId: string): Promise<Track | undefined> {
+  async clearPrev(guildId: string): Promise<void> {
+    await this.cache.del(this.prevKey(guildId));
+  }
+
+  async pop(guildId: string, loop = false): Promise<Track | undefined> {
     const track = await this.cache.lpop(guildId);
     if (track.length) {
-      this.addPrev(guildId, track[0]);
+      if (loop) {
+        await this.add(guildId, track);
+      } else {
+        await this.addPrev(guildId, track[0]);
+      }
       return track[0];
     }
     return undefined;
@@ -74,14 +82,15 @@ export class InMemoryQueues implements MusicQueueCache {
     return await this.cache.peek(guildId);
   }
 
-  async unpop(guildId: string, count: number): Promise<boolean> {
+  async unpop(guildId: string, count: number, loop = false): Promise<boolean> {
     count = Math.max(0, count);
-    const size = await this.cache.size(this.prevKey(guildId));
+    const key = loop ? guildId : this.prevKey(guildId);
+    const size = await this.cache.size(key);
     if (size < count) {
       return false;
     }
 
-    const prev = await this.cache.rpop(this.prevKey(guildId), count);
+    const prev = await this.cache.rpop(key, count);
     if (prev) {
       await this.cache.lpush(guildId, prev);
     }
@@ -89,8 +98,16 @@ export class InMemoryQueues implements MusicQueueCache {
     return true;
   }
 
-  async peekReverse(guildId: string, idx = 0): Promise<Track | undefined> {
-    return this.cache.peek(this.prevKey(guildId), idx);
+  async peekReverse(guildId: string, idx = 0, loop = false): Promise<Track | undefined> {
+    let key: string;
+    if (loop) {
+      key = guildId;
+      idx = (await this.size(key)) - 1 - idx;
+    } else {
+      key = this.prevKey(guildId);
+    }
+
+    return this.cache.peek(key, idx);
   }
 
   private async addPrev(guildId: string, track: Track): Promise<void> {

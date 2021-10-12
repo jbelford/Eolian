@@ -94,19 +94,22 @@ export interface ListCache<V> extends Closable {
 
 export interface MusicQueueCache {
   size(guildId: string): Promise<number>;
-  unpop(guildId: string, count: number): Promise<boolean>;
+  pop(guildId: string, loop?: boolean): Promise<Track | undefined>;
+  unpop(guildId: string, count: number, loop?: boolean): Promise<boolean>;
   get(guildId: string, index: number, count: number): Promise<Track[]>;
   remove(guildId: string, index: number, count: number): Promise<number>
   move(guildId: string, to: number, from: number, count: number): Promise<void>;
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;
   clear(guildId: string): Promise<boolean>;
-  pop(guildId: string): Promise<Track | undefined>;
+  clearPrev(guildId: string): Promise<void>;
   peek(guildId: string): Promise<Track | undefined>;
-  peekReverse(guildId: string, idx?: number): Promise<Track | undefined>;
+  peekReverse(guildId: string, idx: number, loop?: boolean): Promise<Track | undefined>;
 }
 
 export interface ServerQueue extends EventEmitter, Idleable {
+  loop: boolean;
+  setLoopMode(enabled: boolean): Promise<void>;
   size(): Promise<number>;
   unpop(count: number): Promise<boolean>;
   get(index: number, count: number): Promise<Track[]>;

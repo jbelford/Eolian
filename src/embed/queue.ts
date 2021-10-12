@@ -2,7 +2,7 @@ import { Track } from 'api/@types';
 import { COLOR, getIcon, mapSourceToColor } from 'common/constants';
 import { EmbedMessage } from 'framework/@types';
 
-export function createQueueEmbed(tracks: Track[], start: number, total: number) : EmbedMessage {
+export function createQueueEmbed(tracks: Track[], start: number, total: number, loop: boolean) : EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.SELECTION,
     header: {
@@ -17,6 +17,9 @@ export function createQueueEmbed(tracks: Track[], start: number, total: number) 
         : `There is only 1 song in the queue`
     }
   };
+  if (loop) {
+    embed.header!.text! += ' Looping 🔁'
+  }
   return embed;
 }
 
