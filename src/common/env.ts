@@ -38,7 +38,10 @@ export const environment: AppEnv = {
       key: getEnv('BING_TOKEN'),
       configId: getEnv('BING_CONFIG_ID'),
     },
-    youtube: getEnv('YOUTUBE_TOKEN'),
+    youtube: {
+      token: getEnv('YOUTUBE_TOKEN'),
+      cookie: getEnv('YOUTUBE_COOKIE'),
+    },
     soundcloud: {
       clientId: getEnv('SOUNDCLOUD_CLIENT_ID'),
       clientSecret: getEnv('SOUNDCLOUD_CLIENT_SECRET')

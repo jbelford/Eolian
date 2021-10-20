@@ -20,7 +20,10 @@ export interface AppEnv {
       key: string;
       configId: string;
     };
-    youtube: string;
+    youtube: {
+      token: string;
+      cookie: string;
+    };
     soundcloud: {
       clientId: string;
       clientSecret: string;
