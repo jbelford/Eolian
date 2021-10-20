@@ -15,7 +15,10 @@ export interface AppEnv {
   queueLimit: number;
   youtubeCacheLimit: number;
   tokens: {
-    discord: string;
+    discord: {
+      main: string;
+      old?: string;
+    };
     bing: {
       key: string;
       configId: string;

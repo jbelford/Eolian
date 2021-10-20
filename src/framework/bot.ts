@@ -34,6 +34,8 @@ export class DiscordEolianBot implements EolianBot {
   private readonly parser: CommandParsingStrategy;
   private readonly registry = new ButtonRegistry();
   private readonly guildMap = new Map<string, ServerDetails>();
+  private oldClient?: Client;
+  private invite?: string;
 
   private readonly db: AppDatabase;
   private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
@@ -57,11 +59,18 @@ export class DiscordEolianBot implements EolianBot {
     if (logger.isDebugEnabled()) {
       this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: %s`, info));
     }
+
+    if (environment.tokens.discord.old) {
+      this.client.on(DiscordEvents.GUILD_CREATE, this.onGuildCreateHandler);
+      this.oldClient = new Client(EOLIAN_CLIENT_OPTIONS);
+      this.oldClient.on(DiscordEvents.MESSAGE, this.onMessageHandlerOld);
+    }
   }
 
   async start(): Promise<void> {
     if (!this.client.readyTimestamp) {
-      await this.client.login(environment.tokens.discord);
+      await this.client.login(environment.tokens.discord.main);
+      await this.oldClient?.login(environment.tokens.discord.old);
     }
   }
 
@@ -92,18 +101,25 @@ export class DiscordEolianBot implements EolianBot {
    * Executed when the connection has been established
    * and operations may begin to be performed
    */
-  private onReadyHandler = () => {
-    logger.info('Discord bot is ready!');
-    if (this.client.guilds.cache.size === 0 || process.argv.includes('-gi')) {
-      this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS })
-        .then(link => logger.info(`Bot invite link: %s`, link))
-        .catch(err => logger.warn(`Failed to generate invite: %s`, err));
+  private onReadyHandler = async () => {
+    try {
+      logger.info('Discord bot is ready!');
+      this.invite = await this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS });
+      logger.info(`Bot invite link: %s`, this.invite);
+      this.client.user!.setPresence({
+        activity: {
+          name: `${environment.cmdToken}help`,
+          type: 'LISTENING'
+        }
+      });
+    } catch (e) {
+      logger.warn(`Ready handler failed: %s`, e);
     }
-    this.client.user!.setPresence({
-        activity: { name: `${environment.cmdToken}help`, type: 'LISTENING' }
-      })
-      .catch(err => logger.warn(`Failed to set presence: %s`, err));
   }
+
+  private onGuildCreateHandler = async (guild: Guild) => {
+    await this.oldClient?.guilds.cache.get(guild.id)?.leave();
+  };
 
   private onMessageHandler = async (message: Message): Promise<void> => {
     if (message.author.bot || message.channel.type === 'news') {
@@ -121,6 +137,20 @@ export class DiscordEolianBot implements EolianBot {
             await this.lockManager.unlock(message.author.id);
           }
         }
+      }
+    } catch (e) {
+      logger.warn(`Unhandled error occured during request: %s`, e);
+    }
+  }
+
+  private onMessageHandlerOld = async (message: Message): Promise<void> => {
+    if (message.author.bot || message.channel.type === 'news') {
+      return;
+    }
+
+    try {
+      if (this.invite && await this.isBotInvoked(message)) {
+        message.reply(`This bot is being migrated to a new token! Invite the new bot \n${this.invite}`);
       }
     } catch (e) {
       logger.warn(`Unhandled error occured during request: %s`, e);

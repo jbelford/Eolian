@@ -1,10 +1,16 @@
 import { AppEnv } from './@types';
 
-function getEnv(name: string, defaultValue?: string): string {
+function getEnvOpt(name: string, defaultValue?: string): string | undefined {
   if (name in process.env) {
     return process.env[name] as string;
-  } else if (defaultValue) {
-    return defaultValue;
+  }
+  return defaultValue;
+}
+
+function getEnv(name: string, defaultValue?: string): string {
+  const value = getEnvOpt(name, defaultValue);
+  if (value !== undefined) {
+    return value;
   }
   console.log(`Missing env: ${name}`);
   process.exit(1);
@@ -33,7 +39,10 @@ export const environment: AppEnv = {
   queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
   youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
   tokens: {
-    discord: getEnv('DISCORD_TOKEN'),
+    discord: {
+      main: getEnv('DISCORD_TOKEN'),
+      old: getEnvOpt('DISCORD_TOKEN_OLD'),
+    },
     bing: {
       key: getEnv('BING_TOKEN'),
       configId: getEnv('BING_CONFIG_ID'),

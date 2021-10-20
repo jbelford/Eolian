@@ -117,6 +117,7 @@ export const enum DiscordEvents {
   RESUME = 'resume',
   DEBUG = 'debug',
   WARN = 'warn',
+  GUILD_CREATE = 'guildCreate',
   MESSAGE_REACTION_ADD = 'messageReactionAdd',
   CLICK_BUTTON = 'clickButton'
 }
