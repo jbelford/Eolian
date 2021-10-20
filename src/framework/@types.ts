@@ -30,6 +30,7 @@ export interface ServerInfo {
   readonly name: string;
   readonly id: string;
   readonly members: number;
+  readonly owner: string;
   readonly avatar?: string;
 }
 

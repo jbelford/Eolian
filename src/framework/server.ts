@@ -28,6 +28,10 @@ export class DiscordGuild implements ServerDetails {
     return this.guild.iconURL({ dynamic: true }) ?? undefined;
   }
 
+  get owner(): string {
+    return this.guild.ownerID;
+  }
+
   async get(): Promise<ServerDTO> {
     if (!this.configCache) {
       this.configCache = await this.servers.get(this.id);

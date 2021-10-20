@@ -26,7 +26,7 @@ export class DiscordClient implements ContextClient {
   }
 
   getServers(): ServerInfo[] {
-    return this.client.guilds.cache.array().map(guild => ({ name: guild.name, members: guild.memberCount, id: guild.id }));
+    return this.client.guilds.cache.array().map(guild => ({ name: guild.name, members: guild.memberCount, id: guild.id, owner: guild.ownerID }));
   }
 
 }
