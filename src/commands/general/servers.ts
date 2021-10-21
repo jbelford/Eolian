@@ -3,10 +3,10 @@ import { GENERAL_CATEGORY } from 'commands/category';
 import { PATTERNS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 
-const PAGE_LENGTH = 20;
+const PAGE_LENGTH = 10;
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
-  const servers = context.client.getServers();
+  let servers = context.client.getServers();
 
   let start = 0;
   if (options.NUMBER && options.NUMBER[0] >= 0) {
@@ -17,9 +17,20 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     start = Math.max(0, servers.length - PAGE_LENGTH);
   }
 
+  if (options.ARG && options.ARG.length > 1 && options.ARG[0] === 'sort') {
+    const prop = options.ARG[1];
+    // @ts-ignore
+    if (typeof servers[0][prop] === 'number') {
+      // @ts-ignore
+      servers = servers.sort((a, b) => b[prop] - a[prop]);
+    }
+  } else {
+    servers = servers.sort((a, b) => b.members - a.members);
+  }
+
   const members = servers.reduce((sum, server) => sum + server.members, 0);
   let response = `Total Servers: ${servers.length}\nTotal Users: ${members}\n` + '```'
-  response += servers.sort((a, b) => b.members - a.members).slice(start, start + PAGE_LENGTH).map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`).join('\n');
+  response += servers.slice(start, start + PAGE_LENGTH).map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`).join('\n');
   response += '\n```';
 
   await context.channel.send(response);
@@ -30,7 +41,7 @@ export const SERVERS_COMMAND: Command = {
   details: 'Show all servers this bot is joined to',
   permission: PERMISSION.OWNER,
   category: GENERAL_CATEGORY,
-  patterns: [PATTERNS.NUMBER],
+  patterns: [PATTERNS.NUMBER, PATTERNS.ARG],
   dmAllowed: true,
   usage: [
     {
@@ -40,6 +51,10 @@ export const SERVERS_COMMAND: Command = {
     {
       title: 'Show servers at page',
       example: '2'
+    },
+    {
+      title: 'Sort by bot',
+      example: [PATTERNS.ARG.ex('sort'), PATTERNS.ARG.ex('botCount')]
     }
   ],
   execute

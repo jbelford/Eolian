@@ -32,6 +32,8 @@ export interface ServerInfo {
   readonly members: number;
   readonly owner: string;
   readonly avatar?: string;
+  readonly botCount?: number;
+  readonly botRatio?: number;
 }
 
 export interface ContextMessage {
