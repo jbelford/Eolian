@@ -63,6 +63,7 @@ export class DiscordEolianBot implements EolianBot {
     if (environment.tokens.discord.old) {
       this.client.on(DiscordEvents.GUILD_CREATE, this.onGuildCreateHandler);
       this.oldClient = new Client(EOLIAN_CLIENT_OPTIONS);
+      this.oldClient.once(DiscordEvents.READY, this.setPresence);
       this.oldClient.on(DiscordEvents.MESSAGE, this.onMessageHandlerOld);
     }
   }
@@ -106,6 +107,14 @@ export class DiscordEolianBot implements EolianBot {
       logger.info('Discord bot is ready!');
       this.invite = await this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS });
       logger.info(`Bot invite link: %s`, this.invite);
+      await this.setPresence();
+    } catch (e) {
+      logger.warn(`Ready handler failed: %s`, e);
+    }
+  }
+
+  private setPresence = async () => {
+    try {
       this.client.user!.setPresence({
         activity: {
           name: `${environment.cmdToken}help`,
@@ -113,9 +122,9 @@ export class DiscordEolianBot implements EolianBot {
         }
       });
     } catch (e) {
-      logger.warn(`Ready handler failed: %s`, e);
+      logger.warn(`Failed to set presence: %s`, e);
     }
-  }
+  };
 
   private onGuildCreateHandler = async (guild: Guild) => {
     await this.oldClient?.guilds.cache.get(guild.id)?.leave();
