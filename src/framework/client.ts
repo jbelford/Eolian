@@ -41,6 +41,10 @@ export class DiscordClient implements ContextClient {
     return this.client.guilds.cache.array().map(mapGuildToServerInfo);
   }
 
+  async leave(id: string): Promise<boolean> {
+    return !!(await this.client.guilds.cache.get(id)?.leave());
+  }
+
 }
 
 export class DiscordGuildClient extends DiscordClient {

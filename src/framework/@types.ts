@@ -24,6 +24,7 @@ export interface ContextClient {
   getVoice(): ContextVoiceConnection | undefined;
   generateInvite(): Promise<string>;
   getServers(): ServerInfo[];
+  leave(id: string): Promise<boolean>;
 }
 
 export interface ServerInfo {
