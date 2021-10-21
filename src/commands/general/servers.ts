@@ -22,7 +22,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       case 'sort': {
         const prop = options.ARG[1];
         // @ts-ignore
-        if (typeof servers[0][prop] === 'number') {
+        if (servers.length && typeof servers[0][prop] === 'number') {
           // @ts-ignore
           servers = servers.sort((a, b) => b[prop] - a[prop]);
         }
