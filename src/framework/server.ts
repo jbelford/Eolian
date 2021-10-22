@@ -1,6 +1,7 @@
 import { SyntaxType } from 'commands/@types';
 import { DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
+import { logger } from 'common/logger';
 import { ServerDTO, ServersDb } from 'data/@types';
 import { Guild } from 'discord.js';
 import { ServerDetails } from './@types';
@@ -90,6 +91,7 @@ export class DiscordGuild implements ServerDetails {
         return;
       }
     }
+    logger.info(`${this.id} refreshing guild usage timestamp`);
     this.configCache!.lastUsageUTC = date.toUTCString();
     await this.servers.setLastUsage(this.id, this.configCache!.lastUsageUTC);
   }
