@@ -5,6 +5,8 @@ import { ServerDTO, ServersDb } from 'data/@types';
 import { Guild } from 'discord.js';
 import { ServerDetails } from './@types';
 
+const RECORD_USAGE_INTERVAL = 1000 * 60 * 60 * 24;
+
 export class DiscordGuild implements ServerDetails {
 
   private configCache: ServerDTO | null = null;
@@ -75,6 +77,21 @@ export class DiscordGuild implements ServerDetails {
       this.configCache.syntax = type;
     }
     await this.servers.setSyntax(this.id, type);
+  }
+
+  async updateUsage(): Promise<void> {
+    if (!this.configCache) {
+      await this.get();
+    }
+    const date = new Date();
+    if (this.configCache!.lastUsageUTC) {
+      const prev = new Date(this.configCache!.lastUsageUTC);
+      if (date.getTime() - prev.getTime() < RECORD_USAGE_INTERVAL) {
+        return;
+      }
+    }
+    this.configCache!.lastUsageUTC = date.toUTCString();
+    await this.servers.setLastUsage(this.id, this.configCache!.lastUsageUTC);
   }
 
 }

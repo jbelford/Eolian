@@ -226,6 +226,8 @@ export class DiscordEolianBot implements EolianBot {
       context.message = new DiscordMessage(message, context.channel);
 
       await command.execute(context, options);
+
+      await context.server?.details.updateUsage();
     } catch (e) {
       const userError = (e instanceof EolianUserError);
 
