@@ -21,7 +21,7 @@ jobs:
     - name: Set up Node.js version
       uses: actions/setup-node@v1
       with:
-        node-version: 'lts/fermium'
+        node-version: '14.18.1'
 
     # We also move the prebuilt opus file because app service uses 2.28 to annoy people
     - name: npm install, build, and test
