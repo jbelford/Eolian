@@ -1,8 +1,8 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
+import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
-import requestPromise from 'request-promise-native';
 import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamSource, Track, YouTubeApi } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
@@ -209,14 +209,13 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   private async getToken(): Promise<{ access_token: string, expires_in: number }> {
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
-
     logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
-
-    const resp = await requestPromise(SPOTIFY_TOKEN,
-      { method: 'post', body: 'grant_type=client_credentials', json: true, headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }});
-
-    return resp;
+    return await httpRequest(SPOTIFY_TOKEN, {
+      method: 'POST',
+      form: { grant_type: 'client_credentials' },
+      auth: { basic: { id: this.clientId, password: this.clientSecret } },
+      json: true
+    });
   }
 
   private get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1) : Promise<T> {
@@ -226,7 +225,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   private async getUrl<T>(url: string, params = {}) : Promise<T> {
     logger.info(`Spotify HTTP: %s - %s`, url, params);
     await this.checkAndUpdateToken();
-    return await requestPromise(url, { qs: params, json: true, auth: { bearer: this.accessToken } }) as unknown as Promise<T>;
+    return await httpRequest(url, { params, json: true, auth: { bearer: this.accessToken } }) as unknown as Promise<T>;
   }
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {

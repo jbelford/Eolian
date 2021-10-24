@@ -1,6 +1,7 @@
 import { getTrackStream } from 'api';
 import { StreamSource, Track } from 'api/@types';
 import { logger } from 'common/logger';
+import { RequestErrorCodes, RequestStreamError } from 'common/request';
 import EventEmitter from 'events';
 import prism from 'prism-media';
 import { Duplex, PassThrough, Readable } from 'stream';
@@ -75,7 +76,10 @@ export class SongStream extends EventEmitter {
     this.pcmTransform = undefined;
   }
 
-  private onSongErrorHandler = (err: Error) => {
+  private onSongErrorHandler = (err: RequestStreamError) => {
+    if (err.code === RequestErrorCodes.ABORTED) {
+      return;
+    }
     if (this.attempts < this.retries) {
       logger.warn('Retry after song stream error: %s', err);
       this.pcmTransform?.unpipe(this.output);

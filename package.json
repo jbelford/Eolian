@@ -38,8 +38,7 @@
     "node-cache": "^5.1.2",
     "node-cleanup": "^2.1.2",
     "prism-media": "^1.2.9",
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.9",
+    "undici": "^4.8.1",
     "utf-8-validate": "^5.0.5",
     "winston": "^3.3.3",
     "ytdl-core": "git://github.com/jbelford/node-ytdl-core.git#205e8cd2dd233e59f272d71829096ad4978f1bd1"
@@ -51,7 +50,6 @@
     "@types/node": "^15.0.1",
     "@types/node-cache": "^4.2.5",
     "@types/node-cleanup": "^2.1.0",
-    "@types/request-promise-native": "^1.0.17",
     "@types/webpack-node-externals": "^2.5.1",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^4.23.0",

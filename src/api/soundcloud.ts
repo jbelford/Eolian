@@ -2,9 +2,8 @@ import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
+import { httpRequest } from 'common/request';
 import querystring from 'querystring';
-import request from 'request';
-import requestPromise from 'request-promise-native';
 import { Readable } from 'stream';
 import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamSource, Track, YouTubeApi } from './@types';
 
@@ -210,12 +209,12 @@ class SoundCloudRequest {
   async getUri<T>(uri: string): Promise<T> {
     logger.info(`SoundCloud HTTP: %s`, uri);
     await this.checkAndUpdateToken();
-    return await requestPromise(uri, { json: true, auth: { bearer: this.accessToken }});
+    return await httpRequest(uri, { json: true, auth: { bearer: this.accessToken }});
   }
 
-  async getAysnc(uri: string): Promise<request.Request> {
+  async getAysnc(uri: string): Promise<Readable> {
     await this.checkAndUpdateToken();
-    return request(uri, { auth: { bearer: this.accessToken }});
+    return httpRequest(uri, { auth: { bearer: this.accessToken }});
   }
 
   private async checkAndUpdateToken() {
@@ -233,9 +232,7 @@ class SoundCloudRequest {
 
     const form = { client_id: this.clientId, client_secret: this.clientSecret, grant_type: 'client_credentials' };
 
-    const resp = await requestPromise(tokenUrl, { method: 'post', form, json: true });
-
-    return resp;
+    return await httpRequest(tokenUrl, { method: 'POST', form, json: true });
   }
 
 }
@@ -249,24 +246,7 @@ class SoundCloudStreamSource implements StreamSource {
 
   get(): Promise<Readable> {
     logger.info('Getting soundcloud stream %s', this.url);
-
-    return new Promise<Readable>((resolve, reject) => {
-      this.scReq.getAysnc(this.stream).then(stream => {
-        stream.once('response', resp => {
-          if (resp.statusCode < 200 || resp.statusCode >= 400) {
-            logger.warn(`Error occured on request: %s`, this.stream);
-            return reject(resp.statusMessage);
-          }
-
-          const contentLength = Number(resp.headers["content-length"]);
-          if (isNaN(contentLength)) return reject('Could not parse content-length from SoundCloud stream');
-
-          resp.pause();
-
-          resolve(resp);
-        });
-      }, reject);
-    });
+    return this.scReq.getAysnc(this.stream);
   }
 
 }

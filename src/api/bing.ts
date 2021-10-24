@@ -1,6 +1,5 @@
 import { logger } from 'common/logger';
-import querystring from 'querystring';
-import requestp from 'request-promise-native';
+import { httpRequest } from 'common/request';
 import { BingApi, BingVideo } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
@@ -29,15 +28,14 @@ export class BingApiImpl implements BingApi {
   private async get<T>(path: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
     params.customConfig = this.configId;
 
-    const uri = `${BING_API}/${path}?${querystring.stringify(params)}`;
+    const uri = `${BING_API}/${path}`;
 
     logger.info(`Bing HTTP: %s`, uri);
 
     const headers = {
       'Ocp-Apim-Subscription-Key': this.key
     };
-    const data = await requestp(uri, { headers });
-    return JSON.parse(data);
+    return await httpRequest<T>(uri, { params, headers, json: true });
   }
 
 }
