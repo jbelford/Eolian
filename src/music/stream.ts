@@ -102,7 +102,7 @@ export class SongStream extends EventEmitter {
         throw new Error('PCM Transform is missing!');
       }
       stream.pipe(this.output);
-    } catch (e) {
+    } catch (e: any) {
       this.cleanup(e);
     }
   }

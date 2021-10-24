@@ -131,7 +131,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.dispatcher.once('error', this.streamErrorHandler);
       this.dispatcher.once('close', this.cleanup);
       this.dispatcher.once('finish', () => this.stop());
-    } catch (e) {
+    } catch (e: any) {
       this.streamErrorHandler(e);
     }
   }
@@ -247,7 +247,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         }
         this.opusStream?.once('end', () => this.inputStream?.end());
         this.volumeTransform!.end();
-    } catch (e) {
+    } catch (e: any) {
       this.streamErrorHandler(e);
     }
   };

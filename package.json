@@ -17,7 +17,7 @@
     "soundcloud"
   ],
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=14.18.1"
   },
   "author": "Jack Belford",
   "license": "GPL-3.0+",
@@ -52,9 +52,9 @@
     "@types/node-cleanup": "^2.1.0",
     "@types/webpack-node-externals": "^2.5.1",
     "@types/winston": "^2.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.23.0",
-    "@typescript-eslint/parser": "^4.23.0",
-    "eslint": "^7.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "eslint": "^8.1.0",
     "ts-loader": "^9.1.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4",

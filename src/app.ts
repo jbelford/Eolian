@@ -31,7 +31,7 @@ const resources: Closable[] = [];
     server.start();
 
     resources.push(db, bot, server);
-  } catch (e) {
+  } catch (e: any) {
     logger.error(`Something went horribly wrong: ${e.stack || e}`);
   }
 })();
