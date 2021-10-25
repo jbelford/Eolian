@@ -1,5 +1,5 @@
 import { Track } from 'api/@types';
-import { IDLE_TIMEOUT } from 'common/constants';
+import { IDLE_TIMEOUT_MINS } from 'common/constants';
 import { MusicQueueCache, ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
 
@@ -15,7 +15,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   get idle(): boolean {
-    return Date.now() - this.lastUpdated >= IDLE_TIMEOUT * 1000;
+    return Date.now() - this.lastUpdated >= IDLE_TIMEOUT_MINS * 1000;
   }
 
   get loop(): boolean {

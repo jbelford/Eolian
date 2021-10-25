@@ -1,4 +1,4 @@
-import { DEFAULT_VOLUME, IDLE_TIMEOUT } from 'common/constants';
+import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
@@ -90,7 +90,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   get idle(): boolean {
-    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT * 1000;
+    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT_MINS * 1000;
   }
 
   async close(): Promise<void> {

@@ -1,17 +1,17 @@
 import { CommandContext, CommandParsingStrategy, SyntaxType } from 'commands/@types';
-import { DiscordEvents, DISCORD_INVITE_PERMISSIONS, EOLIAN_CLIENT_OPTIONS, PERMISSION } from 'common/constants';
+import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
 import registerDiscordButtons, { MessageComponent } from 'discord-buttons';
-import { Client, DMChannel, Guild, GuildMember, Message, Permissions, TextChannel, User } from 'discord.js';
+import { Client, DMChannel, Guild, GuildMember, Intents, Message, Permissions, TextChannel, User } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordTextChannel } from './channel';
-import { DiscordClient, DiscordGuildClient } from './client';
+import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordMessage } from './message';
 import { GuildQueue } from './queue';
@@ -23,6 +23,36 @@ export interface DiscordEolianBotArgs {
   db: AppDatabase,
   parser: CommandParsingStrategy,
 }
+
+const enum DiscordEvents {
+  READY = 'ready',
+  MESSAGE = 'message',
+  ERROR = 'error',
+  RECONNECTING = 'shardReconnecting',
+  RESUME = 'shardResume',
+  DEBUG = 'debug',
+  WARN = 'warn',
+  GUILD_CREATE = 'guildCreate',
+  CLICK_BUTTON = 'clickButton'
+}
+
+// https://discord.com/developers/docs/topics/gateway#list-of-intents
+const DISCORD_ENABLED_INTENTS = new Intents();
+DISCORD_ENABLED_INTENTS.add(
+  'GUILDS',
+  // 'GUILD_MEMBERS',
+  // 'GUILD_EMOJIS',
+  // 'GUILD_INTEGRATIONS',
+  // 'GUILD_WEBHOOKS',
+  'GUILD_INVITES',
+  'GUILD_VOICE_STATES',
+  // 'GUILD_PRESENCES',
+  'GUILD_MESSAGES',
+  'GUILD_MESSAGE_REACTIONS',
+  // 'GUILD_MESSAGE_TYPING',
+  // 'DIRECT_MESSAGE_TYPING',
+  'DIRECT_MESSAGES',
+  'DIRECT_MESSAGE_REACTIONS');
 
 const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
@@ -46,7 +76,7 @@ export class DiscordEolianBot implements EolianBot {
     this.parser = args.parser;
     this.db = args.db;
 
-    this.client = new Client(EOLIAN_CLIENT_OPTIONS);
+    this.client = new Client({ ws: { intents: DISCORD_ENABLED_INTENTS }});
     registerDiscordButtons(this.client);
 
     this.client.once(DiscordEvents.READY, this.onReadyHandler);
@@ -62,7 +92,7 @@ export class DiscordEolianBot implements EolianBot {
 
     if (environment.tokens.discord.old) {
       this.client.on(DiscordEvents.GUILD_CREATE, this.onGuildCreateHandler);
-      this.oldClient = new Client(EOLIAN_CLIENT_OPTIONS);
+      this.oldClient = new Client({ ws: { intents: DISCORD_ENABLED_INTENTS }});
       this.oldClient.once(DiscordEvents.READY, this.setPresence);
       this.oldClient.on(DiscordEvents.MESSAGE, this.onMessageHandlerOld);
     }

@@ -1,5 +1,4 @@
-import { DISCORD_INVITE_PERMISSIONS } from 'common/constants';
-import { Client, Guild } from 'discord.js';
+import { Client, Guild, PermissionResolvable } from 'discord.js';
 import { DiscordPlayer } from 'music';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
 import { DiscordVoiceConnection } from './voice';
@@ -15,6 +14,21 @@ function mapGuildToServerInfo(guild: Guild): ServerInfo {
     botRatio: Math.round(100 * botCount / guild.memberCount) / 100
   };
 }
+
+export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
+  'ADD_REACTIONS',
+  'ATTACH_FILES',
+  'CONNECT',
+  'EMBED_LINKS',
+  'MANAGE_MESSAGES',
+  'MENTION_EVERYONE',
+  'PRIORITY_SPEAKER',
+  'READ_MESSAGE_HISTORY',
+  'SEND_MESSAGES',
+  'SPEAK',
+  'USE_EXTERNAL_EMOJIS',
+  'VIEW_CHANNEL',
+];
 
 export class DiscordClient implements ContextClient {
 

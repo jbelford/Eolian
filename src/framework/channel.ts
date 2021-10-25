@@ -1,4 +1,4 @@
-import { DiscordChannel, EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
+import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
 import { BaseMessageComponent } from 'discord-buttons';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
@@ -21,7 +21,7 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   get sendable(): boolean {
     let value = !this.channel.deleted;
-    if (this.channel.type === DiscordChannel.TEXT) {
+    if (this.channel.type === 'text') {
       const permissions = (this.channel as TextChannel).permissionsFor(this.channel.guild.me!);
       value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS);
     }
