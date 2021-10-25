@@ -19,11 +19,6 @@ import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
 import { DiscordUser } from './user';
 
-export interface DiscordEolianBotArgs {
-  db: AppDatabase,
-  parser: CommandParsingStrategy,
-}
-
 const enum DiscordEvents {
   READY = 'ready',
   MESSAGE = 'message',
@@ -58,6 +53,11 @@ const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 const USER_COMMAND_LOCK_TIMEOUT = 60;
 
+export interface DiscordEolianBotArgs {
+  db: AppDatabase,
+  parser: CommandParsingStrategy,
+}
+
 export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
@@ -72,9 +72,9 @@ export class DiscordEolianBot implements EolianBot {
   private readonly servers: ServerStateStore = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
-  constructor(args: DiscordEolianBotArgs) {
-    this.parser = args.parser;
-    this.db = args.db;
+  constructor({ parser, db }: DiscordEolianBotArgs) {
+    this.parser = parser;
+    this.db = db;
 
     this.client = new Client({ ws: { intents: DISCORD_ENABLED_INTENTS }});
     registerDiscordButtons(this.client);
