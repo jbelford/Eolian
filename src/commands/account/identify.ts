@@ -5,6 +5,8 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
 
+const IDENTIFIER_MAX_KEY_LENGTH = 32;
+
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.IDENTIFIER) {
     throw new EolianUserError(`You forgot to specify the key for your identifer.`);
@@ -17,6 +19,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     }
     await context.message.reply(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
     return;
+  }
+
+  if (options.IDENTIFIER.length > IDENTIFIER_MAX_KEY_LENGTH) {
+    throw new EolianUserError(`The identifier must be less than ${IDENTIFIER_MAX_KEY_LENGTH} characters! Try again.`);
   }
 
   if (options.URL && options.SEARCH) {
