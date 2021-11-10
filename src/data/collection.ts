@@ -75,8 +75,8 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
 
-  async setLastUsage(id: string, usageUTC: string): Promise<void> {
-    await this.setProperty(id, 'lastUsageUTC', usageUTC);
+  async setLastUsage(id: string, usageDate: Date): Promise<void> {
+    await this.setProperty(id, 'lastUsage', usageDate);
   }
 
   async setPrefix(id: string, prefix: string): Promise<void> {

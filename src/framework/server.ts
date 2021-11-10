@@ -85,15 +85,14 @@ export class DiscordGuild implements ServerDetails {
       await this.get();
     }
     const date = new Date();
-    if (this.configCache!.lastUsageUTC) {
-      const prev = new Date(this.configCache!.lastUsageUTC);
-      if (date.getTime() - prev.getTime() < RECORD_USAGE_INTERVAL) {
+    if (this.configCache!.lastUsage) {
+      if (date.getTime() - this.configCache!.lastUsage.getTime() < RECORD_USAGE_INTERVAL) {
         return;
       }
     }
     logger.info(`${this.id} refreshing guild usage timestamp`);
-    this.configCache!.lastUsageUTC = date.toUTCString();
-    await this.servers.setLastUsage(this.id, this.configCache!.lastUsageUTC);
+    this.configCache!.lastUsage = date;
+    await this.servers.setLastUsage(this.id, this.configCache!.lastUsage);
   }
 
 }

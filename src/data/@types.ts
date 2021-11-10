@@ -36,7 +36,7 @@ export interface UsersDb extends CollectionDb<UserDTO> {
 }
 
 export interface ServersDb extends CollectionDb<ServerDTO> {
-  setLastUsage(id: string, usageUTC: string): Promise<void>;
+  setLastUsage(id: string, usageDate: Date): Promise<void>;
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
   setSyntax(id: string, type: SyntaxType): Promise<void>;
@@ -47,7 +47,7 @@ export interface DocDTO {
 }
 
 export interface ServerDTO extends DocDTO {
-  lastUsageUTC?: string;
+  lastUsage?: Date;
   prefix?: string;
   volume?: number;
   syntax?: SyntaxType;
