@@ -3,6 +3,8 @@ import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
+import { DiscordVoiceChannel } from 'framework';
+import { ContextVoiceChannel } from 'framework/@types';
 import { Player } from 'music/@types';
 import prism, { VolumeTransformer } from 'prism-media';
 import { PassThrough, Readable, Transform } from 'stream';
@@ -91,6 +93,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   get idle(): boolean {
     return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT_MINS * 1000;
+  }
+
+  getChannel(): ContextVoiceChannel | undefined {
+    const voice = this.connectionProvider.get();
+    return voice && new DiscordVoiceChannel(voice.channel);
   }
 
   async close(): Promise<void> {
@@ -219,22 +226,18 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   private timeoutCheckHandler = () => {
-    if (!this.hasPeopleListening()) {
+    if (!this.getChannel()?.hasPeopleListening()) {
       this.emitIdle();
       this.stop();
     }
   };
-
-  private hasPeopleListening(): boolean {
-    return !!this.connectionProvider.get()?.channel.members.find(member => !member.user.bot && !member.voice.deaf);
-  }
 
   private streamEndHandler = async () => {
     try {
         if (this.songStream?.stream) {
           this.songStream.stream.unpipe(this.volumeTransform!);
         }
-        if (this.hasPeopleListening()) {
+        if (this.getChannel()?.hasPeopleListening()) {
           const readable = await this.getNextStream();
           if (readable) {
             readable.once('end', this.streamEndHandler)

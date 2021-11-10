@@ -48,10 +48,10 @@ class PollMessage implements Closable {
     this.pollMessage = undefined;
   }
 
-  private selectionHandler: MessageButtonOnClickHandler = async (message, user, emoji) => {
+  private selectionHandler: MessageButtonOnClickHandler = async (interaction, emoji) => {
     const idx = EMOJI_TO_NUMBER[emoji] - 1;
     const selected = this.options[idx];
-    const past = this.userSelections.get(user.id);
+    const past = this.userSelections.get(interaction.user.id);
     if (past) {
       if (past.emoji !== selected.emoji) {
         past.count--;
@@ -63,15 +63,15 @@ class PollMessage implements Closable {
       selected.count++;
     }
 
-    this.userSelections.set(user.id, selected);
+    this.userSelections.set(interaction.user.id, selected);
 
     await this.send();
 
     return false;
   }
 
-  private closePollHandler: MessageButtonOnClickHandler = async (message, user) => {
-    if (user.id !== this.user.id) {
+  private closePollHandler: MessageButtonOnClickHandler = async (interaction) => {
+    if (interaction.user.id !== this.user.id) {
       return false;
     }
     await this.sendResults();

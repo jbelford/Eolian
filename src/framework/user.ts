@@ -1,6 +1,7 @@
 import { PERMISSION } from 'common/constants';
+import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
-import { GuildMember, User } from 'discord.js';
+import { GuildMember, Permissions, User } from 'discord.js';
 import { ContextUser, ContextVoiceChannel } from './@types';
 import { DiscordVoiceChannel } from './voice';
 
@@ -86,4 +87,13 @@ export class DiscordUser implements ContextUser {
     }
   }
 
+}
+
+export function getPermissionLevel(user: User, member?: GuildMember | null): PERMISSION {
+  if (environment.owners.includes(user.id)) {
+    return PERMISSION.OWNER;
+  } else if (member && member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
+    return PERMISSION.ADMIN;
+  }
+  return PERMISSION.USER;
 }

@@ -1,6 +1,7 @@
 import { Closable, Idleable } from 'common/@types';
 import { ServerQueue } from 'data/@types';
 import EventEmitter from 'events';
+import { ContextVoiceChannel } from 'framework/@types';
 
 export interface Player extends EventEmitter, Idleable, Closable {
 
@@ -11,6 +12,7 @@ export interface Player extends EventEmitter, Idleable, Closable {
   readonly volume: number;
   readonly nightcore: boolean;
 
+  getChannel(): ContextVoiceChannel | undefined;
   setVolume(value: number): void;
   setNightcore(on: boolean): void;
 

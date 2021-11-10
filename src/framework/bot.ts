@@ -1,15 +1,14 @@
 import { CommandContext, CommandParsingStrategy, SyntaxType } from 'commands/@types';
-import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
 import registerDiscordButtons, { MessageComponent } from 'discord-buttons';
-import { Client, DMChannel, Guild, GuildMember, Intents, Message, Permissions, TextChannel, User } from 'discord.js';
+import { Client, DMChannel, Guild, Intents, Message, TextChannel } from 'discord.js';
 import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
 import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
-import { ButtonRegistry } from './button';
+import { ButtonRegistry, DiscordInteraction } from './button';
 import { DiscordTextChannel } from './channel';
 import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
@@ -17,7 +16,7 @@ import { DiscordMessage } from './message';
 import { GuildQueue } from './queue';
 import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
-import { DiscordUser } from './user';
+import { DiscordUser, getPermissionLevel } from './user';
 
 const enum DiscordEvents {
   READY = 'ready',
@@ -113,15 +112,14 @@ export class DiscordEolianBot implements EolianBot {
     const embedButton = this.registry.getButton(button.message.id, button.id);
     if (embedButton) {
       try {
-        const permission = getPermissionLevel(button.clicker.user, button.clicker.member);
-        const channel = new DiscordTextChannel(<TextChannel | DMChannel>button.channel, this.registry);
-        const message = new DiscordMessage(button.message as Message, channel);
-        const user = new DiscordUser(button.clicker.user, this.db.users, permission, button.clicker.member);
-        const destroy = await embedButton.onClick(message, user, embedButton.emoji);
+        const interaction = new DiscordInteraction(button, this.registry, this.db.users);
+        const destroy = await embedButton.onClick(interaction, embedButton.emoji);
         if (destroy) {
-          this.registry.unregister(message.id);
+          this.registry.unregister(button.message.id);
         }
-        await button.reply.defer(false);
+        if (!interaction.hasReplied) {
+          interaction.defer(false);
+        }
       } catch (e) {
         logger.warn('Unhandled occured executing button event: %s', e);
       }
@@ -303,15 +301,6 @@ export class DiscordEolianBot implements EolianBot {
     return details;
   }
 
-}
-
-function getPermissionLevel(user: User, member?: GuildMember | null): PERMISSION {
-  if (environment.owners.includes(user.id)) {
-    return PERMISSION.OWNER;
-  } else if (member && member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
-    return PERMISSION.ADMIN;
-  }
-  return PERMISSION.USER;
 }
 
 function removeMentions(text: string): string {

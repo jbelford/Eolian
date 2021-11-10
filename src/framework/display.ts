@@ -244,13 +244,18 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   // Tries to ensure that button presses during an operation will be ignored
   private lock(cb: MessageButtonOnClickHandler): MessageButtonOnClickHandler {
-    return async (msg, usr, emoji) => {
+    return async (interaction, emoji) => {
       if (!this.inputLock) {
-        this.inputLock = true;
-        try {
-          return await cb(msg, usr, emoji);
-        } finally {
-          this.inputLock = false;
+        const userVoice = interaction.user.getVoice();
+        if (userVoice && userVoice.id === this.player.getChannel()?.id) {
+          this.inputLock = true;
+          try {
+            return await cb(interaction, emoji);
+          } finally {
+            this.inputLock = false;
+          }
+        } else {
+          await interaction.reply('You are not currently listening! Join my voice channel and try again.', { ephemeral: true });
         }
       }
       return false;

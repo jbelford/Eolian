@@ -74,11 +74,11 @@ export class DiscordTextChannel implements ContextTextChannel {
         }
       });
 
-      const onClick: MessageButtonOnClickHandler = async (msg, user, emoji) => {
+      const onClick: MessageButtonOnClickHandler = async (interaction, emoji) => {
         if (!resolved) {
           resolved = true;
           collector.stop();
-          await msg.delete();
+          await interaction.message.delete();
           resolve(emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1);
         }
         return true;

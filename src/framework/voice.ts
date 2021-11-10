@@ -20,6 +20,10 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
     await this.channel.join();
   }
 
+  hasPeopleListening(): boolean {
+    return !!this.channel.members.find(member => !member.user.bot && !member.voice.deaf);
+  }
+
 }
 
 export class DiscordVoiceConnection implements ContextVoiceConnection {

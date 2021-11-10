@@ -49,6 +49,18 @@ export interface ContextMessage {
   delete(): Promise<void>;
 }
 
+export type ContextInteractionOptions = {
+  ephemeral?: boolean;
+}
+
+export interface ContextInteraction {
+  readonly message: ContextMessage;
+  readonly user: ContextUser;
+  readonly hasReplied: boolean;
+  reply(message: string, options: ContextInteractionOptions): Promise<void>;
+  defer(ephemeral?: boolean): Promise<void>;
+}
+
 export type ContextMessageReaction = {
   emoji: string;
   count: number;
@@ -58,6 +70,7 @@ export interface ContextVoiceChannel {
   readonly id: string;
   readonly joinable: boolean;
   join(): Promise<void>;
+  hasPeopleListening(): boolean;
 }
 
 export interface ContextVoiceConnection {
@@ -122,7 +135,7 @@ export interface EmbedMessageButton {
   onClick: MessageButtonOnClickHandler;
 }
 
-export type MessageButtonOnClickHandler = (message: ContextMessage, user: ContextUser, emoji: string) => Promise<boolean>;
+export type MessageButtonOnClickHandler = (interaction: ContextInteraction, emoji: string) => Promise<boolean>;
 
 export interface Display extends Closable {
   setChannel(channel: ContextTextChannel): void;
