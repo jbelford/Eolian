@@ -242,10 +242,10 @@ export class DiscordEolianBot implements EolianBot {
           author.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
           return;
         }
-        context.client = new DiscordClient(this.client);
+        context.client = new DiscordClient(this.client, this.db.servers);
       } else if (guild) {
         context.server = await this.getGuildState(guild);
-        context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer);
+        context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer, this.db.servers);
       } else {
         throw new Error('Guild is missing from text message');
       }

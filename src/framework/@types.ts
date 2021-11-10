@@ -24,6 +24,7 @@ export interface ContextClient {
   getVoice(): ContextVoiceConnection | undefined;
   generateInvite(): Promise<string>;
   getServers(): ServerInfo[];
+  getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   leave(id: string): Promise<boolean>;
 }
 

@@ -36,6 +36,7 @@ export interface UsersDb extends CollectionDb<UserDTO> {
 }
 
 export interface ServersDb extends CollectionDb<ServerDTO> {
+  getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   setLastUsage(id: string, usageDate: Date): Promise<void>;
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;

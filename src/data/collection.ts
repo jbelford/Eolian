@@ -75,6 +75,22 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
 
+  async getIdleServers(minDate: Date): Promise<ServerDTO[]> {
+    const result = await this.collection.find({ $or: [
+        {
+          lastUsage: {
+            $exists: false
+          }
+        },
+        {
+          lastUsage: {
+            $lte: minDate
+          }
+        }
+      ]}).toArray();
+    return result;
+  }
+
   async setLastUsage(id: string, usageDate: Date): Promise<void> {
     await this.setProperty(id, 'lastUsage', usageDate);
   }

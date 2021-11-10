@@ -5,6 +5,24 @@ import { PERMISSION } from 'common/constants';
 
 const PAGE_LENGTH = 10;
 
+
+async function kickOld(days: number, context: CommandContext) {
+  const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
+  const servers = await context.client.getIdleServers(minDate);
+  if (servers.length === 0) {
+    await context.channel.send('No servers!');
+    return;
+  }
+  await context.channel.send(servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'));
+  const idx = await context.channel.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.user);
+  if (idx === 0) {
+    await Promise.all(servers.map(s => context.client.leave(s._id)));
+    await context.channel.send(`I have left all ${servers.length} servers`);
+  } else {
+    await context.channel.send(`Cancelled kick`);
+  }
+}
+
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   let servers = context.client.getServers().sort((a, b) => b.members - a.members);
 
@@ -33,6 +51,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         const kicked = await context.client.leave(id);
         await context.channel.send(kicked ? `I have left ${id}` : `I don't recognize that guild!`);
         return;
+      }
+      case 'kickOld': {
+        const days = +options.ARG[1];
+        if (!isNaN(days)) {
+          await kickOld(days, context);
+          return;
+        }
       }
       default:
     }

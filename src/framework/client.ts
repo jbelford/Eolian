@@ -1,3 +1,4 @@
+import { ServerDTO, ServersDb } from 'data/@types';
 import { Client, Guild, PermissionResolvable } from 'discord.js';
 import { DiscordPlayer } from 'music';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
@@ -32,7 +33,8 @@ export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
 
 export class DiscordClient implements ContextClient {
 
-  constructor(protected readonly client: Client) {
+  constructor(protected readonly client: Client,
+    private readonly servers: ServersDb) {
   }
 
   get name(): string {
@@ -55,7 +57,12 @@ export class DiscordClient implements ContextClient {
     return this.client.guilds.cache.array().map(mapGuildToServerInfo);
   }
 
+  getIdleServers(minDate: Date): Promise<ServerDTO[]> {
+    return this.servers.getIdleServers(minDate);
+  }
+
   async leave(id: string): Promise<boolean> {
+    await this.servers.delete(id);
     return !!(await this.client.guilds.cache.get(id)?.leave());
   }
 
@@ -64,8 +71,9 @@ export class DiscordClient implements ContextClient {
 export class DiscordGuildClient extends DiscordClient {
 
   constructor(readonly client: Client,
-      private readonly player: DiscordPlayer) {
-    super(client);
+      private readonly player: DiscordPlayer,
+      servers: ServersDb) {
+    super(client, servers);
   }
 
   getVoice(): ContextVoiceConnection | undefined {
