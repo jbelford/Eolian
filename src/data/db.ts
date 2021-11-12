@@ -22,7 +22,7 @@ class MongoDatabase implements AppDatabase {
 }
 
 export async function createDatabase() : Promise<AppDatabase> {
-  const client = new MongoClient(environment.mongo.uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  const client = new MongoClient(environment.mongo.uri);
   try {
     await client.connect();
   } catch (err) {
