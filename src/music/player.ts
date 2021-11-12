@@ -110,7 +110,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.volumeTransform) {
       this.volumeTransform.setVolume(this._volume);
     }
-    this.emitVolume();
+    this.emitUpdate();
   }
 
   setNightcore(on: boolean): void {
@@ -163,6 +163,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.isStreaming && !this.paused) {
       this.lastUsed = Date.now();
       this.dispatcher!.pause(true);
+      this.emitUpdate();
     }
   }
 
@@ -170,6 +171,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.isStreaming && this.paused) {
       this.lastUsed = Date.now();
       this.dispatcher!.resume();
+      this.emitUpdate();
     }
   }
 
@@ -277,8 +279,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.emit('error');
   }
 
-  private emitVolume() {
-    return this.emit('volume');
+  private emitUpdate() {
+    return this.emit('update');
   }
 
   private streamErrorHandler = (err: Error) => {

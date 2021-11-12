@@ -133,7 +133,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   constructor(private readonly player: Player,
       private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
-    this.player.on('volume', this.onVolumeHandler);
+    this.player.on('update', this.onUpdateHandler);
     this.player.on('idle', this.onIdleHandler);
     this.player.on('done', this.onEndHandler);
     this.player.on('error', this.onErrorHandler);
@@ -144,7 +144,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   async close(): Promise<void> {
     this.player.removeListener('next', this.onNextHandler);
-    this.player.removeListener('volume', this.onVolumeHandler);
+    this.player.removeListener('update', this.onUpdateHandler);
     this.player.removeListener('idle', this.onIdleHandler);
     this.player.removeListener('done', this.onEndHandler);
     this.player.removeListener('error', this.onErrorHandler);
@@ -190,7 +190,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       embed.buttons = [
         { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev) },
         { emoji: '⏪', onClick: this.backHandler, disabled: !prev },
-        { emoji: '⏯', onClick: this.onPauseResumeHandler },
+        { emoji: this.player.paused ? '▶️' : '⏸️', onClick: this.onPauseResumeHandler },
         { emoji: '⏩', onClick: this.skipHandler },
         { emoji: '⏹', onClick: this.stopHandler },
       ];
@@ -208,10 +208,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onIdleHandler = () => this.removeIdle();
 
-  private onVolumeHandler = async () => {
+  private onUpdateHandler = async () => {
     if (this.message && this.track) {
-      const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
-      await this.message.editEmbed(embed);
+      await this.updateMessage(true);
     }
   };
 
