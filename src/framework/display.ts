@@ -189,8 +189,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       embed.buttons = [
         { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev) },
-        { emoji: '⏯', onClick: this.onPauseResumeHandler },
         { emoji: '⏪', onClick: this.backHandler, disabled: !prev },
+        { emoji: '⏯', onClick: this.onPauseResumeHandler },
         { emoji: '⏩', onClick: this.skipHandler },
         { emoji: '⏹', onClick: this.stopHandler },
       ];
