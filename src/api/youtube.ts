@@ -6,8 +6,8 @@ import { MemoryCache } from 'data/@types';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
 import { parse, toSeconds } from 'iso8601-duration';
-import { Readable } from 'node:stream';
 import querystring from 'querystring';
+import { Readable } from 'stream';
 import ytdl from 'ytdl-core';
 import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
