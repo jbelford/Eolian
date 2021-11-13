@@ -1,5 +1,5 @@
 import * as fuzz from 'fuzzball';
-import { AbsRangeArgument, RangeArgument } from './@types';
+import { AbsRangeArgument, RangeArgument, RetrySleepAlgorithm } from './@types';
 
 export function shuffleList<T>(list: T[]): T[] {
   for (let i = 0; i < list.length; i++) {
@@ -49,3 +49,28 @@ export function fuzzyMatch(query: string, list: string[]): Promise<{choice: stri
 }
 
 export const noop = (): void => { /* Do nothing */ };
+
+export class ExponentialSleep implements RetrySleepAlgorithm {
+
+  private _count = 0;
+
+  constructor(private readonly initial = 1000, private readonly multiplier = 2) {
+    if (initial <= 0 || multiplier <= 0) {
+      throw new Error('Bad arguments provided!');
+    }
+  }
+
+  get count() {
+    return this._count;
+  }
+
+  reset() {
+    this._count = 0;
+  }
+
+  async sleep(): Promise<void> {
+    await sleep(this.initial * this.multiplier ** this.count);
+    ++this._count;
+  }
+
+}

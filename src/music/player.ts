@@ -29,6 +29,7 @@ export class DiscordVoiceConnectionProvider {
 
 const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
+const PLAYER_RETRIES = 2;
 
 /**
  *
@@ -181,10 +182,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.songStream = null;
       const nextTrack = await this.queue.peek();
       if (nextTrack) {
-        this.songStream = new SongStream(nextTrack, this.nightcore);
+        this.songStream = new SongStream(nextTrack, this.nightcore, PLAYER_RETRIES);
         this.songStream.once('error', this.streamErrorHandler);
         this.songStream.on('retry', this.onRetryHandler);
-        return await this.songStream.getStream();
+        return await this.songStream.createStream();
       }
     } catch (e) {
       logger.warn('Error occured getting next stream: %s', e);

@@ -1,7 +1,9 @@
 import { getTrackStream } from 'api';
 import { StreamSource, Track } from 'api/@types';
+import { RetrySleepAlgorithm } from 'common/@types';
 import { logger } from 'common/logger';
 import { RequestErrorCodes, RequestStreamError } from 'common/request';
+import { ExponentialSleep } from 'common/util';
 import EventEmitter from 'events';
 import prism from 'prism-media';
 import { Duplex, PassThrough, Readable } from 'stream';
@@ -16,7 +18,7 @@ export class SongStream extends EventEmitter {
   private output = new PassThrough();
   private source?: StreamSource;
   private startTime = 0;
-  private attempts = 0;
+  private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
 
   constructor(private readonly track: Track,
       private readonly nightcore: boolean,
@@ -28,8 +30,8 @@ export class SongStream extends EventEmitter {
     return this.output;
   }
 
-  async getStream(): Promise<Readable> {
-    this.attempts = 0;
+  async createStream(): Promise<Readable> {
+    this.sleepAlg.reset();
     this.startTime = Date.now();
     const stream = await this.createSongStream();
     return stream.pipe(this.output);
@@ -80,14 +82,13 @@ export class SongStream extends EventEmitter {
     if (err.code === RequestErrorCodes.ABORTED) {
       return;
     }
-    if (this.attempts < this.retries) {
+    if (this.sleepAlg.count < this.retries) {
       logger.warn('Retry after song stream error: %s', err);
       this.pcmTransform?.unpipe(this.output);
       this.pcmTransform?.destroy();
       this.songStream?.destroy();
       this.pcmTransform = undefined;
       this.songStream = undefined;
-      this.attempts++;
       this.retryStream();
       this.emit('retry');
     } else {
@@ -97,6 +98,7 @@ export class SongStream extends EventEmitter {
 
   private async retryStream(): Promise<void> {
     try {
+      await this.sleepAlg.sleep();
       const stream = await this.createSongStream();
       if (!stream) {
         throw new Error('PCM Transform is missing!');

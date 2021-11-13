@@ -57,3 +57,9 @@ export interface ProgressUpdater {
   update(value: number): void;
   done(): Promise<void>;
 }
+
+export interface RetrySleepAlgorithm {
+  readonly count: number;
+  reset(): void;
+  sleep(): Promise<void>;
+}
