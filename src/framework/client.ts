@@ -50,7 +50,7 @@ export class DiscordClient implements ContextClient {
   }
 
   generateInvite(): Promise<string> {
-    return this.client.generateInvite(DISCORD_INVITE_PERMISSIONS);
+    return this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS });
   }
 
   getServers(): ServerInfo[] {
