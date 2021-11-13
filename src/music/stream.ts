@@ -83,7 +83,7 @@ export class SongStream extends EventEmitter {
       return;
     }
     if (this.sleepAlg.count < this.retries) {
-      logger.warn('Retry after song stream error: %s', err);
+      logger.warn('Retry after song stream error: %s', err.message);
       this.pcmTransform?.unpipe(this.output);
       this.pcmTransform?.destroy();
       this.songStream?.destroy();
