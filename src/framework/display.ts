@@ -237,7 +237,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onRetryHandler = async () => {
     if (this.track) {
-      await this.channel?.send('Whoops! Something bad happened. Retrying.. this song may restart 😅');
+      await this.channel?.send('Error occured while streaming. Retrying...');
     }
   };
 
