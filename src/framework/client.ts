@@ -61,6 +61,12 @@ export class DiscordClient implements ContextClient {
     return this.servers.getIdleServers(minDate);
   }
 
+  async getUnusedServers(): Promise<ServerInfo[]> {
+    const guilds = this.client.guilds.cache.array();
+    const servers = await Promise.all(guilds.map(server => this.servers.get(server.id)));
+    return servers.map((s, i) => s ? undefined : guilds[i]).filter(s => !!s).map(g => mapGuildToServerInfo(g!));
+  }
+
   async leave(id: string): Promise<boolean> {
     await this.servers.delete(id);
     return !!(await this.client.guilds.cache.get(id)?.leave());

@@ -5,6 +5,21 @@ import { PERMISSION } from 'common/constants';
 
 const PAGE_LENGTH = 10;
 
+async function kickUnused(context: CommandContext) {
+  const servers = await context.client.getUnusedServers();
+  if (servers.length === 0) {
+    await context.channel.send('No servers!');
+    return;
+  }
+  await context.channel.send(servers.map((s, i) => `${i}. ${s.id}`).join('\n'));
+  const idx = await context.channel.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.user);
+  if (idx === 0) {
+    await Promise.all(servers.map(s => context.client.leave(s.id)));
+    await context.channel.send(`I have left all ${servers.length} servers`);
+  } else {
+    await context.channel.send(`Cancelled kick`);
+  }
+}
 
 async function kickOld(days: number, context: CommandContext) {
   const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
@@ -35,7 +50,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     start = Math.max(0, servers.length - PAGE_LENGTH);
   }
 
-  if (options.ARG && options.ARG.length > 1) {
+  if (options.ARG && options.ARG.length > 0) {
     switch (options.ARG[0]) {
       case 'sort': {
         const prop = options.ARG[1];
@@ -58,6 +73,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
           await kickOld(days, context);
           return;
         }
+      }
+      case 'kickUnused': {
+        await kickUnused(context);
+        return;
       }
       default:
     }

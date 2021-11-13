@@ -25,6 +25,7 @@ export interface ContextClient {
   generateInvite(): Promise<string>;
   getServers(): ServerInfo[];
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
+  getUnusedServers(): Promise<ServerInfo[]>;
   leave(id: string): Promise<boolean>;
 }
 
