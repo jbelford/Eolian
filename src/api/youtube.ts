@@ -5,7 +5,6 @@ import { InMemoryLRUCache } from 'data';
 import { MemoryCache } from 'data/@types';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
-import { parse, toSeconds } from 'iso8601-duration';
 import querystring from 'querystring';
 import { Readable } from 'stream';
 import ytdl from 'ytdl-core';
@@ -24,7 +23,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   private readonly cache: MemoryCache<{ url: string, live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, private readonly cookie: string, cacheSize: number, private readonly bing: BingApi, private readonly identityToken?: string) {
+  constructor(token: string, private readonly cookie: string, cacheSize: number, private readonly bing?: BingApi, private readonly identityToken?: string) {
     this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
@@ -156,37 +155,6 @@ export class YouTubeApiImpl implements YouTubeApi {
     return [];
   }
 
-  async searchBing(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]> {
-    const query = `${artist} ${name}`;
-    const videos = await this.bing.searchVideos(query, 'YouTube', 15);
-    if (videos.length) {
-      const sorted = await fuzzyMatch(query, videos.map(video => `${video.creator.name} ${video.name}`));
-      if (duration) {
-        sorted.sort((a, b) => {
-          if (Math.abs(a.score - b.score) > 2) {
-            return b.score - a.score;
-          }
-          const durationA = toSeconds(parse(videos[a.key].duration)) * 1000;
-          const durationB = toSeconds(parse(videos[b.key].duration)) * 1000;
-          return Math.abs(durationA - duration) - Math.abs(durationB - duration);
-        });
-      }
-      return sorted.map(scored => ({ ...videos[scored.key], score: scored.score }))
-        .map(video => ({
-            id: video.id,
-            poster: video.creator.name,
-            src: SOURCE.YOUTUBE,
-            url: video.contentUrl,
-            title: video.name,
-            stream: video.contentUrl,
-            score: video.score
-        }));
-    } else {
-      logger.warn(`Failed to fetch YouTube track for query: %s`, query);
-    }
-    return [];
-  }
-
   private async searchSongSorted(track: Track): Promise<Track & { score: number } | undefined> {
     const videos = await this.searchSong(track.title, track.poster);
     if (videos.length > 0) {
@@ -200,20 +168,25 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async searchStreamVideo(track: Track): Promise<Track | undefined> {
-    let tracks: Array<Track & { score: number}>;
-    try {
-      tracks = await this.searchBing(track.title, track.poster, track.duration);
-      if (tracks.length === 0) {
-        return undefined;
+    let video: (Track & { score: number}) | undefined;
+    if (this.bing) {
+      let tracks: Array<Track & { score: number}>;
+      try {
+        tracks = await this.bing.searchYoutubeSong(track.title, track.poster, track.duration);
+        if (tracks.length === 0) {
+          return undefined;
+        }
+      } catch (e) {
+        return await this.searchSongSorted(track);
       }
-    } catch (e) {
-      return await this.searchSongSorted(track);
-    }
-    let video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-    logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
-    // Fallback on YouTube we get bad results
-    if (video.score! < SEARCH_MIN_SCORE) {
-      video = await this.searchSongSorted(track) ?? video;
+      video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
+      logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+      // Fallback on YouTube we get bad results
+      if (video.score! < SEARCH_MIN_SCORE) {
+        video = await this.searchSongSorted(track) ?? video;
+      }
+    } else {
+      video = await this.searchSongSorted(track);
     }
     return video;
   }

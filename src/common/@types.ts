@@ -19,7 +19,7 @@ export interface AppEnv {
       main: string;
       old?: string;
     };
-    bing: {
+    bing?: {
       key: string;
       configId: string;
     };

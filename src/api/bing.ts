@@ -1,6 +1,9 @@
+import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
-import { BingApi, BingVideo } from './@types';
+import { fuzzyMatch } from 'common/util';
+import { parse, toSeconds } from 'iso8601-duration';
+import { BingApi, BingVideo, Track } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
@@ -23,6 +26,37 @@ export class BingApiImpl implements BingApi {
       logger.warn('Failed to search Bing videos: %s\n%s', query, e);
       throw e;
     }
+  }
+
+  async searchYoutubeSong(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]> {
+    const query = `${artist} ${name}`;
+    const videos = await this.searchVideos(query, 'YouTube', 15);
+    if (videos.length) {
+      const sorted = await fuzzyMatch(query, videos.map(video => `${video.creator.name} ${video.name}`));
+      if (duration) {
+        sorted.sort((a, b) => {
+          if (Math.abs(a.score - b.score) > 2) {
+            return b.score - a.score;
+          }
+          const durationA = toSeconds(parse(videos[a.key].duration)) * 1000;
+          const durationB = toSeconds(parse(videos[b.key].duration)) * 1000;
+          return Math.abs(durationA - duration) - Math.abs(durationB - duration);
+        });
+      }
+      return sorted.map(scored => ({ ...videos[scored.key], score: scored.score }))
+        .map(video => ({
+            id: video.id,
+            poster: video.creator.name,
+            src: SOURCE.YOUTUBE,
+            url: video.contentUrl,
+            title: video.name,
+            stream: video.contentUrl,
+            score: video.score
+        }));
+    } else {
+      logger.warn(`Failed to fetch YouTube track for query: %s`, query);
+    }
+    return [];
   }
 
   private async get<T>(path: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {

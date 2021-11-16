@@ -31,6 +31,15 @@ function getArrayEnv(name: string): string[] {
   return getEnv(name, '').split(',').map(s => s.trim());
 }
 
+function getBing() {
+  const key = getEnvOpt('BING_TOKEN');
+  const configId = getEnvOpt('BING_CONFIG_ID');
+  if (!key || !configId) {
+    return undefined;
+  }
+  return { key, configId };
+}
+
 export const environment: AppEnv = {
   prod: getEnv('PROD') === 'true',
   debug: getEnv('DEBUG_ENABLED') === 'true',
@@ -43,10 +52,7 @@ export const environment: AppEnv = {
       main: getEnv('DISCORD_TOKEN'),
       old: getEnvOpt('DISCORD_TOKEN_OLD'),
     },
-    bing: {
-      key: getEnv('BING_TOKEN'),
-      configId: getEnv('BING_CONFIG_ID'),
-    },
+    bing: getBing(),
     youtube: {
       token: getEnv('YOUTUBE_TOKEN'),
       identityToken: getEnvOpt('YOUTUBE_IDENTITY_TOKEN'),

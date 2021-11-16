@@ -240,6 +240,7 @@ export interface StreamSource {
 
 export interface BingApi {
   searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;
+  searchYoutubeSong(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]>;
 }
 
 export interface BingVideoPublisher {

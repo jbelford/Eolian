@@ -6,7 +6,10 @@ import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';
 
-const bing: BingApi = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
+let bing: BingApi | undefined;
+if (environment.tokens.bing) {
+  bing = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
+}
 export const youtube: YouTubeApi = new YouTubeApiImpl(environment.tokens.youtube.token, environment.tokens.youtube.cookie, environment.youtubeCacheLimit, bing, environment.tokens.youtube.identityToken);
 export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(environment.tokens.soundcloud.clientId, environment.tokens.soundcloud.clientSecret, youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify.clientId, environment.tokens.spotify.clientSecret, youtube);
