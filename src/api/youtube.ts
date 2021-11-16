@@ -24,7 +24,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   private readonly cache: MemoryCache<{ url: string, live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, private readonly cookie: string, cacheSize: number, private readonly bing: BingApi) {
+  constructor(token: string, private readonly cookie: string, cacheSize: number, private readonly bing: BingApi, private readonly identityToken?: string) {
     this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
@@ -228,14 +228,14 @@ export class YouTubeApiImpl implements YouTubeApi {
         this.cache.set(cacheId, result);
       }
     }
-    return result ? new YouTubeStreamSource(result.url, result.live, this.cookie) : undefined;
+    return result ? new YouTubeStreamSource(result.url, result.live, this.cookie, this.identityToken) : undefined;
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
-    return new YouTubeStreamSource(track.url, !!track.live, this.cookie);
+    return new YouTubeStreamSource(track.url, !!track.live, this.cookie, this.identityToken);
   }
 
 }
@@ -283,7 +283,8 @@ class YouTubeStreamSource implements StreamSource {
   constructor(
     private readonly url: string,
     private readonly isLive: boolean,
-    private readonly cookie: string) {
+    private readonly cookie: string,
+    private readonly identityToken?: string) {
   }
 
   async get(seek?: number): Promise<Readable> {
@@ -297,6 +298,10 @@ class YouTubeStreamSource implements StreamSource {
         }
       }
     };
+    if (this.identityToken) {
+      // @ts-ignore
+      options.requestOptions!.headers!['x-youtube-identity-token'] = this.identityToken;
+    }
     // Live stream content we can't fetch 'audioonly'
     if (!this.isLive) {
       options.filter = 'audioonly';

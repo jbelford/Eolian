@@ -25,6 +25,7 @@ export interface AppEnv {
     };
     youtube: {
       token: string;
+      identityToken?: string;
       cookie: string;
     };
     soundcloud: {
