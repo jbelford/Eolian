@@ -1,0 +1,12 @@
+.github/
+.vscode
+dist
+node_modules
+pics
+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
