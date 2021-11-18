@@ -41,7 +41,7 @@ function getBing() {
 }
 
 export const environment: AppEnv = {
-  prod: getEnv('PROD') === 'true',
+  prod: getEnv('NODE_ENV') === 'production',
   debug: getEnv('DEBUG_ENABLED') === 'true',
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
