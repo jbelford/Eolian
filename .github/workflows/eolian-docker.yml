@@ -1,0 +1,21 @@
+name: Azure App Service - Build & Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: azure/docker-login@v1
+      with:
+        login-server: eoliancontainerregistry.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - run: |
+      docker build . -t eoliancontainerregistry.azurecr.io/eolian:master
+      docker push eoliancontainerregistry.azurecr.io/eolian:master
