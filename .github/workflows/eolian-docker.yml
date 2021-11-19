@@ -17,5 +17,5 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
     - run: |
-      docker build . -t eoliancontainerregistry.azurecr.io/eolian:master
-      docker push eoliancontainerregistry.azurecr.io/eolian:master
+        docker build . -t eoliancontainerregistry.azurecr.io/eolian:master
+        docker push eoliancontainerregistry.azurecr.io/eolian:master
