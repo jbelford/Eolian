@@ -19,3 +19,10 @@ jobs:
     - run: |
         docker build . -t eoliancontainerregistry.azurecr.io/eolian:master
         docker push eoliancontainerregistry.azurecr.io/eolian:master
+
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eolian-container-webapp'
+        publish-profile: ${{ secrets.AZURE_APP_PUBLISH_PROFILE_CONTAINER }}
+        images: 'eoliancontainerregistry.azurecr.io/eolian:master'
+
