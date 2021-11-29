@@ -1,6 +1,6 @@
 # Eolian / ShuffleBot2
 
-![Deployment](https://github.com/jbelford/Eolian/actions/workflows/master_eolian-webapp.yml/badge.svg)
+![Deployment](https://github.com/jbelford/Eolian/actions/workflows/eolian-docker.yml/badge.svg)
 
 Eolian is a Discord music bot that aims to be easy to use and provide a very powerful API for queuing songs from a variety of sources such as entire albums, playlists, artist discography, and more.
 
