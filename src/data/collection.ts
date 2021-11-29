@@ -1,5 +1,5 @@
 import { SyntaxType } from 'commands/@types';
-import { Collection } from 'mongodb';
+import { Collection, Filter, UpdateFilter } from 'mongodb';
 import { CollectionDb, Identifier, ServerDTO, ServersDb, UserDTO, UsersDb } from './@types';
 
 interface MongoDoc {
@@ -12,23 +12,20 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   }
 
   async get(id: string): Promise<T | null> {
-    // @ts-ignore Typescript is stupid
-    return await this.collection.findOne({ _id: id });
+    return await this.collection.findOne({ _id: id } as Filter<T>);
   }
 
   async delete(id: string): Promise<boolean> {
-    // @ts-ignore Typescript is stupid
-    const result = await this.collection.deleteOne({ _id: id });
+    const result = await this.collection.deleteOne({ _id: id } as Filter<T>);
     return !!result.deletedCount;
   }
 
-  protected async setProperty<T>(id: string, key: string, value: T): Promise<void> {
+  protected async setProperty<V>(id: string, key: string, value: V): Promise<void> {
     const set: any = {};
     set[key] = value;
     await this.collection.updateOne(
-      // @ts-ignore
-      { _id: id },
-      { $set: set, $setOnInsert: { _id: id } },
+      { _id: id } as Filter<T>,
+      { $set: set, $setOnInsert: { _id: id } } as UpdateFilter<T>,
       { upsert: true });
   }
 
@@ -36,8 +33,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     const unset: any = {};
     unset[key] = true;
     const result = await this.collection.updateOne(
-      // @ts-ignore
-      { _id: id },
+      { _id: id } as Filter<T>,
       { $unset: unset });
     return result.modifiedCount > 0;
   }
