@@ -85,7 +85,3 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 ## 🚀 Performance Improvements
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
-
-# 🚧 Tutorial / How to Use
-
-Tutorial on how to use will be added to the Wiki and is currently under construction
