@@ -1,7 +1,6 @@
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
-import { MessageComponent } from 'discord-buttons';
-import { DMChannel, Message, TextChannel } from 'discord.js';
+import { ButtonInteraction, DMChannel, GuildMember, Message, TextChannel } from 'discord.js';
 import { ContextInteraction, ContextInteractionOptions, ContextMessage, ContextUser, EmbedMessageButton } from './@types';
 import { DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
@@ -29,14 +28,12 @@ export class ButtonRegistry {
 
 }
 
-const EPHEMERAL_FLAG = 1 << 6;
-
 export class DiscordInteraction implements ContextInteraction {
 
   private _message?: ContextMessage;
   private _user?: ContextUser;
 
-  constructor(private readonly button: MessageComponent,
+  constructor(private readonly button: ButtonInteraction,
     private readonly registry: ButtonRegistry,
     private readonly users: UsersDb) {
   }
@@ -51,27 +48,27 @@ export class DiscordInteraction implements ContextInteraction {
 
   get user(): ContextUser {
     if (!this._user) {
-      const permission = getPermissionLevel(this.button.clicker.user, this.button.clicker.member);
-      this._user = new DiscordUser(this.button.clicker.user, this.users, permission, this.button.clicker.member);
+      this.button.memberPermissions
+      const permission = getPermissionLevel(this.button.user, this.button.memberPermissions);
+      if (typeof this.button.member.permissions !== 'string') {
+        this._user = new DiscordUser(this.button.user, this.users, permission, this.button.member as GuildMember);
+      } else {
+        this._user = new DiscordUser(this.button.user, this.users, permission);
+      }
     }
     return this._user;
   }
 
   get hasReplied(): boolean {
-    return this.button.reply.has;
+    return this.button.replied;
   }
 
   async reply(message: string, options?: ContextInteractionOptions): Promise<void> {
-    const data = { content: message };
-    if (options?.ephemeral) {
-      // @ts-ignore
-      data.flags = EPHEMERAL_FLAG;
-    }
-    await this.button.reply.send(data);
+    await this.button.reply({ content: message, ephemeral: options?.ephemeral });
   }
 
   async defer(ephemeral?: boolean): Promise<void> {
-    await this.button.reply.defer(!!ephemeral);
+    await this.button.deferReply({ ephemeral });
   }
 
 }

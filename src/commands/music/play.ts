@@ -73,13 +73,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (voice) {
-    if (!voice.player.isStreaming) {
+    if (!context.server!.player.isStreaming) {
       context.server!.display.player.setChannel(context.channel);
       reactionChain = reactionChain.then(() => context.message.react('🎵'));
-      await voice.player.play();
+      await context.server!.player.play();
     } else if (added) {
       reactionChain = reactionChain.then(() => context.message.react('👌'));
-      await voice.player.skip();
+      await context.server!.player.skip();
     }
   }
 

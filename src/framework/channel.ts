@@ -1,6 +1,5 @@
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
-import { BaseMessageComponent } from 'discord-buttons';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
@@ -16,12 +15,12 @@ export class DiscordTextChannel implements ContextTextChannel {
     private readonly registry: ButtonRegistry) { }
 
   get lastMessageId(): string | undefined {
-    return this.channel.lastMessageID || undefined;
+    return this.channel.lastMessageId || undefined;
   }
 
   get sendable(): boolean {
     let value = !this.channel.deleted;
-    if (this.channel.type === 'text') {
+    if (this.channel.type === 'GUILD_TEXT') {
       const permissions = (this.channel as TextChannel).permissionsFor(this.channel.guild.me!);
       value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS);
     }
@@ -97,13 +96,17 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   private awaitUserSelection(userId: string, count: number, cb: (message: Message | undefined) => void): MessageCollector {
-    const collector = this.channel.createMessageCollector((message: Message) => {
-      if (message.author.id !== userId) {
-        return false;
-      }
-      const idx = +message.content;
-      return !isNaN(idx) && idx >= 0 && idx <= count;
-    }, { max: 1, time: 60000 });
+    const collector = this.channel.createMessageCollector({
+      filter(message: Message) {
+        if (message.author.id !== userId) {
+          return false;
+        }
+        const idx = +message.content;
+        return !isNaN(idx) && idx >= 0 && idx <= count;
+      },
+      max: 1,
+      time: 60000
+    });
 
     collector.once('end', (collected) => {
       cb(collected.first());
@@ -117,7 +120,7 @@ export class DiscordTextChannel implements ContextTextChannel {
       try {
         const rich = mapDiscordEmbed(embed);
 
-        const messageOptions: MessageOptions & { components?: BaseMessageComponent[] } = { embed: rich };
+        const messageOptions: MessageOptions = { embeds: [rich] };
 
         let buttonMapping: DiscordButtonMapping | undefined;
         if (embed.buttons) {

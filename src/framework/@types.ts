@@ -22,7 +22,7 @@ export interface ContextClient {
   readonly name: string;
   readonly pic?: string;
   getVoice(): ContextVoiceConnection | undefined;
-  generateInvite(): Promise<string>;
+  generateInvite(): string;
   getServers(): ServerInfo[];
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   getUnusedServers(): Promise<ServerInfo[]>;
@@ -77,7 +77,8 @@ export interface ContextVoiceChannel {
 
 export interface ContextVoiceConnection {
   readonly channelId: string;
-  readonly player: Player;
+  getChannel(): ContextVoiceChannel;
+  onDisconnect(cb: () => void): void;
   disconnect(): Promise<void>;
 }
 

@@ -1,5 +1,6 @@
-import { VoiceChannel, VoiceConnection } from 'discord.js';
-import { Player } from 'music/@types';
+import { AudioPlayer, joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+import { logger } from 'common/logger';
+import { Client, VoiceChannel } from 'discord.js';
 import { ContextVoiceChannel, ContextVoiceConnection } from './@types';
 
 
@@ -17,7 +18,11 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
   }
 
   async join(): Promise<void> {
-    await this.channel.join();
+    joinVoiceChannel({
+      channelId: this.channel.id,
+      guildId: this.channel.guild.id,
+      adapterCreator: this.channel.guild.voiceAdapterCreator
+    });
   }
 
   hasPeopleListening(): boolean {
@@ -28,15 +33,35 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
 
 export class DiscordVoiceConnection implements ContextVoiceConnection {
 
-  constructor(private readonly connection: VoiceConnection, readonly player: Player) {
+  constructor(
+    private readonly client: Client,
+    private readonly connection: VoiceConnection) {
   }
 
   get channelId(): string {
-    return this.connection.channel.id;
+    return this.connection.joinConfig.channelId!;
+  }
+
+  getChannel(): ContextVoiceChannel {
+    const channel = this.client.channels.cache.get(this.channelId);
+    if (channel?.type !== 'GUILD_VOICE') {
+      logger.warn('Guild channel received is not voice. Type: %s Id: %s', channel?.type, this.channelId);
+    }
+    return new DiscordVoiceChannel(channel as VoiceChannel);
+  }
+
+  onDisconnect(cb: () => void): void {
+    this.connection.on(VoiceConnectionStatus.Disconnected, cb);
+  }
+
+  subscribe(player: AudioPlayer): boolean {
+    return !!this.connection.subscribe(player);
   }
 
   async disconnect(): Promise<void> {
-    this.connection.disconnect();
+    this.connection.destroy();
   }
 
 }
+
+

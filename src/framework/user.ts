@@ -12,7 +12,7 @@ export class DiscordUser implements ContextUser {
   constructor(private readonly user: User,
       private readonly users: UsersDb,
       readonly permission: PERMISSION,
-      private readonly guildUser?: GuildMember | null) {}
+      private readonly guildUser?: GuildMember) {}
 
   get id(): string {
     return this.user.id;
@@ -29,7 +29,7 @@ export class DiscordUser implements ContextUser {
   getVoice(): ContextVoiceChannel | undefined {
     if (this.guildUser) {
       const voiceChannel = this.guildUser.voice.channel;
-      if (voiceChannel) {
+      if (voiceChannel?.type === 'GUILD_VOICE') {
         return new DiscordVoiceChannel(voiceChannel);
       }
     }
@@ -89,10 +89,10 @@ export class DiscordUser implements ContextUser {
 
 }
 
-export function getPermissionLevel(user: User, member?: GuildMember | null): PERMISSION {
+export function getPermissionLevel(user: User, memberPermissions?: Readonly<Permissions> | null): PERMISSION {
   if (environment.owners.includes(user.id)) {
     return PERMISSION.OWNER;
-  } else if (member && member.roles.cache.some(role => role.permissions.has(Permissions.FLAGS.ADMINISTRATOR))) {
+  } else if (memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
     return PERMISSION.ADMIN;
   }
   return PERMISSION.USER;
