@@ -1,5 +1,6 @@
 import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior, StreamType } from '@discordjs/voice';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
 import EventEmitter from 'events';
@@ -127,18 +128,18 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
       this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
-      const resource = createAudioResource(input, {
-        inputType: StreamType.Opus,
-        inlineVolume: false,
-      });
       this.audioPlayer = createAudioPlayer({
+        debug: environment.debug,
         behaviors: {
-          noSubscriber: NoSubscriberBehavior.Pause
+          noSubscriber: NoSubscriberBehavior.Pause,
         }
       });
-
-      this.audioPlayer.play(resource);
       this.audioPlayer.once('error', this.streamErrorHandler);
+      if (environment.debug) {
+        this.audioPlayer.on('debug', message => {
+          logger.debug(message)
+        });
+      }
       this.audioPlayer.on(AudioPlayerStatus.Playing, () => {
         this._paused = false;
       });
@@ -148,6 +149,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.audioPlayer.once(AudioPlayerStatus.Idle, () => {
         this.stop()
       });
+
+      const resource = createAudioResource(input, {
+        inputType: StreamType.Opus,
+        inlineVolume: false,
+        silencePaddingFrames: 50
+      });
+
+      this.audioPlayer.play(resource);
 
       if (!connection.subscribe(this.audioPlayer)) {
         throw new Error('Failed to subscribe!');
@@ -207,9 +216,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private async startNewStream(): Promise<Readable> {
     if (!this.inputStream) {
-      this.inputStream = new PassThrough()
+      this.inputStream = new PassThrough({ highWaterMark: 12, objectMode: true })
         .once('error', this.streamErrorHandler)
-        .once('close', () => logger.debug('Passthrough input closed'))
+        .once('close', () => logger.debug('Passthrough input closed'));
     } else if (this.opusStream) {
       this.opusStream.unpipe(this.inputStream);
     } else {
