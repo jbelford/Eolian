@@ -127,7 +127,7 @@ export class DiscordEolianBot implements EolianBot {
             this.registry.unregister(interaction.message.id);
           }
           if (!contextInteraction.hasReplied) {
-            await interaction.reply({});
+            await interaction.deferUpdate();
           }
         } catch (e) {
           logger.warn('Unhandled occured executing button event: %s', e);

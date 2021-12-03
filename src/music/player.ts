@@ -1,4 +1,4 @@
-import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior, StreamType } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior, StreamType, VoiceConnectionStatus } from '@discordjs/voice';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
@@ -34,8 +34,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private volumeTransform: VolumeTransformer | null = null;
   private opusStream: Transform | null = null;
   private inputStream: PassThrough | null = null;
-  private audioPlayer: AudioPlayer | null = null;
 
+  private _audioPlayer: AudioPlayer | null = null;
   private _isStreaming = false;
   private _nightcore = false;
   private _paused = false;
@@ -47,21 +47,56 @@ export class DiscordPlayer extends EventEmitter implements Player {
     super();
   }
 
-  private cleanup = () => {
+  private get audioPlayer(): AudioPlayer {
+    if (!this._audioPlayer) {
+      this._audioPlayer = createAudioPlayer({
+        debug: environment.debug,
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Pause,
+        }
+      });
+      this._audioPlayer.once('error', this.streamErrorHandler);
+      if (environment.debug) {
+        this.audioPlayer.on('debug', message => {
+          logger.debug(message)
+        });
+        this.audioPlayer.on(AudioPlayerStatus.Buffering, () => {
+          logger.debug('Audio player is buffering');
+        });
+      }
+      this._audioPlayer.on(AudioPlayerStatus.Playing, () => {
+        logger.debug('Audio player is playing');
+        this._paused = false;
+      });
+      this._audioPlayer.on(AudioPlayerStatus.Paused, () => {
+        logger.debug('Audio player is paused');
+        this._paused = true;
+      });
+      this.audioPlayer.once(AudioPlayerStatus.Idle, () => {
+        logger.debug('Audio player is idle');
+        this.stop();
+      });
+    }
+    return this._audioPlayer;
+  }
+
+  private cleanup = (connection = this.client.getVoice() as DiscordVoiceConnection | undefined) => {
     if (this.timeoutCheck) {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
+    }
+    if (connection) {
+      connection.discordConnection.removeListener(VoiceConnectionStatus.Disconnected, this.onDisconnectHandler);
+      connection.close();
     }
     this.songStream?.cleanup();
     this.volumeTransform?.destroy();
     this.opusStream?.destroy();
     this.audioPlayer?.stop();
-    this.client.getVoice()?.disconnect();
     this.inputStream = null;
     this.songStream = null;
     this.volumeTransform = null;
     this.opusStream = null;
-    this.audioPlayer = null;
     this._isStreaming = false;
     this._paused = false;
     this.emitDone();
@@ -94,6 +129,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async close(): Promise<void> {
     this.stop();
+    this._audioPlayer = null;
   }
 
   setVolume(value: number): void {
@@ -113,6 +149,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.isStreaming) {
       return;
     }
+
     this._isStreaming = true;
 
     try {
@@ -120,40 +157,15 @@ export class DiscordPlayer extends EventEmitter implements Player {
       if (!connection) {
         throw new Error('No voice connection!');
       }
-      connection.onDisconnect(() => {
-        this.cleanup();
-      });
+      connection.discordConnection.on(VoiceConnectionStatus.Disconnected, this.onDisconnectHandler);
 
       const input = await this.startNewStream();
 
       this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
-      this.audioPlayer = createAudioPlayer({
-        debug: environment.debug,
-        behaviors: {
-          noSubscriber: NoSubscriberBehavior.Pause,
-        }
-      });
-      this.audioPlayer.once('error', this.streamErrorHandler);
-      if (environment.debug) {
-        this.audioPlayer.on('debug', message => {
-          logger.debug(message)
-        });
-      }
-      this.audioPlayer.on(AudioPlayerStatus.Playing, () => {
-        this._paused = false;
-      });
-      this.audioPlayer.on(AudioPlayerStatus.Paused, () => {
-        this._paused = true;
-      });
-      this.audioPlayer.once(AudioPlayerStatus.Idle, () => {
-        this.stop()
-      });
-
       const resource = createAudioResource(input, {
         inputType: StreamType.Opus,
-        inlineVolume: false,
-        silencePaddingFrames: 50
+        inlineVolume: false
       });
 
       this.audioPlayer.play(resource);
@@ -176,6 +188,16 @@ export class DiscordPlayer extends EventEmitter implements Player {
       }
     }
   }
+
+  private onDisconnectHandler = async () => {
+    const connection = this.client.getVoice() as DiscordVoiceConnection | undefined;
+    if (connection) {
+      const reconnected = await connection.awaitReconnect();
+      if (!reconnected) {
+        this.cleanup(connection);
+      }
+    }
+  };
 
   stop(): void {
     this.cleanup();

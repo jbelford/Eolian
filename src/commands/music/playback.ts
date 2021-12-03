@@ -5,9 +5,8 @@ import { EolianUserError } from 'common/errors';
 
 
 async function execute(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
-    await voice.disconnect();
+  if (context.server!.player.isStreaming) {
+    context.server!.player.stop();
     await context.message.react('😢');
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);

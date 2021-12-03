@@ -1,4 +1,4 @@
-import { AudioPlayer, joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+import { AudioPlayer, entersState, joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { logger } from 'common/logger';
 import { Client, VoiceChannel } from 'discord.js';
 import { ContextVoiceChannel, ContextVoiceConnection } from './@types';
@@ -35,11 +35,11 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
 
   constructor(
     private readonly client: Client,
-    private readonly connection: VoiceConnection) {
+    readonly discordConnection: VoiceConnection) {
   }
 
   get channelId(): string {
-    return this.connection.joinConfig.channelId!;
+    return this.discordConnection.joinConfig.channelId!;
   }
 
   getChannel(): ContextVoiceChannel {
@@ -50,16 +50,27 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
     return new DiscordVoiceChannel(channel as VoiceChannel);
   }
 
-  onDisconnect(cb: () => void): void {
-    this.connection.on(VoiceConnectionStatus.Disconnected, cb);
+  async awaitReconnect(): Promise<boolean> {
+    try {
+      // Seems to be reconnecting to a new channel - ignore disconnect if no error thrown
+      await Promise.race([
+        entersState(this.discordConnection, VoiceConnectionStatus.Signalling, 5_000),
+        entersState(this.discordConnection, VoiceConnectionStatus.Connecting, 5_000),
+      ]);
+      logger.debug('Reconnecting to new channel');
+      return true;
+    } catch (error) {
+      logger.debug('Voice was disconnected');
+      return false;
+    }
   }
 
   subscribe(player: AudioPlayer): boolean {
-    return !!this.connection.subscribe(player);
+    return !!this.discordConnection.subscribe(player);
   }
 
-  async disconnect(): Promise<void> {
-    this.connection.destroy();
+  async close(): Promise<void> {
+    this.discordConnection.destroy();
   }
 
 }

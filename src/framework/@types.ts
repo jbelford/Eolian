@@ -75,11 +75,10 @@ export interface ContextVoiceChannel {
   hasPeopleListening(): boolean;
 }
 
-export interface ContextVoiceConnection {
+export interface ContextVoiceConnection extends Closable {
   readonly channelId: string;
   getChannel(): ContextVoiceChannel;
-  onDisconnect(cb: () => void): void;
-  disconnect(): Promise<void>;
+  awaitReconnect(): Promise<boolean>;
 }
 
 export interface ContextUser {
