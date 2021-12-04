@@ -23,6 +23,7 @@ export class SongStream extends EventEmitter implements Closable {
 
   constructor(private readonly retries = 1) {
     super();
+    this.output.on('close', () => logger.debug(`Song output closed`));
   }
 
   get stream(): Readable {
@@ -47,9 +48,8 @@ export class SongStream extends EventEmitter implements Closable {
 
     const ffmpeg = new prism.FFmpeg({ args: !track.live && nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
     stream.pipe(ffmpeg)
-        .once('error', (err: Error) => this.cleanup(err))
-        .once('end', () => this.emit('end'))
-        .once('close', () => logger.debug(`PCM transform closed`));
+      .once('error', (err: Error) => this.cleanup(err))
+      .once('end', () => this.emit('end'));
 
     if (this.pcmTransform) {
       this.pcmTransform.unpipe(this.output);
