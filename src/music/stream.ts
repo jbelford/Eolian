@@ -1,79 +1,90 @@
 import { getTrackStream } from 'api';
 import { StreamSource, Track } from 'api/@types';
-import { RetrySleepAlgorithm } from 'common/@types';
+import { Closable, RetrySleepAlgorithm } from 'common/@types';
 import { logger } from 'common/logger';
 import { RequestErrorCodes, RequestStreamError } from 'common/request';
 import { ExponentialSleep } from 'common/util';
 import EventEmitter from 'events';
 import prism from 'prism-media';
-import { Duplex, PassThrough, Readable } from 'stream';
+import { PassThrough, Readable } from 'stream';
 
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
 const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 
-export class SongStream extends EventEmitter {
+export class SongStream extends EventEmitter implements Closable {
 
+  private output = new PassThrough({ objectMode: true });
   private songStream?: Readable;
-  private pcmTransform?: Duplex;
-  private output = new PassThrough();
+  private pcmTransform?: prism.FFmpeg;
+  private track?: Track;
+  private nightcore = false;
   private source?: StreamSource;
-  private startTime = 0;
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
 
-  constructor(private readonly track: Track,
-      private readonly nightcore: boolean,
-      private readonly retries = 1) {
+  constructor(private readonly retries = 1) {
     super();
   }
 
-  get stream(): Readable | undefined {
+  get stream(): Readable {
     return this.output;
   }
 
-  async createStream(): Promise<Readable> {
-    this.sleepAlg.reset();
-    this.startTime = Date.now();
-    const stream = await this.createSongStream();
-    return stream.pipe(this.output);
-  }
-
-  private async createSongStream(): Promise<Readable> {
-    let seek: number | undefined;
-    if (this.startTime > 0) {
-      seek = Math.min(0, Date.now() - this.startTime);
-    }
-
+  async setStreamTrack(track: Track, nightcore = false, retry = false) {
+    let source: StreamSource | undefined;
     if (!this.source) {
-      this.source = await getTrackStream(this.track);
-      if (!this.source) {
-        throw new Error('Failed to get stream source!');
-      }
+      source = await getTrackStream(track);
+      this.source = source;
+    } else {
+      source = retry ? this.source : await getTrackStream(track);
+    }
+    if (!source) {
+      throw new Error('Failed to get stream source!');
     }
 
-    const stream = await this.source.get(seek);
-    if (!this.stream) {
-      throw new Error('Failed to get stream!');
-    }
-
-    this.songStream = stream
-      .once('error', this.onSongErrorHandler)
+    let stream = await source.get();
+    stream = stream.once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 
-    const ffmpeg = new prism.FFmpeg({ args: !this.track.live && this.nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
-    this.pcmTransform = this.songStream.pipe(ffmpeg)
+    const ffmpeg = new prism.FFmpeg({ args: !track.live && nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
+    stream.pipe(ffmpeg)
         .once('error', (err: Error) => this.cleanup(err))
+        .once('end', () => this.emit('end'))
         .once('close', () => logger.debug(`PCM transform closed`));
 
-    return this.pcmTransform;
+    if (this.pcmTransform) {
+      this.pcmTransform.unpipe(this.output);
+      ffmpeg.pipe(this.output, { end: false });
+      this.songStream?.destroy();
+      this.pcmTransform.destroy();
+    } else {
+      ffmpeg.pipe(this.output, { end: false });
+    }
+
+    if (!retry) {
+      this.sleepAlg.reset();
+    }
+
+    this.source = source;
+    this.track = track;
+    this.nightcore = nightcore;
+    this.songStream = stream;
+    this.pcmTransform = ffmpeg;
   }
 
-  cleanup(err?: Error): void {
+  end() {
+    this.output.end();
+  }
+
+  async close(): Promise<void> {
+      this.cleanup();
+  }
+
+  private cleanup(err?: Error): void {
     if (err) {
       this.emit('error', err);
     }
     this.songStream?.destroy();
     this.pcmTransform?.destroy();
-    this.output.destroy();
     this.songStream = undefined;
     this.pcmTransform = undefined;
   }
@@ -84,11 +95,6 @@ export class SongStream extends EventEmitter {
     }
     if (this.sleepAlg.count < this.retries) {
       logger.warn('Retry after song stream error: %s', err.message);
-      this.pcmTransform?.unpipe(this.output);
-      this.pcmTransform?.destroy();
-      this.songStream?.destroy();
-      this.pcmTransform = undefined;
-      this.songStream = undefined;
       this.retryStream();
       this.emit('retry');
     } else {
@@ -99,11 +105,7 @@ export class SongStream extends EventEmitter {
   private async retryStream(): Promise<void> {
     try {
       await this.sleepAlg.sleep();
-      const stream = await this.createSongStream();
-      if (!stream) {
-        throw new Error('PCM Transform is missing!');
-      }
-      stream.pipe(this.output);
+      await this.setStreamTrack(this.track!, this.nightcore, true);
     } catch (e: any) {
       this.cleanup(e);
     }
