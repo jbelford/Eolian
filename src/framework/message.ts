@@ -1,6 +1,5 @@
 import { logger } from 'common/logger';
-import { BaseMessageComponent, MessageActionRow, MessageButton } from 'discord-buttons';
-import { Message, MessageEditOptions, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
 import { ButtonStyle, ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
 
@@ -60,11 +59,11 @@ export class DiscordMessage implements ContextMessage {
   private async editMessage(message: string | MessageEmbed) : Promise<void> {
     if (this.message.editable) {
       try {
-        const options: MessageEditOptions & { components?: BaseMessageComponent[] } = { };
+        const options: MessageEditOptions = { };
         if (typeof message === 'string') {
           options.content = message;
         } else {
-          options.embed = message;
+          options.embeds = [message];
         }
         if (this.buttons) {
           options.components = this.buttons.components;
@@ -77,16 +76,10 @@ export class DiscordMessage implements ContextMessage {
   }
 
   getReactions(): ContextMessageReaction[] {
-    return this.message.reactions.cache.map(reaction => {
-      let count = 0;
-      if (reaction.count === null) {
-        logger.warn('Reaction count was found to be null');
-      } else {
-        count = reaction.me ? reaction.count - 1 : reaction.count;
-      }
-
-      return { emoji: reaction.emoji.name, count };
-    });
+    return this.message.reactions.cache.filter(r => !!r.emoji.name).map(reaction => ({
+      emoji: reaction.emoji.name!,
+      count: reaction.me ? reaction.count - 1 : reaction.count
+    }));
   }
 
   releaseButtons(): void {
@@ -153,7 +146,7 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
         .setEmoji(button.emoji)
         .setDisabled(!!button.disabled)
         .setStyle(buttonStyleToDiscordStyle(button.style))
-        .setID(id);
+        .setCustomId(id);
   })
 
   for (let i = 0; i < buttons.length; i += 5) {

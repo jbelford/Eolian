@@ -4,9 +4,8 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
-import registerDiscordButtons, { MessageComponent } from 'discord-buttons';
-import { Client, DMChannel, Guild, Intents, Message, TextChannel } from 'discord.js';
-import { DiscordPlayer, DiscordVoiceConnectionProvider } from 'music/player';
+import { Client, DMChannel, Guild, Intents, Interaction, Message, TextChannel } from 'discord.js';
+import { DiscordPlayer } from 'music/player';
 import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { ButtonRegistry, DiscordInteraction } from './button';
 import { DiscordTextChannel } from './channel';
@@ -20,14 +19,14 @@ import { DiscordUser, getPermissionLevel } from './user';
 
 const enum DiscordEvents {
   READY = 'ready',
-  MESSAGE = 'message',
+  MESSAGE_CREATE = 'messageCreate',
   ERROR = 'error',
   RECONNECTING = 'shardReconnecting',
   RESUME = 'shardResume',
   DEBUG = 'debug',
   WARN = 'warn',
   GUILD_CREATE = 'guildCreate',
-  CLICK_BUTTON = 'clickButton'
+  INTERACTION_CREATE = 'interactionCreate'
 }
 
 // https://discord.com/developers/docs/topics/gateway#list-of-intents
@@ -75,25 +74,34 @@ export class DiscordEolianBot implements EolianBot {
     this.parser = parser;
     this.db = db;
 
-    this.client = new Client({ ws: { intents: DISCORD_ENABLED_INTENTS }});
-    registerDiscordButtons(this.client);
+    this.client = new Client({ intents: DISCORD_ENABLED_INTENTS });
 
     this.client.once(DiscordEvents.READY, this.onReadyHandler);
-    this.client.on(DiscordEvents.RECONNECTING, () => logger.info('RECONNECTING TO WEBSOCKET'));
-    this.client.on(DiscordEvents.RESUME, (replayed) => logger.info(`CONNECTION RESUMED - REPLAYED: %s`, replayed));
-    this.client.on(DiscordEvents.WARN, (info) => logger.warn(`Warn event emitted: %s`, info));
-    this.client.on(DiscordEvents.ERROR, (err) => logger.warn(`An error event was emitted %s`, err));
-    this.client.on(DiscordEvents.MESSAGE, this.onMessageHandler);
-    this.client.on(DiscordEvents.CLICK_BUTTON, this.onClickButtonHandler);
+    this.client.on(DiscordEvents.RECONNECTING, () => {
+      logger.info('RECONNECTING TO WEBSOCKET')
+    });
+    this.client.on(DiscordEvents.RESUME, (replayed) => {
+      logger.info(`CONNECTION RESUMED - REPLAYED: %s`, replayed)
+    });
+    this.client.on(DiscordEvents.WARN, (info) => {
+      logger.warn(`Warn event emitted: %s`, info)
+    });
+    this.client.on(DiscordEvents.ERROR, (err) => {
+      logger.warn(`An error event was emitted %s`, err)
+    });
+    this.client.on(DiscordEvents.MESSAGE_CREATE, this.onMessageHandler);
+    this.client.on(DiscordEvents.INTERACTION_CREATE, this.onInteractionHandler);
     if (logger.isDebugEnabled()) {
-      this.client.on(DiscordEvents.DEBUG, (info) => logger.debug(`A debug event was emitted: %s`, info));
+      this.client.on(DiscordEvents.DEBUG, (info) => {
+        logger.debug(`A debug event was emitted: %s`, info)
+      });
     }
 
     if (environment.tokens.discord.old) {
       this.client.on(DiscordEvents.GUILD_CREATE, this.onGuildCreateHandler);
-      this.oldClient = new Client({ ws: { intents: DISCORD_ENABLED_INTENTS }});
+      this.oldClient = new Client({ intents: DISCORD_ENABLED_INTENTS });
       this.oldClient.once(DiscordEvents.READY, this.setPresence);
-      this.oldClient.on(DiscordEvents.MESSAGE, this.onMessageHandlerOld);
+      this.oldClient.on(DiscordEvents.MESSAGE_CREATE, this.onMessageHandlerOld);
     }
   }
 
@@ -108,20 +116,22 @@ export class DiscordEolianBot implements EolianBot {
     this.client.destroy();
   }
 
-  private onClickButtonHandler = async (button: MessageComponent) => {
-    const embedButton = this.registry.getButton(button.message.id, button.id);
-    if (embedButton) {
-      try {
-        const interaction = new DiscordInteraction(button, this.registry, this.db.users);
-        const destroy = await embedButton.onClick(interaction, embedButton.emoji);
-        if (destroy) {
-          this.registry.unregister(button.message.id);
+  private onInteractionHandler = async (interaction: Interaction) => {
+    if (interaction.isButton()) {
+      const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
+      if (embedButton) {
+        try {
+          const contextInteraction = new DiscordInteraction(interaction, this.registry, this.db.users);
+          const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+          if (destroy) {
+            this.registry.unregister(interaction.message.id);
+          }
+          if (!contextInteraction.hasReplied) {
+            await interaction.deferUpdate();
+          }
+        } catch (e) {
+          logger.warn('Unhandled occured executing button event: %s', e);
         }
-        if (!interaction.hasReplied) {
-          interaction.defer(false);
-        }
-      } catch (e) {
-        logger.warn('Unhandled occured executing button event: %s', e);
       }
     }
   };
@@ -133,7 +143,7 @@ export class DiscordEolianBot implements EolianBot {
   private onReadyHandler = async () => {
     try {
       logger.info('Discord bot is ready!');
-      this.invite = await this.client.generateInvite({ permissions: DISCORD_INVITE_PERMISSIONS });
+      this.invite = this.client.generateInvite({ scopes: ['bot'], permissions: DISCORD_INVITE_PERMISSIONS });
       logger.info(`Bot invite link: %s`, this.invite);
       await this.setPresence();
     } catch (e) {
@@ -144,10 +154,10 @@ export class DiscordEolianBot implements EolianBot {
   private setPresence = async () => {
     try {
       this.client.user!.setPresence({
-        activity: {
+        activities: [{
           name: `${environment.cmdToken}help`,
           type: 'LISTENING'
-        }
+        }]
       });
     } catch (e) {
       logger.warn(`Failed to set presence: %s`, e);
@@ -159,7 +169,7 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onMessageHandler = async (message: Message): Promise<void> => {
-    if (message.author.bot || message.channel.type === 'news') {
+    if (message.author.bot || !this.isTextOrDm(message)) {
       return;
     }
 
@@ -181,7 +191,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private onMessageHandlerOld = async (message: Message): Promise<void> => {
-    if (message.author.bot || message.channel.type === 'news') {
+    if (message.author.bot || !this.isTextOrDm(message)) {
       return;
     }
 
@@ -234,7 +244,7 @@ export class DiscordEolianBot implements EolianBot {
         type = dto.syntax;
       }
 
-      const permission = getPermissionLevel(author, member);
+      const permission = getPermissionLevel(author, member?.permissions);
       const { command, options } = this.parser.parseCommand(removeMentions(content), permission, type);
 
       if (channel instanceof DMChannel) {
@@ -245,12 +255,12 @@ export class DiscordEolianBot implements EolianBot {
         context.client = new DiscordClient(this.client, this.db.servers);
       } else if (guild) {
         context.server = await this.getGuildState(guild);
-        context.client = new DiscordGuildClient(this.client, context.server.player as DiscordPlayer, this.db.servers);
+        context.client = new DiscordGuildClient(this.client, guild.id, this.db.servers);
       } else {
         throw new Error('Guild is missing from text message');
       }
 
-      context.user = new DiscordUser(author, this.db.users, permission, member);
+      context.user = new DiscordUser(author, this.db.users, permission, member ?? undefined);
       context.message = new DiscordMessage(message, context.channel);
 
       await command.execute(context, options);
@@ -274,15 +284,25 @@ export class DiscordEolianBot implements EolianBot {
     }
   }
 
+  private isTextOrDm(message: Message): boolean {
+    switch (message.channel.type) {
+      case 'DM':
+      case 'GUILD_TEXT':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   private async getGuildState(guild: Guild): Promise<ServerState> {
     let state = await this.servers.get(guild.id);
     if (!state) {
       const details = this.getGuildDetails(guild);
       const dto = await details.get();
 
-      const connectionProvider = new DiscordVoiceConnectionProvider(this.client, guild.id);
+      const guildClient = new DiscordGuildClient(this.client, guild.id, this.db.servers);
       const queue = new GuildQueue(this.queues, guild.id);
-      const player = new DiscordPlayer(connectionProvider, queue, dto.volume);
+      const player = new DiscordPlayer(guildClient, queue, dto.volume);
       const queueDisplay = new DiscordQueueDisplay(queue);
       const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
 

@@ -22,7 +22,7 @@ export interface ContextClient {
   readonly name: string;
   readonly pic?: string;
   getVoice(): ContextVoiceConnection | undefined;
-  generateInvite(): Promise<string>;
+  generateInvite(): string;
   getServers(): ServerInfo[];
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   getUnusedServers(): Promise<ServerInfo[]>;
@@ -75,10 +75,10 @@ export interface ContextVoiceChannel {
   hasPeopleListening(): boolean;
 }
 
-export interface ContextVoiceConnection {
+export interface ContextVoiceConnection extends Closable {
   readonly channelId: string;
-  readonly player: Player;
-  disconnect(): Promise<void>;
+  getChannel(): ContextVoiceChannel;
+  awaitReconnect(): Promise<boolean>;
 }
 
 export interface ContextUser {

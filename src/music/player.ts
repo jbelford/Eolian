@@ -1,33 +1,15 @@
+import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, NoSubscriberBehavior, StreamType, VoiceConnectionStatus } from '@discordjs/voice';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { ServerQueue } from 'data/@types';
-import { Client, StreamDispatcher, VoiceConnection } from 'discord.js';
 import EventEmitter from 'events';
-import { DiscordVoiceChannel } from 'framework';
-import { ContextVoiceChannel } from 'framework/@types';
+import { DiscordVoiceConnection } from 'framework';
+import { ContextClient, ContextVoiceChannel } from 'framework/@types';
 import { Player } from 'music/@types';
-import prism, { VolumeTransformer } from 'prism-media';
-import { PassThrough, Readable, Transform } from 'stream';
+import { Readable } from 'stream';
 import { SongStream } from './stream';
 
-export class DiscordVoiceConnectionProvider {
-
-  constructor(
-    private readonly client: Client,
-    private readonly guildId: string) {
-  }
-
-  has(): boolean {
-    return this.client.voice!.connections.has(this.guildId);
-  }
-
-  get(): VoiceConnection | undefined {
-    return this.client.voice!.connections.get(this.guildId);
-  }
-
-}
-
-const OPUS_OPTIONS = { rate: 48000, channels: 2, frameSize: 960 };
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 const PLAYER_RETRIES = 2;
 
@@ -47,41 +29,78 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private lastUsed = Date.now();
   private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: SongStream | null = null;
-  private volumeTransform: VolumeTransformer | null = null;
-  private opusStream: Transform | null = null;
-  private inputStream: PassThrough | null = null;
-  private dispatcher: StreamDispatcher | null = null;
+  private audioResource: AudioResource | null = null;
+
+  private _audioPlayer: AudioPlayer | null = null;
+  private _isStreaming = false;
   private _nightcore = false;
+  private _paused = false;
 
   constructor(
-    readonly connectionProvider: DiscordVoiceConnectionProvider,
+    private readonly client: ContextClient,
     readonly queue: ServerQueue,
     private _volume = DEFAULT_VOLUME) {
     super();
   }
 
-  private cleanup = () => {
+  private get audioPlayer(): AudioPlayer {
+    if (!this._audioPlayer) {
+      this._audioPlayer = createAudioPlayer({
+        debug: environment.debug,
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Pause,
+          maxMissedFrames: Number.MAX_VALUE
+        }
+      });
+      this._audioPlayer.on('error', this.streamErrorHandler);
+      if (environment.debug) {
+        this.audioPlayer.on('debug', message => {
+          logger.debug(message)
+        });
+        this.audioPlayer.on(AudioPlayerStatus.Buffering, () => {
+          logger.debug('Audio player is buffering');
+        });
+      }
+      this._audioPlayer.on(AudioPlayerStatus.Playing, () => {
+        logger.debug('Audio player is playing');
+        this._paused = false;
+      });
+      this._audioPlayer.on(AudioPlayerStatus.Paused, () => {
+        logger.debug('Audio player is paused');
+        this._paused = true;
+      });
+      this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
+        logger.debug('Audio player is idle');
+        this.stop();
+      });
+    }
+    return this._audioPlayer;
+  }
+
+  private cleanup = (connection = this.client.getVoice() as DiscordVoiceConnection | undefined) => {
     if (this.timeoutCheck) {
       clearInterval(this.timeoutCheck);
       this.timeoutCheck = null;
     }
-    this.songStream?.cleanup();
-    this.volumeTransform?.destroy();
-    this.opusStream?.destroy();
-    this.dispatcher?.destroy();
-    this.inputStream = null;
+    if (connection) {
+      connection.discordConnection.removeListener(VoiceConnectionStatus.Disconnected, this.onDisconnectHandler);
+      connection.close();
+    }
+    this.audioPlayer?.stop();
+    this.songStream?.close();
+    this.audioResource = null;
     this.songStream = null;
-    this.volumeTransform = null;
-    this.opusStream = null;
-    this.dispatcher = null;
+    this._isStreaming = false;
+    this._paused = false;
+    this.emitDone();
   }
 
   get isStreaming(): boolean {
-    return !!this.dispatcher;
+    return this._isStreaming;
   }
 
   get paused(): boolean {
-    return this.isStreaming && !!this.dispatcher?.paused;
+    return this.isStreaming && this._paused;
   }
 
   get volume(): number {
@@ -93,24 +112,23 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   get idle(): boolean {
-    return (!this.isStreaming || !!this.dispatcher?.paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT_MINS * 1000;
+    return (!this.isStreaming || this._paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT_MINS * 1000;
   }
 
   getChannel(): ContextVoiceChannel | undefined {
-    const voice = this.connectionProvider.get();
-    return voice && new DiscordVoiceChannel(voice.channel);
+    const voice = this.client.getVoice();
+    return voice && voice.getChannel();
   }
 
   async close(): Promise<void> {
     this.stop();
+    this._audioPlayer = null;
   }
 
   setVolume(value: number): void {
     this.lastUsed = Date.now();
     this._volume = Math.max(0, Math.min(1, value));
-    if (this.volumeTransform) {
-      this.volumeTransform.setVolume(this._volume);
-    }
+    this.audioResource!.volume!.setVolume(this._volume);
     this.emitUpdate();
   }
 
@@ -119,28 +137,24 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   async play(): Promise<void> {
-    if (this.isStreaming) {
-      return;
-    }
+    if (!this.isStreaming) {
+      this._isStreaming = true;
+      try {
+        const connection = this.client.getVoice() as DiscordVoiceConnection | undefined;
+        if (!connection) {
+          throw new Error('No voice connection!');
+        }
+        connection.discordConnection.on(VoiceConnectionStatus.Disconnected, this.onDisconnectHandler);
+        this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
-    try {
-      const connection = this.connectionProvider.get();
-      if (!connection) {
-        throw new Error('No voice connection!');
+        await this.startNewStream();
+
+        if (!connection.subscribe(this.audioPlayer)) {
+          throw new Error('Failed to subscribe!');
+        }
+      } catch (e: any) {
+        this.streamErrorHandler(e);
       }
-      connection.once('disconnect', this.disconnectHandler);
-
-      const input = await this.startNewStream();
-
-      this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
-
-      // We manage volume directly so set false
-      this.dispatcher = connection.play(input, { seek: 0, volume: false, type: 'opus' });
-      this.dispatcher.once('error', this.streamErrorHandler);
-      this.dispatcher.once('close', this.cleanup);
-      this.dispatcher.once('finish', () => this.stop());
-    } catch (e: any) {
-      this.streamErrorHandler(e);
     }
   }
 
@@ -148,22 +162,33 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (this.isStreaming) {
       const size = await this.queue.size(true);
       if (size > 0) {
-        await this.startNewStream().catch(this.streamErrorHandler);
+        await this.songStream?.close();
+        this.songStream = null;
+        await this.startNewStream();
       } else {
         this.stop();
       }
     }
   }
 
+  private onDisconnectHandler = async () => {
+    const connection = this.client.getVoice() as DiscordVoiceConnection | undefined;
+    if (connection) {
+      const reconnected = await connection.awaitReconnect();
+      if (!reconnected) {
+        this.cleanup(connection);
+      }
+    }
+  };
+
   stop(): void {
     this.cleanup();
-    this.connectionProvider.get()?.disconnect();
   }
 
   async pause(): Promise<void> {
     if (this.isStreaming && !this.paused) {
       this.lastUsed = Date.now();
-      this.dispatcher!.pause(true);
+      this.audioPlayer!.pause(true);
       this.emitUpdate();
     }
   }
@@ -171,61 +196,44 @@ export class DiscordPlayer extends EventEmitter implements Player {
   async resume(): Promise<void> {
     if (this.isStreaming && this.paused) {
       this.lastUsed = Date.now();
-      this.dispatcher!.resume();
+      this.audioPlayer!.unpause();
       this.emitUpdate();
     }
   }
 
-  private async getNextStream(): Promise<Readable | null> {
+  private async startNewStream(): Promise<void> {
     try {
-      this.songStream?.cleanup();
-      this.songStream = null;
-      const nextTrack = await this.queue.peek();
-      if (nextTrack) {
-        this.songStream = new SongStream(nextTrack, this.nightcore, PLAYER_RETRIES);
-        this.songStream.once('error', this.streamErrorHandler);
-        this.songStream.on('retry', this.onRetryHandler);
-        return await this.songStream.createStream();
+      const input = await this.getStream();
+      if (!input) {
+        throw new Error('Missing stream!');
       }
-    } catch (e) {
-      logger.warn('Error occured getting next stream: %s', e);
+
+      this.audioResource = createAudioResource(input, {
+        inputType: StreamType.Raw,
+        inlineVolume: true
+      });
+      this.audioResource.volume!.setVolume(this.volume);
+
+      this.audioPlayer.play(this.audioResource);
+    } catch (e: any) {
+      this.streamErrorHandler(e);
     }
-    return null;
   }
 
-  private async startNewStream(): Promise<Readable> {
-    if (!this.inputStream) {
-      this.inputStream = new PassThrough()
-        .once('error', this.streamErrorHandler)
-        .once('close', () => logger.debug('Passthrough input closed'))
-    } else if (this.opusStream) {
-      this.opusStream.unpipe(this.inputStream);
-    } else {
-      throw new Error('Input and output are missing!');
+  private async getStream(): Promise<Readable | null> {
+    if (!this.songStream) {
+      this.songStream = new SongStream(PLAYER_RETRIES);
+      this.songStream.on('end', this.streamEndHandler);
+      this.songStream.once('error', this.streamErrorHandler);
+      this.songStream.on('retry', this.onRetryHandler);
     }
-
-    const readable = await this.getNextStream();
-    if (!readable) {
-      throw new Error('Missing next stream!');
+    const nextTrack = await this.queue.peek();
+    if (nextTrack) {
+      await this.songStream.setStreamTrack(nextTrack, this.nightcore);
+      await this.popNext();
+      return this.songStream.stream;
     }
-    await this.popNext();
-
-    this.volumeTransform?.destroy();
-    this.opusStream?.destroy();
-    this.volumeTransform = null;
-    this.opusStream = null;
-
-    this.volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume: this._volume });
-    this.opusStream = new prism.opus.Encoder(OPUS_OPTIONS);
-
-    return readable.once('end', this.streamEndHandler)
-      .pipe(this.volumeTransform, { end: false })
-        .once('error', this.streamErrorHandler)
-        .once('close', () => logger.debug('Volume transform closed'))
-      .pipe(this.opusStream)
-        .once('error', this.streamErrorHandler)
-        .once('close', () => logger.debug('Opus encoder closed'))
-      .pipe(this.inputStream, { end: false });
+    return null;
   }
 
   private timeoutCheckHandler = () => {
@@ -237,22 +245,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private streamEndHandler = async () => {
     try {
-        if (this.songStream?.stream) {
-          this.songStream.stream.unpipe(this.volumeTransform!);
-        }
         if (this.getChannel()?.hasPeopleListening()) {
-          const readable = await this.getNextStream();
-          if (readable) {
-            readable.once('end', this.streamEndHandler)
-              .pipe(this.volumeTransform!, { end: false });
-            await this.popNext();
+          if (await this.getStream()) {
             return;
           }
         } else {
           this.emitIdle();
         }
-        this.opusStream?.once('end', () => this.inputStream?.end());
-        this.volumeTransform!.end();
+        this.songStream!.end();
     } catch (e: any) {
       this.streamErrorHandler(e);
     }
@@ -289,5 +289,5 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stop();
     this.emitError();
   }
-  private disconnectHandler = () => this.emitDone();
+
 }

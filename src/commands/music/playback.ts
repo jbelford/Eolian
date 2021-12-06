@@ -5,9 +5,8 @@ import { EolianUserError } from 'common/errors';
 
 
 async function execute(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
-    await voice.disconnect();
+  if (context.server!.player.isStreaming) {
+    context.server!.player.stop();
     await context.message.react('😢');
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
@@ -29,9 +28,8 @@ export const STOP_COMMAND: Command = {
 
 
 async function executeSkip(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
-    await voice.player.skip();
+  if (context.server!.player.isStreaming) {
+    await context.server!.player.skip();
     await context.message.react('⏩');
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
@@ -54,9 +52,8 @@ export const SKIP_COMMAND: Command = {
 async function executeBack(context: CommandContext): Promise<void> {
   const success = await context.server!.queue.unpop(2);
   if (success) {
-    const voice = context.client.getVoice();
-    if (voice) {
-      await voice.player.skip();
+    if (context.server!.player.isStreaming) {
+      await context.server!.player.skip();
     }
     await context.message.react('⏪');
   } else {
@@ -78,12 +75,11 @@ export const BACK_COMMAND: Command = {
 };
 
 async function executePause(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
-    if (voice.player.paused) {
+  if (context.server!.player.isStreaming) {
+    if (context.server!.player.paused) {
       throw new EolianUserError('Playback is already paused!');
     } else {
-      await voice.player.pause();
+      await context.server!.player.pause();
       await context.message.react('⏸');
     }
   } else {
@@ -105,10 +101,9 @@ export const PAUSE_COMMAND: Command = {
 };
 
 async function executeResume(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
-    if (voice.player.paused) {
-      await voice.player.resume();
+  if (context.server!.player.isStreaming) {
+    if (context.server!.player.paused) {
+      await context.server!.player.resume();
       await context.message.react('▶');
     } else {
       throw new EolianUserError('Playback is not paused!');
@@ -132,8 +127,7 @@ export const RESUME_COMMAND: Command = {
 };
 
 async function executeShowPlayer(context: CommandContext): Promise<void> {
-  const voice = context.client.getVoice();
-  if (voice) {
+  if (context.server!.player.isStreaming) {
     context.server!.display.player.setChannel(context.channel);
     await context.server!.display.player.refresh();
   } else {

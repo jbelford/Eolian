@@ -32,7 +32,7 @@ export class DiscordGuild implements ServerDetails {
   }
 
   get owner(): string {
-    return this.guild.ownerID;
+    return this.guild.ownerId;
   }
 
   async get(): Promise<ServerDTO> {
