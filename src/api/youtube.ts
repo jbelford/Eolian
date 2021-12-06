@@ -1,4 +1,5 @@
 import { SOURCE } from 'common/constants';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import { InMemoryLRUCache } from 'data';
@@ -17,6 +18,8 @@ const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
+
+play.setToken({ youtube: { cookie: environment.tokens.youtube.cookie } });
 
 export class YouTubeApiImpl implements YouTubeApi {
 
