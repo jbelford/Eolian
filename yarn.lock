@@ -1599,6 +1599,7 @@ __metadata:
     mongodb: 4.1.4
     node-cache: ^5.1.2
     node-cleanup: ^2.1.2
+    play-dl: ^1.4.4
     prism-media: ^1.3.2
     sodium: ^3.0.2
     ts-loader: ^9.2.6
@@ -1610,7 +1611,6 @@ __metadata:
     webpack-cli: ^4.6.0
     webpack-node-externals: ^3.0.0
     winston: ^3.3.3
-    ytdl-core: "git://github.com/jbelford/node-ytdl-core.git#205e8cd2dd233e59f272d71829096ad4978f1bd1"
   languageName: unknown
   linkType: soft
 
@@ -2825,16 +2825,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"m3u8stream@npm:^0.8.3":
-  version: 0.8.4
-  resolution: "m3u8stream@npm:0.8.4"
-  dependencies:
-    miniget: ^4.0.0
-    sax: ^1.2.4
-  checksum: e8a04e839e26361f20b284893eb6958d774a25c88aca84a6d6d67707b462d5d2acaf421d9d144bd4006bb75ea6982321ba8c26ccc3e470cec8da23d06b725dcb
-  languageName: node
-  linkType: hard
-
 "make-dir@npm:^3.1.0":
   version: 3.1.0
   resolution: "make-dir@npm:3.1.0"
@@ -2926,13 +2916,6 @@ __metadata:
   version: 2.1.0
   resolution: "mimic-fn@npm:2.1.0"
   checksum: d2421a3444848ce7f84bd49115ddacff29c15745db73f54041edc906c14b131a38d05298dae3081667627a59b2eb1ca4b436ff2e1b80f69679522410418b478a
-  languageName: node
-  linkType: hard
-
-"miniget@npm:^4.0.0":
-  version: 4.2.1
-  resolution: "miniget@npm:4.2.1"
-  checksum: 2d72b947f8ca16f63ee170151cf4bfdfa76135147f5be28b4e3805e1e77a4e3449f77ebf918d57b75b3003109dc818e295b5eb22d932767d86120f17bd59569b
   languageName: node
   linkType: hard
 
@@ -3508,6 +3491,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"play-dl@npm:^1.4.4":
+  version: 1.4.4
+  resolution: "play-dl@npm:1.4.4"
+  checksum: 932ab23de9e0f946605938b83461a38dd10189179893739cb464520ccf6d5b8377bdf4a4d00c4c3ac884effed0826a1ce406e75d95ff6628d3126a122f1b822e
+  languageName: node
+  linkType: hard
+
 "prelude-ls@npm:^1.2.1":
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
@@ -3805,13 +3795,6 @@ __metadata:
   dependencies:
     sparse-bitfield: ^3.0.3
   checksum: 4fdc0b70fb5e523f977de405e12cca111f1f10dd68a0cfae0ca52c1a7919a94d1556598ba2d35f447655c3b32879846c77f9274c90806f6673248ae3cea6ee43
-  languageName: node
-  linkType: hard
-
-"sax@npm:^1.1.3, sax@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "sax@npm:1.2.4"
-  checksum: d3df7d32b897a2c2f28e941f732c71ba90e27c24f62ee918bd4d9a8cfb3553f2f81e5493c7f0be94a11c1911b643a9108f231dd6f60df3fa9586b5d2e3e9e1fe
   languageName: node
   linkType: hard
 
@@ -4795,16 +4778,5 @@ __metadata:
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
   checksum: 2c487b0e149e746ef48cda9f8bad10fc83693cd69d7f9dcd8be4214e985de33a29c9e24f3c0d6bcf2288427040a8947406ab27f7af67ee9456e6b84854f02dd6
-  languageName: node
-  linkType: hard
-
-"ytdl-core@git://github.com/jbelford/node-ytdl-core.git#205e8cd2dd233e59f272d71829096ad4978f1bd1":
-  version: 0.0.0-development
-  resolution: "ytdl-core@git://github.com/jbelford/node-ytdl-core.git#commit=205e8cd2dd233e59f272d71829096ad4978f1bd1"
-  dependencies:
-    m3u8stream: ^0.8.3
-    miniget: ^4.0.0
-    sax: ^1.1.3
-  checksum: 88559f89cd01aab67f7e625f39c39c63afe4a431723d793a37af30200b6c0eefcc1126aa0a0d63bdeab02d524459e2df386f95efdaa2f10001fadf3bbe17cc20
   languageName: node
   linkType: hard

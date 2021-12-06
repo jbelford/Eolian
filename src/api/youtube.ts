@@ -5,9 +5,9 @@ import { InMemoryLRUCache } from 'data';
 import { MemoryCache } from 'data/@types';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
+import * as play from 'play-dl';
 import querystring from 'querystring';
 import { Readable } from 'stream';
-import ytdl from 'ytdl-core';
 import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
@@ -23,7 +23,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   private readonly cache: MemoryCache<{ url: string, live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, private readonly cookie: string, cacheSize: number, private readonly bing?: BingApi, private readonly identityToken?: string) {
+  constructor(token: string, cacheSize: number, private readonly bing?: BingApi) {
     this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
@@ -196,14 +196,14 @@ export class YouTubeApiImpl implements YouTubeApi {
         this.cache.set(cacheId, result);
       }
     }
-    return result ? new YouTubeStreamSource(result.url, result.live, this.cookie, this.identityToken) : undefined;
+    return result ? new YouTubeStreamSource(result.url) : undefined;
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== SOURCE.YOUTUBE) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
-    return new YouTubeStreamSource(track.url, !!track.live, this.cookie, this.identityToken);
+    return new YouTubeStreamSource(track.url);
   }
 
 }
@@ -249,36 +249,13 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
 class YouTubeStreamSource implements StreamSource {
 
   constructor(
-    private readonly url: string,
-    private readonly isLive: boolean,
-    private readonly cookie: string,
-    private readonly identityToken?: string) {
+    private readonly url: string) {
   }
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s', this.url);
-
-    const options: ytdl.downloadOptions = {
-      quality: 'highestaudio',
-      requestOptions: {
-        headers: {
-          cookie: this.cookie
-        }
-      }
-    };
-    if (this.identityToken) {
-      // @ts-ignore
-      options.requestOptions!.headers!['x-youtube-identity-token'] = this.identityToken;
-    }
-    // Live stream content we can't fetch 'audioonly'
-    if (!this.isLive) {
-      options.filter = 'audioonly';
-      if (seek) {
-        options.begin = seek;
-      }
-    }
-    const stream = ytdl(this.url, options);
-    return stream;
+    const result = await play.stream(this.url);
+    return result.stream;
   }
 
 }
