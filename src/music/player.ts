@@ -128,7 +128,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
   setVolume(value: number): void {
     this.lastUsed = Date.now();
     this._volume = Math.max(0, Math.min(1, value));
-    this.audioResource!.volume!.setVolume(this._volume);
+    if (this.songStream) {
+      this.songStream.volume = this._volume;
+    }
     this.emitUpdate();
   }
 
@@ -210,9 +212,8 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
       this.audioResource = createAudioResource(input, {
         inputType: StreamType.Raw,
-        inlineVolume: true
+        inlineVolume: false
       });
-      this.audioResource.volume!.setVolume(this.volume);
 
       this.audioPlayer.play(this.audioResource);
     } catch (e: any) {
@@ -222,7 +223,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private async getStream(): Promise<Readable | null> {
     if (!this.songStream) {
-      this.songStream = new SongStream(PLAYER_RETRIES);
+      this.songStream = new SongStream(this.volume, PLAYER_RETRIES);
       this.songStream.on('end', this.streamEndHandler);
       this.songStream.once('error', this.streamErrorHandler);
       this.songStream.on('retry', this.onRetryHandler);

@@ -6,14 +6,14 @@ import { RequestErrorCodes, RequestStreamError } from 'common/request';
 import { ExponentialSleep } from 'common/util';
 import EventEmitter from 'events';
 import prism from 'prism-media';
-import { PassThrough, Readable } from 'stream';
+import { Readable } from 'stream';
 
 const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
 const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 
 export class SongStream extends EventEmitter implements Closable {
 
-  private output = new PassThrough({ objectMode: true });
+  private output: prism.VolumeTransformer;
   private songStream?: Readable;
   private pcmTransform?: prism.FFmpeg;
   private track?: Track;
@@ -21,13 +21,24 @@ export class SongStream extends EventEmitter implements Closable {
   private source?: StreamSource;
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
 
-  constructor(private readonly retries = 1) {
+  constructor(
+      volume: number,
+      private readonly retries = 1) {
     super();
+    this.output = new prism.VolumeTransformer({ type: 's16le', volume: volume });
     this.output.on('close', () => logger.debug(`Song output closed`));
   }
 
   get stream(): Readable {
     return this.output;
+  }
+
+  get volume(): number {
+    return this.output.volume;
+  }
+
+  set volume(v: number) {
+    this.output.setVolume(v);
   }
 
   async setStreamTrack(track: Track, nightcore = false, retry = false) {
