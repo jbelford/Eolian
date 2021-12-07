@@ -977,6 +977,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bindings@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "bindings@npm:1.5.0"
+  dependencies:
+    file-uri-to-path: 1.0.0
+  checksum: 65b6b48095717c2e6105a021a7da4ea435aa8d3d3cd085cb9e85bcb6e5773cf318c4745c3f7c504412855940b585bdf9b918236612a1c7a7942491de176f1ae7
+  languageName: node
+  linkType: hard
+
 "block-stream@npm:*":
   version: 0.0.9
   resolution: "block-stream@npm:0.0.9"
@@ -1053,7 +1062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bufferutil@npm:^4.0.3":
+"bufferutil@npm:^4.0.5":
   version: 4.0.5
   resolution: "bufferutil@npm:4.0.5"
   dependencies:
@@ -1578,9 +1587,10 @@ __metadata:
     "@types/winston": ^2.4.4
     "@typescript-eslint/eslint-plugin": ^5.1.0
     "@typescript-eslint/parser": ^5.1.0
-    bufferutil: ^4.0.3
+    bufferutil: ^4.0.5
     discord.js: ^13.3.1
     dotenv: ^8.2.0
+    erlpack: "git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874"
     eslint: ^8.1.0
     ffmpeg-static: ^4.4.0
     fuzzball: ^1.4.0
@@ -1591,6 +1601,7 @@ __metadata:
     mongodb: 4.1.4
     node-cache: ^5.1.2
     node-cleanup: ^2.1.2
+    node-gyp: ^8.4.1
     play-dl: ^1.4.4
     prism-media: ^1.3.2
     sodium: ^3.0.2
@@ -1598,13 +1609,24 @@ __metadata:
     ts-node: ^10.4.0
     typescript: ^4.5.2
     undici: ^4.8.1
-    utf-8-validate: ^5.0.5
+    utf-8-validate: ^5.0.7
     webpack: ^5.36.2
     webpack-cli: ^4.6.0
     webpack-node-externals: ^3.0.0
     winston: ^3.3.3
+    zlib-sync: ^0.1.7
   languageName: unknown
   linkType: soft
+
+"erlpack@git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874":
+  version: 0.1.3
+  resolution: "erlpack@https://github.com/discord/erlpack.git#commit=f7d730debe32c416d1b55b4217f8aef2ade05874"
+  dependencies:
+    bindings: ^1.5.0
+    nan: ^2.15.0
+  checksum: 37d85a27f0e15c7cc10f5b605e7b860d38a291f616dadb1e2ff2a49215c56fa8724ca53923615e355229c85cc84713c762b04f8038f74789ce8e52504eaf7e1f
+  languageName: node
+  linkType: hard
 
 "err-code@npm:^2.0.2":
   version: 2.0.3
@@ -1911,6 +1933,13 @@ __metadata:
   dependencies:
     flat-cache: ^3.0.4
   checksum: f49701feaa6314c8127c3c2f6173cfefff17612f5ed2daaafc6da13b5c91fd43e3b2a58fd0d63f9f94478a501b167615931e7200e31485e320f74a33885a9c74
+  languageName: node
+  linkType: hard
+
+"file-uri-to-path@npm:1.0.0":
+  version: 1.0.0
+  resolution: "file-uri-to-path@npm:1.0.0"
+  checksum: b648580bdd893a008c92c7ecc96c3ee57a5e7b6c4c18a9a09b44fb5d36d79146f8e442578bc0e173dc027adf3987e254ba1dfd6e3ec998b7c282873010502144
   languageName: node
   linkType: hard
 
@@ -3063,6 +3092,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:^2.14.0, nan@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "nan@npm:2.15.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 33e1bb4dfca447fe37d4bb5889be55de154828632c8d38646db67293a21afd61ed9909cdf1b886214a64707d935926c4e60e2b09de9edfc2ad58de31d6ce8f39
+  languageName: node
+  linkType: hard
+
 "natural-compare@npm:^1.4.0":
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
@@ -3167,7 +3205,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:latest":
+"node-gyp@npm:^8.4.1, node-gyp@npm:latest":
   version: 8.4.1
   resolution: "node-gyp@npm:8.4.1"
   dependencies:
@@ -4467,7 +4505,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utf-8-validate@npm:^5.0.5":
+"utf-8-validate@npm:^5.0.7":
   version: 5.0.7
   resolution: "utf-8-validate@npm:5.0.7"
   dependencies:
@@ -4770,5 +4808,15 @@ __metadata:
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
   checksum: 2c487b0e149e746ef48cda9f8bad10fc83693cd69d7f9dcd8be4214e985de33a29c9e24f3c0d6bcf2288427040a8947406ab27f7af67ee9456e6b84854f02dd6
+  languageName: node
+  linkType: hard
+
+"zlib-sync@npm:^0.1.7":
+  version: 0.1.7
+  resolution: "zlib-sync@npm:0.1.7"
+  dependencies:
+    nan: ^2.14.0
+    node-gyp: latest
+  checksum: 8f6ef7bf5726b41fefffa4509f5679872b425ef47227a59d8c787b32518db6220961262f78b0f6eb1dcd9b52cd71bc8213d4f061b8b56a9b7e82c345a548e6f4
   languageName: node
   linkType: hard
