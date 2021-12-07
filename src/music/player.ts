@@ -17,11 +17,11 @@ const PLAYER_RETRIES = 2;
  *
  * Stream pipeline:
  *
- *   ----------------------- Replace all of these when force skipped ----------------------
- *  |                                                                                     |
- *  Song readable stream -> PCM transformer (ffmpeg) -> Volume Transform -> Opus Encoder -> Passthrough -> Dispatcher
+ *   --------------------------------- Replace on force skip -----------------------------
+ * |                                                                                      |
+ *  Song readable stream -> PCM transformer (ffmpeg) -> Volume Transform -> Opus Encoder -> Discord
  * |                                                 |
- * ------- Replace these 2 when song ends -----------
+ *  ------- Replace these 2 when song ends ----------
  *
  */
 export class DiscordPlayer extends EventEmitter implements Player {
