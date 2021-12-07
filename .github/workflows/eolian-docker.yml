@@ -13,16 +13,16 @@ jobs:
     - uses: actions/checkout@v2
     - uses: azure/docker-login@v1
       with:
-        login-server: eoliancontainerregistry.azurecr.io
+        login-server: ${{ secrets.CONTAINER_REGISTRY }}
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
     - run: |
-        docker build . -t eoliancontainerregistry.azurecr.io/eolian:master
-        docker push eoliancontainerregistry.azurecr.io/eolian:master
+        docker build . -t ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
+        docker push ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
 
     - uses: azure/webapps-deploy@v2
       with:
         app-name: 'eolian-container-webapp'
         publish-profile: ${{ secrets.AZURE_APP_PUBLISH_PROFILE_CONTAINER }}
-        images: 'eoliancontainerregistry.azurecr.io/eolian:master'
+        images: '${{ secrets.CONTAINER_REGISTRY }}/eolian:master'
 
