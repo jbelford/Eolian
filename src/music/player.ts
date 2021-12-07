@@ -60,15 +60,13 @@ export class DiscordPlayer extends EventEmitter implements Player {
         this.audioPlayer.on(AudioPlayerStatus.Buffering, () => {
           logger.debug('Audio player is buffering');
         });
+        this._audioPlayer.on(AudioPlayerStatus.Playing, () => {
+          logger.debug('Audio player is playing');
+        });
+        this._audioPlayer.on(AudioPlayerStatus.Paused, () => {
+          logger.debug('Audio player is paused');
+        });
       }
-      this._audioPlayer.on(AudioPlayerStatus.Playing, () => {
-        logger.debug('Audio player is playing');
-        this._paused = false;
-      });
-      this._audioPlayer.on(AudioPlayerStatus.Paused, () => {
-        logger.debug('Audio player is paused');
-        this._paused = true;
-      });
       this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
         logger.debug('Audio player is idle');
         this.stop();
@@ -190,16 +188,20 @@ export class DiscordPlayer extends EventEmitter implements Player {
   async pause(): Promise<void> {
     if (this.isStreaming && !this.paused) {
       this.lastUsed = Date.now();
-      this.audioPlayer!.pause(true);
-      this.emitUpdate();
+      if (this.audioPlayer!.pause(true)) {
+        this._paused = true;
+        this.emitUpdate();
+      }
     }
   }
 
   async resume(): Promise<void> {
     if (this.isStreaming && this.paused) {
       this.lastUsed = Date.now();
-      this.audioPlayer!.unpause();
-      this.emitUpdate();
+      if (this.audioPlayer!.unpause()) {
+        this._paused = false;
+        this.emitUpdate();
+      }
     }
   }
 
@@ -230,6 +232,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
     const nextTrack = await this.queue.peek();
     if (nextTrack) {
+      this._paused = false;
       await this.songStream.setStreamTrack(nextTrack, this.nightcore);
       await this.popNext();
       return this.songStream.stream;
