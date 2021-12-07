@@ -22,7 +22,7 @@ export class DiscordTextChannel implements ContextTextChannel {
     let value = !this.channel.deleted;
     if (this.channel.type === 'GUILD_TEXT') {
       const permissions = (this.channel as TextChannel).permissionsFor(this.channel.guild.me!);
-      value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS);
+      value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
     }
     return value;
   }

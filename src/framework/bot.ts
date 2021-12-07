@@ -233,7 +233,7 @@ export class DiscordEolianBot implements EolianBot {
     try {
 
       if (!context.channel.sendable) {
-        author.send(`I can't send messages to that channel. I require both \`Send Messages\` and \`Embed Links\` permissions.`);
+        author.send(`I can't send messages to that channel. I require \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
         return;
       }
 
