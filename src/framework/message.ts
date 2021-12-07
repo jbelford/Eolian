@@ -68,6 +68,7 @@ export class DiscordMessage implements ContextMessage {
         if (this.buttons) {
           options.components = this.buttons.components;
         }
+        logger.debug('Editing message %s', this.message.id);
         await this.message.edit(options);
       } catch (e) {
         logger.warn('Failed to edit message: %s', e);
