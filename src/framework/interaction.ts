@@ -1,3 +1,4 @@
+import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
@@ -96,7 +97,7 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
 export class DiscordCommandInteraction extends DiscordInteraction<CommandInteraction> implements ContextCommandInteraction {
 
-  constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
+  constructor(interaction: CommandInteraction, private readonly parser: CommandParsingStrategy, registry: ButtonRegistry, users: UsersDb) {
     super(interaction, registry, users);
   }
 
@@ -113,7 +114,18 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
   }
 
   async getCommand(config?: ServerDetails): Promise<ParsedCommand> {
-    throw new Error('Slash command parsing has not been implemented!');
+    const command = COMMAND_MAP[this.interaction.commandName];
+    if (!command) {
+      throw new Error('Unrecognized command!');
+    }
+    const args = this.interaction.options.getString('args', false) ?? '';
+    const text = `${this.interaction.commandName} ${args}`;
+    let type: SyntaxType | undefined;
+    if (config) {
+      const dto = await config.get();
+      type = dto.syntax;
+    }
+    return this.parser.parseCommand(removeMentions(text), this.user.permission, type);
   }
 
 }

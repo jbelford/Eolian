@@ -11,6 +11,7 @@ import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from '.
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { ButtonRegistry, DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageInteraction } from './interaction';
 import { GuildQueue } from './queue';
+import { registerSlashCommands } from './register_commands';
 import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
 
@@ -104,6 +105,7 @@ export class DiscordEolianBot implements EolianBot {
 
   async start(): Promise<void> {
     if (!this.client.readyTimestamp) {
+      await registerSlashCommands();
       await this.client.login(environment.tokens.discord.main);
       await this.oldClient?.login(environment.tokens.discord.old);
     }
@@ -140,7 +142,7 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onCommandHandler = async (interaction: CommandInteraction) => {
-    const contextInteraction = new DiscordCommandInteraction(interaction, this.registry, this.db.users);
+    const contextInteraction = new DiscordCommandInteraction(interaction, this.parser, this.registry, this.db.users);
 
     await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 
