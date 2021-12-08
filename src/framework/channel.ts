@@ -4,7 +4,7 @@ import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, Text
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler } from './@types';
-import { ButtonRegistry } from './interaction';
+import { ButtonRegistry } from "./button";
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
 export const STOP_EMOJI = '🚫';

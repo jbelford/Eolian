@@ -1,7 +1,7 @@
 import { logger } from 'common/logger';
 import { Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
-import { ButtonRegistry } from './interaction';
+import { ButtonRegistry } from "./button";
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;

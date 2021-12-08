@@ -6,32 +6,11 @@ import { UsersDb } from 'data/@types';
 import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, InteractionReplyOptions, Message, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, EmbedMessageButton, MessageButtonOnClickHandler, ServerDetails } from './@types';
+import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, ServerDetails } from './@types';
+import { ButtonRegistry } from './button';
 import { DiscordTextChannel, STOP_EMOJI } from './channel';
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 import { DiscordUser, getPermissionLevel } from './user';
-
-export class ButtonRegistry {
-
-  private readonly registry = new Map<string, Map<string, EmbedMessageButton>>();
-
-  register(messageId: string, buttons: Map<string, EmbedMessageButton>): void {
-    if (!this.registry.has(messageId)) {
-      logger.info('Registered buttons for message %s', messageId);
-    }
-    this.registry.set(messageId, buttons);
-  }
-
-  getButton(messageId: string, buttonId: string): EmbedMessageButton | undefined {
-    return this.registry.get(messageId)?.get(buttonId);
-  }
-
-  unregister(messageId: string): void {
-    logger.info('Unregistering buttons for message %s', messageId);
-    this.registry.delete(messageId);
-  }
-
-}
 
 class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> implements ContextInteraction {
 
