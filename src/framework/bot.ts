@@ -142,13 +142,23 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onCommandHandler = async (interaction: CommandInteraction) => {
-    const contextInteraction = new DiscordCommandInteraction(interaction, this.parser, this.registry, this.db.users);
+    const locked = await this.lockManager.isLocked(interaction.user.id);
+    if (!locked) {
+      try {
+        await this.lockManager.lock(interaction.user.id);
+        const contextInteraction = new DiscordCommandInteraction(interaction, this.parser, this.registry, this.db.users);
 
-    await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
+        await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 
-    if (!contextInteraction.hasReplied) {
-      logger.warn('Slash command did not reply: %s', contextInteraction.content);
-      await contextInteraction.reply('Done!', { ephemeral: true });
+        if (!contextInteraction.hasReplied) {
+          logger.warn('Slash command did not reply: %s', contextInteraction.content);
+          await contextInteraction.reply('Done!', { ephemeral: true });
+        }
+      } finally {
+        await this.lockManager.unlock(interaction.user.id);
+      }
+    } else {
+      await interaction.reply({ content: 'One command at a time please!', ephemeral: true  });
     }
   }
 
