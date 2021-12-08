@@ -1,5 +1,5 @@
 import { ProgressUpdater } from 'common/@types';
-import { ContextMessage, ContextTextChannel } from './@types';
+import { ContextMessage, ContextSendable } from './@types';
 
 
 export class DownloaderDisplay implements ProgressUpdater {
@@ -9,7 +9,7 @@ export class DownloaderDisplay implements ProgressUpdater {
   private message?: ContextMessage;
   private updatePromise?: Promise<void>;
 
-  constructor(private readonly channel: ContextTextChannel,
+  constructor(private readonly sendable: ContextSendable,
     private readonly name: string,
     private total: number = 1000,
     private readonly refreshInterval = 1000) {
@@ -43,7 +43,7 @@ export class DownloaderDisplay implements ProgressUpdater {
       if (this.message) {
         await this.message.edit(text);
       } else {
-        this.message = await this.channel.send(text);
+        this.message = await this.sendable.send(text);
       }
     }
   }

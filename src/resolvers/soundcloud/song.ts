@@ -17,7 +17,7 @@ export class SoundCloudSongResolver implements SourceResolver {
     }
 
     const songs = await soundcloud.searchSongs(this.params.SEARCH);
-    const idx = await this.context.interaction.channel.sendSelection('Choose a SoundCloud track',
+    const idx = await this.context.interaction.sendSelection('Choose a SoundCloud track',
       songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
       this.context.interaction.user);
     if (idx < 0) {

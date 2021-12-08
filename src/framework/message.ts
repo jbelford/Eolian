@@ -1,6 +1,6 @@
 import { logger } from 'common/logger';
 import { Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
-import { ButtonStyle, ContextMessage, ContextMessageReaction, ContextTextChannel, EmbedMessage, EmbedMessageButton } from './@types';
+import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './interaction';
 
 export interface DiscordMessageButtons {
@@ -11,7 +11,6 @@ export interface DiscordMessageButtons {
 export class DiscordMessage implements ContextMessage {
 
   constructor(private readonly message: Message,
-    private readonly channel: ContextTextChannel,
     private readonly buttons?: DiscordMessageButtons) { }
 
   get text(): string {
@@ -20,16 +19,6 @@ export class DiscordMessage implements ContextMessage {
 
   get id(): string {
     return this.message.id;
-  }
-
-  async reply(message: string): Promise<void> {
-    if (this.channel.sendable) {
-      try {
-        await this.message.reply(message);
-      } catch (e) {
-        logger.warn('Failed to reply to message: %s', e);
-      }
-    }
   }
 
   async react(emoji: string): Promise<void> {
@@ -74,13 +63,6 @@ export class DiscordMessage implements ContextMessage {
         logger.warn('Failed to edit message: %s', e);
       }
     }
-  }
-
-  getReactions(): ContextMessageReaction[] {
-    return this.message.reactions.cache.filter(r => !!r.emoji.name).map(reaction => ({
-      emoji: reaction.emoji.name!,
-      count: reaction.me ? reaction.count - 1 : reaction.count
-    }));
   }
 
   releaseButtons(): void {

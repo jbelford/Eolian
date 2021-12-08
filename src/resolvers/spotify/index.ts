@@ -1,6 +1,6 @@
 import { CommandOptions } from 'commands/@types';
 import { IdentifierType } from 'data/@types';
-import { ContextTextChannel } from 'framework/@types';
+import { ContextSendable } from 'framework/@types';
 import { SourceFetcher } from 'resolvers/@types';
 import { SpotifyAlbumFetcher } from './album';
 import { SpotifyArtistFetcher } from './artist';
@@ -15,7 +15,7 @@ export { SpotifyUrlResolver } from './url';
 export function getSpotifySourceFetcher(id: string,
   type: IdentifierType,
   params: CommandOptions,
-  channel: ContextTextChannel): SourceFetcher {
+  sendable: ContextSendable): SourceFetcher {
 
   switch (type) {
     case IdentifierType.ALBUM:
@@ -23,7 +23,7 @@ export function getSpotifySourceFetcher(id: string,
     case IdentifierType.ARTIST:
       return new SpotifyArtistFetcher(id);
     case IdentifierType.PLAYLIST:
-      return new SpotifyPlaylistFetcher(id, params, channel);
+      return new SpotifyPlaylistFetcher(id, params, sendable);
     case IdentifierType.SONG:
       return new SpotifySongFetcher(id);
     default:

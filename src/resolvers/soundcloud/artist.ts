@@ -34,7 +34,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
 
   private async resolveArtistQuery(query: string): Promise<SoundCloudUser> {
     const users = await soundcloud.searchUser(query);
-    const idx = await this.context.interaction.channel.sendSelection('Choose a SoundCloud user',
+    const idx = await this.context.interaction.sendSelection('Choose a SoundCloud user',
       users.map(user => ({ name: user.username, url: user.permalink_url })),
       this.context.interaction.user);
     if (idx < 0) {

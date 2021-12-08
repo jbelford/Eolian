@@ -2,7 +2,7 @@ import { CommandContext, CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
-import { ContextTextChannel } from 'framework/@types';
+import { ContextSendable } from 'framework/@types';
 import { SourceFetcher, SourceResolver } from './@types';
 import { getSoundCloudSourceFetcher, SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
 import { getSpotifySourceFetcher, SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
@@ -24,7 +24,7 @@ function getBySource(context: CommandContext, params: CommandOptions) {
   switch (params.URL?.source) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(params.URL.value);
     case SOURCE.YOUTUBE: return new YouTubeUrlResolver(params.URL.value, context);
-    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
+    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction);
     default: return UNKNOWN_RESOLVER;
   }
 }
@@ -48,28 +48,28 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
   if (params.SOUNDCLOUD) {
     return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
-    context.interaction.channel.send(`Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`);
+    context.interaction.send(`Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`);
   }
   return new YouTubeVideoResolver(context, params);
 }
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
-    context.interaction.channel.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
+    context.interaction.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
   }
   return new SoundCloudTracksResolver(context, params);
 }
 
 function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
-    context.interaction.channel.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
+    context.interaction.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
   }
   return new SoundCloudFavoritesResolver(context, params);
 }
 
 function getArtistResolver(context: CommandContext, params: CommandOptions) {
   if (params.YOUTUBE) {
-    context.interaction.channel.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
+    context.interaction.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
   } else if (params.SOUNDCLOUD) {
     return new SoundCloudArtistResolver(context, params);
   }
@@ -78,7 +78,7 @@ function getArtistResolver(context: CommandContext, params: CommandOptions) {
 
 function getAlbumResolver(context: CommandContext, params: CommandOptions) {
   if (params.SOUNDCLOUD || params.YOUTUBE) {
-    context.interaction.channel.send('I only support Spotify regarding albums.');
+    context.interaction.send('I only support Spotify regarding albums.');
   }
   return new SpotifyAlbumResolver(context, params);
 }
@@ -107,11 +107,11 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
     : getByQuery(context, params);
 }
 
-export function getSourceFetcher(identifier: Identifier, params: CommandOptions, channel: ContextTextChannel): SourceFetcher {
+export function getSourceFetcher(identifier: Identifier, params: CommandOptions, sendable: ContextSendable): SourceFetcher {
   switch (identifier.src) {
-    case SOURCE.SOUNDCLOUD: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, channel);
+    case SOURCE.SOUNDCLOUD: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
     case SOURCE.YOUTUBE: return getYouTubeSourceFetcher(identifier.id, identifier.type);
-    case SOURCE.SPOTIFY: return getSpotifySourceFetcher(identifier.id, identifier.type, params, channel);
+    case SOURCE.SPOTIFY: return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
     default: return UNKNOWN_FETCHER;
   }
 }

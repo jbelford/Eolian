@@ -23,7 +23,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (!context.server!.player.isStreaming) {
-    await context.interaction.channel.send(`🔊  **${Math.floor(volume * 100)}%**  🔊`);
+    await context.interaction.send(`🔊  **${Math.floor(volume * 100)}%**  🔊`);
   } else {
     await context.interaction.react('🔊');
   }

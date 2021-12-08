@@ -1,11 +1,14 @@
 import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
+import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
-import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, TextChannel } from 'discord.js';
-import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessageButton, ServerDetails } from './@types';
-import { DiscordTextChannel } from './channel';
-import { DiscordMessage } from './message';
+import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, InteractionReplyOptions, Message, TextChannel } from 'discord.js';
+import { createSelectionEmbed } from 'embed';
+import { SelectionOption } from 'embed/@types';
+import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, EmbedMessageButton, MessageButtonOnClickHandler, ServerDetails } from './@types';
+import { DiscordTextChannel, STOP_EMOJI } from './channel';
+import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 import { DiscordUser, getPermissionLevel } from './user';
 
 export class ButtonRegistry {
@@ -40,6 +43,10 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     private readonly users: UsersDb) {
   }
 
+  get sendable(): boolean {
+    return true;
+  }
+
   get user(): ContextUser {
     if (!this._user) {
       this.interaction.memberPermissions
@@ -65,15 +72,91 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
   }
 
   async reply(message: string, options?: ContextInteractionOptions): Promise<void> {
+    const ephemeral = options?.ephemeral ?? true;
     if (!this.hasReplied) {
-      await this.interaction.reply({ content: message, ephemeral: options?.ephemeral });
+      await this.interaction.reply({ content: message, ephemeral });
     } else {
-      await this.interaction.followUp({ content: message, ephemeral: options?.ephemeral });
+      await this.interaction.followUp({ content: message, ephemeral });
     }
   }
 
   async defer(ephemeral?: boolean): Promise<void> {
     await this.interaction.deferReply({ ephemeral });
+  }
+
+  async send(message: string): Promise<ContextMessage | undefined> {
+    try {
+      const reply = await this.sendMessage({ content: message });
+      return new DiscordMessage(reply);
+    } catch (e) {
+      logger.warn('Failed to send message: %s', e);
+    }
+    return undefined;
+  }
+
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+
+      const onClick: MessageButtonOnClickHandler = async (interaction, emoji) => {
+        if (!resolved) {
+          resolved = true;
+          await interaction.message.delete();
+          resolve(emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1);
+        }
+        return true;
+      };
+
+      const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
+      if (options.length < NUMBER_TO_EMOJI.length) {
+        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], onClick }));
+        selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
+        selectEmbed.buttonUserId = user.id;
+      }
+
+      const sentEmbedPromise = this.sendEmbed(selectEmbed);
+      sentEmbedPromise.catch(reject);
+    });
+  }
+
+  async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
+    try {
+      const rich = mapDiscordEmbed(embed);
+
+      const messageOptions: InteractionReplyOptions = { embeds: [rich] };
+
+      let buttonMapping: DiscordButtonMapping | undefined;
+      if (embed.buttons) {
+        buttonMapping = mapDiscordEmbedButtons(embed.buttons);
+        messageOptions.components = buttonMapping.rows;
+      }
+
+      const message = await this.sendMessage(messageOptions);
+      if (embed.reactions) {
+        logger.warn('No adding reactions for slash command messages');
+      }
+
+      let msgButtons: DiscordMessageButtons | undefined;
+      if (buttonMapping) {
+        this.registry.register(message.id, buttonMapping.mapping);
+        msgButtons = { registry: this.registry, components: buttonMapping.rows };
+      }
+
+      return new DiscordMessage(message, msgButtons);
+    } catch (e) {
+      logger.warn('Failed to send embed message: %s', e);
+    }
+    return undefined;
+  }
+
+  private async sendMessage(options: InteractionReplyOptions): Promise<Message> {
+    let reply: Message;
+    if (!this.hasReplied) {
+      reply = await this.interaction.reply({ ...options, ephemeral: true, fetchReply: true }) as Message;
+    } else {
+      reply = await this.interaction.followUp({ ...options, ephemeral: true, fetchReply: true }) as Message;
+    }
+    return reply;
   }
 
 }
@@ -88,7 +171,7 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
   get message(): ContextMessage {
     if (!this._message) {
-      this._message = new DiscordMessage(this.interaction.message as Message, this.channel);
+      this._message = new DiscordMessage(this.interaction.message as Message);
     }
     return this._message;
   }
@@ -144,6 +227,10 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     private readonly users: UsersDb) {
   }
 
+  get sendable(): boolean {
+    return this.channel.sendable;
+  }
+
   get content(): string {
     return this.discordMessage.content;
   }
@@ -169,7 +256,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
 
   get message(): ContextMessage {
     if (!this._message) {
-      this._message = new DiscordMessage(this.discordMessage, this.channel);
+      this._message = new DiscordMessage(this.discordMessage);
     }
     return this._message;
   }
@@ -182,9 +269,27 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.message.delete();
   }
 
-  reply(message: string): Promise<void> {
-    this._hasReplied = true;
-    return this.message.reply(message);
+  async reply(message: string): Promise<void> {
+    if (this.sendable) {
+      try {
+        this._hasReplied = true;
+        await this.discordMessage.reply(message);
+      } catch (e) {
+        logger.warn('Failed to reply to message: %s', e);
+      }
+    }
+  }
+
+  send(message: string): Promise<ContextMessage | undefined> {
+    return this.channel.send(message);
+  }
+
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+    return this.channel.sendSelection(question, options, user);
+  }
+
+  sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
+    return this.channel.sendEmbed(embed);
   }
 
   async defer(): Promise<void> {

@@ -11,7 +11,7 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
     const categories = COMMAND_CATEGORIES.filter(category => category.permission <= interaction.user.permission);
     const config = await server?.details.get();
     const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
-    await interaction.channel.sendEmbed(categoryListEmbed);
+    await interaction.sendEmbed(categoryListEmbed);
     return;
   }
 
@@ -30,7 +30,7 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
     const commandListEmbed = createCommandListEmbed(category, interaction.user.permission);
-    await interaction.channel.sendEmbed(commandListEmbed);
+    await interaction.sendEmbed(commandListEmbed);
     return;
   }
 
@@ -43,21 +43,21 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
   const command = COMMAND_MAP[arg];
   if (command && command.permission <= interaction.user.permission) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
-    await interaction.channel.sendEmbed(commandEmbed);
+    await interaction.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
   if (keyword && keyword.permission <= interaction.user.permission) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
-    await interaction.channel.sendEmbed(keywordEmbed);
+    await interaction.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
   if (pattern && pattern.permission <= interaction.user.permission) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
-    await interaction.channel.sendEmbed(patternEmbed);
+    await interaction.sendEmbed(patternEmbed);
     return;
   }
 

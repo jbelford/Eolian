@@ -47,7 +47,7 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 
   const spotifyUser = await spotify.getUser(resource.id);
   await context.interaction.user.setSpotify(spotifyUser.id);
-  await context.interaction.channel.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
+  await context.interaction.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
     + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
     + ` keyword to search your playlists.`);
 }
@@ -65,7 +65,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
 
   const question = 'Which SoundCloud account do you want me to link?';
   const options: SelectionOption[] = soundCloudUsers.map(user => ({ name: user.username, subname: user.permalink_url, url: user.permalink_url }));
-  const idx = await context.interaction.channel.sendSelection(question, options, context.interaction.user);
+  const idx = await context.interaction.sendSelection(question, options, context.interaction.user);
   if (idx < 0) {
     throw new EolianUserError(MESSAGES.NO_SELECTION);
   }
@@ -75,7 +75,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
 
 async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser) {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
-  await context.interaction.channel.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
+  await context.interaction.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
     + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
     + ` to use your playlists, likes, and tracks.`);
 }

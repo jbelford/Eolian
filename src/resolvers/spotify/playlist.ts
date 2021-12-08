@@ -7,7 +7,7 @@ import { MESSAGES, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
-import { ContextTextChannel } from 'framework/@types';
+import { ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 
@@ -24,7 +24,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await this.context.interaction.channel.sendSelection('Choose a Spotify playlist',
+      const idx = await this.context.interaction.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
         this.context.interaction.user);
       if (idx < 0) {
@@ -33,7 +33,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
       playlist = playlists[idx];
     }
 
-    return createSpotifyPlaylist(playlist, this.params, this.context.interaction.channel);
+    return createSpotifyPlaylist(playlist, this.params, this.context.interaction);
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
@@ -58,7 +58,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
 }
 
-export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: CommandOptions, channel: ContextTextChannel): ResolvedResource {
+export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: CommandOptions, sendable: ContextSendable): ResolvedResource {
   return {
     name: playlist.name,
     authors: [playlist.owner.display_name || '<unknown>'],
@@ -68,7 +68,7 @@ export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: Command
       type: IdentifierType.PLAYLIST,
       url: playlist.external_urls.spotify
     },
-    fetcher: new SpotifyPlaylistFetcher(playlist.id, params, channel, playlist)
+    fetcher: new SpotifyPlaylistFetcher(playlist.id, params, sendable, playlist)
   };
 }
 
@@ -76,7 +76,7 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
 
   constructor(private readonly id: string,
     private readonly params: CommandOptions,
-    private readonly channel: ContextTextChannel,
+    private readonly sendable: ContextSendable,
     // @ts-ignore
     private readonly playlist?: SpotifyPlaylist) {
   }
@@ -89,7 +89,7 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
       playlist = this.playlist as SpotifyPlaylistTracks;
     } else {
       const rangeFn: RangeFactory = total => getRangeOption(this.params, total);
-      const progress = new DownloaderDisplay(this.channel, 'Fetching playlist tracks');
+      const progress = new DownloaderDisplay(this.sendable, 'Fetching playlist tracks');
 
       playlist = await spotify.getPlaylistTracks(this.id, progress, rangeFn);
 

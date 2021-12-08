@@ -253,7 +253,7 @@ export class DiscordEolianBot implements EolianBot {
     try {
       logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction.content);
 
-      if (!interaction.channel.sendable) {
+      if (!interaction.sendable) {
         await interaction.user.send(`I can't send messages to that channel. I require \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
         return undefined;
       }
@@ -279,7 +279,7 @@ export class DiscordEolianBot implements EolianBot {
     } catch (e) {
       const userError = (e instanceof EolianUserError);
 
-      if (interaction.channel.sendable) {
+      if (interaction.sendable) {
         const text = userError ? (e as EolianUserError).message : `Hmm.. I tried to do that but something in my internals is broken. Try again later.`;
         await interaction.reply(text);
       } else {

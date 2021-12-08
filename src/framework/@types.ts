@@ -10,13 +10,16 @@ export interface EolianBot extends Closable {
   start(): Promise<void>;
 }
 
-export interface ContextTextChannel {
-  readonly isDm: boolean;
-  readonly lastMessageId?: string;
+export interface ContextSendable {
   readonly sendable: boolean;
   send(message: string): Promise<ContextMessage | undefined>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number>
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined>;
+}
+
+export interface ContextTextChannel extends ContextSendable {
+  readonly isDm: boolean;
+  readonly lastMessageId?: string;
 }
 
 export interface ContextClient {
@@ -45,9 +48,7 @@ export interface ContextMessage {
   readonly id: string;
   edit(message: string): Promise<void>;
   editEmbed(embed: EmbedMessage): Promise<void>;
-  reply(message: string): Promise<void>;
   react(emoji: string): Promise<void>;
-  getReactions(): ContextMessageReaction[];
   releaseButtons(): void;
   delete(): Promise<void>;
 }
@@ -56,7 +57,7 @@ export type ContextInteractionOptions = {
   ephemeral?: boolean;
 }
 
-export interface ContextInteraction {
+export interface ContextInteraction extends ContextSendable {
   readonly user: ContextUser;
   readonly channel: ContextTextChannel;
   readonly hasReplied: boolean;
@@ -73,11 +74,6 @@ export interface ContextCommandInteraction extends ContextInteraction {
 
 export interface ContextButtonInteraction extends ContextInteraction {
   readonly message: ContextMessage;
-}
-
-export type ContextMessageReaction = {
-  emoji: string;
-  count: number;
 }
 
 export interface ContextVoiceChannel {

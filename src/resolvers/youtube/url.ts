@@ -14,11 +14,11 @@ export class YouTubeUrlResolver implements SourceResolver {
     const resourceDetails = youtube.getResourceType(this.url);
     if (resourceDetails) {
       if (resourceDetails.video && resourceDetails.playlist) {
-        const idx = await this.context.interaction.channel.sendSelection('Do you want this video or the playlist?', ['Video', 'Playlist'], this.context.interaction.user);
+        const idx = await this.context.interaction.sendSelection('Do you want this video or the playlist?', ['Video', 'Playlist'], this.context.interaction.user);
         switch (idx) {
           // @ts-ignore
           default:
-            await this.context.interaction.channel.send('No selection.. defaulting to video');
+            await this.context.interaction.send('No selection.. defaulting to video');
           case 0:
             resourceDetails.playlist = undefined;
             break;

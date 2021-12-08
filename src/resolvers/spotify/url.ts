@@ -5,7 +5,7 @@ import { CommandOptions } from 'commands/@types';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
-import { ContextTextChannel } from 'framework/@types';
+import { ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 import { createSpotifyAlbum } from './album';
 import { createSpotifyArtist } from './artist';
@@ -16,7 +16,7 @@ export class SpotifyUrlResolver implements SourceResolver {
 
   constructor(private readonly url: string,
     private readonly params: CommandOptions,
-    private readonly channel: ContextTextChannel) {
+    private readonly sendable: ContextSendable) {
   }
 
   async resolve(): Promise<ResolvedResource> {
@@ -25,7 +25,7 @@ export class SpotifyUrlResolver implements SourceResolver {
       switch (resourceDetails.type) {
         case SpotifyResourceType.PLAYLIST: {
           const playlist = await spotify.getPlaylist(resourceDetails.id);
-          return createSpotifyPlaylist(playlist, this.params, this.channel);
+          return createSpotifyPlaylist(playlist, this.params, this.sendable);
         }
         case SpotifyResourceType.ALBUM: {
           const album = await spotify.getAlbum(resourceDetails.id);

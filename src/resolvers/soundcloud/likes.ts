@@ -7,21 +7,21 @@ import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
-import { ContextTextChannel } from 'framework/@types';
+import { ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistResolver } from './artist';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
     const user = await this.getSoundCloudUser();
-    return createSoundCloudLikes(user, this.params, this.context.interaction.channel);
+    return createSoundCloudLikes(user, this.params, this.context.interaction);
   }
 }
 
 export function createSoundCloudLikes(
     user: SoundCloudUser,
     params: CommandOptions,
-    channel: ContextTextChannel): ResolvedResource {
+    sendable: ContextSendable): ResolvedResource {
   return {
     name: 'Liked Tracks',
     authors: [user.username],
@@ -31,7 +31,7 @@ export function createSoundCloudLikes(
       type: IdentifierType.LIKES,
       url: `${user.permalink_url}/likes`
     },
-    fetcher: new SoundCloudFavoritesFetcher(user.id, params, channel, user)
+    fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user)
   };
 }
 
@@ -40,7 +40,7 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
   constructor(private readonly id: number,
     private readonly params: CommandOptions,
-    private readonly channel: ContextTextChannel,
+    private readonly sendable: ContextSendable,
     private readonly user?: SoundCloudUser) {
   }
 
@@ -60,7 +60,7 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
     }
 
     if (max > 300) {
-      downloader = new DownloaderDisplay(this.channel, downloaderName);
+      downloader = new DownloaderDisplay(this.sendable, downloaderName);
     }
 
     return { max, downloader };

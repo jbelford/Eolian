@@ -26,7 +26,7 @@ export class SpotifyAlbumResolver implements SourceResolver {
       subname: album.artists.map(artist => artist.name).join(','),
       url: album.external_urls.spotify
     }));
-    const idx = await this.context.interaction.channel.sendSelection(
+    const idx = await this.context.interaction.sendSelection(
       `Select the album you want (resolved via Spotify)`, options, this.context.interaction.user);
     if (idx < 0) {
       throw new EolianUserError(MESSAGES.NO_SELECTION);

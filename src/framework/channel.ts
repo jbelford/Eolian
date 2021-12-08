@@ -7,7 +7,7 @@ import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageB
 import { ButtonRegistry } from './interaction';
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
-const STOP_EMOJI = '🚫';
+export const STOP_EMOJI = '🚫';
 
 export class DiscordTextChannel implements ContextTextChannel {
 
@@ -35,7 +35,7 @@ export class DiscordTextChannel implements ContextTextChannel {
     if (this.sendable) {
       try {
         const discordMessage = await this.channel.send(message);
-        return new DiscordMessage(discordMessage as Message, this);
+        return new DiscordMessage(discordMessage);
       } catch (e) {
         logger.warn('Failed to send message: %s', e);
       }
@@ -143,7 +143,7 @@ export class DiscordTextChannel implements ContextTextChannel {
           msgButtons = { registry: this.registry, components: buttonMapping.rows };
         }
 
-        return new DiscordMessage(message, this, msgButtons);
+        return new DiscordMessage(message, msgButtons);
       } catch (e) {
         logger.warn('Failed to send embed message: %s', e);
       }

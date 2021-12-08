@@ -20,7 +20,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
     let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await this.context.interaction.channel.sendSelection('Choose a SoundCloud playlist',
+      const idx = await this.context.interaction.sendSelection('Choose a SoundCloud playlist',
         playlists.map(playlist => ({ name: playlist.title, subname: playlist.user.username, url: playlist.permalink_url })),
         this.context.interaction.user);
       if (idx < 0) {

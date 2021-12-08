@@ -8,16 +8,16 @@ const PAGE_LENGTH = 10;
 async function kickUnused(context: CommandContext) {
   const servers = await context.client.getUnusedServers();
   if (servers.length === 0) {
-    await context.interaction.channel.send('No servers!');
+    await context.interaction.send('No servers!');
     return;
   }
-  await context.interaction.channel.send(servers.map((s, i) => `${i}. ${s.id}`).join('\n'));
-  const idx = await context.interaction.channel.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
+  await context.interaction.send(servers.map((s, i) => `${i}. ${s.id}`).join('\n'));
+  const idx = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
   if (idx === 0) {
     await Promise.all(servers.map(s => context.client.leave(s.id)));
-    await context.interaction.channel.send(`I have left all ${servers.length} servers`);
+    await context.interaction.send(`I have left all ${servers.length} servers`);
   } else {
-    await context.interaction.channel.send(`Cancelled kick`);
+    await context.interaction.send(`Cancelled kick`);
   }
 }
 
@@ -25,16 +25,16 @@ async function kickOld(days: number, context: CommandContext) {
   const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
   const servers = await context.client.getIdleServers(minDate);
   if (servers.length === 0) {
-    await context.interaction.channel.send('No servers!');
+    await context.interaction.send('No servers!');
     return;
   }
-  await context.interaction.channel.send(servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'));
-  const idx = await context.interaction.channel.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
+  await context.interaction.send(servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'));
+  const idx = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
   if (idx === 0) {
     await Promise.all(servers.map(s => context.client.leave(s._id)));
-    await context.interaction.channel.send(`I have left all ${servers.length} servers`);
+    await context.interaction.send(`I have left all ${servers.length} servers`);
   } else {
-    await context.interaction.channel.send(`Cancelled kick`);
+    await context.interaction.send(`Cancelled kick`);
   }
 }
 
@@ -64,7 +64,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       case 'kick': {
         const id = options.ARG[1];
         const kicked = await context.client.leave(id);
-        await context.interaction.channel.send(kicked ? `I have left ${id}` : `I don't recognize that guild!`);
+        await context.interaction.send(kicked ? `I have left ${id}` : `I don't recognize that guild!`);
         return;
       }
       case 'kickOld': {
@@ -87,7 +87,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   response += servers.slice(start, start + PAGE_LENGTH).map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`).join('\n');
   response += '\n```';
 
-  await context.interaction.channel.send(response);
+  await context.interaction.send(response);
 }
 
 export const SERVERS_COMMAND: Command = {
