@@ -34,9 +34,9 @@ export class SoundCloudArtistResolver implements SourceResolver {
 
   private async resolveArtistQuery(query: string): Promise<SoundCloudUser> {
     const users = await soundcloud.searchUser(query);
-    const idx = await this.context.channel.sendSelection('Choose a SoundCloud user',
+    const idx = await this.context.interaction.channel.sendSelection('Choose a SoundCloud user',
       users.map(user => ({ name: user.username, url: user.permalink_url })),
-      this.context.user);
+      this.context.interaction.user);
     if (idx < 0) {
       throw new EolianUserError(MESSAGES.NO_SELECTION);
     }
@@ -45,7 +45,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
   }
 
   private async resolveUser(): Promise<SoundCloudUser> {
-    const user = await this.context.user.get();
+    const user = await this.context.interaction.user.get();
     if (!user.soundcloud) {
       throw new EolianUserError('You have not set your SoundCloud account yet!');
     }

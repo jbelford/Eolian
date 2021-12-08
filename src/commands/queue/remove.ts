@@ -18,18 +18,18 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError('Queue is already empty!');
   }
 
-  await context.message.react('🌪');
+  await context.interaction.react('🌪');
 
   if (options.NEXT) {
     await context.server!.queue.pop();
-    await context.message.reply('Removed next song from the queue!');
+    await context.interaction.reply('Removed next song from the queue!');
     return;
   }
 
   const range = getRangeOption(options, queueLength)!;
 
   const removed = await context.server!.queue.remove(range.start, range.stop - range.start);
-  await context.message.reply(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);
+  await context.interaction.reply(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);
 }
 
 export const REMOVE_COMMAND: Command = {

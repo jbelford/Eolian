@@ -4,9 +4,9 @@ import { PERMISSION } from 'common/constants';
 import { createInviteEmbed } from 'embed';
 
 async function execute(context: CommandContext): Promise<void> {
-  const inviteLink = await context.client.generateInvite();
+  const inviteLink = context.client.generateInvite();
   const inviteEmbed = createInviteEmbed(inviteLink, context.client.name, context.client.pic);
-  await context.channel.sendEmbed(inviteEmbed);
+  await context.interaction.channel.sendEmbed(inviteEmbed);
 }
 
 export const INVITE_COMMAND: Command = {

@@ -19,9 +19,9 @@ export class SpotifyArtistResolver implements SourceResolver {
     }
 
     const artists = await spotify.searchArtists(this.params.SEARCH);
-    const idx = await this.context.channel.sendSelection('Choose a Spotify artist',
+    const idx = await this.context.interaction.channel.sendSelection('Choose a Spotify artist',
       artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
-      this.context.user);
+      this.context.interaction.user);
     if (idx < 0) {
       throw new EolianUserError(MESSAGES.NO_SELECTION);
     }

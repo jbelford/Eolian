@@ -18,9 +18,9 @@ export class YouTubeVideoResolver implements SourceResolver {
     }
 
     const videos = await youtube.searchVideos(this.params.SEARCH);
-    const idx = await this.context.channel.sendSelection('Choose a YouTube video',
+    const idx = await this.context.interaction.channel.sendSelection('Choose a YouTube video',
       videos.map(video => ({ name: video.name, url: video.url })),
-      this.context.user);
+      this.context.interaction.user);
     if (idx < 0) {
       throw new EolianUserError(MESSAGES.NO_SELECTION);
     }

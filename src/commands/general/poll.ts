@@ -94,7 +94,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const question = options.ARG[0];
   const pollOptions: string[] = options.ARG.slice(1);
 
-  const poll = new PollMessage(context.channel, context.user, question, pollOptions);
+  const poll = new PollMessage(context.interaction.channel, context.interaction.user, question, pollOptions);
 
   context.server!.disposable.push(poll);
 

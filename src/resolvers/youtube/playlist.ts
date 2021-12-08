@@ -19,9 +19,9 @@ export class YouTubePlaylistResolver implements SourceResolver {
     }
 
     const playlists = await youtube.searchPlaylists(this.params.SEARCH);
-    const idx = await this.context.channel.sendSelection('Choose a YouTube playlist',
+    const idx = await this.context.interaction.channel.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
-      this.context.user);
+      this.context.interaction.user);
     if (idx < 0) {
       throw new EolianUserError(MESSAGES.NO_SELECTION);
     }

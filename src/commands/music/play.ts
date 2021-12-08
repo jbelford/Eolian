@@ -11,7 +11,7 @@ import { SourceFetcher } from 'resolvers/@types';
 
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
-  const userVoice = context.user.getVoice();
+  const userVoice = context.interaction.user.getVoice();
   if (!userVoice) {
     throw new EolianUserError('You need to be in a voice channel!');
   } else if (!userVoice.joinable) {
@@ -20,7 +20,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   let fetcher: SourceFetcher | undefined;
   if (options.IDENTIFIER) {
-    const user = await context.user.get();
+    const user = await context.interaction.user.get();
     if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
@@ -31,14 +31,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
+    await context.interaction.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
 
-    fetcher = getSourceFetcher(identifier, options, context.channel);
+    fetcher = getSourceFetcher(identifier, options, context.interaction.channel);
   } else if (options.SEARCH || options.URL) {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
       const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
-      await context.channel.send(`✨ ${msg} to be played immediately!`);
+      await context.interaction.channel.send(`✨ ${msg} to be played immediately!`);
       fetcher = resource.fetcher;
     }
   }
@@ -67,18 +67,18 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   let voice = context.client.getVoice();
   if (!voice || voice.channelId !== userVoice.id) {
-    reactionChain = reactionChain.then(() => context.message.react('👋'));
+    reactionChain = reactionChain.then(() => context.interaction.react('👋'));
     await userVoice.join();
     voice = context.client.getVoice();
   }
 
   if (voice) {
     if (!context.server!.player.isStreaming) {
-      context.server!.display.player.setChannel(context.channel);
-      reactionChain = reactionChain.then(() => context.message.react('🎵'));
+      context.server!.display.player.setChannel(context.interaction.channel);
+      reactionChain = reactionChain.then(() => context.interaction.react('🎵'));
       await context.server!.player.play();
     } else if (added) {
-      reactionChain = reactionChain.then(() => context.message.react('👌'));
+      reactionChain = reactionChain.then(() => context.interaction.react('👌'));
       await context.server!.player.skip();
     }
   }

@@ -7,7 +7,7 @@ import { EolianUserError } from 'common/errors';
 async function execute(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
     context.server!.player.stop();
-    await context.message.react('😢');
+    await context.interaction.react('😢');
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
@@ -30,7 +30,7 @@ export const STOP_COMMAND: Command = {
 async function executeSkip(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
     await context.server!.player.skip();
-    await context.message.react('⏩');
+    await context.interaction.react('⏩');
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }
@@ -55,7 +55,7 @@ async function executeBack(context: CommandContext): Promise<void> {
     if (context.server!.player.isStreaming) {
       await context.server!.player.skip();
     }
-    await context.message.react('⏪');
+    await context.interaction.react('⏪');
   } else {
     throw new EolianUserError("There are no previous songs!");
   }
@@ -80,7 +80,7 @@ async function executePause(context: CommandContext): Promise<void> {
       throw new EolianUserError('Playback is already paused!');
     } else {
       await context.server!.player.pause();
-      await context.message.react('⏸');
+      await context.interaction.react('⏸');
     }
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
@@ -104,7 +104,7 @@ async function executeResume(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
     if (context.server!.player.paused) {
       await context.server!.player.resume();
-      await context.message.react('▶');
+      await context.interaction.react('▶');
     } else {
       throw new EolianUserError('Playback is not paused!');
     }
@@ -128,7 +128,7 @@ export const RESUME_COMMAND: Command = {
 
 async function executeShowPlayer(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
-    context.server!.display.player.setChannel(context.channel);
+    context.server!.display.player.setChannel(context.interaction.channel);
     await context.server!.display.player.refresh();
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);

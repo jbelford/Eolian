@@ -3,16 +3,16 @@ import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 
-async function execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
+async function execute({ interaction }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
   let response: string | undefined;
 
   if (SOUNDCLOUD) {
-    await user.setSoundCloud(null);
+    await interaction.user.setSoundCloud(null);
     response = 'I have unlinked any SoundCloud account if you had one';
   }
 
   if (SPOTIFY) {
-    await user.setSpotify(null);
+    await interaction.user.setSpotify(null);
     if (response) {
       response += ' and I also unlinked your Spotify account if you had one';
     } else {
@@ -20,7 +20,7 @@ async function execute({ message, user }: CommandContext, { SOUNDCLOUD, SPOTIFY 
     }
   }
 
-  await message.reply(response || 'You need to specify the accounts you want me to unlink!');
+  await interaction.reply(response || 'You need to specify the accounts you want me to unlink!');
 }
 
 export const UNLINK_COMMAND: Command = {

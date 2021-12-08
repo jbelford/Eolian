@@ -1,5 +1,5 @@
 import { Track } from 'api/@types';
-import { SyntaxType } from 'commands/@types';
+import { ParsedCommand, SyntaxType } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { PERMISSION } from 'common/constants';
 import { Identifier, ServerDTO, ServerQueue, UserDTO } from 'data/@types';
@@ -11,6 +11,7 @@ export interface EolianBot extends Closable {
 }
 
 export interface ContextTextChannel {
+  readonly isDm: boolean;
   readonly lastMessageId?: string;
   readonly sendable: boolean;
   send(message: string): Promise<ContextMessage | undefined>;
@@ -56,11 +57,22 @@ export type ContextInteractionOptions = {
 }
 
 export interface ContextInteraction {
-  readonly message: ContextMessage;
   readonly user: ContextUser;
+  readonly channel: ContextTextChannel;
   readonly hasReplied: boolean;
-  reply(message: string, options: ContextInteractionOptions): Promise<void>;
+  reply(message: string, options?: ContextInteractionOptions): Promise<void>;
   defer(ephemeral?: boolean): Promise<void>;
+}
+
+export interface ContextCommandInteraction extends ContextInteraction {
+  readonly content: string;
+  react(emoji: string): Promise<void>;
+  delete(): Promise<void>;
+  getCommand(config?: ServerDetails): Promise<ParsedCommand>;
+}
+
+export interface ContextButtonInteraction extends ContextInteraction {
+  readonly message: ContextMessage;
 }
 
 export type ContextMessageReaction = {
@@ -86,6 +98,7 @@ export interface ContextUser {
   readonly name: string;
   readonly avatar?: string;
   readonly permission: PERMISSION;
+  send(message: string): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
   clearData(): Promise<boolean>;
@@ -137,7 +150,7 @@ export interface EmbedMessageButton {
   onClick: MessageButtonOnClickHandler;
 }
 
-export type MessageButtonOnClickHandler = (interaction: ContextInteraction, emoji: string) => Promise<boolean>;
+export type MessageButtonOnClickHandler = (interaction: ContextButtonInteraction, emoji: string) => Promise<boolean>;
 
 export interface Display extends Closable {
   setChannel(channel: ContextTextChannel): void;

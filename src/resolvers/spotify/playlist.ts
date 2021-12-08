@@ -24,16 +24,16 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await this.context.channel.sendSelection('Choose a Spotify playlist',
+      const idx = await this.context.interaction.channel.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
-        this.context.user);
+        this.context.interaction.user);
       if (idx < 0) {
         throw new EolianUserError(MESSAGES.NO_SELECTION);
       }
       playlist = playlists[idx];
     }
 
-    return createSpotifyPlaylist(playlist, this.params, this.context.channel);
+    return createSpotifyPlaylist(playlist, this.params, this.context.interaction.channel);
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
@@ -44,7 +44,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
     let playlists: SpotifyPlaylist[];
 
     if (this.params.MY) {
-      const user = await this.context.user.get();
+      const user = await this.context.interaction.user.get();
       if (!user.spotify) {
         throw new EolianUserError(`I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
       }

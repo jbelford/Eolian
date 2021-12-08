@@ -6,12 +6,12 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
 
-async function execute({ user, channel, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+async function execute({ interaction, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
   if (!ARG) {
-    const categories = COMMAND_CATEGORIES.filter(category => category.permission <= user.permission);
+    const categories = COMMAND_CATEGORIES.filter(category => category.permission <= interaction.user.permission);
     const config = await server?.details.get();
     const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
-    await channel.sendEmbed(categoryListEmbed);
+    await interaction.channel.sendEmbed(categoryListEmbed);
     return;
   }
 
@@ -29,8 +29,8 @@ async function execute({ user, channel, server }: CommandContext, { ARG }: Comma
       ? COMMAND_CATEGORIES[idx]
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
-    const commandListEmbed = createCommandListEmbed(category, user.permission);
-    await channel.sendEmbed(commandListEmbed);
+    const commandListEmbed = createCommandListEmbed(category, interaction.user.permission);
+    await interaction.channel.sendEmbed(commandListEmbed);
     return;
   }
 
@@ -41,23 +41,23 @@ async function execute({ user, channel, server }: CommandContext, { ARG }: Comma
   }
 
   const command = COMMAND_MAP[arg];
-  if (command && command.permission <= user.permission) {
+  if (command && command.permission <= interaction.user.permission) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
-    await channel.sendEmbed(commandEmbed);
+    await interaction.channel.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
-  if (keyword && keyword.permission <= user.permission) {
+  if (keyword && keyword.permission <= interaction.user.permission) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
-    await channel.sendEmbed(keywordEmbed);
+    await interaction.channel.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
-  if (pattern && pattern.permission <= user.permission) {
+  if (pattern && pattern.permission <= interaction.user.permission) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
-    await channel.sendEmbed(patternEmbed);
+    await interaction.channel.sendEmbed(patternEmbed);
     return;
   }
 

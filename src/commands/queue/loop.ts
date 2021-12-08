@@ -12,7 +12,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     await context.server!.queue.setLoopMode(true);
 
-    await context.channel.send('🔁 Loop mode enabled!');
+    await context.interaction.channel.send('🔁 Loop mode enabled!');
     return;
   }
 
@@ -23,11 +23,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     await context.server!.queue.setLoopMode(false);
 
-    await context.channel.send('🔁 Loop mode disabled!');
+    await context.interaction.channel.send('🔁 Loop mode disabled!');
     return;
   }
 
-  await context.channel.send(`🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`);
+  await context.interaction.channel.send(`🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`);
 }
 
 export const LOOP_COMMAND: Command = {

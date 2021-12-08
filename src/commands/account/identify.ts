@@ -13,11 +13,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (options.CLEAR) {
-    const success = await context.user.removeIdentifier(options.IDENTIFIER);
+    const success = await context.interaction.user.removeIdentifier(options.IDENTIFIER);
     if (!success) {
       throw new EolianUserError(`You don't have an identifier for \`${options.IDENTIFIER}\``);
     }
-    await context.message.reply(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
+    await context.interaction.reply(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
     return;
   }
 
@@ -34,10 +34,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError(`You must provide me something to identify! Please try again with a URL or query.`);
   }
 
-  await context.user.setIdentifier(options.IDENTIFIER, resource.identifier);
+  await context.interaction.user.setIdentifier(options.IDENTIFIER, resource.identifier);
   const response = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
       + ` can now be identified with \`${options.IDENTIFIER}\`.`;
-  await context.message.reply(response);
+  await context.interaction.reply(response);
 }
 
 export const IDENTIFY_COMMAND: Command = {

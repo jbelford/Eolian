@@ -1,21 +1,18 @@
-import { CommandContext, CommandParsingStrategy, SyntaxType } from 'commands/@types';
+import { CommandParsingStrategy } from 'commands/@types';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
-import { Client, DMChannel, Guild, Intents, Interaction, Message, TextChannel } from 'discord.js';
+import { ButtonInteraction, Client, CommandInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
 import { DiscordPlayer } from 'music/player';
-import { EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
-import { ButtonRegistry, DiscordInteraction } from './button';
-import { DiscordTextChannel } from './channel';
+import { ContextClient, ContextCommandInteraction, EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
-import { DiscordMessage } from './message';
+import { ButtonRegistry, DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageInteraction } from './interaction';
 import { GuildQueue } from './queue';
 import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
-import { DiscordUser, getPermissionLevel } from './user';
 
 const enum DiscordEvents {
   READY = 'ready',
@@ -117,24 +114,41 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   private onInteractionHandler = async (interaction: Interaction) => {
-    if (interaction.isButton()) {
-      const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
-      if (embedButton) {
-        try {
-          const contextInteraction = new DiscordInteraction(interaction, this.registry, this.db.users);
-          const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
-          if (destroy) {
-            this.registry.unregister(interaction.message.id);
-          }
-          if (!contextInteraction.hasReplied) {
-            await interaction.deferUpdate();
-          }
-        } catch (e) {
-          logger.warn('Unhandled occured executing button event: %s', e);
-        }
+    try {
+      if (interaction.isButton()) {
+        await this.onButtonClickHandler(interaction);
+      } else if (interaction.isCommand()) {
+        await this.onCommandHandler(interaction);
+      }
+    } catch (e) {
+      logger.warn('Unhandled occured executing interaction event: %s', e);
+    }
+  };
+
+  private onButtonClickHandler = async (interaction: ButtonInteraction) => {
+    const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
+    if (embedButton) {
+      const contextInteraction = new DiscordButtonInteraction(interaction, this.registry, this.db.users);
+      const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+      if (destroy) {
+        this.registry.unregister(interaction.message.id);
+      }
+      if (!contextInteraction.hasReplied) {
+        await interaction.deferUpdate();
       }
     }
   };
+
+  private onCommandHandler = async (interaction: CommandInteraction) => {
+    const contextInteraction = new DiscordCommandInteraction(interaction, this.registry, this.db.users);
+
+    await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
+
+    if (!contextInteraction.hasReplied) {
+      logger.warn('Slash command did not reply: %s', contextInteraction.content);
+      await contextInteraction.reply('Done!', { ephemeral: true });
+    }
+  }
 
   /**
    * Executed when the connection has been established
@@ -179,7 +193,8 @@ export class DiscordEolianBot implements EolianBot {
         if (!locked) {
           try {
             await this.lockManager.lock(message.author.id);
-            await this.onBotInvoked(message);
+            const interaction = new DiscordMessageInteraction(message, this.parser, this.registry, this.db.users);
+            await this.onBotInvoked(interaction, message.guild ?? undefined);
           } finally {
             await this.lockManager.unlock(message.author.id);
           }
@@ -221,66 +236,49 @@ export class DiscordEolianBot implements EolianBot {
     return invoked;
   }
 
-  private async onBotInvoked(message: Message): Promise<void> {
+  private async onBotInvoked(interaction: ContextCommandInteraction, guild?: Guild): Promise<void> {
     const start = Date.now();
-    const { author, content, channel, member, guild } = message;
-    logger.info(`[%s] Message event received: '%s'`, author.id, content);
-
-    // @ts-ignore
-    const context: CommandContext = {};
-    context.channel = new DiscordTextChannel(<TextChannel | DMChannel>channel, this.registry);
-
     try {
+      logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction.content);
 
-      if (!context.channel.sendable) {
-        author.send(`I can't send messages to that channel. I require \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
+      if (!interaction.channel.sendable) {
+        await interaction.user.send(`I can't send messages to that channel. I require \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
+        return undefined;
+      }
+
+      let server: ServerState | undefined;
+      let client: ContextClient;
+      if (guild) {
+        server = await this.getGuildState(guild);
+        client = new DiscordGuildClient(this.client, server.details.id, this.db.servers);
+      } else {
+        client = new DiscordClient(this.client, this.db.servers);
+      }
+
+      const { command, options } = await interaction.getCommand(server?.details);
+      if (interaction.channel.isDm && !command.dmAllowed) {
+        await interaction.user.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
         return;
       }
 
-      let type: SyntaxType | undefined;
-      if (guild) {
-        const details = this.getGuildDetails(guild);
-        const dto = await details.get();
-        type = dto.syntax;
-      }
+      await command.execute({ interaction, server, client}, options);
 
-      const permission = getPermissionLevel(author, member?.permissions);
-      const { command, options } = this.parser.parseCommand(removeMentions(content), permission, type);
-
-      if (channel instanceof DMChannel) {
-        if (!command.dmAllowed) {
-          author.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
-          return;
-        }
-        context.client = new DiscordClient(this.client, this.db.servers);
-      } else if (guild) {
-        context.server = await this.getGuildState(guild);
-        context.client = new DiscordGuildClient(this.client, guild.id, this.db.servers);
-      } else {
-        throw new Error('Guild is missing from text message');
-      }
-
-      context.user = new DiscordUser(author, this.db.users, permission, member ?? undefined);
-      context.message = new DiscordMessage(message, context.channel);
-
-      await command.execute(context, options);
-
-      await context.server?.details.updateUsage();
+      await server?.details.updateUsage();
     } catch (e) {
       const userError = (e instanceof EolianUserError);
 
-      if (context.channel.sendable) {
+      if (interaction.channel.sendable) {
         const text = userError ? (e as EolianUserError).message : `Hmm.. I tried to do that but something in my internals is broken. Try again later.`;
-        await message.reply(text);
+        await interaction.reply(text);
       } else {
-        await author.send(`Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`);
+        await interaction.user.send(`Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`);
       }
 
       if (!userError) {
         throw e;
       }
     } finally {
-      logger.info(`[%s] Message event finished (%d ms)`, author.id, Date.now() - start);
+      logger.info(`[%s] Message event finished (%d ms)`, interaction.user.id, Date.now() - start);
     }
   }
 
@@ -321,8 +319,4 @@ export class DiscordEolianBot implements EolianBot {
     return details;
   }
 
-}
-
-function removeMentions(text: string): string {
-  return text.replace(/<(@[!&]?|#)\d+>/g, '').trim();
 }

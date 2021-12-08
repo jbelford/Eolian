@@ -1,6 +1,6 @@
 import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
-import { ContextClient, ContextMessage, ContextTextChannel, ContextUser, ServerState } from 'framework/@types';
+import { ContextClient, ContextCommandInteraction, ServerState } from 'framework/@types';
 
 export interface Command {
   name: string;
@@ -41,9 +41,7 @@ export interface ParsedCommand {
 
 export interface CommandContext {
   client: ContextClient;
-  user: ContextUser;
-  message: ContextMessage;
-  channel: ContextTextChannel;
+  interaction: ContextCommandInteraction;
   server?: ServerState;
 }
 

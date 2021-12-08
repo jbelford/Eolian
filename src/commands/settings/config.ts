@@ -22,7 +22,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (!options.ARG) {
     const server = await context.server!.details.get();
     const details = createServerDetailsEmbed(context.server!.details, server);
-    await context.channel.sendEmbed(details);
+    await context.interaction.channel.sendEmbed(details);
     return;
   }
 
@@ -47,7 +47,7 @@ async function setPrefix(context: CommandContext, prefix: string) {
   }
 
   await context.server?.details.setPrefix(prefix);
-  await context.channel.send(`✨ The prefix is now \`${prefix}\`!`);
+  await context.interaction.channel.send(`✨ The prefix is now \`${prefix}\`!`);
 }
 
 async function setVolume(context: CommandContext, volume: string) {
@@ -59,7 +59,7 @@ async function setVolume(context: CommandContext, volume: string) {
   value = value / 100;
 
   await context.server!.details.setVolume(value);
-  await context.channel.send(`✨ The default volume is now \`${volume}%\`!`);
+  await context.interaction.channel.send(`✨ The default volume is now \`${volume}%\`!`);
 
   if (!context.server!.player.isStreaming) {
     context.server!.player.setVolume(value);
@@ -80,7 +80,7 @@ async function setSyntax(context: CommandContext, syntax: string) {
   }
 
   await context.server!.details.setSyntax(type);
-  await context.channel.send(`✨ The server now uses \`${syntax}\` syntax!`);
+  await context.interaction.channel.send(`✨ The server now uses \`${syntax}\` syntax!`);
 }
 
 export const CONFIG_COMMAND: Command = {

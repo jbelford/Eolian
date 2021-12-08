@@ -7,9 +7,9 @@ import { PERMISSION } from 'common/constants';
 async function executeClearQueue(context: CommandContext): Promise<void> {
   const cleared = await context.server!.queue.clear();
   if (cleared) {
-    await context.channel.send('💨 I have cleared the queue!');
+    await context.interaction.channel.send('💨 I have cleared the queue!');
   } else {
-    await context.channel.send('❓ The queue is already empty!');
+    await context.interaction.channel.send('❓ The queue is already empty!');
   }
 }
 
@@ -20,13 +20,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const size = await context.server!.queue.size(true);
   if (size === 0) {
-    await context.channel.send('🕳 The queue is empty!');
+    await context.interaction.channel.send('🕳 The queue is empty!');
     return;
   }
 
   if (options.SHUFFLE) {
     await context.server!.queue.shuffle();
-    await context.channel.send('🔀 I have shuffled the queue!');
+    await context.interaction.channel.send('🔀 I have shuffled the queue!');
     return;
   }
 
@@ -34,11 +34,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const [tracks, loop] = await context.server!.queue.get(range.start, range.stop - range.start);
   if (tracks.length + loop.length === 0) {
-    await context.channel.send('🕳 The provided range is empty!');
+    await context.interaction.channel.send('🕳 The provided range is empty!');
     return;
   }
 
-  context.server!.display.queue.setChannel(context.channel);
+  context.server!.display.queue.setChannel(context.interaction.channel);
   await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size);
 }
 

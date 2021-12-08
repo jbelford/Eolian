@@ -24,7 +24,7 @@ function getBySource(context: CommandContext, params: CommandOptions) {
   switch (params.URL?.source) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(params.URL.value);
     case SOURCE.YOUTUBE: return new YouTubeUrlResolver(params.URL.value, context);
-    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.channel);
+    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
     default: return UNKNOWN_RESOLVER;
   }
 }
@@ -48,28 +48,28 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
   if (params.SOUNDCLOUD) {
     return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
-    context.channel.send(`Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`);
+    context.interaction.channel.send(`Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`);
   }
   return new YouTubeVideoResolver(context, params);
 }
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
-    context.channel.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
+    context.interaction.channel.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
   }
   return new SoundCloudTracksResolver(context, params);
 }
 
 function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
   if (params.SPOTIFY || params.YOUTUBE) {
-    context.channel.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
+    context.interaction.channel.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
   }
   return new SoundCloudFavoritesResolver(context, params);
 }
 
 function getArtistResolver(context: CommandContext, params: CommandOptions) {
   if (params.YOUTUBE) {
-    context.channel.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
+    context.interaction.channel.send(`Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`)
   } else if (params.SOUNDCLOUD) {
     return new SoundCloudArtistResolver(context, params);
   }
@@ -78,7 +78,7 @@ function getArtistResolver(context: CommandContext, params: CommandOptions) {
 
 function getAlbumResolver(context: CommandContext, params: CommandOptions) {
   if (params.SOUNDCLOUD || params.YOUTUBE) {
-    context.channel.send('I only support Spotify regarding albums.');
+    context.interaction.channel.send('I only support Spotify regarding albums.');
   }
   return new SpotifyAlbumResolver(context, params);
 }

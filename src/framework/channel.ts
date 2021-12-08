@@ -4,7 +4,7 @@ import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, Text
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
 import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler } from './@types';
-import { ButtonRegistry } from './button';
+import { ButtonRegistry } from './interaction';
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
 const STOP_EMOJI = '🚫';
@@ -18,10 +18,14 @@ export class DiscordTextChannel implements ContextTextChannel {
     return this.channel.lastMessageId || undefined;
   }
 
+  get isDm(): boolean {
+    return this.channel.type === 'DM';
+  }
+
   get sendable(): boolean {
     let value = !this.channel.deleted;
-    if (this.channel.type === 'GUILD_TEXT') {
-      const permissions = (this.channel as TextChannel).permissionsFor(this.channel.guild.me!);
+    if (!this.isDm) {
+      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
       value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
     }
     return value;

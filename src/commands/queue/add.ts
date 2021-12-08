@@ -31,7 +31,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   let fetcher: SourceFetcher | undefined;
   if (options.IDENTIFIER) {
-    const user = await context.user.get();
+    const user = await context.interaction.user.get();
     if (!user.identifiers || !user.identifiers[options.IDENTIFIER]) {
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
@@ -39,14 +39,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
+    await context.interaction.channel.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`);
 
-    fetcher = getSourceFetcher(identifier, options, context.channel);
+    fetcher = getSourceFetcher(identifier, options, context.interaction.channel);
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
       const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
-      await context.channel.send(`🔎 ${msg}`);
+      await context.interaction.channel.send(`🔎 ${msg}`);
       fetcher = resource.fetcher;
     }
   }
@@ -87,7 +87,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const endText = options.NEXT
     ? 'to be played next!'
     : 'to the queue!';
-  await context.channel.send(`✨ ${bodyText} ${endText}`);
+  await context.interaction.channel.send(`✨ ${bodyText} ${endText}`);
 
 }
 

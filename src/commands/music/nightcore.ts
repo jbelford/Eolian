@@ -18,7 +18,7 @@ async function executeNightcore(context: CommandContext, options: CommandOptions
     if (context.server!.player.isStreaming) {
       msg += ` ${info}`;
     }
-    await context.channel.send(msg);
+    await context.interaction.channel.send(msg);
     return;
   }
 
@@ -33,14 +33,14 @@ async function executeNightcore(context: CommandContext, options: CommandOptions
     if (context.server!.player.isStreaming) {
       msg += ` ${info}`;
     }
-    await context.channel.send(msg);
+    await context.interaction.channel.send(msg);
     return;
   }
 
   const enabled = context.server!.player.nightcore
     ? '🌕 Nightcore mode is currently enabled!'
     : '🌑 Nightcore mode is currently disabled!';
-  await context.channel.send(enabled);
+  await context.interaction.channel.send(enabled);
 }
 
 export const NIGHTCORE_COMMAND: Command = {

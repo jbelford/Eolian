@@ -26,6 +26,10 @@ export class DiscordUser implements ContextUser {
     return this.user.avatarURL({ dynamic: true }) || undefined;
   }
 
+  async send(message: string): Promise<void> {
+    await this.user.send(message);
+  }
+
   getVoice(): ContextVoiceChannel | undefined {
     if (this.guildUser) {
       const voiceChannel = this.guildUser.voice.channel;
