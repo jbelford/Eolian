@@ -47,8 +47,10 @@ export const environment: AppEnv = {
   owners: getArrayEnv('OWNERS'),
   queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
   youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
+  devGuild: getEnvOpt('DEV_GUILD'),
   tokens: {
     discord: {
+      clientId: getEnvOpt('DISCORD_CLIENT_ID'),
       main: getEnv('DISCORD_TOKEN'),
       old: getEnvOpt('DISCORD_TOKEN_OLD'),
     },

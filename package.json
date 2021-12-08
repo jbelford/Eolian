@@ -22,9 +22,12 @@
   "author": "Jack Belford",
   "license": "GPL-3.0+",
   "dependencies": {
+    "@discordjs/builders": "^0.9.0",
     "@discordjs/opus": "0.5.3",
+    "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.7.5",
     "bufferutil": "^4.0.5",
+    "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
     "dotenv": "^8.2.0",
     "erlpack": "git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874",
