@@ -118,6 +118,10 @@ export class DiscordEolianBot implements EolianBot {
 
   private onInteractionHandler = async (interaction: Interaction) => {
     try {
+      if (!interaction.inCachedGuild()) {
+        logger.warn('Ignoring interaction from guild not cached: %s', interaction);
+        return;
+      }
       if (interaction.isButton()) {
         await this.onButtonClickHandler(interaction);
       } else if (interaction.isCommand()) {
