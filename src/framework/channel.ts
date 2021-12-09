@@ -9,32 +9,34 @@ import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscord
 
 export const STOP_EMOJI = '🚫';
 
-export class DiscordTextChannel implements ContextTextChannel {
+export interface DiscordMessageSender {
+  send(options: MessageOptions): Promise<Message>;
+}
 
-  constructor(private readonly channel: TextChannel | DMChannel,
-    private readonly registry: ButtonRegistry) { }
+export class DiscordSender {
 
-  get lastMessageId(): string | undefined {
-    return this.channel.lastMessageId || undefined;
-  }
+  private _sendable?: boolean;
 
-  get isDm(): boolean {
-    return this.channel.type === 'DM';
+  constructor(private readonly sender: DiscordMessageSender,
+    private readonly registry: ButtonRegistry,
+    private readonly channel: TextChannel | DMChannel) {
   }
 
   get sendable(): boolean {
-    let value = !this.channel.deleted;
-    if (!this.isDm) {
-      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
-      value &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
+    if (this._sendable === undefined) {
+      this._sendable = !this.channel.deleted;
+      if (this.channel.type === 'GUILD_TEXT') {
+        const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
+        this._sendable &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
+      }
     }
-    return value;
+    return this._sendable;
   }
 
   async send(message: string): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
-        const discordMessage = await this.channel.send(message);
+        const discordMessage = await this.sender.send({ content: message });
         return new DiscordMessage(discordMessage);
       } catch (e) {
         logger.warn('Failed to send message: %s', e);
@@ -132,10 +134,7 @@ export class DiscordTextChannel implements ContextTextChannel {
           messageOptions.components = buttonMapping.rows;
         }
 
-        const message = await this.channel.send(messageOptions) as Message;
-        if (embed.reactions) {
-          this.addReactions(message, embed.reactions);
-        }
+        const message = await this.sender.send(messageOptions);
 
         let msgButtons: DiscordMessageButtons | undefined;
         if (buttonMapping) {
@@ -151,18 +150,40 @@ export class DiscordTextChannel implements ContextTextChannel {
     return undefined;
   }
 
-  private addReactions(message: Message, reactions: string[]): void {
-    (async () => {
-      try {
-        for (const reaction of reactions) {
-          if (!message.deleted) {
-            await message.react(reaction);
-          }
-        }
-      } catch (e) {
-        logger.warn(`Failed to add button reaction to selection: %s`, e);
-      }
-    })();
+}
+
+export class DiscordTextChannel implements ContextTextChannel {
+
+  private readonly sender: DiscordSender;
+
+  constructor(private readonly channel: TextChannel | DMChannel,
+      private readonly registry: ButtonRegistry) {
+    this.sender = new DiscordSender(channel, this.registry, this.channel);
+  }
+
+  get lastMessageId(): string | undefined {
+    return this.channel.lastMessageId || undefined;
+  }
+
+  get isDm(): boolean {
+    return this.channel.type === 'DM';
+  }
+
+  get sendable(): boolean {
+    return this.sender.sendable;
+  }
+
+  send(message: string): Promise<ContextMessage | undefined> {
+    return this.sender.send(message);
+  }
+
+  // Simutaneously need to accept a text input OR emoji reaction so this is a mess
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+    return this.sender.sendSelection(question, options, user);
+  }
+
+  sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
+    return this.sender.sendEmbed(embed);
   }
 
 }

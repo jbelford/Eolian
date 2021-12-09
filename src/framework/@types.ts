@@ -123,7 +123,6 @@ export interface EmbedMessage {
     icon?: string;
     text: string;
   };
-  reactions?: string[];
   buttons?: EmbedMessageButton[];
   buttonUserId?: string;
 }

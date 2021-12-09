@@ -1,21 +1,38 @@
 import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
-import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
-import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, InteractionReplyOptions, Message, TextChannel } from 'discord.js';
-import { createSelectionEmbed } from 'embed';
+import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageOptions, TextChannel } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
-import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, ServerDetails } from './@types';
+import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, ServerDetails } from './@types';
 import { ButtonRegistry } from './button';
-import { DiscordTextChannel, STOP_EMOJI } from './channel';
-import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
+import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
+import { DiscordMessage } from './message';
 import { DiscordUser, getPermissionLevel } from './user';
+
+class DiscordInteractionSender implements DiscordMessageSender {
+
+  constructor(private readonly interaction: ButtonInteraction | CommandInteraction) {
+  }
+
+  async send(options: MessageOptions): Promise<Message> {
+    let reply: Message;
+    if (!this.interaction.replied) {
+      reply = await this.interaction.reply({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+    } else {
+      reply = await this.interaction.followUp({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+    }
+    return reply;
+  }
+
+}
+
 
 class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> implements ContextInteraction {
 
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
+  private _sender?: DiscordSender;
 
   constructor(protected readonly interaction: T,
     private readonly registry: ButtonRegistry,
@@ -23,7 +40,7 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
   }
 
   get sendable(): boolean {
-    return true;
+    return this.sender.sendable;
   }
 
   get user(): ContextUser {
@@ -50,6 +67,13 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     return this.interaction.replied;
   }
 
+  private get sender(): DiscordSender {
+    if (!this._sender) {
+      this._sender = new DiscordSender(new DiscordInteractionSender(this.interaction), this.registry, <TextChannel | DMChannel>this.interaction.channel);
+    }
+    return this._sender;
+  }
+
   async reply(message: string, options?: ContextInteractionOptions): Promise<void> {
     const ephemeral = options?.ephemeral ?? true;
     if (!this.hasReplied) {
@@ -63,79 +87,16 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     await this.interaction.deferReply({ ephemeral });
   }
 
-  async send(message: string): Promise<ContextMessage | undefined> {
-    try {
-      const reply = await this.sendMessage({ content: message });
-      return new DiscordMessage(reply);
-    } catch (e) {
-      logger.warn('Failed to send message: %s', e);
-    }
-    return undefined;
+  send(message: string): Promise<ContextMessage | undefined> {
+    return this.sender.send(message);
   }
 
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let resolved = false;
-
-      const onClick: MessageButtonOnClickHandler = async (interaction, emoji) => {
-        if (!resolved) {
-          resolved = true;
-          await interaction.message.delete();
-          resolve(emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1);
-        }
-        return true;
-      };
-
-      const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
-      if (options.length < NUMBER_TO_EMOJI.length) {
-        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], onClick }));
-        selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
-        selectEmbed.buttonUserId = user.id;
-      }
-
-      const sentEmbedPromise = this.sendEmbed(selectEmbed);
-      sentEmbedPromise.catch(reject);
-    });
+    return this.sender.sendSelection(question, options, user);
   }
 
   async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
-    try {
-      const rich = mapDiscordEmbed(embed);
-
-      const messageOptions: InteractionReplyOptions = { embeds: [rich] };
-
-      let buttonMapping: DiscordButtonMapping | undefined;
-      if (embed.buttons) {
-        buttonMapping = mapDiscordEmbedButtons(embed.buttons);
-        messageOptions.components = buttonMapping.rows;
-      }
-
-      const message = await this.sendMessage(messageOptions);
-      if (embed.reactions) {
-        logger.warn('No adding reactions for slash command messages');
-      }
-
-      let msgButtons: DiscordMessageButtons | undefined;
-      if (buttonMapping) {
-        this.registry.register(message.id, buttonMapping.mapping);
-        msgButtons = { registry: this.registry, components: buttonMapping.rows };
-      }
-
-      return new DiscordMessage(message, msgButtons);
-    } catch (e) {
-      logger.warn('Failed to send embed message: %s', e);
-    }
-    return undefined;
-  }
-
-  private async sendMessage(options: InteractionReplyOptions): Promise<Message> {
-    let reply: Message;
-    if (!this.hasReplied) {
-      reply = await this.interaction.reply({ ...options, ephemeral: true, fetchReply: true }) as Message;
-    } else {
-      reply = await this.interaction.followUp({ ...options, ephemeral: true, fetchReply: true }) as Message;
-    }
-    return reply;
+    return this.sender.sendEmbed(embed);
   }
 
 }
