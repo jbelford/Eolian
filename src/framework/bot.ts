@@ -126,6 +126,8 @@ export class DiscordEolianBot implements EolianBot {
         await this.onButtonClickHandler(interaction);
       } else if (interaction.isCommand()) {
         await this.onCommandHandler(interaction);
+      } else {
+        logger.warn('Received unknown interaction type: %s', interaction.type);
       }
     } catch (e) {
       logger.warn('Unhandled occured executing interaction event: %s', e);
@@ -143,6 +145,10 @@ export class DiscordEolianBot implements EolianBot {
       if (!contextInteraction.hasReplied) {
         await interaction.deferUpdate();
       }
+    } else {
+      logger.warn('Unknown button click received: %s %s', interaction.message.id, interaction.customId);
+      await interaction.update({ content: interaction.message.content || undefined, embeds: interaction.message.embeds, components: [] });
+      await interaction.followUp({ content: 'Sorry, this button has expired.', ephemeral: true });
     }
   };
 
