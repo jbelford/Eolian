@@ -147,7 +147,7 @@ export class DiscordEolianBot implements EolianBot {
       }
     } else {
       logger.warn('Unknown button click received: %s %s', interaction.message.id, interaction.customId);
-      await interaction.update({ content: interaction.message.content || undefined, embeds: interaction.message.embeds, components: [] });
+      await interaction.update({ content: `***Expired Message***`, components: [] });
       await interaction.followUp({ content: 'Sorry, this button has expired.', ephemeral: true });
     }
   };
