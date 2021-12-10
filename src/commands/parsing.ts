@@ -106,6 +106,8 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     const command = COMMAND_MAP[commandName];
     if (!command) {
       throw new EolianUserError(`There is no command \`${commandName}\``);
+    } else if (command.permission > permission) {
+      throw new EolianUserError('You do not have permission to use this command');
     }
 
     const optionParsingFn = getCommandOptionParsingStrategy(command, type);
