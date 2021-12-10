@@ -221,6 +221,8 @@ export class DiscordEolianBot implements EolianBot {
           } finally {
             await this.lockManager.unlock(message.author.id);
           }
+        } else {
+          await message.reply({ content: 'One command at a time please!' });
         }
       }
     } catch (e) {
