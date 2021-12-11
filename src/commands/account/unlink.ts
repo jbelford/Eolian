@@ -6,6 +6,10 @@ import { PERMISSION } from 'common/constants';
 async function execute({ interaction }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
   let response: string | undefined;
 
+  if (SOUNDCLOUD || SPOTIFY) {
+    await interaction.defer();
+  }
+
   if (SOUNDCLOUD) {
     await interaction.user.setSoundCloud(null);
     response = 'I have unlinked any SoundCloud account if you had one';

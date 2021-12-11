@@ -12,11 +12,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         : `I already don't know anything about you`;
     await context.interaction.reply(response);
   } else {
+    const defer = context.interaction.defer();
+
     const user = await context.interaction.user.get();
     const spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
     const soundCloudAccount = user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
 
     const message = createUserDetailsEmbed(context.interaction.user, spotifyAccount, soundCloudAccount, user && user.identifiers);
+
+    await defer;
     await context.interaction.sendEmbed(message);
   }
 }

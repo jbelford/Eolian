@@ -29,6 +29,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     throw new EolianUserError(`You specified both URL and SEARCH pattern! Please try again with only one of those.`);
   }
 
+  await context.interaction.defer(false);
+
   const resource = await getSourceResolver(context, options).resolve();
   if (!resource) {
     throw new EolianUserError(`You must provide me something to identify! Please try again with a URL or query.`);

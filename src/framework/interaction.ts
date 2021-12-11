@@ -18,7 +18,11 @@ class DiscordInteractionSender implements DiscordMessageSender {
   async send(options: MessageOptions): Promise<Message> {
     let reply: Message;
     if (!this.interaction.replied) {
-      reply = await this.interaction.reply({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+      if (!this.interaction.deferred) {
+        reply = await this.interaction.reply({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+      } else {
+        reply = await this.interaction.editReply({ ...options }) as Message;
+      }
     } else {
       reply = await this.interaction.followUp({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
     }
@@ -76,13 +80,17 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
   async reply(message: string, options?: ContextInteractionOptions): Promise<void> {
     const ephemeral = options?.ephemeral ?? true;
     if (!this.hasReplied) {
-      await this.interaction.reply({ content: message, ephemeral });
+      if (!this.interaction.deferred) {
+        await this.interaction.reply({ content: message, ephemeral });
+      } else {
+        await this.interaction.editReply({ content: message });
+      }
     } else {
       await this.interaction.followUp({ content: message, ephemeral });
     }
   }
 
-  async defer(ephemeral?: boolean): Promise<void> {
+  async defer(ephemeral = true): Promise<void> {
     await this.interaction.deferReply({ ephemeral });
   }
 

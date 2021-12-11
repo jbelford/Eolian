@@ -8,33 +8,35 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
 
-async function execute(context: CommandContext, { SEARCH: QUERY, URL, SPOTIFY }: CommandOptions): Promise<void> {
-  if (QUERY && URL) {
+async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
+  if (options.SEARCH && options.URL) {
     throw new EolianUserError(`You provided both SEARCH and URL patterns. Please provide just one of those items.`);
   }
 
-  if (URL) {
-    await handleUrl(URL, context);
-  } else if (QUERY) {
-    if (SPOTIFY) {
+  if (options.URL) {
+    await context.interaction.defer();
+    await handleUrl(options.URL, context);
+  } else if (options.SEARCH) {
+    if (options.SPOTIFY) {
       throw new EolianUserError(`Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`);
     }
-    await handleSoundCloudQuery(context, QUERY);
+    await context.interaction.defer();
+    await handleSoundCloudQuery(context, options.SEARCH);
   } else {
     throw new EolianUserError('You must provide valid URL or SEARCH for me to link your account to!');
   }
 }
 
-async function handleUrl(URL: UrlArgument, context: CommandContext) {
-  switch (URL.source) {
+async function handleUrl(url: UrlArgument, context: CommandContext) {
+  switch (url.source) {
     case SOURCE.SPOTIFY:
-      await handleSpotifyUrl(URL.value, context);
+      await handleSpotifyUrl(url.value, context);
       break;
     case SOURCE.SOUNDCLOUD:
-      await handleSoundCloudUrl(URL.value, context);
+      await handleSoundCloudUrl(url.value, context);
       break;
     default:
-      logger.warn(`A URL was provided without a valid source. This should not happen: ${URL}`);
+      logger.warn(`A URL was provided without a valid source. This should not happen: ${url}`);
       throw new EolianUserError('The URL you provided does not match any source.');
   }
 }
