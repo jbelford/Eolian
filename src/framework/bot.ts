@@ -142,9 +142,6 @@ export class DiscordEolianBot implements EolianBot {
       if (destroy) {
         contextInteraction.message.releaseButtons();
       }
-      if (!contextInteraction.hasReplied) {
-        await interaction.deferUpdate();
-      }
     } else {
       logger.warn('Unknown button click received: %s %s', interaction.message.id, interaction.customId);
       await interaction.update({ content: `***Expired Message***`, components: [] });
