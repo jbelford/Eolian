@@ -2,9 +2,10 @@ import { soundcloud } from 'api';
 import { SoundCloudPlaylist, SoundCloudTrack } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SoundCloudPlaylistResolver implements SourceResolver {
@@ -18,18 +19,15 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
       throw new EolianUserError(`No SoundCloud playlists were found.`);
     }
 
-    let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await this.context.interaction.sendSelection('Choose a SoundCloud playlist',
+      const result = await this.context.interaction.sendSelection('Choose a SoundCloud playlist',
         playlists.map(playlist => ({ name: playlist.title, subname: playlist.user.username, url: playlist.permalink_url })),
         this.context.interaction.user);
-      if (idx < 0) {
-        throw new EolianUserError(MESSAGES.NO_SELECTION);
-      }
-      playlist = playlists[idx];
-    }
 
-    return createSoundCloudPlaylist(playlist);
+      return createSoundCloudPlaylist(playlists[result.selected], result.message);
+    } else {
+      return createSoundCloudPlaylist(playlists[0]);
+    }
   }
 
   private async searchSoundCloudPlaylists(): Promise<SoundCloudPlaylist[]> {
@@ -53,7 +51,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
   }
 }
 
-export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist): ResolvedResource {
+export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist, message?: ContextMessage): ResolvedResource {
   return {
     name: playlist.title,
     authors: [playlist.user.username],
@@ -63,7 +61,8 @@ export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist): Resolved
       type: IdentifierType.PLAYLIST,
       url: playlist.permalink_url
     },
-    fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist)
+    fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist),
+    selectionMessage: message
   };
 }
 

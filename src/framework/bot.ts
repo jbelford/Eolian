@@ -140,7 +140,7 @@ export class DiscordEolianBot implements EolianBot {
       const contextInteraction = new DiscordButtonInteraction(interaction, this.registry, this.db.users);
       const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
       if (destroy) {
-        this.registry.unregister(interaction.message.id);
+        contextInteraction.message.releaseButtons();
       }
       if (!contextInteraction.hasReplied) {
         await interaction.deferUpdate();
@@ -293,8 +293,15 @@ export class DiscordEolianBot implements EolianBot {
       const userError = (e instanceof EolianUserError);
 
       if (interaction.sendable) {
-        const text = userError ? (e as EolianUserError).message : `Hmm.. I tried to do that but something in my internals is broken. Try again later.`;
-        await interaction.reply(text);
+        if (userError) {
+          if (e.context) {
+            await e.context.edit(e.message);
+          } else {
+            await interaction.reply(e.message);
+          }
+        } else {
+          await interaction.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
+        }
       } else {
         await interaction.user.send(`Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`);
       }

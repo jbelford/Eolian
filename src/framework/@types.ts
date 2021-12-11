@@ -10,10 +10,15 @@ export interface EolianBot extends Closable {
   start(): Promise<void>;
 }
 
+export type SelectionResult = {
+  message: ContextMessage;
+  selected: number;
+};
+
 export interface ContextSendable {
   readonly sendable: boolean;
   send(message: string): Promise<ContextMessage | undefined>;
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number>
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult>
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined>;
 }
 

@@ -19,7 +19,7 @@ export class SoundCloudUrlResolver implements SourceResolver {
       case SoundCloudResourceType.TRACK:
         return createSoundCloudSong(resource as SoundCloudTrack);
       case SoundCloudResourceType.USER:
-        return createSoundCloudUser(resource as SoundCloudUser);
+        return createSoundCloudUser({ value: resource as SoundCloudUser });
       default:
         throw new EolianUserError('The SoundCloud URL is not valid!');
     }

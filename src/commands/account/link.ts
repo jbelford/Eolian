@@ -3,7 +3,7 @@ import { SoundCloudUser, SpotifyResourceType } from 'api/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
-import { MESSAGES, PERMISSION, SOURCE } from 'common/constants';
+import { PERMISSION, SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -56,7 +56,8 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 
 async function handleSoundCloudUrl(url: string, context: CommandContext) {
   const soundCloudUser = await soundcloud.resolveUser(url);
-  await handleSoundCloud(context, soundCloudUser);
+  const message = await handleSoundCloud(context, soundCloudUser);
+  await context.interaction.send(message);
 }
 
 async function handleSoundCloudQuery(context: CommandContext, query: string) {
@@ -67,19 +68,17 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
 
   const question = 'Which SoundCloud account do you want me to link?';
   const options: SelectionOption[] = soundCloudUsers.map(user => ({ name: user.username, subname: user.permalink_url, url: user.permalink_url }));
-  const idx = await context.interaction.sendSelection(question, options, context.interaction.user);
-  if (idx < 0) {
-    throw new EolianUserError(MESSAGES.NO_SELECTION);
-  }
+  const result = await context.interaction.sendSelection(question, options, context.interaction.user);
 
-  await handleSoundCloud(context, soundCloudUsers[idx]);
+  const message = await handleSoundCloud(context, soundCloudUsers[result.selected]);
+  await result.message.edit(message);
 }
 
-async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser) {
+async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser): Promise<string> {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
-  await context.interaction.send(`I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
-    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
-    + ` to use your playlists, likes, and tracks.`);
+  return `I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
+  + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
+  + ` to use your playlists, likes, and tracks.`;
 }
 
 export const LINK_COMMAND: Command = {

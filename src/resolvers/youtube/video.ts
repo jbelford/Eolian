@@ -2,9 +2,10 @@ import { youtube } from 'api';
 import { YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class YouTubeVideoResolver implements SourceResolver {
@@ -18,19 +19,16 @@ export class YouTubeVideoResolver implements SourceResolver {
     }
 
     const videos = await youtube.searchVideos(this.params.SEARCH);
-    const idx = await this.context.interaction.sendSelection('Choose a YouTube video',
+    const result = await this.context.interaction.sendSelection('Choose a YouTube video',
       videos.map(video => ({ name: video.name, url: video.url })),
       this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    return createYouTubeVideo(videos[idx]);
+    return createYouTubeVideo(videos[result.selected], result.message);
   }
 
 }
 
-export function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
+export function createYouTubeVideo(video: YoutubeVideo, message?: ContextMessage): ResolvedResource {
   return {
     name: video.name,
     authors: [video.channelName],
@@ -40,7 +38,8 @@ export function createYouTubeVideo(video: YoutubeVideo): ResolvedResource {
       type: IdentifierType.SONG,
       url: video.url
     },
-    fetcher: new YouTubeVideoFetcher(video.id, video)
+    fetcher: new YouTubeVideoFetcher(video.id, video),
+    selectionMessage: message
   };
 }
 

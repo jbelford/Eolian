@@ -39,7 +39,11 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   await context.interaction.user.setIdentifier(options.IDENTIFIER, resource.identifier);
   const response = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
       + ` can now be identified with \`${options.IDENTIFIER}\`.`;
-  await context.interaction.reply(response);
+  if (resource.selectionMessage) {
+    await resource.selectionMessage.edit(response);
+  } else {
+    await context.interaction.reply(response);
+  }
 }
 
 export const IDENTIFY_COMMAND: Command = {

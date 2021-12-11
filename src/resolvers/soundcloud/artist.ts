@@ -2,10 +2,12 @@ import { soundcloud } from 'api';
 import { SoundCloudUser } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
-import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import { FetchResult, MessageBundledResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+
+type UserResult = MessageBundledResult<SoundCloudUser>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
 
@@ -13,35 +15,26 @@ export class SoundCloudArtistResolver implements SourceResolver {
   }
 
   async resolve(): Promise<ResolvedResource> {
-    const user = await this.getSoundCloudUser();
-    return createSoundCloudUser(user);
+    const result = await this.getSoundCloudUser();
+    return createSoundCloudUser(result);
   }
 
-  protected async getSoundCloudUser(): Promise<SoundCloudUser> {
-    let user: SoundCloudUser | undefined;
+  protected async getSoundCloudUser(): Promise<UserResult> {
     if (this.params.SEARCH) {
-      user = await this.resolveArtistQuery(this.params.SEARCH);
+      return await this.resolveArtistQuery(this.params.SEARCH);
     } else if (this.params.MY) {
-      user = await this.resolveUser();
+      return { value: await this.resolveUser() };
     }
-
-    if (!user) {
-      throw new EolianUserError('Missing query for SoundCloud artist.');
-    }
-
-    return user;
+    throw new EolianUserError('Missing query for SoundCloud artist.');
   }
 
-  private async resolveArtistQuery(query: string): Promise<SoundCloudUser> {
+  private async resolveArtistQuery(query: string): Promise<UserResult> {
     const users = await soundcloud.searchUser(query);
-    const idx = await this.context.interaction.sendSelection('Choose a SoundCloud user',
+    const result = await this.context.interaction.sendSelection('Choose a SoundCloud user',
       users.map(user => ({ name: user.username, url: user.permalink_url })),
       this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    return users[idx];
+    return { value: users[result.selected], message: result.message };
   }
 
   private async resolveUser(): Promise<SoundCloudUser> {
@@ -55,8 +48,8 @@ export class SoundCloudArtistResolver implements SourceResolver {
 
 export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
-    const user = await this.getSoundCloudUser();
-    const resource = createSoundCloudUser(user);
+    const result = await this.getSoundCloudUser();
+    const resource = createSoundCloudUser(result);
     resource.name = 'Posted Tracks';
     resource.identifier.type = IdentifierType.TRACKS;
     resource.identifier.url = `${resource.identifier.url}/tracks`;
@@ -65,7 +58,7 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
 }
 
 
-export function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
+export function createSoundCloudUser({ value: user, message}: UserResult): ResolvedResource {
   return {
     name: user.username,
     authors: [user.username],
@@ -75,7 +68,8 @@ export function createSoundCloudUser(user: SoundCloudUser): ResolvedResource {
       type: IdentifierType.ARTIST,
       url: user.permalink_url
     },
-    fetcher: new SoundCloudArtistFetcher(user.id)
+    fetcher: new SoundCloudArtistFetcher(user.id),
+    selectionMessage: message
   }
 }
 

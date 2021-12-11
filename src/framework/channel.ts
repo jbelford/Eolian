@@ -1,9 +1,10 @@
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler } from './@types';
+import { ContextMessage, ContextSendable, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, SelectionResult } from './@types';
 import { ButtonRegistry } from "./button";
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
@@ -13,7 +14,7 @@ export interface DiscordMessageSender {
   send(options: MessageOptions): Promise<Message>;
 }
 
-export class DiscordSender {
+export class DiscordSender implements ContextSendable {
 
   private _sendable?: boolean;
 
@@ -45,12 +46,21 @@ export class DiscordSender {
     return undefined;
   }
 
-  // Simutaneously need to accept a text input OR emoji reaction so this is a mess
-  async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
-    if (!this.sendable) {
-      return -1;
+  async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
+    if (this.sendable) {
+      const result = await this._sendSelection(question, options, user);
+      if (result) {
+        if (result.selected < 0) {
+          throw new EolianUserError('Nothing selected 😢', result.message);
+        }
+        return result;
+      }
     }
+    throw new Error('Failed to send selection message');
+  }
 
+  // Simutaneously need to accept a text input OR emoji reaction so this is a mess
+  private _sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult | undefined> {
     return new Promise((resolve, reject) => {
       let resolved = false;
 
@@ -58,20 +68,19 @@ export class DiscordSender {
         if (!resolved) {
           try {
             resolved = true;
-            if (sentEmbedPromise) {
-              const sentEmbed = await sentEmbedPromise;
-              if (sentEmbed) {
-                await sentEmbed.delete();
-              }
+            const sentEmbed = await sentEmbedPromise;
+            if (!sentEmbed) {
+              logger.warn('Collector expected selection embed message but missing');
+              return;
             }
+            sentEmbed.releaseButtons();
             if (!msg) {
-              resolve(-1);
+              resolve({ message: sentEmbed, selected: -1 });
             } else {
               if (msg.deletable) {
                 await msg.delete();
               }
-              const idx = +msg.content;
-              resolve(idx - 1);
+              resolve({ message: sentEmbed, selected: +msg.content - 1});
             }
           } catch (e) {
             reject(e);
@@ -82,9 +91,14 @@ export class DiscordSender {
       const onClick: MessageButtonOnClickHandler = async (interaction, emoji) => {
         if (!resolved) {
           resolved = true;
-          collector.stop();
-          await interaction.message.delete();
-          resolve(emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1);
+          const sentEmbed = await sentEmbedPromise;
+          if (sentEmbed) {
+            collector.stop();
+            const selected = emoji === STOP_EMOJI ? -1 : EMOJI_TO_NUMBER[emoji] - 1;
+            resolve({ message: interaction.message, selected });
+          } else {
+            logger.warn('Button handler expected selection embed message but missing');
+          }
         }
         return true;
       };
@@ -100,7 +114,7 @@ export class DiscordSender {
         if (!message) {
           resolved = true;
           collector.stop();
-          reject('Failed to send embed for selection message');
+          resolve(undefined);
         }
         return message;
       });
@@ -184,7 +198,7 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
     return this.sender.sendSelection(question, options, user);
   }
 

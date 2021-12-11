@@ -2,9 +2,10 @@ import { youtube } from 'api';
 import { YoutubePlaylist } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 
@@ -19,19 +20,15 @@ export class YouTubePlaylistResolver implements SourceResolver {
     }
 
     const playlists = await youtube.searchPlaylists(this.params.SEARCH);
-    const idx = await this.context.interaction.sendSelection('Choose a YouTube playlist',
+    const result = await this.context.interaction.sendSelection('Choose a YouTube playlist',
       playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
       this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    const playlist = playlists[idx];
-    return createYouTubePlaylist(playlist);
+    return createYouTubePlaylist(playlists[result.selected], result.message);
   }
 }
 
-export function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResource {
+export function createYouTubePlaylist(playlist: YoutubePlaylist, message?: ContextMessage): ResolvedResource {
   return {
     name: playlist.name,
     authors: [playlist.channelName],
@@ -41,7 +38,8 @@ export function createYouTubePlaylist(playlist: YoutubePlaylist): ResolvedResour
       type: IdentifierType.PLAYLIST,
       url: playlist.url
     },
-    fetcher: new YouTubePlaylistFetcher(playlist.id)
+    fetcher: new YouTubePlaylistFetcher(playlist.id),
+    selectionMessage: message
   };
 }
 

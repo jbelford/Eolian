@@ -2,9 +2,10 @@ import { spotify } from 'api';
 import { SpotifyArtist } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 
@@ -19,18 +20,15 @@ export class SpotifyArtistResolver implements SourceResolver {
     }
 
     const artists = await spotify.searchArtists(this.params.SEARCH);
-    const idx = await this.context.interaction.sendSelection('Choose a Spotify artist',
+    const result = await this.context.interaction.sendSelection('Choose a Spotify artist',
       artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
       this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    return createSpotifyArtist(artists[idx]);
+    return createSpotifyArtist(artists[result.selected], result.message);
   }
 }
 
-export function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
+export function createSpotifyArtist(artist: SpotifyArtist, message?: ContextMessage): ResolvedResource {
   return {
     name: artist.name,
     authors: [artist.name],
@@ -40,7 +38,8 @@ export function createSpotifyArtist(artist: SpotifyArtist): ResolvedResource {
       type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
     },
-    fetcher: new SpotifyArtistFetcher(artist.id)
+    fetcher: new SpotifyArtistFetcher(artist.id),
+    selectionMessage: message
   };
 }
 

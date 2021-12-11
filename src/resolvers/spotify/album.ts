@@ -2,10 +2,11 @@ import { spotify } from 'api';
 import { SpotifyAlbum, SpotifyAlbumFull } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 
@@ -26,18 +27,14 @@ export class SpotifyAlbumResolver implements SourceResolver {
       subname: album.artists.map(artist => artist.name).join(','),
       url: album.external_urls.spotify
     }));
-    const idx = await this.context.interaction.sendSelection(
+    const result = await this.context.interaction.sendSelection(
       `Select the album you want (resolved via Spotify)`, options, this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    const album = albums[idx];
-    return createSpotifyAlbum(album);
+    return createSpotifyAlbum(albums[result.selected], result.message);
   }
 }
 
-export function createSpotifyAlbum(album: SpotifyAlbum): ResolvedResource {
+export function createSpotifyAlbum(album: SpotifyAlbum, message?: ContextMessage): ResolvedResource {
   return {
     name: album.name,
     authors: album.artists.map(x => x.name),
@@ -47,7 +44,8 @@ export function createSpotifyAlbum(album: SpotifyAlbum): ResolvedResource {
       type: IdentifierType.ALBUM,
       url: album.external_urls.spotify
     },
-    fetcher: new SpotifyAlbumFetcher(album.id, album)
+    fetcher: new SpotifyAlbumFetcher(album.id, album),
+    selectionMessage: message
   };
 }
 

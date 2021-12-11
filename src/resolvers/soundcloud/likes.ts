@@ -7,21 +7,22 @@ import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
-import { ContextSendable } from 'framework/@types';
+import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistResolver } from './artist';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
-    const user = await this.getSoundCloudUser();
-    return createSoundCloudLikes(user, this.params, this.context.interaction);
+    const result = await this.getSoundCloudUser();
+    return createSoundCloudLikes(result.value, this.params, this.context.interaction, result.message);
   }
 }
 
 export function createSoundCloudLikes(
     user: SoundCloudUser,
     params: CommandOptions,
-    sendable: ContextSendable): ResolvedResource {
+    sendable: ContextSendable,
+    message?: ContextMessage): ResolvedResource {
   return {
     name: 'Liked Tracks',
     authors: [user.username],
@@ -31,7 +32,8 @@ export function createSoundCloudLikes(
       type: IdentifierType.LIKES,
       url: `${user.permalink_url}/likes`
     },
-    fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user)
+    fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user),
+    selectionMessage: message
   };
 }
 

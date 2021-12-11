@@ -45,8 +45,12 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   } else {
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      const msg = createSelectedMessage(resource.name, resource.authors, resource.identifier);
-      await context.interaction.send(`🔎 ${msg}`);
+      const msg = '🔎 ' + createSelectedMessage(resource.name, resource.authors, resource.identifier);
+      if (resource.selectionMessage) {
+        await resource.selectionMessage.edit(msg);
+      } else {
+        await context.interaction.send(msg);
+      }
       fetcher = resource.fetcher;
     }
   }

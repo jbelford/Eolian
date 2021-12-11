@@ -3,11 +3,11 @@ import { RangeFactory, SpotifyPlaylist, SpotifyPlaylistTracks } from 'api/@types
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/keywords';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
-import { ContextSendable } from 'framework/@types';
+import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 
@@ -22,18 +22,15 @@ export class SpotifyPlaylistResolver implements SourceResolver {
       throw new EolianUserError(`No Spotify playlists were found.`);
     }
 
-    let playlist = playlists[0];
     if (playlists.length > 1) {
-      const idx = await this.context.interaction.sendSelection('Choose a Spotify playlist',
+      const result = await this.context.interaction.sendSelection('Choose a Spotify playlist',
         playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
         this.context.interaction.user);
-      if (idx < 0) {
-        throw new EolianUserError(MESSAGES.NO_SELECTION);
-      }
-      playlist = playlists[idx];
-    }
 
-    return createSpotifyPlaylist(playlist, this.params, this.context.interaction);
+      return createSpotifyPlaylist(playlists[result.selected], this.params, this.context.interaction, result.message);
+    } else {
+      return createSpotifyPlaylist(playlists[0], this.params, this.context.interaction);
+    }
   }
 
   private async searchSpotifyPlaylists(): Promise<SpotifyPlaylist[]> {
@@ -58,7 +55,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
 }
 
-export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: CommandOptions, sendable: ContextSendable): ResolvedResource {
+export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: CommandOptions, sendable: ContextSendable, message?: ContextMessage): ResolvedResource {
   return {
     name: playlist.name,
     authors: [playlist.owner.display_name || '<unknown>'],
@@ -68,7 +65,8 @@ export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: Command
       type: IdentifierType.PLAYLIST,
       url: playlist.external_urls.spotify
     },
-    fetcher: new SpotifyPlaylistFetcher(playlist.id, params, sendable, playlist)
+    fetcher: new SpotifyPlaylistFetcher(playlist.id, params, sendable, playlist),
+    selectionMessage: message
   };
 }
 

@@ -4,7 +4,7 @@ import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
 import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
-import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, ServerDetails } from './@types';
+import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, SelectionResult, ServerDetails } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
@@ -98,7 +98,7 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     return this.sender.send(message);
   }
 
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
     return this.sender.sendSelection(question, options, user);
   }
 
@@ -237,7 +237,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.channel.send(message);
   }
 
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<number> {
+  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
     return this.channel.sendSelection(question, options, user);
   }
 

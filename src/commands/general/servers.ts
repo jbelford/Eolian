@@ -12,12 +12,12 @@ async function kickUnused(context: CommandContext) {
     return;
   }
   await context.interaction.send(servers.map((s, i) => `${i}. ${s.id}`).join('\n'));
-  const idx = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
-  if (idx === 0) {
+  const result = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
+  if (result.selected === 0) {
     await Promise.all(servers.map(s => context.client.leave(s.id)));
-    await context.interaction.send(`I have left all ${servers.length} servers`);
+    await result.message.edit(`I have left all ${servers.length} servers`);
   } else {
-    await context.interaction.send(`Cancelled kick`);
+    await result.message.edit(`Cancelled kick`);
   }
 }
 
@@ -29,12 +29,12 @@ async function kickOld(days: number, context: CommandContext) {
     return;
   }
   await context.interaction.send(servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'));
-  const idx = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
-  if (idx === 0) {
+  const result = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
+  if (result.selected === 0) {
     await Promise.all(servers.map(s => context.client.leave(s._id)));
-    await context.interaction.send(`I have left all ${servers.length} servers`);
+    await result.message.edit(`I have left all ${servers.length} servers`);
   } else {
-    await context.interaction.send(`Cancelled kick`);
+    await result.message.edit(`Cancelled kick`);
   }
 }
 

@@ -2,9 +2,10 @@ import { soundcloud } from 'api';
 import { SoundCloudTrack } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { MESSAGES, SOURCE } from 'common/constants';
+import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
+import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SoundCloudSongResolver implements SourceResolver {
@@ -17,18 +18,15 @@ export class SoundCloudSongResolver implements SourceResolver {
     }
 
     const songs = await soundcloud.searchSongs(this.params.SEARCH);
-    const idx = await this.context.interaction.sendSelection('Choose a SoundCloud track',
+    const result = await this.context.interaction.sendSelection('Choose a SoundCloud track',
       songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
       this.context.interaction.user);
-    if (idx < 0) {
-      throw new EolianUserError(MESSAGES.NO_SELECTION);
-    }
 
-    return createSoundCloudSong(songs[idx]);
+    return createSoundCloudSong(songs[result.selected], result.message);
   }
 }
 
-export function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
+export function createSoundCloudSong(track: SoundCloudTrack, message?: ContextMessage): ResolvedResource {
   return {
     name: track.title,
     authors: [track.user.username],
@@ -38,7 +36,8 @@ export function createSoundCloudSong(track: SoundCloudTrack): ResolvedResource {
       type: IdentifierType.SONG,
       url: track.permalink_url
     },
-    fetcher: new SoundCloudSongFetcher(track.id, track)
+    fetcher: new SoundCloudSongFetcher(track.id, track),
+    selectionMessage: message
   }
 }
 
