@@ -96,8 +96,14 @@ export class DiscordSender {
         selectEmbed.buttonUserId = user.id;
       }
 
-      const sentEmbedPromise = this.sendEmbed(selectEmbed);
-      sentEmbedPromise.catch(reject);
+      const sentEmbedPromise = this.sendEmbed(selectEmbed).then(message => {
+        if (!message) {
+          resolved = true;
+          collector.stop();
+          reject('Failed to send embed for selection message');
+        }
+        return message;
+      });
     });
   }
 
