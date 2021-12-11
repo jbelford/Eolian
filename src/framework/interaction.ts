@@ -2,7 +2,7 @@ import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
-import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageOptions, TextChannel } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
 import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, ServerDetails } from './@types';
 import { ButtonRegistry } from './button';
@@ -19,12 +19,12 @@ class DiscordInteractionSender implements DiscordMessageSender {
     let reply: Message;
     if (!this.interaction.replied) {
       if (!this.interaction.deferred) {
-        reply = await this.interaction.reply({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+        reply = await this.interaction.reply({ ...options, ephemeral: true, fetchReply: true }) as Message;
       } else {
         reply = await this.interaction.editReply({ ...options }) as Message;
       }
     } else {
-      reply = await this.interaction.followUp({ ...options, ephemeral: !options.components, fetchReply: true }) as Message;
+      reply = await this.interaction.followUp({ ...options, ephemeral: true, fetchReply: true }) as Message;
     }
     return reply;
   }
@@ -39,7 +39,7 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
   private _sender?: DiscordSender;
 
   constructor(protected readonly interaction: T,
-    private readonly registry: ButtonRegistry,
+    protected readonly registry: ButtonRegistry,
     private readonly users: UsersDb) {
   }
 
@@ -118,7 +118,13 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
   get message(): ContextMessage {
     if (!this._message) {
-      this._message = new DiscordMessage(this.interaction.message as Message);
+      this._message = new DiscordMessage(
+        this.interaction.message as Message,
+        {
+          registry: this.registry,
+          components: this.interaction.message.components as MessageActionRow[] ?? [],
+          interaction: this.interaction
+        });
     }
     return this._message;
   }

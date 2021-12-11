@@ -1,11 +1,12 @@
 import { logger } from 'common/logger';
-import { Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
+import { ButtonInteraction, Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from "./button";
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;
   components: MessageActionRow[];
+  interaction?: ButtonInteraction;
 }
 
 export class DiscordMessage implements ContextMessage {
@@ -19,6 +20,10 @@ export class DiscordMessage implements ContextMessage {
 
   get id(): string {
     return this.message.id;
+  }
+
+  get editable(): boolean {
+    return this.buttons?.interaction ? true : this.message.editable;
   }
 
   async react(emoji: string): Promise<void> {
@@ -46,19 +51,22 @@ export class DiscordMessage implements ContextMessage {
   }
 
   private async editMessage(message: string | MessageEmbed) : Promise<void> {
-    if (this.message.editable) {
+    if (this.editable) {
       try {
         const options: MessageEditOptions = { };
         if (typeof message === 'string') {
           options.content = message;
+          options.embeds = [];
         } else {
           options.embeds = [message];
         }
-        if (this.buttons) {
-          options.components = this.buttons.components;
-        }
+        options.components = this.buttons ? this.buttons.components : [];
         logger.debug('Editing message %s', this.message.id);
-        await this.message.edit(options);
+        if (this.buttons?.interaction) {
+          await this.buttons.interaction.update(options);
+        } else {
+          await this.message.edit(options);
+        }
       } catch (e) {
         logger.warn('Failed to edit message: %s', e);
       }
@@ -66,7 +74,10 @@ export class DiscordMessage implements ContextMessage {
   }
 
   releaseButtons(): void {
-    this.buttons?.registry.unregister(this.id);
+    if (this.buttons) {
+      this.buttons.registry.unregister(this.id);
+      this.buttons.components = [];
+    }
   }
 
   async delete(): Promise<void> {
