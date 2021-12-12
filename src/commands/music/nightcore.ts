@@ -45,7 +45,7 @@ async function executeNightcore(context: CommandContext, options: CommandOptions
 
 export const NIGHTCORE_COMMAND: Command = {
   name: 'nightcore',
-  details: `Enable or disable nightcore mode`,
+  details: `Enable or disable nightcore mode.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],

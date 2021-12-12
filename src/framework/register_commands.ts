@@ -38,8 +38,8 @@ export async function registerSlashCommands() {
 
 function mapCommandToSlashCommand(command: Command) {
   try {
-    let description = command.details;
-    if (command.details.length > 100) {
+    let description = command.shortDetails ?? command.details;
+    if (description.length > 100) {
       logger.warn('"%s" description is greater than 100 and is clamped', command.name);
       description = description.slice(0, 100);
     }

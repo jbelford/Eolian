@@ -98,7 +98,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const ADD_COMMAND: Command = {
   name: 'add',
-  details: 'Add songs to the queue',
+  details: 'Add songs to the queue.',
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [

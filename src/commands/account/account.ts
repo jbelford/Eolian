@@ -27,7 +27,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const ACCOUNT_COMMAND: Command = {
   name: 'me',
-  details: 'Show your account details. Including linked music accounts and identifiers',
+  details: 'Show your account details. Including linked music accounts and identifiers.',
   permission: PERMISSION.USER,
   category: ACCOUNT_CATEGORY,
   dmAllowed: true,

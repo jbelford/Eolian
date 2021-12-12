@@ -19,7 +19,7 @@ async function execute(context: CommandContext): Promise<void> {
 
 export const STOP_COMMAND: Command = {
   name: 'stop',
-  details: 'Stop playing music',
+  details: 'Stop playing music.',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   usage: [
@@ -46,7 +46,7 @@ async function executeSkip(context: CommandContext): Promise<void> {
 
 export const SKIP_COMMAND: Command = {
   name: 'skip',
-  details: 'Skip current song',
+  details: 'Skip current song.',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   usage: [
@@ -75,7 +75,7 @@ async function executeBack(context: CommandContext): Promise<void> {
 
 export const BACK_COMMAND: Command = {
   name: 'back',
-  details: 'Go back a song',
+  details: 'Go back a song.',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   usage: [
@@ -105,7 +105,7 @@ async function executePause(context: CommandContext): Promise<void> {
 
 export const PAUSE_COMMAND: Command = {
   name: 'pause',
-  details: 'Pause the current song',
+  details: 'Pause the current song.',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   usage: [
@@ -135,7 +135,7 @@ async function executeResume(context: CommandContext): Promise<void> {
 
 export const RESUME_COMMAND: Command = {
   name: 'resume',
-  details: 'Resume the current song',
+  details: 'Resume the current song.',
   category: MUSIC_CATEGORY,
   permission: PERMISSION.USER,
   usage: [

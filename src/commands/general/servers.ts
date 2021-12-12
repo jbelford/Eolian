@@ -94,7 +94,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const SERVERS_COMMAND: Command = {
   name: 'servers',
-  details: 'Show all servers this bot is joined to',
+  details: 'Show all servers this bot is joined to.',
   permission: PERMISSION.OWNER,
   category: GENERAL_CATEGORY,
   patterns: [PATTERNS.NUMBER, PATTERNS.ARG],

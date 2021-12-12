@@ -66,7 +66,7 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
 
 export const HELP_COMMAND: Command = {
   name: 'help',
-  details: 'Shows list of all available categories, commands, keywords, and their details',
+  details: 'Shows list of all available categories, commands, keywords, and their details.',
   permission: PERMISSION.USER,
   category: GENERAL_CATEGORY,
   dmAllowed: true,

@@ -44,7 +44,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const LIST_COMMAND: Command = {
   name: 'list',
-  details: 'Show or clear the queue',
+  details: 'Show or clear the queue.',
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.CLEAR, KEYWORDS.SHUFFLE],

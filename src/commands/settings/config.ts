@@ -85,7 +85,7 @@ async function setSyntax(context: CommandContext, syntax: string) {
 
 export const CONFIG_COMMAND: Command = {
   name: 'config',
-  details: 'Show configuration or change configurations for server',
+  details: 'Show configuration or change configurations for server.',
   category: SETTINGS_CATEGORY,
   permission: PERMISSION.ADMIN,
   usage: [

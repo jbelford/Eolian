@@ -34,7 +34,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const REMOVE_COMMAND: Command = {
   name: 'remove',
-  details: 'Remove songs from the queue',
+  details: 'Remove songs from the queue.',
   category: QUEUE_CATEGORY,
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.NEXT],

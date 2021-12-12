@@ -4,6 +4,7 @@ import { ContextClient, ContextCommandInteraction, ServerState } from 'framework
 
 export interface Command {
   name: string;
+  shortDetails?: string;
   details: string;
   permission: PERMISSION;
   category: CommandCategory;

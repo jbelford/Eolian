@@ -49,7 +49,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 export const IDENTIFY_COMMAND: Command = {
   name: 'identify',
   category: ACCOUNT_CATEGORY,
-  details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube',
+  shortDetails: 'Set a shortcut identifier for any song, playlist, album or artist.',
+  details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube.',
   permission: PERMISSION.USER,
   dmAllowed: true,
   keywords: [
