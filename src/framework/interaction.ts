@@ -107,8 +107,8 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     return this.sender.sendSelection(question, options, user);
   }
 
-  async sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined> {
-    return this.sender.sendEmbed(embed, ephemeral);
+  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    return this.sender.sendEmbed(embed, options);
   }
 
 }
@@ -144,6 +144,10 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
 
   get content(): string {
     return this.interaction.commandName;
+  }
+
+  get reactable(): boolean {
+    return false;
   }
 
   async react(): Promise<void> {
@@ -217,6 +221,10 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
       this._message = new DiscordMessage(this.discordMessage);
     }
     return this._message;
+  }
+
+  get reactable(): boolean {
+    return this.channel.reactable;
   }
 
   react(emoji: string): Promise<void> {

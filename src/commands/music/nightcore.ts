@@ -18,7 +18,7 @@ async function executeNightcore(context: CommandContext, options: CommandOptions
     if (context.server!.player.isStreaming) {
       msg += ` ${info}`;
     }
-    await context.interaction.send(msg);
+    await context.interaction.reply(msg, { ephemeral: false });
     return;
   }
 
@@ -33,7 +33,7 @@ async function executeNightcore(context: CommandContext, options: CommandOptions
     if (context.server!.player.isStreaming) {
       msg += ` ${info}`;
     }
-    await context.interaction.send(msg);
+    await context.interaction.reply(msg, { ephemeral: false });
     return;
   }
 

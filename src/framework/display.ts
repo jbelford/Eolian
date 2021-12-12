@@ -3,7 +3,7 @@ import { GITHUB_PAGE_ISSUES } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player } from 'music/@types';
-import { ContextMessage, ContextTextChannel, MessageButtonOnClickHandler, PlayerDisplay, QueueDisplay } from './@types';
+import { ContextMessage, ContextSendable, ContextTextChannel, MessageButtonOnClickHandler, PlayerDisplay, QueueDisplay } from './@types';
 
 const QUEUE_PAGE_LENGTH = 15;
 
@@ -38,7 +38,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
     this.channel = channel;
   }
 
-  async send(tracks: Track[], loop: Track[], start = 0, total = tracks.length): Promise<void> {
+  async send(tracks: Track[], loop: Track[], start = 0, total = tracks.length, sendable?: ContextSendable): Promise<void> {
     if (!this.channel) {
       throw new Error('Channel is not set!');
     }
@@ -56,7 +56,11 @@ export class DiscordQueueDisplay implements QueueDisplay {
       { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
       { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
     ];
-    this.message = await this.channel.sendEmbed(embed) ?? null;
+    if (sendable) {
+      this.message = await sendable.sendEmbed(embed) ?? null;
+    } else {
+      this.message = await this.channel.sendEmbed(embed) ?? null;
+    }
 
     await messageDelete;
   }
@@ -169,8 +173,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.channel = channel;
   }
 
-  async refresh(): Promise<void> {
-    await this.updateMessage();
+  async refresh(sendable?: ContextSendable): Promise<void> {
+    await this.updateMessage(false, sendable);
   }
 
   private onQueueUpdateHandler = async () => {
@@ -183,7 +187,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     await this.updateMessage();
   };
 
-  private async updateMessage(editOnly = false): Promise<void> {
+  private async updateMessage(editOnly = false, sendable?: ContextSendable): Promise<void> {
     if (this.channel && this.track && (!editOnly || this.message)) {
       const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
@@ -196,7 +200,11 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       ];
       if (!editOnly && (!this.message || this.channel.lastMessageId !== this.message.id)) {
         await this.safeDelete();
-        this.message = await this.channel.sendEmbed(embed) ?? null;
+        if (sendable) {
+          this.message = await sendable.sendEmbed(embed) ?? null;
+        } else {
+          this.message = await this.channel.sendEmbed(embed) ?? null;
+        }
         if (this.message) {
           this.queueAhead = false;
         }

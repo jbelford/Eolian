@@ -19,12 +19,13 @@ export interface ContextSendable {
   readonly sendable: boolean;
   send(message: string): Promise<ContextMessage | undefined>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult>
-  sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined>;
+  sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined>;
 }
 
 export interface ContextTextChannel extends ContextSendable {
   readonly isDm: boolean;
   readonly visible: boolean;
+  readonly reactable: boolean;
   readonly lastMessageId?: string;
 }
 
@@ -73,6 +74,7 @@ export interface ContextInteraction extends ContextSendable {
 
 export interface ContextCommandInteraction extends ContextInteraction {
   readonly content: string;
+  readonly reactable: boolean;
   react(emoji: string): Promise<void>;
   delete(): Promise<void>;
   getCommand(config?: ServerDetails): Promise<ParsedCommand>;
@@ -159,12 +161,12 @@ export interface Display extends Closable {
 }
 
 export interface PlayerDisplay extends Display {
-  refresh(): Promise<void>;
+  refresh(sendable?: ContextSendable): Promise<void>;
 }
 
 export interface QueueDisplay extends Display {
   setChannel(channel: ContextTextChannel): void;
-  send(tracks: Track[], loop: Track[], start?: number, total?: number): Promise<void>;
+  send(tracks: Track[], loop: Track[], start?: number, total?: number, sendable?: ContextSendable): Promise<void>;
   delete(): Promise<void>;
 }
 

@@ -7,7 +7,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
 import { PollOption } from 'embed/@types';
-import { ContextMessage, ContextTextChannel, ContextUser, MessageButtonOnClickHandler } from 'framework/@types';
+import { ContextMessage, ContextSendable, ContextUser, MessageButtonOnClickHandler } from 'framework/@types';
 
 
 class PollMessage implements Closable {
@@ -18,7 +18,7 @@ class PollMessage implements Closable {
   private pollMessage: ContextMessage | undefined;
 
   constructor(
-    private readonly channel: ContextTextChannel,
+    private readonly sendable: ContextSendable,
     private readonly user: ContextUser,
     private readonly question: string,
     options: string[]) {
@@ -38,13 +38,13 @@ class PollMessage implements Closable {
     if (this.pollMessage) {
       this.pollMessage.editEmbed(questionEmbed);
     } else {
-      this.pollMessage = await this.channel.sendEmbed(questionEmbed);
+      this.pollMessage = await this.sendable.sendEmbed(questionEmbed);
     }
   }
 
   async sendResults(): Promise<void> {
     const resultEmbed = createPollResultsEmbed(this.question, this.options, this.user.name, this.user.avatar);
-    await Promise.allSettled([this.channel.sendEmbed(resultEmbed), this.pollMessage?.delete() ?? Promise.resolve()]);
+    await Promise.allSettled([this.sendable.sendEmbed(resultEmbed, { ephemeral: false }), this.pollMessage?.delete() ?? Promise.resolve()]);
     this.pollMessage = undefined;
   }
 
@@ -64,7 +64,7 @@ class PollMessage implements Closable {
     }
 
     this.userSelections.set(interaction.user.id, selected);
-
+    this.pollMessage = interaction.message;
     await this.send();
 
     return false;
@@ -94,7 +94,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const question = options.ARG[0];
   const pollOptions: string[] = options.ARG.slice(1);
 
-  const poll = new PollMessage(context.interaction.channel, context.interaction.user, question, pollOptions);
+  const poll = new PollMessage(context.interaction, context.interaction.user, question, pollOptions);
 
   context.server!.disposable.push(poll);
 

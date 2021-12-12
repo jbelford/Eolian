@@ -160,7 +160,7 @@ export class DiscordEolianBot implements EolianBot {
 
         if (!contextInteraction.hasReplied) {
           logger.warn('Slash command did not reply: %s', contextInteraction.content);
-          await contextInteraction.reply('Done!', { ephemeral: true });
+          await contextInteraction.reply('👌', { ephemeral: true });
         }
       } finally {
         await this.lockManager.unlock(interaction.user.id);

@@ -4,7 +4,7 @@ import { logger } from 'common/logger';
 import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { ContextMessage, ContextSendable, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, SelectionResult } from './@types';
+import { ContextInteractionOptions, ContextMessage, ContextSendable, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, SelectionResult } from './@types';
 import { ButtonRegistry } from "./button";
 import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
 
@@ -141,7 +141,7 @@ export class DiscordSender implements ContextSendable {
     return collector;
   }
 
-  async sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined> {
+  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
         const rich = mapDiscordEmbed(embed);
@@ -154,7 +154,7 @@ export class DiscordSender implements ContextSendable {
           messageOptions.components = buttonMapping.rows;
         }
 
-        const message = await this.sender.send(messageOptions, ephemeral);
+        const message = await this.sender.send(messageOptions, options?.ephemeral);
 
         let msgButtons: DiscordMessageButtons | undefined;
         if (buttonMapping) {
@@ -199,6 +199,14 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   get sendable(): boolean {
     return this.sender.sendable;
+  }
+
+  get reactable(): boolean {
+    if (!this.isDm) {
+      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
+      return permissions.has(Permissions.FLAGS.ADD_REACTIONS);
+    }
+    return true;
   }
 
   send(message: string): Promise<ContextMessage | undefined> {

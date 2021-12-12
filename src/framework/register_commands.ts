@@ -2,7 +2,6 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { COMMANDS } from 'commands';
 import { Command } from 'commands/@types';
-import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { Routes } from 'discord-api-types/v9';
@@ -48,7 +47,6 @@ function mapCommandToSlashCommand(command: Command) {
     const builder = new SlashCommandBuilder()
       .setName(command.name)
       .setDescription(description)
-      .setDefaultPermission(command.permission === PERMISSION.USER)
       .addStringOption(option => option.setName('args')
           .setDescription('See help for arguments')
           .setRequired(false));

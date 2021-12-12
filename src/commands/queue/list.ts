@@ -39,7 +39,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   context.server!.display.queue.setChannel(context.interaction.channel);
-  await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size);
+  await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size, context.interaction);
 }
 
 export const LIST_COMMAND: Command = {

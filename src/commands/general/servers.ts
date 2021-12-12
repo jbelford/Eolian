@@ -39,6 +39,8 @@ async function kickOld(days: number, context: CommandContext) {
 }
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
+  await context.interaction.defer();
+
   let servers = context.client.getServers().sort((a, b) => b.members - a.members);
 
   let start = 0;
