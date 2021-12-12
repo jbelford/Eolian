@@ -11,7 +11,7 @@ import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscord
 export const STOP_EMOJI = '🚫';
 
 export interface DiscordMessageSender {
-  send(options: MessageOptions): Promise<Message>;
+  send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message>;
 }
 
 export class DiscordSender implements ContextSendable {
@@ -141,7 +141,7 @@ export class DiscordSender implements ContextSendable {
     return collector;
   }
 
-  async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
+  async sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
         const rich = mapDiscordEmbed(embed);
@@ -154,7 +154,7 @@ export class DiscordSender implements ContextSendable {
           messageOptions.components = buttonMapping.rows;
         }
 
-        const message = await this.sender.send(messageOptions);
+        const message = await this.sender.send(messageOptions, ephemeral);
 
         let msgButtons: DiscordMessageButtons | undefined;
         if (buttonMapping) {

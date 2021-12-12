@@ -15,12 +15,13 @@ class DiscordInteractionSender implements DiscordMessageSender {
   constructor(private readonly interaction: ButtonInteraction | CommandInteraction) {
   }
 
-  async send(options: MessageOptions): Promise<Message> {
+  async send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;
+    const ephemeral = hasButtons ? false : forceEphemeral ?? true;
     let reply: Message;
     if (!this.interaction.replied) {
       if (!this.interaction.deferred) {
-        reply = await this.interaction.reply({ ...options, ephemeral: !hasButtons, fetchReply: true }) as Message;
+        reply = await this.interaction.reply({ ...options, ephemeral, fetchReply: true }) as Message;
       } else {
         if (this.interaction.ephemeral && hasButtons) {
           throw new Error('Buttons on ephemeral message are not allowed');
@@ -28,7 +29,7 @@ class DiscordInteractionSender implements DiscordMessageSender {
         reply = await this.interaction.editReply(options) as Message;
       }
     } else {
-      reply = await this.interaction.followUp({ ...options, ephemeral: !hasButtons, fetchReply: true }) as Message;
+      reply = await this.interaction.followUp({ ...options, ephemeral, fetchReply: true }) as Message;
     }
     return reply;
   }
@@ -106,8 +107,8 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     return this.sender.sendSelection(question, options, user);
   }
 
-  async sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
-    return this.sender.sendEmbed(embed);
+  async sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined> {
+    return this.sender.sendEmbed(embed, ephemeral);
   }
 
 }

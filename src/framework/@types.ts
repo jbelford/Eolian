@@ -19,7 +19,7 @@ export interface ContextSendable {
   readonly sendable: boolean;
   send(message: string): Promise<ContextMessage | undefined>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult>
-  sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined>;
+  sendEmbed(embed: EmbedMessage, ephemeral?: boolean): Promise<ContextMessage | undefined>;
 }
 
 export interface ContextTextChannel extends ContextSendable {
