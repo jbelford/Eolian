@@ -24,6 +24,7 @@ export interface ContextSendable {
 
 export interface ContextTextChannel extends ContextSendable {
   readonly isDm: boolean;
+  readonly visible: boolean;
   readonly lastMessageId?: string;
 }
 

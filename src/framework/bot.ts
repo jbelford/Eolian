@@ -264,7 +264,11 @@ export class DiscordEolianBot implements EolianBot {
       logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction.content);
 
       if (!interaction.sendable) {
-        await interaction.user.send(`I can't send messages to that channel. I require \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
+        if (!interaction.channel.visible) {
+          await interaction.reply(`I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`)
+        } else {
+          await interaction.user.send(`I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
+        }
         return undefined;
       }
 

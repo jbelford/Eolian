@@ -28,7 +28,7 @@ export class DiscordSender implements ContextSendable {
       this._sendable = !this.channel.deleted;
       if (this.channel.type === 'GUILD_TEXT') {
         const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
-        this._sendable &&= !!permissions?.has(Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
+        this._sendable &&= !!permissions?.has(Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
       }
     }
     return this._sendable;
@@ -187,6 +187,14 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   get isDm(): boolean {
     return this.channel.type === 'DM';
+  }
+
+  get visible(): boolean {
+    if (!this.isDm) {
+      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
+      return permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
+    }
+    return true;
   }
 
   get sendable(): boolean {
