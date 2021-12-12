@@ -38,8 +38,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  context.server!.display.queue.setChannel(context.interaction.channel);
-  await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size, context.interaction);
+  context.server!.display.queue.setChannel(context.interaction.channel, context.interaction);
+  await context.server!.display.queue.send(tracks, loop, range ? range.start : 0, size);
 }
 
 export const LIST_COMMAND: Command = {

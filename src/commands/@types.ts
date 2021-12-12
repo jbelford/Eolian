@@ -13,6 +13,7 @@ export interface Command {
   dmAllowed?: boolean;
   new?: boolean;
   usage: CommandUsage[];
+  noDefaultReply?: boolean;
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
 

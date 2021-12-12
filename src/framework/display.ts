@@ -11,6 +11,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
   private message: ContextMessage | null = null;
   private channel: ContextTextChannel | null = null;
+  private sendable?: ContextSendable;
   private start = 0;
   private updating = false;
 
@@ -34,11 +35,12 @@ export class DiscordQueueDisplay implements QueueDisplay {
     }
   }
 
-  setChannel(channel: ContextTextChannel): void {
+  setChannel(channel: ContextTextChannel, sendable?: ContextSendable): void {
     this.channel = channel;
+    this.sendable = sendable;
   }
 
-  async send(tracks: Track[], loop: Track[], start = 0, total = tracks.length, sendable?: ContextSendable): Promise<void> {
+  async send(tracks: Track[], loop: Track[], start = 0, total = tracks.length): Promise<void> {
     if (!this.channel) {
       throw new Error('Channel is not set!');
     }
@@ -56,8 +58,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
       { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
       { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
     ];
-    if (sendable) {
-      this.message = await sendable.sendEmbed(embed) ?? null;
+    if (this.sendable) {
+      this.message = await this.sendable.sendEmbed(embed) ?? null;
+      this.sendable = undefined;
     } else {
       this.message = await this.channel.sendEmbed(embed) ?? null;
     }
@@ -104,21 +107,24 @@ export class DiscordQueueDisplay implements QueueDisplay {
     }
   }
 
-  private shuffleHandler: MessageButtonOnClickHandler = async () => {
+  private shuffleHandler: MessageButtonOnClickHandler = async (interaction) => {
     await this.queue.shuffle();
+    await interaction.deferUpdate();
     return false;
   }
 
-  private prevPageHandler: MessageButtonOnClickHandler = async () => {
+  private prevPageHandler: MessageButtonOnClickHandler = async (interaction) => {
     this.start -= QUEUE_PAGE_LENGTH;
     await this.updateHandler();
+    await interaction.deferUpdate();
     return false;
   }
 
 
-  private nextPageHandler: MessageButtonOnClickHandler = async () => {
+  private nextPageHandler: MessageButtonOnClickHandler = async (interaction) => {
     this.start += QUEUE_PAGE_LENGTH;
     await this.updateHandler();
+    await interaction.deferUpdate();
     return false;
   }
 
@@ -130,6 +136,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private message: ContextMessage | null = null;
 
   private channel: ContextTextChannel | null = null;
+  private sendable?: ContextSendable;
   private queueAhead = false;
   private inputLock = false;
   private nightcore = false;
@@ -169,12 +176,13 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
   }
 
-  setChannel(channel: ContextTextChannel): void {
+  setChannel(channel: ContextTextChannel, sendable?: ContextSendable): void {
     this.channel = channel;
+    this.sendable = sendable;
   }
 
-  async refresh(sendable?: ContextSendable): Promise<void> {
-    await this.updateMessage(false, sendable);
+  async refresh(): Promise<void> {
+    await this.updateMessage();
   }
 
   private onQueueUpdateHandler = async () => {
@@ -187,7 +195,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     await this.updateMessage();
   };
 
-  private async updateMessage(editOnly = false, sendable?: ContextSendable): Promise<void> {
+  private async updateMessage(editOnly = false): Promise<void> {
     if (this.channel && this.track && (!editOnly || this.message)) {
       const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
@@ -200,8 +208,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       ];
       if (!editOnly && (!this.message || this.channel.lastMessageId !== this.message.id)) {
         await this.safeDelete();
-        if (sendable) {
-          this.message = await sendable.sendEmbed(embed) ?? null;
+        if (this.sendable) {
+          this.message = await this.sendable.sendEmbed(embed) ?? null;
+          this.sendable = undefined;
         } else {
           this.message = await this.channel.sendEmbed(embed) ?? null;
         }
@@ -257,7 +266,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
         if (userVoice && userVoice.id === this.player.getChannel()?.id) {
           this.inputLock = true;
           try {
-            return await cb(interaction, emoji);
+            const result = await cb(interaction, emoji);
+            await interaction.deferUpdate();
+            return result;
           } finally {
             this.inputLock = false;
           }

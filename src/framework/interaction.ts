@@ -134,6 +134,10 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
     return this._message;
   }
 
+  async deferUpdate(): Promise<void> {
+    await this.interaction.deferUpdate();
+  }
+
 }
 
 export class DiscordCommandInteraction extends DiscordInteraction<CommandInteraction> implements ContextCommandInteraction {

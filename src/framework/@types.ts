@@ -82,6 +82,7 @@ export interface ContextCommandInteraction extends ContextInteraction {
 
 export interface ContextButtonInteraction extends ContextInteraction {
   readonly message: ContextMessage;
+  deferUpdate(): Promise<void>;
 }
 
 export interface ContextVoiceChannel {
@@ -156,17 +157,16 @@ export interface EmbedMessageButton {
 export type MessageButtonOnClickHandler = (interaction: ContextButtonInteraction, emoji: string) => Promise<boolean>;
 
 export interface Display extends Closable {
-  setChannel(channel: ContextTextChannel): void;
+  setChannel(channel: ContextTextChannel, sendable?: ContextSendable): void;
   removeIdle(): Promise<void>;
 }
 
 export interface PlayerDisplay extends Display {
-  refresh(sendable?: ContextSendable): Promise<void>;
+  refresh(): Promise<void>;
 }
 
 export interface QueueDisplay extends Display {
-  setChannel(channel: ContextTextChannel): void;
-  send(tracks: Track[], loop: Track[], start?: number, total?: number, sendable?: ContextSendable): Promise<void>;
+  send(tracks: Track[], loop: Track[], start?: number, total?: number): Promise<void>;
   delete(): Promise<void>;
 }
 

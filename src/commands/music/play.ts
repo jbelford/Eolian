@@ -80,7 +80,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (voice) {
     if (!context.server!.player.isStreaming) {
-      context.server!.display.player.setChannel(context.interaction.channel);
+      context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
       reactionChain = reactionChain.then(() => context.interaction.react('🎵'));
       await context.server!.player.play();
     } else if (added) {
@@ -100,6 +100,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
   permission: PERMISSION.USER,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
+  noDefaultReply: true,
   usage: [
     {
       title: 'Join voice channel and start playing (if not already)',

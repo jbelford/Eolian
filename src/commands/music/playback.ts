@@ -148,8 +148,8 @@ export const RESUME_COMMAND: Command = {
 
 async function executeShowPlayer(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
-    context.server!.display.player.setChannel(context.interaction.channel);
-    await context.server!.display.player.refresh(context.interaction);
+    context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
+    await context.server!.display.player.refresh();
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
   }

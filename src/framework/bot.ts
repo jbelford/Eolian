@@ -156,10 +156,9 @@ export class DiscordEolianBot implements EolianBot {
         await this.lockManager.lock(interaction.user.id);
         const contextInteraction = new DiscordCommandInteraction(interaction, this.parser, this.registry, this.db.users);
 
-        await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
+        const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 
-        if (!contextInteraction.hasReplied) {
-          logger.warn('Slash command did not reply: %s', contextInteraction.content);
+        if (!contextInteraction.hasReplied && !noDefault) {
           await contextInteraction.reply('👌', { ephemeral: true });
         }
       } finally {
@@ -258,8 +257,9 @@ export class DiscordEolianBot implements EolianBot {
     return invoked;
   }
 
-  private async onBotInvoked(interaction: ContextCommandInteraction, guild?: Guild): Promise<void> {
+  private async onBotInvoked(interaction: ContextCommandInteraction, guild?: Guild): Promise<boolean> {
     const start = Date.now();
+    let noDefaultReply = false;
     try {
       logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction.content);
 
@@ -269,7 +269,7 @@ export class DiscordEolianBot implements EolianBot {
         } else {
           await interaction.user.send(`I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
         }
-        return undefined;
+        return noDefaultReply;
       }
 
       let server: ServerState | undefined;
@@ -284,12 +284,14 @@ export class DiscordEolianBot implements EolianBot {
       const { command, options } = await interaction.getCommand(server?.details);
       if (interaction.channel.isDm && !command.dmAllowed) {
         await interaction.user.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
-        return;
+        return false;
       }
 
       await command.execute({ interaction, server, client}, options);
 
       await server?.details.updateUsage();
+
+      noDefaultReply = !!command.noDefaultReply;
     } catch (e) {
       const userError = (e instanceof EolianUserError);
 
@@ -313,6 +315,7 @@ export class DiscordEolianBot implements EolianBot {
     } finally {
       logger.info(`[%s] Message event finished (%d ms)`, interaction.user.id, Date.now() - start);
     }
+    return noDefaultReply;
   }
 
   private isTextOrDm(message: Message): boolean {
