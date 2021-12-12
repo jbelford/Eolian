@@ -16,15 +16,19 @@ class DiscordInteractionSender implements DiscordMessageSender {
   }
 
   async send(options: MessageOptions): Promise<Message> {
+    const hasButtons = !!options.components?.length;
     let reply: Message;
     if (!this.interaction.replied) {
       if (!this.interaction.deferred) {
-        reply = await this.interaction.reply({ ...options, ephemeral: true, fetchReply: true }) as Message;
+        reply = await this.interaction.reply({ ...options, ephemeral: !hasButtons, fetchReply: true }) as Message;
       } else {
-        reply = await this.interaction.editReply({ ...options }) as Message;
+        if (this.interaction.ephemeral && hasButtons) {
+          throw new Error('Buttons on ephemeral message are not allowed');
+        }
+        reply = await this.interaction.editReply(options) as Message;
       }
     } else {
-      reply = await this.interaction.followUp({ ...options, ephemeral: true, fetchReply: true }) as Message;
+      reply = await this.interaction.followUp({ ...options, ephemeral: !hasButtons, fetchReply: true }) as Message;
     }
     return reply;
   }
