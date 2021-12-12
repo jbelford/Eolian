@@ -147,10 +147,6 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
     // Do nothing since we can't react to slash commands
   }
 
-  async delete(): Promise<void> {
-    // Do nothing since slash command messages are ephemeral
-  }
-
   async getCommand(config?: ServerDetails): Promise<ParsedCommand> {
     const command = COMMAND_MAP[this.interaction.commandName];
     if (!command) {
@@ -243,10 +239,6 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
 
   react(emoji: string): Promise<void> {
     return this.message.react(emoji);
-  }
-
-  delete(): Promise<void> {
-    return this.message.delete();
   }
 
   send(message: string): Promise<ContextMessage | undefined> {

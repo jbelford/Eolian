@@ -75,7 +75,6 @@ export interface ContextCommandInteraction extends ContextInteraction {
   readonly content: string;
   readonly reactable: boolean;
   react(emoji: string): Promise<void>;
-  delete(): Promise<void>;
   getCommand(config?: ServerDetails): Promise<ParsedCommand>;
 }
 
