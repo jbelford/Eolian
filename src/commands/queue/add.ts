@@ -39,7 +39,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.interaction.reply(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
+    await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
 
     fetcher = getSourceFetcher(identifier, options, context.interaction);
   } else {

@@ -12,7 +12,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     await context.server!.queue.setLoopMode(true);
 
-    await context.interaction.reply('🔁 Loop mode enabled!', { ephemeral: false });
+    await context.interaction.send('🔁 Loop mode enabled!', { ephemeral: false });
     return;
   }
 
@@ -23,7 +23,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     await context.server!.queue.setLoopMode(false);
 
-    await context.interaction.reply('🔁 Loop mode disabled!', { ephemeral: false });
+    await context.interaction.send('🔁 Loop mode disabled!', { ephemeral: false });
     return;
   }
 

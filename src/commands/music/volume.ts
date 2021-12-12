@@ -27,7 +27,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   } else if (context.interaction.reactable) {
     await context.interaction.react('🔊');
   } else {
-    await context.interaction.reply('🔊', { ephemeral: false });
+    await context.interaction.send('🔊', { ephemeral: false });
   }
 }
 

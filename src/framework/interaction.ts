@@ -1,6 +1,5 @@
 import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
-import { logger } from 'common/logger';
 import { UsersDb } from 'data/@types';
 import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
@@ -10,7 +9,7 @@ import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './chann
 import { DiscordMessage } from './message';
 import { DiscordUser, getPermissionLevel } from './user';
 
-class DiscordInteractionSender implements DiscordMessageSender {
+class CommandInteractionSender implements DiscordMessageSender {
 
   constructor(private readonly interaction: ButtonInteraction | CommandInteraction) {
   }
@@ -77,22 +76,12 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
 
   private get sender(): DiscordSender {
     if (!this._sender) {
-      this._sender = new DiscordSender(new DiscordInteractionSender(this.interaction), this.registry, <TextChannel | DMChannel>this.interaction.channel);
+      this._sender = new DiscordSender(
+        new CommandInteractionSender(this.interaction),
+        this.registry,
+        <TextChannel | DMChannel>this.interaction.channel);
     }
     return this._sender;
-  }
-
-  async reply(message: string, options?: ContextInteractionOptions): Promise<void> {
-    const ephemeral = options?.ephemeral ?? true;
-    if (!this.hasReplied) {
-      if (!this.interaction.deferred) {
-        await this.interaction.reply({ content: message, ephemeral });
-      } else {
-        await this.interaction.editReply({ content: message });
-      }
-    } else {
-      await this.interaction.followUp({ content: message, ephemeral });
-    }
   }
 
   async defer(ephemeral = true): Promise<void> {
@@ -179,6 +168,16 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
 
 }
 
+class MessageInteractionSender implements DiscordMessageSender {
+
+  constructor(private readonly message: Message) {
+  }
+
+  async send(options: MessageOptions): Promise<Message<boolean>> {
+      return this.message.reply(options);
+  }
+
+}
 
 export class DiscordMessageInteraction implements ContextCommandInteraction {
 
@@ -186,6 +185,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
   private _hasReplied = false;
+  private _sender?: DiscordSender;
 
   constructor(private readonly discordMessage: Message,
     private readonly parser: CommandParsingStrategy,
@@ -231,6 +231,16 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.channel.reactable;
   }
 
+  private get sender(): DiscordSender {
+    if (!this._sender) {
+      this._sender = new DiscordSender(
+        new MessageInteractionSender(this.discordMessage),
+        this.registry,
+        <TextChannel | DMChannel>this.discordMessage.channel);
+    }
+    return this._sender;
+  }
+
   react(emoji: string): Promise<void> {
     return this.message.react(emoji);
   }
@@ -239,27 +249,16 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.message.delete();
   }
 
-  async reply(message: string): Promise<void> {
-    if (this.sendable) {
-      try {
-        this._hasReplied = true;
-        await this.discordMessage.reply(message);
-      } catch (e) {
-        logger.warn('Failed to reply to message: %s', e);
-      }
-    }
-  }
-
   send(message: string): Promise<ContextMessage | undefined> {
-    return this.channel.send(message);
+    return this.sender.send(message);
   }
 
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
-    return this.channel.sendSelection(question, options, user);
+    return this.sender.sendSelection(question, options, user);
   }
 
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
-    return this.channel.sendEmbed(embed);
+    return this.sender.sendEmbed(embed);
   }
 
   async defer(): Promise<void> {

@@ -159,7 +159,7 @@ export class DiscordEolianBot implements EolianBot {
         const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 
         if (!contextInteraction.hasReplied && !noDefault) {
-          await contextInteraction.reply('👌', { ephemeral: true });
+          await contextInteraction.send('👌', { ephemeral: true });
         }
       } finally {
         await this.lockManager.unlock(interaction.user.id);
@@ -265,7 +265,7 @@ export class DiscordEolianBot implements EolianBot {
 
       if (!interaction.sendable) {
         if (!interaction.channel.visible) {
-          await interaction.reply(`I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`)
+          await interaction.send(`I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`)
         } else {
           await interaction.user.send(`I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
         }
@@ -300,10 +300,10 @@ export class DiscordEolianBot implements EolianBot {
           if (e.context) {
             await e.context.edit(e.message);
           } else {
-            await interaction.reply(e.message);
+            await interaction.send(e.message);
           }
         } else {
-          await interaction.reply(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
+          await interaction.send(`Hmm.. I tried to do that but something in my internals is broken. Try again later.`);
         }
       } else {
         await interaction.user.send(`Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`);

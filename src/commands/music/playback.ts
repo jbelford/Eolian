@@ -10,7 +10,7 @@ async function execute(context: CommandContext): Promise<void> {
     if (context.interaction.reactable) {
       await context.interaction.react('😢');
     } else {
-      await context.interaction.reply('⏹️', { ephemeral: false });
+      await context.interaction.send('⏹️', { ephemeral: false });
     }
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
@@ -37,7 +37,7 @@ async function executeSkip(context: CommandContext): Promise<void> {
     if (context.interaction.reactable) {
       await context.interaction.react('⏩');
     } else {
-      await context.interaction.reply('⏩', { ephemeral: false });
+      await context.interaction.send('⏩', { ephemeral: false });
     }
   } else {
     throw new EolianUserError(MESSAGES.NOT_PLAYING);
@@ -66,7 +66,7 @@ async function executeBack(context: CommandContext): Promise<void> {
     if (context.interaction.reactable) {
       await context.interaction.react('⏪');
     } else {
-      await context.interaction.reply('⏪', { ephemeral: false });
+      await context.interaction.send('⏪', { ephemeral: false });
     }
   } else {
     throw new EolianUserError("There are no previous songs!");
@@ -95,7 +95,7 @@ async function executePause(context: CommandContext): Promise<void> {
       if (context.interaction.reactable) {
         await context.interaction.react('⏸');
       } else {
-        await context.interaction.reply('⏸️', { ephemeral: false });
+        await context.interaction.send('⏸️', { ephemeral: false });
       }
     }
   } else {
@@ -123,7 +123,7 @@ async function executeResume(context: CommandContext): Promise<void> {
       if (context.interaction.reactable) {
         await context.interaction.react('▶');
       } else {
-        await context.interaction.reply('▶️', { ephemeral: false });
+        await context.interaction.send('▶️', { ephemeral: false });
       }
     } else {
       throw new EolianUserError('Playback is not paused!');

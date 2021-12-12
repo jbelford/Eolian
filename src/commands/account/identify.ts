@@ -17,7 +17,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     if (!success) {
       throw new EolianUserError(`You don't have an identifier for \`${options.IDENTIFIER}\``);
     }
-    await context.interaction.reply(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
+    await context.interaction.send(`💨 I have removed your identifier \`${options.IDENTIFIER}\`!`);
     return;
   }
 
@@ -42,7 +42,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (resource.selectionMessage) {
     await resource.selectionMessage.edit(response);
   } else {
-    await context.interaction.reply(response);
+    await context.interaction.send(response);
   }
 }
 

@@ -273,7 +273,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
             this.inputLock = false;
           }
         } else {
-          await interaction.reply('You are not currently listening! Join my voice channel and try again.', { ephemeral: true });
+          await interaction.send('You are not currently listening! Join my voice channel and try again.', { ephemeral: true });
         }
       }
       return false;

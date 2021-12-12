@@ -24,7 +24,7 @@ async function execute({ interaction }: CommandContext, { SOUNDCLOUD, SPOTIFY }:
     }
   }
 
-  await interaction.reply(response || 'You need to specify the accounts you want me to unlink!');
+  await interaction.send(response || 'You need to specify the accounts you want me to unlink!');
 }
 
 export const UNLINK_COMMAND: Command = {

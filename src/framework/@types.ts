@@ -68,7 +68,6 @@ export interface ContextInteraction extends ContextSendable {
   readonly user: ContextUser;
   readonly channel: ContextTextChannel;
   readonly hasReplied: boolean;
-  reply(message: string, options?: ContextInteractionOptions): Promise<void>;
   defer(ephemeral?: boolean): Promise<void>;
 }
 

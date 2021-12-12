@@ -31,7 +31,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const typeName = getEnumName(IdentifierType, identifier.type);
     const srcName = getEnumName(SOURCE, identifier.src);
-    await context.interaction.reply(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
+    await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
 
     fetcher = getSourceFetcher(identifier, options, context.interaction);
   } else if (options.SEARCH || options.URL) {
@@ -43,7 +43,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       if (resource.selectionMessage) {
         await resource.selectionMessage.edit(msg);
       } else {
-        await context.interaction.reply(msg);
+        await context.interaction.send(msg);
       }
       fetcher = resource.fetcher;
     }

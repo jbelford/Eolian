@@ -10,7 +10,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     const removed = await context.interaction.user.clearData();
     const response = removed ? 'Okay! I have erased my knowledge about you entirely.'
         : `I already don't know anything about you`;
-    await context.interaction.reply(response);
+    await context.interaction.send(response);
   } else {
     const defer = context.interaction.defer();
 
