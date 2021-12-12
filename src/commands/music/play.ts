@@ -43,7 +43,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       if (resource.selectionMessage) {
         await resource.selectionMessage.edit(msg);
       } else {
-        await context.interaction.send(msg);
+        await context.interaction.reply(msg);
       }
       fetcher = resource.fetcher;
     }

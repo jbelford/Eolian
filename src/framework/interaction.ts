@@ -99,8 +99,8 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
     await this.interaction.deferReply({ ephemeral });
   }
 
-  send(message: string): Promise<ContextMessage | undefined> {
-    return this.sender.send(message);
+  send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    return this.sender.send(message, options);
   }
 
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {

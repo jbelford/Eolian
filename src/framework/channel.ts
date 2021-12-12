@@ -34,10 +34,10 @@ export class DiscordSender implements ContextSendable {
     return this._sendable;
   }
 
-  async send(message: string): Promise<ContextMessage | undefined> {
+  async send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
-        const discordMessage = await this.sender.send({ content: message });
+        const discordMessage = await this.sender.send({ content: message }, options?.ephemeral);
         return new DiscordMessage(discordMessage);
       } catch (e) {
         logger.warn('Failed to send message: %s', e);

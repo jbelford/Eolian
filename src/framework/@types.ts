@@ -17,7 +17,7 @@ export type SelectionResult = {
 
 export interface ContextSendable {
   readonly sendable: boolean;
-  send(message: string): Promise<ContextMessage | undefined>;
+  send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined>;
   sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult>
   sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined>;
 }

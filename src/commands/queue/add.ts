@@ -92,7 +92,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const endText = options.NEXT
     ? 'to be played next!'
     : 'to the queue!';
-  await context.interaction.send(`✨ ${bodyText} ${endText}`);
+  await context.interaction.channel.send(`✨ ${bodyText} ${endText}`, { ephemeral: false });
 
 }
 
