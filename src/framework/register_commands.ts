@@ -15,21 +15,24 @@ export async function registerSlashCommands() {
     logger.info('Missing client id. Not registering slash commands');
     return;
   }
+
+  let route: `/${string}`;
   if (environment.prod) {
-    logger.info('In prod environment. Not registering slash commands');
-    return;
-  }
-  if (!environment.devGuild) {
-    logger.info('Missing dev guild. Not registering slash commands for dev environment');
-    return;
+    logger.info('Sending refresh for global slash commands');
+    route = Routes.applicationCommands(environment.tokens.discord.clientId);
+  } else {
+    if (!environment.devGuild) {
+      logger.info('Missing dev guild. Not registering slash commands for dev environment');
+      return;
+    }
+    logger.info('Sending refresh for slash commands for guild %s', environment.devGuild);
+    route = Routes.applicationGuildCommands(environment.tokens.discord.clientId, environment.devGuild);
   }
 
   try {
-    logger.info('Sending refresh for slash commands for guild %s', environment.devGuild);
 
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
-    const route = Routes.applicationGuildCommands(environment.tokens.discord.clientId, environment.devGuild);
     await rest.put(route, {
       body: COMMANDS.map(mapCommandToSlashCommand)
     });
