@@ -124,7 +124,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private onInteractionHandler = async (interaction: Interaction) => {
     try {
-      if (!interaction.inCachedGuild()) {
+      if (interaction.channel?.type !== 'DM' && !interaction.inCachedGuild()) {
         logger.warn('Ignoring interaction from guild not cached: %s', interaction);
         return;
       }
