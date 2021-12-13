@@ -1,4 +1,3 @@
-import { COMMAND_MAP } from 'commands';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
 import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
@@ -7,6 +6,7 @@ import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
+import { parseSlashCommand } from './register_commands';
 import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
@@ -131,7 +131,7 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
 export class DiscordCommandInteraction extends DiscordInteraction<CommandInteraction> implements ContextCommandInteraction {
 
-  constructor(interaction: CommandInteraction, private readonly parser: CommandParsingStrategy, registry: ButtonRegistry, users: UsersDb) {
+  constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
     super(interaction, registry, users);
   }
 
@@ -147,19 +147,8 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
     // Do nothing since we can't react to slash commands
   }
 
-  async getCommand(config?: ServerDetails): Promise<ParsedCommand> {
-    const command = COMMAND_MAP[this.interaction.commandName];
-    if (!command) {
-      throw new Error('Unrecognized command!');
-    }
-    const args = this.interaction.options.getString('args', false) ?? '';
-    const text = `${this.interaction.commandName} ${args}`;
-    let type: SyntaxType | undefined;
-    if (config) {
-      const dto = await config.get();
-      type = dto.syntax;
-    }
-    return this.parser.parseCommand(removeMentions(text), this.user.permission, type);
+  async getCommand(): Promise<ParsedCommand> {
+    return parseSlashCommand(this.interaction, this.user.permission);
   }
 
 }

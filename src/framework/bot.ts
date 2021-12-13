@@ -154,7 +154,7 @@ export class DiscordEolianBot implements EolianBot {
     if (!locked) {
       try {
         await this.lockManager.lock(interaction.user.id);
-        const contextInteraction = new DiscordCommandInteraction(interaction, this.parser, this.registry, this.db.users);
+        const contextInteraction = new DiscordCommandInteraction(interaction, this.registry, this.db.users);
 
         const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 

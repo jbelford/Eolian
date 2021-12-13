@@ -85,10 +85,38 @@ export interface KeywordMatchResult<T> {
   args?: T;
 }
 
+export const enum KeywordGroup {
+  Source = 'source',
+  Type = 'type',
+  Switch = 'switch',
+  Increment = 'increment',
+}
+
+export interface KeywordGroupProperties {
+  details: string;
+}
+
+export type KeywordGroups = {
+  [key in KeywordGroup]: KeywordGroupProperties;
+};
+
+export const enum PatternGroup {
+  Input = 'input'
+}
+
+export interface PatternGroupProperties {
+  details: string;
+}
+
+export type PatternGroups = {
+  [key in PatternGroup]: PatternGroupProperties;
+}
+
 export interface Keyword extends ArgumentExample {
   readonly name: string;
   readonly details: string;
   readonly permission: PERMISSION;
+  readonly group?: KeywordGroup;
 }
 
 export interface Pattern<T> {
@@ -98,6 +126,7 @@ export interface Pattern<T> {
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
   readonly usage: string[];
+  readonly group?: PatternGroup;
 
   ex(text: string): ArgumentExample;
 
@@ -143,7 +172,8 @@ export interface Patterns {
 
 export const enum SyntaxType {
   KEYWORD = 0,
-  TRADITIONAL
+  TRADITIONAL = 1,
+  SLASH = 2
 }
 
 export interface ArgumentExample {
