@@ -14,7 +14,7 @@ Expect bugs and bot may suddenly restart without warning as updates are pushed.
 
 # 📩 Invite Link
 
-https://discord.com/api/oauth2/authorize?client_id=600199818387914752&permissions=1077411136&scope=bot
+https://discord.com/api/oauth2/authorize?client_id=600199818387914752&scope=bot+applications.commands&permissions=3665216
 
 # 🧪 Test Discord Server
 
@@ -46,9 +46,7 @@ You can add any type of resource to the queue. Here is the list of each type of 
 
 ## 🎮 Easy To Use Buttons
 
-**NEW** No more emoji reactions!
-
-This bot takes every opportunity to simplify usage through the use of modern Discord buttons
+This bot takes every opportunity to simplify usage through the use of modern Discord buttons.
 
 ![Player](pics/player.png)
 
@@ -63,6 +61,15 @@ Below are two very simple examples of this in action. See this repo's Wiki for f
 
 _Note: Optionally may reconfigure bot to use flag-based syntax if preferred. See the wiki_
 
+## 💬 Integrates with Slash Commands
+
+Slash command support has also been added to this bot!
+
+**Older users may need to re-invite the bot to apply updated authentication scopes required by the bot**
+
+![Slash command](pics/slash_list.png)
+
+_On **April 22 2022** Discord will require bots on 75 servers or more to be verified in order to receive message content. On this date Slash commands will become the required interaction._
 
 ## 🔗 Link Spotify and SoundCloud Accounts
 
