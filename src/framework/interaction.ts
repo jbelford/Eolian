@@ -131,6 +131,8 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
 export class DiscordCommandInteraction extends DiscordInteraction<CommandInteraction> implements ContextCommandInteraction {
 
+  readonly isSlash = true;
+
   constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
     super(interaction, registry, users);
   }

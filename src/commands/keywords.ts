@@ -280,7 +280,14 @@ class RangeExample implements ArgumentExample {
   }
 
   text(type: SyntaxType): string {
-    return type === SyntaxType.KEYWORD ? `${this.name} ${this._text}` : `-${this.name} ${this._text}`;
+    switch (type) {
+      case SyntaxType.KEYWORD:
+        return `${this.name} ${this._text}`;
+      case SyntaxType.TRADITIONAL:
+        return `-${this.name} ${this._text}`;
+      case SyntaxType.SLASH:
+        return this._text;
+    }
   }
 
 }

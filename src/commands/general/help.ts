@@ -35,7 +35,9 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
   }
 
   let type = SyntaxType.KEYWORD;
-  if (server) {
+  if (interaction.isSlash) {
+    type = SyntaxType.SLASH;
+  } else if (server) {
     const details = await server.details.get();
     type = details.syntax ?? SyntaxType.KEYWORD;
   }
