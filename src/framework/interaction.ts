@@ -138,7 +138,7 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
   }
 
   get content(): string {
-    return this.interaction.commandName;
+    return this.interaction.toString();
   }
 
   get reactable(): boolean {
