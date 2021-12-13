@@ -20,7 +20,7 @@ export const KEYWORD_GROUPS: KeywordGroups = {
 
 export const PATTERN_GROUPS: PatternGroups = {
   input: {
-    details: 'Input either a URL or search terms'
+    details: 'Input either a URL or search terms.'
   }
 };
 
@@ -41,28 +41,28 @@ class KeywordDetails implements Keyword {
 }
 
 export const KEYWORDS: Keywords = {
-  ENABLE: new KeywordDetails('ENABLE', 'Indicates to enable a particular feature', PERMISSION.USER, KeywordGroup.Switch),
-  DISABLE: new KeywordDetails('DISABLE', 'Indicates to disable a particular feature', PERMISSION.USER, KeywordGroup.Switch),
-  CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data', PERMISSION.USER),
-  MORE: new KeywordDetails('MORE', 'Indicates to increase a value', PERMISSION.USER, KeywordGroup.Increment),
-  LESS: new KeywordDetails('LESS', 'Indicates to decrease a value', PERMISSION.USER, KeywordGroup.Increment),
+  ENABLE: new KeywordDetails('ENABLE', 'Indicates to enable a particular feature.', PERMISSION.USER, KeywordGroup.Switch),
+  DISABLE: new KeywordDetails('DISABLE', 'Indicates to disable a particular feature.', PERMISSION.USER, KeywordGroup.Switch),
+  CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data.', PERMISSION.USER),
+  MORE: new KeywordDetails('MORE', 'Indicates to increase a value.', PERMISSION.USER, KeywordGroup.Increment),
+  LESS: new KeywordDetails('LESS', 'Indicates to decrease a value.', PERMISSION.USER, KeywordGroup.Increment),
   MY: new KeywordDetails('MY', 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.', PERMISSION.USER),
-  SOUNDCLOUD: new KeywordDetails('SOUNDCLOUD', 'Indicates to fetch a resource from SoundCloud if applicable', PERMISSION.USER, KeywordGroup.Source),
-  SPOTIFY: new KeywordDetails('SPOTIFY', 'Indicates to fetch a resource from Spotify if applicable', PERMISSION.USER, KeywordGroup.Source),
-  YOUTUBE: new KeywordDetails('YOUTUBE', 'Indicates to fetch a resource from YouTube if applicable', PERMISSION.USER, KeywordGroup.Source),
-  PLAYLIST: new KeywordDetails('PLAYLIST', 'Indicates to fetch songs from a playlist given a query', PERMISSION.USER, KeywordGroup.Type),
-  ALBUM: new KeywordDetails('ALBUM', 'Indicates to fetch songs from an album given a query', PERMISSION.USER, KeywordGroup.Type),
-  ARTIST: new KeywordDetails('ARTIST', 'Indicates to fetch songs for an artist given the query', PERMISSION.USER, KeywordGroup.Type),
-  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue', PERMISSION.USER),
-  SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks', PERMISSION.USER),
+  SOUNDCLOUD: new KeywordDetails('SOUNDCLOUD', 'Indicates to fetch a resource from SoundCloud if applicable.', PERMISSION.USER, KeywordGroup.Source),
+  SPOTIFY: new KeywordDetails('SPOTIFY', 'Indicates to fetch a resource from Spotify if applicable.', PERMISSION.USER, KeywordGroup.Source),
+  YOUTUBE: new KeywordDetails('YOUTUBE', 'Indicates to fetch a resource from YouTube if applicable.', PERMISSION.USER, KeywordGroup.Source),
+  PLAYLIST: new KeywordDetails('PLAYLIST', 'Indicates to fetch songs from a playlist given a query.', PERMISSION.USER, KeywordGroup.Type),
+  ALBUM: new KeywordDetails('ALBUM', 'Indicates to fetch songs from an album given a query.', PERMISSION.USER, KeywordGroup.Type),
+  ARTIST: new KeywordDetails('ARTIST', 'Indicates to fetch songs for an artist given the query.', PERMISSION.USER, KeywordGroup.Type),
+  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue.', PERMISSION.USER),
+  SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks.', PERMISSION.USER),
   LIKES: new KeywordDetails('LIKES', 'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.', PERMISSION.USER, KeywordGroup.Type),
-  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks', PERMISSION.USER, KeywordGroup.Type)
+  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks.', PERMISSION.USER, KeywordGroup.Type)
 };
 
 export const PATTERNS: Patterns = {
   NUMBER: {
     name: 'NUMBER',
-    details: 'Indicates to specify a number',
+    details: 'Indicates to specify a number.',
     permission: PERMISSION.USER,
     usage: [
       '50',
@@ -79,7 +79,7 @@ export const PATTERNS: Patterns = {
   },
   TOP: {
     name: 'TOP',
-    details: 'Indicates to fetch the range of tracks starting from the beginning in the list',
+    details: 'Indicates to fetch the range of tracks starting from the beginning in the list.',
     permission: PERMISSION.USER,
     usage: [
       '100  # Get the first 100 songs',
@@ -101,7 +101,7 @@ export const PATTERNS: Patterns = {
   },
   BOTTOM: {
     name: 'BOTTOM',
-    details: 'Indicates to fetch the range of tracks starting from the end of the list',
+    details: 'Indicates to fetch the range of tracks starting from the end of the list.',
     permission: PERMISSION.USER,
     usage: [
       '100  # Get the last 100 songs',
