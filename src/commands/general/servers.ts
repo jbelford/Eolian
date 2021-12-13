@@ -80,6 +80,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
         await kickUnused(context);
         return;
       }
+      case 'updateCommands': {
+        const success = await context.client.updateCommands();
+        if (success) {
+          await context.interaction.send('Request to update commands sent successfully!');
+        } else {
+          await context.interaction.send('I failed to update commands. Check the logs.');
+        }
+        return;
+      }
       default:
     }
   }

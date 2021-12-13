@@ -12,7 +12,7 @@ import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from '.
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageInteraction } from './interaction';
 import { GuildQueue } from './queue';
-import { registerSlashCommands } from './register_commands';
+import { registerGuildSlashCommands } from './register_commands';
 import { DiscordGuild } from './server';
 import { InMemoryServerStateStore } from './state';
 
@@ -106,7 +106,13 @@ export class DiscordEolianBot implements EolianBot {
 
   async start(): Promise<void> {
     if (!this.client.readyTimestamp) {
-      await registerSlashCommands();
+      if (!environment.prod) {
+        if (environment.devGuild) {
+          await registerGuildSlashCommands(environment.devGuild);
+        } else {
+          logger.warn('Missing dev guild. Not registering slash commands for dev environment');
+        }
+      }
       await this.client.login(environment.tokens.discord.main);
       await this.oldClient?.login(environment.tokens.discord.old);
     }

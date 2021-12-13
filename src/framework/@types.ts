@@ -37,6 +37,7 @@ export interface ContextClient {
   getServers(): ServerInfo[];
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   getUnusedServers(): Promise<ServerInfo[]>;
+  updateCommands(): Promise<boolean>;
   leave(id: string): Promise<boolean>;
 }
 

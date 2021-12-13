@@ -2,6 +2,7 @@ import { getVoiceConnection } from '@discordjs/voice';
 import { ServerDTO, ServersDb } from 'data/@types';
 import { Client, Guild, PermissionResolvable } from 'discord.js';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
+import { registerGlobalSlashCommands } from './register_commands';
 import { DiscordVoiceConnection } from './voice';
 
 function mapGuildToServerInfo(guild: Guild): ServerInfo {
@@ -65,6 +66,10 @@ export class DiscordClient implements ContextClient {
     const guilds = this.client.guilds.cache.map(g => g);
     const servers = await Promise.all(guilds.map(server => this.servers.get(server.id)));
     return servers.map((s, i) => s ? undefined : guilds[i]).filter(s => !!s).map(g => mapGuildToServerInfo(g!));
+  }
+
+  updateCommands(): Promise<boolean> {
+      return registerGlobalSlashCommands();
   }
 
   async leave(id: string): Promise<boolean> {

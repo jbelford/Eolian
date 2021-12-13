@@ -10,27 +10,33 @@ import { logger } from 'common/logger';
 import { Routes } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 
-export async function registerSlashCommands() {
+export async function registerGlobalSlashCommands(): Promise<boolean> {
   if (!environment.tokens.discord.clientId) {
     logger.info('Missing client id. Not registering slash commands');
-    return;
+    return false;
   }
 
-  let route: `/${string}`;
-  if (environment.prod) {
-    logger.info('Sending refresh for global slash commands');
-    route = Routes.applicationCommands(environment.tokens.discord.clientId);
-  } else {
-    if (!environment.devGuild) {
-      logger.info('Missing dev guild. Not registering slash commands for dev environment');
-      return;
-    }
-    logger.info('Sending refresh for slash commands for guild %s', environment.devGuild);
-    route = Routes.applicationGuildCommands(environment.tokens.discord.clientId, environment.devGuild);
+  if (!environment.prod) {
+    logger.warn('Not prod environment. Not registering global commands');
+    return false;
   }
 
+  logger.info('Sending refresh for global slash commands');
+  return registerSlashCommands(Routes.applicationCommands(environment.tokens.discord.clientId));
+}
+
+export async function registerGuildSlashCommands(guildId: string): Promise<boolean> {
+  if (!environment.tokens.discord.clientId) {
+    logger.info('Missing client id. Not registering slash commands');
+    return false;
+  }
+
+  logger.info('Sending refresh for slash commands for guild %s', guildId);
+  return registerSlashCommands(Routes.applicationGuildCommands(environment.tokens.discord.clientId, guildId));
+}
+
+async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   try {
-
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
     await rest.put(route, {
@@ -38,9 +44,12 @@ export async function registerSlashCommands() {
     });
 
     logger.info('Successfully refreshed slash commands.');
+
+    return true;
   } catch (e) {
     logger.warn('Failed to refresh slash commands: %s', e);
   }
+  return false;
 }
 
 function mapCommandToSlashCommand(command: Command) {
