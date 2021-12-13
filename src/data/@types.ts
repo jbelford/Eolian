@@ -41,6 +41,8 @@ export interface ServersDb extends CollectionDb<ServerDTO> {
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
   setSyntax(id: string, type: SyntaxType): Promise<void>;
+  setDjRoleId(id: string, roleId: string): Promise<void>;
+  setDjAllowLimited(id: string, allow: boolean): Promise<void>;
 }
 
 export interface DocDTO {
@@ -53,6 +55,8 @@ export interface ServerDTO extends DocDTO {
   volume?: number;
   syntax?: SyntaxType;
   queueLimit?: number;
+  djRoleId?: string;
+  djAllowLimited?: boolean;
 }
 
 export interface UserDTO extends DocDTO {

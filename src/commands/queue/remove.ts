@@ -36,7 +36,7 @@ export const REMOVE_COMMAND: Command = {
   name: 'remove',
   details: 'Remove songs from the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.NEXT],
   patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [

@@ -103,6 +103,7 @@ export interface ContextUser {
   readonly name: string;
   readonly avatar?: string;
   readonly permission: PERMISSION;
+  updatePermissions(details?: ServerDetails): Promise<void>;
   send(message: string): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
@@ -148,6 +149,7 @@ export interface EmbedMessageButton {
   emoji: string;
   style?: ButtonStyle;
   disabled?: boolean;
+  permission?: PERMISSION;
   /**
    * Return true if message is to be destroyed after.
    */

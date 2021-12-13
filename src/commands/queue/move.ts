@@ -55,7 +55,7 @@ export const MOVE_COMMAND: Command = {
   name: 'move',
   details: 'Move songs in the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.NEXT],
   patterns: [PATTERNS.NUMBER, PATTERNS.TOP, PATTERNS.BOTTOM],
   new: true,

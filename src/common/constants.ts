@@ -9,6 +9,8 @@ for (let i = 0; i < NUMBER_TO_EMOJI.length; ++i) {
 export const enum PERMISSION {
   UNKNOWN = 0,
   USER,
+  DJ_LIMITED,
+  DJ,
   ADMIN,
   OWNER
 }

@@ -144,9 +144,20 @@ export class DiscordEolianBot implements EolianBot {
     const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
     if (embedButton) {
       const contextInteraction = new DiscordButtonInteraction(interaction, this.registry, this.db.users);
-      const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
-      if (destroy) {
-        contextInteraction.message.releaseButtons();
+
+      let state: ServerState | undefined;
+      if (interaction.guild) {
+        state = await this.getGuildState(interaction.guild);
+      }
+      await contextInteraction.user.updatePermissions(state?.details);
+
+      if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
+        await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
+      } else {
+        const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+        if (destroy) {
+          contextInteraction.message.releaseButtons();
+        }
       }
     } else {
       logger.warn('Unknown button click received: %s %s', interaction.message.id, interaction.customId);
@@ -286,6 +297,7 @@ export class DiscordEolianBot implements EolianBot {
       } else {
         client = new DiscordClient(this.client, this.db.servers);
       }
+      await interaction.user.updatePermissions(server?.details);
 
       const { command, options } = await interaction.getCommand(server?.details);
       if (interaction.channel.isDm && !command.dmAllowed) {

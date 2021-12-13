@@ -34,7 +34,7 @@ export const LOOP_COMMAND: Command = {
   name: 'loop',
   details: 'Enable or disable loop mode.\nLoop mode adds played tracks back to the end of the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],
   new: true,
   usage: [

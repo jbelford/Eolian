@@ -20,7 +20,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     return !!result.deletedCount;
   }
 
-  protected async setProperty<V>(id: string, key: string, value: V): Promise<void> {
+  protected async setProperty<K extends Extract<keyof T, string>, V>(id: string, key: K | `${K}.${string}`, value: V): Promise<void> {
     const set: any = {};
     set[key] = value;
     await this.collection.updateOne(
@@ -101,6 +101,14 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
 
   async setSyntax(id: string, type: SyntaxType): Promise<void> {
     await this.setProperty(id, 'syntax', type);
+  }
+
+  async setDjRoleId(id: string, roleId: string): Promise<void> {
+    await this.setProperty(id, 'djRoleId', roleId);
+  }
+
+  async setDjAllowLimited(id: string, allow: boolean): Promise<void> {
+    await this.setProperty(id, 'djAllowLimited', allow);
   }
 
 }

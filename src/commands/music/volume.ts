@@ -35,7 +35,7 @@ export const VOLUME_COMMAND: Command = {
   name: 'volume',
   details: `Get the current volume or set the volume.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.MORE, KEYWORDS.LESS],
   patterns: [PATTERNS.NUMBER],
   usage: [

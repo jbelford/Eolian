@@ -98,7 +98,7 @@ export const PLAY_COMMAND: Command = {
   details: `Join the current channel. Starts playing first song in the queue if not already.
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   noDefaultReply: true,

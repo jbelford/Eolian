@@ -2,17 +2,20 @@ import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
-import { ContextUser, ContextVoiceChannel } from './@types';
+import { ContextUser, ContextVoiceChannel, ServerDetails } from './@types';
 import { DiscordVoiceChannel } from './voice';
 
 export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
+  private _permission: PERMISSION;
 
   constructor(private readonly user: User,
       private readonly users: UsersDb,
-      readonly permission: PERMISSION,
-      private readonly guildUser?: GuildMember) {}
+      permission: PERMISSION,
+      private readonly guildUser?: GuildMember) {
+    this._permission = permission;
+  }
 
   get id(): string {
     return this.user.id;
@@ -24,6 +27,33 @@ export class DiscordUser implements ContextUser {
 
   get avatar(): string | undefined {
     return this.user.avatarURL({ dynamic: true }) || undefined;
+  }
+
+  get permission(): PERMISSION {
+    return this._permission;
+  }
+
+  async updatePermissions(details?: ServerDetails): Promise<void> {
+    if (this.permission === PERMISSION.USER) {
+      if (details) {
+        const config = await details.get();
+        if (config.djRoleId) {
+          if (this.hasRole(config.djRoleId)) {
+            this._permission = PERMISSION.DJ;
+          } else if (config.djAllowLimited) {
+            this._permission = PERMISSION.DJ_LIMITED;
+          }
+        } else {
+          this._permission = PERMISSION.DJ;
+        }
+      } else {
+        this._permission = PERMISSION.DJ;
+      }
+    }
+  }
+
+  hasRole(id: string): boolean {
+    return !!this.guildUser?.roles.cache.has(id);
   }
 
   async send(message: string): Promise<void> {

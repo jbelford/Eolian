@@ -46,7 +46,7 @@ export const LIST_COMMAND: Command = {
   name: 'list',
   details: 'Show or clear the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.CLEAR, KEYWORDS.SHUFFLE],
   patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [

@@ -1,5 +1,5 @@
 import { Track } from 'api/@types';
-import { GITHUB_PAGE_ISSUES } from 'common/constants';
+import { GITHUB_PAGE_ISSUES, PERMISSION } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player } from 'music/@types';
@@ -54,9 +54,9 @@ export class DiscordQueueDisplay implements QueueDisplay {
     loop = loop.slice(0, QUEUE_PAGE_LENGTH - tracks.length);
     const embed = createQueueEmbed(tracks, loop, this.start, total, this.queue.loop);
     embed.buttons = [
-      { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1 },
-      { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
-      { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
+      { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1, permission: PERMISSION.DJ },
+      { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled, permission: PERMISSION.DJ_LIMITED },
+      { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled, permission: PERMISSION.DJ_LIMITED }
     ];
     if (this.sendable) {
       this.message = await this.sendable.sendEmbed(embed) ?? null;
@@ -200,11 +200,11 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       embed.buttons = [
-        { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev) },
-        { emoji: '⏪', onClick: this.backHandler, disabled: !prev },
-        { emoji: this.player.paused ? '▶️' : '⏸️', onClick: this.onPauseResumeHandler },
-        { emoji: '⏩', onClick: this.skipHandler },
-        { emoji: '⏹', onClick: this.stopHandler },
+        { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev), permission: PERMISSION.DJ_LIMITED },
+        { emoji: '⏪', onClick: this.backHandler, disabled: !prev, permission: PERMISSION.DJ },
+        { emoji: this.player.paused ? '▶️' : '⏸️', onClick: this.onPauseResumeHandler, permission: PERMISSION.DJ },
+        { emoji: '⏩', onClick: this.skipHandler, permission: PERMISSION.DJ },
+        { emoji: '⏹', onClick: this.stopHandler, permission: PERMISSION.DJ },
       ];
       if (!editOnly && (!this.message || this.channel.lastMessageId !== this.message.id)) {
         await this.safeDelete();

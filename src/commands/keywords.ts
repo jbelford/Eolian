@@ -53,7 +53,7 @@ export const KEYWORDS: Keywords = {
   PLAYLIST: new KeywordDetails('PLAYLIST', 'Indicates to fetch songs from a playlist given a query.', PERMISSION.USER, KeywordGroup.Type),
   ALBUM: new KeywordDetails('ALBUM', 'Indicates to fetch songs from an album given a query.', PERMISSION.USER, KeywordGroup.Type),
   ARTIST: new KeywordDetails('ARTIST', 'Indicates to fetch songs for an artist given the query.', PERMISSION.USER, KeywordGroup.Type),
-  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue.', PERMISSION.USER),
+  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue.', PERMISSION.DJ),
   SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks.', PERMISSION.USER),
   LIKES: new KeywordDetails('LIKES', 'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.', PERMISSION.USER, KeywordGroup.Type),
   TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks.', PERMISSION.USER, KeywordGroup.Type)

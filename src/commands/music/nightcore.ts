@@ -47,7 +47,7 @@ export const NIGHTCORE_COMMAND: Command = {
   name: 'nightcore',
   details: `Enable or disable nightcore mode.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.USER,
+  permission: PERMISSION.DJ,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],
   usage: [
     {
