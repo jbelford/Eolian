@@ -8,7 +8,7 @@ import { ButtonInteraction, Client, CommandInteraction, Guild, Intents, Interact
 import { DiscordPlayer } from 'music/player';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { ButtonRegistry } from "./button";
-import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS } from './client';
+import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS, INVITE_SCOPES } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageInteraction } from './interaction';
 import { GuildQueue } from './queue';
@@ -182,7 +182,7 @@ export class DiscordEolianBot implements EolianBot {
   private onReadyHandler = async () => {
     try {
       logger.info('Discord bot is ready!');
-      this.invite = this.client.generateInvite({ scopes: ['bot'], permissions: DISCORD_INVITE_PERMISSIONS });
+      this.invite = this.client.generateInvite({ scopes: INVITE_SCOPES, permissions: DISCORD_INVITE_PERMISSIONS });
       logger.info(`Bot invite link: %s`, this.invite);
       await this.setPresence();
     } catch (e) {

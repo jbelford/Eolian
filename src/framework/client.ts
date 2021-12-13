@@ -1,6 +1,6 @@
 import { getVoiceConnection } from '@discordjs/voice';
 import { ServerDTO, ServersDb } from 'data/@types';
-import { Client, Guild, PermissionResolvable } from 'discord.js';
+import { Client, Guild, InviteScope, PermissionResolvable } from 'discord.js';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
 import { registerGlobalSlashCommands } from './register_commands';
 import { DiscordVoiceConnection } from './voice';
@@ -16,6 +16,11 @@ function mapGuildToServerInfo(guild: Guild): ServerInfo {
     botRatio: Math.round(100 * botCount / guild.memberCount) / 100
   };
 }
+
+export const INVITE_SCOPES: InviteScope[] = [
+  'bot',
+  'applications.commands'
+];
 
 export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
   'ADD_REACTIONS',
@@ -51,7 +56,7 @@ export class DiscordClient implements ContextClient {
   }
 
   generateInvite(): string {
-    return this.client.generateInvite({ scopes: ['bot'], permissions: DISCORD_INVITE_PERMISSIONS });
+    return this.client.generateInvite({ scopes: INVITE_SCOPES, permissions: DISCORD_INVITE_PERMISSIONS });
   }
 
   getServers(): ServerInfo[] {
