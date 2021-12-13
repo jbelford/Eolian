@@ -43,21 +43,21 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
   }
 
   const command = COMMAND_MAP[arg];
-  if (command && command.permission <= interaction.user.permission) {
+  if (command && (command.permission < PERMISSION.ADMIN || command.permission <= interaction.user.permission)) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
     await interaction.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
-  if (keyword && keyword.permission <= interaction.user.permission) {
+  if (keyword && (keyword.permission < PERMISSION.ADMIN || keyword.permission <= interaction.user.permission)) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await interaction.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
-  if (pattern && pattern.permission <= interaction.user.permission) {
+  if (pattern && (pattern.permission < PERMISSION.ADMIN || pattern.permission <= interaction.user.permission)) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await interaction.sendEmbed(patternEmbed);
     return;

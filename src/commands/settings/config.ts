@@ -7,7 +7,9 @@ import { createServerDetailsEmbed } from 'embed';
 const enum CONFIG_OPTION {
   PREFIX = 'prefix',
   VOLUME = 'volume',
-  SYNTAX = 'syntax'
+  SYNTAX = 'syntax',
+  DJ = 'dj',
+  DJ_LIMITED = 'dj_limited'
 }
 
 type ConfigSetFunc = (context: CommandContext, value: string) => Promise<void>;
@@ -15,7 +17,9 @@ type ConfigSetFunc = (context: CommandContext, value: string) => Promise<void>;
 const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
   [CONFIG_OPTION.PREFIX, setPrefix],
   [CONFIG_OPTION.VOLUME, setVolume],
-  [CONFIG_OPTION.SYNTAX, setSyntax]
+  [CONFIG_OPTION.SYNTAX, setSyntax],
+  [CONFIG_OPTION.DJ, setDjRole],
+  [CONFIG_OPTION.DJ_LIMITED, setDjLimited]
 ]);
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -83,6 +87,44 @@ async function setSyntax(context: CommandContext, syntax: string) {
   await context.interaction.send(`✨ The server now uses \`${syntax}\` syntax!`);
 }
 
+async function setDjRole(context: CommandContext, id: string) {
+  if (id === 'clear') {
+    await context.server!.details.setDjRole(undefined);
+    await context.interaction.send('✨ I have unset the DJ role. Everyone can DJ!');
+  } else {
+    const result = id.match(/^(<@&)?(?<id>\d+)>?$/);
+    if (!result) {
+      throw new EolianUserError(`${id} is not a role!`);
+    }
+    id = result.groups!['id'];
+    const success = await context.server?.details.setDjRole(id);
+    if (!success) {
+      throw new EolianUserError(`The role with ID ${id} does not exist!`);
+    }
+    await context.interaction.send(`✨ I have set the DJ role to <@&${id}>!`);
+  }
+}
+
+async function setDjLimited(context: CommandContext, allow: string) {
+  let enabled: boolean;
+  switch (allow.toLowerCase()) {
+    case 'true':
+      enabled = true;
+      break;
+    case 'false':
+      enabled = false;
+      break;
+    default:
+      throw new EolianUserError('Unrecognized value! Provide `true` or `false` for `dj_limited` config.');
+  }
+  await context.server!.details.setDjLimited(enabled);
+  if (enabled) {
+    await context.interaction.send(`✨ Users can now limited DJ! This means they can add songs to the queue as well as some very basic operations.`)
+  } else {
+    await context.interaction.send(`✨ I have removed limited DJ permissions!`);
+  }
+}
+
 export const CONFIG_COMMAND: Command = {
   name: 'config',
   details: 'Show configuration or change configurations for server.',
@@ -108,6 +150,26 @@ export const CONFIG_COMMAND: Command = {
     {
       title: 'Set syntax preference to traditional',
       example: 'syntax traditional'
+    },
+    {
+      title: 'Set DJ role by @ mention',
+      example: 'dj @myDjRole'
+    },
+    {
+      title: 'Set DJ by ID',
+      example: 'dj 920079417907224636'
+    },
+    {
+      title: 'Unset DJ role',
+      example: 'dj clear'
+    },
+    {
+      title: 'Allow non-DJs to have ability to have limited DJ ability such as adding tracks (Only effective when DJ role is set)',
+      example: 'dj_limited true'
+    },
+    {
+      title: 'Make non-DJs not allowed to set any',
+      example: 'dj_limited false'
     }
   ],
   execute

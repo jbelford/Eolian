@@ -103,7 +103,7 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
     await this.setProperty(id, 'syntax', type);
   }
 
-  async setDjRoleId(id: string, roleId: string): Promise<void> {
+  async setDjRoleId(id: string, roleId?: string): Promise<void> {
     await this.setProperty(id, 'djRoleId', roleId);
   }
 

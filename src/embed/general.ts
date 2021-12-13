@@ -78,7 +78,9 @@ export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): Emb
   const volume = dto.volume ?? DEFAULT_VOLUME;
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
 **Volume:** \`${Math.floor(volume * 100)}%\`
-**Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\``;
+**Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\`
+**DJ Role:** ${dto.djRoleId ? `<@&${dto.djRoleId}>` : '`None`'}
+**Allow Limited DJ:** \`${!!dto.djAllowLimited}\``;
   return {
     header: {
       icon: guild.avatar,

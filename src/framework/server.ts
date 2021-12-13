@@ -80,6 +80,27 @@ export class DiscordGuild implements ServerDetails {
     await this.servers.setSyntax(this.id, type);
   }
 
+  async setDjRole(id?: string): Promise<boolean> {
+    if (id) {
+      const exists = this.guild.roles.cache.has(id);
+      if (!exists) {
+        return false;
+      }
+    }
+    if (this.configCache) {
+      this.configCache.djRoleId = id;
+    }
+    await this.servers.setDjRoleId(this.id, id);
+    return true;
+  }
+
+  async setDjLimited(allow: boolean): Promise<void> {
+    if (this.configCache) {
+      this.configCache.djAllowLimited = allow;
+    }
+    await this.servers.setDjAllowLimited(this.id, allow);
+  }
+
   async updateUsage(): Promise<void> {
     if (!this.configCache) {
       await this.get();

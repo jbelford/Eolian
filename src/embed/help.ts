@@ -32,7 +32,7 @@ export function createCommandListEmbed(category: CommandCategory, permission: PE
   };
 
   const commands = COMMANDS.filter(cmd => cmd.category.name === category.name)
-    .filter(cmd => cmd.permission <= permission)
+    .filter(cmd => cmd.permission < PERMISSION.ADMIN || cmd.permission <= permission)
     .map(cmd => cmd.new ? `${cmd.name} *NEW*` : cmd.name);
 
   embed.description += `\`\`\`
@@ -46,6 +46,17 @@ ${helpFooter}
   return embed;
 }
 
+function getRequiresDjState(permission: PERMISSION) {
+  switch (permission) {
+    case PERMISSION.DJ:
+      return 'Yes';
+    case PERMISSION.DJ_LIMITED:
+      return 'Limited';
+    default:
+      return 'No';
+  }
+}
+
 export function createCommandDetailsEmbed(command: Command, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
@@ -55,7 +66,7 @@ export function createCommandDetailsEmbed(command: Command, type = SyntaxType.KE
     title: command.name,
     description: `${command.details}\n\n`,
     footer: {
-      text: `Can be used in direct message? ${command.dmAllowed ? 'Yes': 'No' }`
+      text: `Can be used in direct message? ${command.dmAllowed ? 'Yes': 'No' }\nRequires DJ Role? ${getRequiresDjState(command.permission)}`
     }
   };
 
@@ -89,23 +100,29 @@ export function createKeywordDetailsEmbed(keyword: Keyword, type = SyntaxType.KE
       text: `🚩  Keyword  🚩`
     },
     title: keyword.name,
-    description: `${keyword.details}\n\n`
+    description: `${keyword.details}\n\n`,
+    footer: {
+      text: `Requires DJ Role? ${getRequiresDjState(keyword.permission)}`
+    }
   };
   embed.description += '**Example Usage:**\n```\n' + keyword.text(type) + '```';
   embed.description += `\n\n${helpFooter}`;
   return embed;
 }
 
-export function createPatternDetailsEmbed(keyword: Pattern<unknown>, type = SyntaxType.KEYWORD): EmbedMessage {
+export function createPatternDetailsEmbed(pattern: Pattern<unknown>, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {
       text: `🚩  Pattern  🚩`
     },
-    title: keyword.name,
-    description: `${keyword.details}\n\n`
+    title: pattern.name,
+    description: `${pattern.details}\n\n`,
+    footer: {
+      text: `Requires DJ Role? ${getRequiresDjState(pattern.permission)}`
+    }
   };
-  embed.description += '**Example Usage:**\n```\n' + keyword.usage.map(example => keyword.ex(example).text(type)).join('\n') + '```';
+  embed.description += '**Example Usage:**\n```\n' + pattern.usage.map(example => pattern.ex(example).text(type)).join('\n') + '```';
   embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
   embed.description += `\n\n${helpFooter}`;
   return embed;
