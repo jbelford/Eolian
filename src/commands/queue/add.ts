@@ -1,4 +1,4 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { getRangeOption, KEYWORDS, PATTERNS } from 'commands/keywords';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
@@ -21,7 +21,7 @@ export function createSelectedMessage(name: string, authors: string[], identifie
   return text;
 }
 
-async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executeAdd(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.SEARCH, options.URL, options.IDENTIFIER);
   if (sum === 0 && !options.MY) {
     throw new EolianUserError('You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. See `help add` to learn more.');
@@ -136,5 +136,20 @@ export const ADD_COMMAND: Command = {
       example: [KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.LIKES, KEYWORDS.SHUFFLE]
     },
   ],
-  execute
+  execute: executeAdd
+};
+
+export const ADD_MESSAGE_COMMAND: MessageCommand = {
+  name: 'add',
+  permission: PERMISSION.DJ_LIMITED,
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL],
+  execute(context, options) {
+    if (!options.URL && !options.SEARCH) {
+      throw new EolianUserError('This message must contain something to search or a valid URL');
+    }
+    if (options.URL) {
+      options.SEARCH = undefined;
+    }
+    return executeAdd(context, options);
+  }
 };

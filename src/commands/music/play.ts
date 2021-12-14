@@ -1,4 +1,4 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
+import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS, PATTERNS } from 'commands/keywords';
 import { createSelectedMessage } from 'commands/queue/add';
@@ -10,7 +10,7 @@ import { getSourceFetcher, getSourceResolver } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 
 
-async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
+async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();
   if (!userVoice) {
     throw new EolianUserError('You need to be in a voice channel!');
@@ -116,5 +116,21 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
       example: [PATTERNS.SEARCH.ex('what is love')]
     }
   ],
-  execute
+  execute: executePlay
+};
+
+export const PLAY_MESSAGE_COMMAND: MessageCommand = {
+  name: 'play',
+  permission: PERMISSION.DJ,
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL],
+  noDefaultReply: true,
+  execute(context, options) {
+    if (!options.URL && !options.SEARCH) {
+      throw new EolianUserError('This message must contain something to search or a valid URL');
+    }
+    if (options.URL) {
+      options.SEARCH = undefined;
+    }
+    return executePlay(context, options);
+  }
 };

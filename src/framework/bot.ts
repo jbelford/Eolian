@@ -4,13 +4,13 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
-import { ButtonInteraction, Client, ClientOptions, CommandInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
+import { ButtonInteraction, Client, ClientOptions, CommandInteraction, ContextMenuInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
 import { DiscordPlayer } from 'music/player';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { ButtonRegistry } from "./button";
 import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS, INVITE_SCOPES } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
-import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageInteraction } from './interaction';
+import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageCommandInteraction, DiscordMessageInteraction } from './interaction';
 import { GuildQueue } from './queue';
 import { registerGuildSlashCommands } from './register_commands';
 import { DiscordGuild } from './server';
@@ -164,7 +164,7 @@ export class DiscordEolianBot implements EolianBot {
       }
       if (interaction.isButton()) {
         await this.onButtonClickHandler(interaction);
-      } else if (interaction.isCommand()) {
+      } else if (interaction.isCommand() || interaction.isContextMenu() && interaction.targetType === 'MESSAGE') {
         await this.onCommandHandler(interaction);
       } else {
         logger.warn('Received unknown interaction type: %s', interaction.type);
@@ -200,12 +200,14 @@ export class DiscordEolianBot implements EolianBot {
     }
   };
 
-  private onCommandHandler = async (interaction: CommandInteraction) => {
+  private onCommandHandler = async (interaction: CommandInteraction | ContextMenuInteraction) => {
     const locked = await this.lockManager.isLocked(interaction.user.id);
     if (!locked) {
       try {
         await this.lockManager.lock(interaction.user.id);
-        const contextInteraction = new DiscordCommandInteraction(interaction, this.registry, this.db.users);
+        const contextInteraction = interaction.isCommand()
+          ? new DiscordCommandInteraction(interaction, this.registry, this.db.users)
+          : new DiscordMessageCommandInteraction(interaction, this.registry, this.db.users);
 
         const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 

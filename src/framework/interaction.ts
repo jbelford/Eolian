@@ -1,17 +1,17 @@
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
-import { ButtonInteraction, CommandInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
+import { BaseCommandInteraction, ButtonInteraction, CommandInteraction, ContextMenuInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
 import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, SelectionResult, ServerDetails } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
-import { parseSlashCommand } from './register_commands';
+import { parseMessageCommand, parseSlashCommand } from './register_commands';
 import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
 
-  constructor(private readonly interaction: ButtonInteraction | CommandInteraction) {
+  constructor(private readonly interaction: ButtonInteraction | BaseCommandInteraction) {
   }
 
   async send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message> {
@@ -36,7 +36,7 @@ class CommandInteractionSender implements DiscordMessageSender {
 }
 
 
-class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> implements ContextInteraction {
+class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> implements ContextInteraction {
 
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
@@ -151,6 +151,33 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
 
   async getCommand(): Promise<ParsedCommand> {
     return parseSlashCommand(this.interaction, this.user.permission);
+  }
+
+}
+
+export class DiscordMessageCommandInteraction extends DiscordInteraction<ContextMenuInteraction> implements ContextCommandInteraction {
+
+  readonly isSlash = true;
+  readonly reactable = false;
+
+  constructor(interaction: ContextMenuInteraction, registry: ButtonRegistry, users: UsersDb) {
+    super(interaction, registry, users);
+  }
+
+  get content(): string {
+    const message = this.interaction.options.getMessage('message');
+    if (!message) {
+      throw new Error('Missing message from ContextMenu!');
+    }
+    return message.content;
+  }
+
+  async react(): Promise<void> {
+    // Do nothing since we can't react to this command
+  }
+
+  async getCommand(): Promise<ParsedCommand> {
+    return parseMessageCommand(this.interaction.commandName, this.content, this.user.permission);
   }
 
 }

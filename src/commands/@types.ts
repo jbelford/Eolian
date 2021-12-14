@@ -2,21 +2,26 @@ import { RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
 import { ContextClient, ContextCommandInteraction, ServerState } from 'framework/@types';
 
-export interface Command {
+export interface BaseCommand {
   name: string;
-  shortDetails?: string;
-  details: string;
   permission: PERMISSION;
-  category: CommandCategory;
-  // If using keyword parsing
-  keywords?: Keyword[];
   patterns?: Pattern<unknown>[];
   dmAllowed?: boolean;
-  new?: boolean;
-  usage: CommandUsage[];
   noDefaultReply?: boolean;
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
+
+export interface Command extends BaseCommand {
+  shortDetails?: string;
+  details: string;
+  category: CommandCategory;
+  // If using keyword parsing
+  keywords?: Keyword[];
+  new?: boolean;
+  usage: CommandUsage[];
+}
+
+export type MessageCommand = BaseCommand;
 
 export interface CommandUsage {
   title?: string;
@@ -37,7 +42,7 @@ export interface CommandParsingStrategy {
 export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[], patterns?: string[]) => CommandOptions;
 
 export interface ParsedCommand {
-  command: Command;
+  command: BaseCommand;
   options: CommandOptions;
 }
 

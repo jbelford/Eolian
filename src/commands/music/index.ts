@@ -15,3 +15,5 @@ export const MUSIC_COMMANDS: Command[] = [
   SHOW_COMMAND,
   NIGHTCORE_COMMAND
 ];
+
+export { PLAY_MESSAGE_COMMAND } from './play';

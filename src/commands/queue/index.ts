@@ -12,3 +12,5 @@ export const QUEUE_COMMANDS: Command[] = [
   LIST_COMMAND,
   LOOP_COMMAND
 ];
+
+export { ADD_MESSAGE_COMMAND } from './add';

@@ -1,13 +1,13 @@
-import { SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
+import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
-import { COMMANDS, COMMAND_MAP } from 'commands';
-import { Command, CommandOptions, KeywordGroup, ParsedCommand, PatternGroup, SyntaxType } from 'commands/@types';
-import { KEYWORDS, KEYWORD_GROUPS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
+import { COMMANDS, COMMAND_MAP, MESSAGE_COMMANDS, MESSAGE_COMMAND_MAP } from 'commands';
+import { Command, CommandOptions, KeywordGroup, MessageCommand, ParsedCommand, PatternGroup, SyntaxType } from 'commands/@types';
+import { KEYWORDS, KEYWORD_GROUPS, PATTERNS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { Routes } from 'discord-api-types/v9';
+import { ApplicationCommandType, Routes } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
@@ -35,7 +35,7 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
     await rest.put(route, {
-      body: COMMANDS.map(mapCommandToSlashCommand)
+      body: COMMANDS.map(mapCommandToSlashCommand).concat(MESSAGE_COMMANDS.map(mapMessageCommandToContextMenuCommand))
     });
 
     logger.info('Successfully refreshed slash commands.');
@@ -125,6 +125,18 @@ function mapCommandToSlashCommand(command: Command) {
   }
 }
 
+function mapMessageCommandToContextMenuCommand(command: MessageCommand) {
+  try {
+    return new ContextMenuCommandBuilder()
+      .setName(command.name)
+      // @ts-ignore Discord.js doesn't play nice with types for some reason
+      .setType(ApplicationCommandType.Message);
+  } catch (e) {
+    logger.warn('Failed validation for %s', command);
+    throw e
+  }
+}
+
 export function parseSlashCommand(interaction: CommandInteraction, permission: PERMISSION): ParsedCommand {
   const command = COMMAND_MAP[interaction.commandName];
   if (!command) {
@@ -163,17 +175,9 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: P
       if (pattern.permission <= permission) {
         if (pattern.group) {
           if (!groupSet.has(pattern.group)) {
-            let text = interaction.options.getString(pattern.group);
+            const text = interaction.options.getString(pattern.group);
             if (text) {
-              for (const p of PATTERNS_SORTED) {
-                if (p?.group === pattern.group && patternSet.has(p.name)) {
-                  const result = p.matchText(text, SyntaxType.SLASH);
-                  if (result.matches) {
-                    options[p.name] = result.args;
-                    text = result.newText;
-                  }
-                }
-              }
+              matchPatterns(permission, patternSet, text, options, pattern.group);
             }
             groupSet.add(pattern.group);
           }
@@ -200,3 +204,39 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: P
 
   return { command, options };
 }
+
+export function parseMessageCommand(name: string, text: string, permission: PERMISSION): ParsedCommand {
+  const command = MESSAGE_COMMAND_MAP[name];
+  if (!command) {
+    throw new Error('Unrecognized command!');
+  } else if (command.permission > permission) {
+    throw new EolianUserError('You do not have permission to use this command');
+  }
+
+  const options: CommandOptions = {};
+
+  const patternSet = new Set<string>(command.patterns?.map(p => p.name));
+  matchPatterns(permission, patternSet, text, options);
+
+  return { command, options };
+}
+
+function matchPatterns(permission: PERMISSION, patternSet: Set<string>, text: string, options: CommandOptions, group?: PatternGroup) {
+  for (const pattern of PATTERNS_SORTED) {
+    if (!group || pattern!.group === group) {
+      if (pattern!.permission <= permission && patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name) {
+        const result = pattern!.matchText(text, SyntaxType.SLASH);
+        if (result.matches) {
+          options[pattern!.name] = result.args;
+          text = result.newText;
+        }
+      }
+    }
+  }
+  if (patternSet.has(PATTERNS.SEARCH.name) && text.length) {
+    if (!group || PATTERNS.SEARCH.group === group) {
+      options.SEARCH = text;
+    }
+  }
+}
+
