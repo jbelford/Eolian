@@ -54,7 +54,7 @@ class DiscordInteraction<T extends ButtonInteraction | CommandInteraction> imple
   get user(): ContextUser {
     if (!this._user) {
       const permission = getPermissionLevel(this.interaction.user, this.interaction.memberPermissions);
-      if (typeof this.interaction.member.permissions !== 'string') {
+      if (this.interaction.member) {
         this._user = new DiscordUser(this.interaction.user, this.users, permission, this.interaction.member as GuildMember);
       } else {
         this._user = new DiscordUser(this.interaction.user, this.users, permission);

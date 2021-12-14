@@ -4,7 +4,7 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { InMemoryQueues, LockManager } from 'data';
 import { AppDatabase, MusicQueueCache } from 'data/@types';
-import { ButtonInteraction, Client, CommandInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
+import { ButtonInteraction, Client, ClientOptions, CommandInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
 import { DiscordPlayer } from 'music/player';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
 import { ButtonRegistry } from "./button";
@@ -55,6 +55,8 @@ export interface DiscordEolianBotArgs {
   parser: CommandParsingStrategy,
 }
 
+const DISCORD_CLIENT_OPTIONS: ClientOptions = { intents: DISCORD_ENABLED_INTENTS, partials: ['CHANNEL'] };
+
 export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
@@ -73,7 +75,7 @@ export class DiscordEolianBot implements EolianBot {
     this.parser = parser;
     this.db = db;
 
-    this.client = new Client({ intents: DISCORD_ENABLED_INTENTS });
+    this.client = new Client(DISCORD_CLIENT_OPTIONS);
 
     this.client.once(DiscordEvents.READY, this.onReadyHandler);
     this.client.on(DiscordEvents.RECONNECTING, () => {
@@ -98,7 +100,7 @@ export class DiscordEolianBot implements EolianBot {
 
     if (environment.tokens.discord.old) {
       this.client.on(DiscordEvents.GUILD_CREATE, this.onGuildCreateHandler);
-      this.oldClient = new Client({ intents: DISCORD_ENABLED_INTENTS });
+      this.oldClient = new Client(DISCORD_CLIENT_OPTIONS);
       this.oldClient.once(DiscordEvents.READY, this.setPresence);
       this.oldClient.on(DiscordEvents.MESSAGE_CREATE, this.onMessageHandlerOld);
     }
@@ -124,7 +126,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private onInteractionHandler = async (interaction: Interaction) => {
     try {
-      if (interaction.channel?.type !== 'DM' && !interaction.inCachedGuild()) {
+      if (interaction.guildId && !interaction.inCachedGuild()) {
         logger.warn('Ignoring interaction from guild not cached: %s', interaction);
         return;
       }
