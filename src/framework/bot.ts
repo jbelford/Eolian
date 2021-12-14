@@ -124,6 +124,38 @@ export class DiscordEolianBot implements EolianBot {
     this.client.destroy();
   }
 
+  /**
+   * Executed when the connection has been established
+   * and operations may begin to be performed
+   */
+   private onReadyHandler = async () => {
+    try {
+      logger.info('Discord bot is ready!');
+      this.invite = this.client.generateInvite({ scopes: INVITE_SCOPES, permissions: DISCORD_INVITE_PERMISSIONS });
+      logger.info(`Bot invite link: %s`, this.invite);
+      await this.setPresence();
+    } catch (e) {
+      logger.warn(`Ready handler failed: %s`, e);
+    }
+  }
+
+  private setPresence = async () => {
+    try {
+      this.client.user!.setPresence({
+        activities: [{
+          name: `${environment.cmdToken}help or /help`,
+          type: 'LISTENING'
+        }]
+      });
+    } catch (e) {
+      logger.warn(`Failed to set presence: %s`, e);
+    }
+  };
+
+  private onGuildCreateHandler = async (guild: Guild) => {
+    await this.oldClient?.guilds.cache.get(guild.id)?.leave();
+  };
+
   private onInteractionHandler = async (interaction: Interaction) => {
     try {
       if (interaction.guildId && !interaction.inCachedGuild()) {
@@ -187,38 +219,6 @@ export class DiscordEolianBot implements EolianBot {
       await interaction.reply({ content: 'One command at a time please!', ephemeral: true  });
     }
   }
-
-  /**
-   * Executed when the connection has been established
-   * and operations may begin to be performed
-   */
-  private onReadyHandler = async () => {
-    try {
-      logger.info('Discord bot is ready!');
-      this.invite = this.client.generateInvite({ scopes: INVITE_SCOPES, permissions: DISCORD_INVITE_PERMISSIONS });
-      logger.info(`Bot invite link: %s`, this.invite);
-      await this.setPresence();
-    } catch (e) {
-      logger.warn(`Ready handler failed: %s`, e);
-    }
-  }
-
-  private setPresence = async () => {
-    try {
-      this.client.user!.setPresence({
-        activities: [{
-          name: `${environment.cmdToken}help`,
-          type: 'LISTENING'
-        }]
-      });
-    } catch (e) {
-      logger.warn(`Failed to set presence: %s`, e);
-    }
-  };
-
-  private onGuildCreateHandler = async (guild: Guild) => {
-    await this.oldClient?.guilds.cache.get(guild.id)?.leave();
-  };
 
   private onMessageHandler = async (message: Message): Promise<void> => {
     if (message.author.bot || !this.isTextOrDm(message)) {
