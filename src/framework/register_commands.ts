@@ -1,7 +1,7 @@
 import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
-import { COMMANDS, COMMAND_MAP, MESSAGE_COMMANDS, MESSAGE_COMMAND_MAP } from 'commands';
-import { Command, CommandOptions, KeywordGroup, MessageCommand, ParsedCommand, PatternGroup, SyntaxType } from 'commands/@types';
+import { COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, simpleOptionsStrategy } from 'commands';
+import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, PatternGroup, SyntaxType } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS, PATTERNS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
@@ -35,7 +35,7 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
     await rest.put(route, {
-      body: COMMANDS.map(mapCommandToSlashCommand).concat(MESSAGE_COMMANDS.map(mapMessageCommandToContextMenuCommand))
+      body: COMMANDS.map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand))
     });
 
     logger.info('Successfully refreshed slash commands.');
@@ -47,7 +47,7 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   return false;
 }
 
-function mapCommandToSlashCommand(command: Command) {
+function createSlashCommand(command: Command) {
   try {
     let description = command.shortDetails ?? command.details;
     if (description.length > 100) {
@@ -60,58 +60,9 @@ function mapCommandToSlashCommand(command: Command) {
       .setDescription(description);
 
     if (command.keywords || command.patterns) {
-      const keywordGroupOption = new Map<KeywordGroup, SlashCommandStringOption>();
-      const patternGroupOption = new Map<PatternGroup, SlashCommandStringOption>();
-
-      command.keywords?.forEach(keyword => {
-        if (keyword.group) {
-          const group = KEYWORD_GROUPS[keyword.group];
-          if (keywordGroupOption.has(keyword.group)) {
-            keywordGroupOption.get(keyword.group)!
-              .addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
-          } else {
-            builder.addStringOption(option => {
-              option.setName(keyword.group!).setDescription(group.details)
-                .addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
-              keywordGroupOption.set(keyword.group!, option);
-              return option;
-            });
-          }
-        } else {
-          let details = keyword.details;
-          if (details.length > 100) {
-            logger.warn('"%s" description is greater than 100 and is clamped', keyword.name);
-            details = details.slice(0, 100);
-          }
-
-          builder.addBooleanOption(option => option.setName(keyword.name.toLowerCase())
-          .setDescription(details)
-          .setRequired(false));
-        }
-      });
-
-      command.patterns?.forEach(pattern => {
-        if (pattern.group) {
-          const group = PATTERN_GROUPS[pattern.group];
-          if (!patternGroupOption.has(pattern.group)) {
-            builder.addStringOption(option => {
-              option.setName(pattern.group!).setDescription(group.details);
-              patternGroupOption.set(pattern.group!, option);
-              return option;
-            });
-          }
-        } else {
-          let details = pattern.details;
-          if (details.length > 100) {
-            logger.warn('"%s" description is greater than 100 and is clamped', pattern.name);
-            details = details.slice(0, 100);
-          }
-
-          builder.addStringOption(option => option.setName(pattern.name.toLowerCase())
-            .setDescription(details)
-            .setRequired(false));
-        }
-      });
+      const groupOption = new Map<KeywordGroup | PatternGroup, SlashCommandStringOption>();
+      command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
+      command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption));
     } else {
       builder.addStringOption(option => option = option.setName('args')
           .setDescription(`Use "/help ${command.name}" to see arguments`)
@@ -125,7 +76,58 @@ function mapCommandToSlashCommand(command: Command) {
   }
 }
 
-function mapMessageCommandToContextMenuCommand(command: MessageCommand) {
+function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupOption: Map<KeywordGroup | PatternGroup, SlashCommandStringOption>) {
+  if (keyword.group) {
+    const option = groupOption.get(keyword.group);
+    if (option) {
+      option.addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
+    } else {
+      const group = KEYWORD_GROUPS[keyword.group];
+      builder.addStringOption(option => {
+        option.setName(keyword.group!)
+          .setDescription(group.details)
+          .addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
+        groupOption.set(keyword.group!, option);
+        return option;
+      });
+    }
+  } else {
+    let details = keyword.details;
+    if (details.length > 100) {
+      logger.warn('"%s" description is greater than 100 and is clamped', keyword.name);
+      details = details.slice(0, 100);
+    }
+
+    builder.addBooleanOption(option => option.setName(keyword.name.toLowerCase())
+      .setDescription(details)
+      .setRequired(false));
+  }
+}
+
+function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern<unknown>, groupOption: Map<KeywordGroup | PatternGroup, SlashCommandStringOption>) {
+  if (pattern.group) {
+    if (!groupOption.has(pattern.group)) {
+      const group = PATTERN_GROUPS[pattern.group];
+      builder.addStringOption(option => {
+        option.setName(pattern.group!).setDescription(group.details);
+        groupOption.set(pattern.group!, option);
+        return option;
+      });
+    }
+  } else {
+    let details = pattern.details;
+    if (details.length > 100) {
+      logger.warn('"%s" description is greater than 100 and is clamped', pattern.name);
+      details = details.slice(0, 100);
+    }
+
+    builder.addStringOption(option => option.setName(pattern.name.toLowerCase())
+      .setDescription(details)
+      .setRequired(false));
+  }
+}
+
+function createContextMenuCommand(command: MessageCommand) {
   try {
     return new ContextMenuCommandBuilder()
       .setName(command.name)
@@ -138,90 +140,77 @@ function mapMessageCommandToContextMenuCommand(command: MessageCommand) {
 }
 
 export function parseSlashCommand(interaction: CommandInteraction, permission: PERMISSION): ParsedCommand {
-  const command = COMMAND_MAP[interaction.commandName];
-  if (!command) {
-    throw new Error('Unrecognized command!');
-  } else if (command.permission > permission) {
-    throw new EolianUserError('You do not have permission to use this command');
-  }
+  const command = getCommand(interaction.commandName, permission);
 
-  const options: CommandOptions = {};
+  let options: CommandOptions = {};
   if (command.keywords || command.patterns) {
     const groupSet = new Set<string>();
-
-    command.keywords?.forEach(keyword => {
-      if (keyword.permission <= permission) {
-        if (keyword.group) {
-          if (!groupSet.has(keyword.group)) {
-            const value = interaction.options.getString(keyword.group) ?? '';
-            const keywordValue = KEYWORDS[value.toUpperCase()];
-            if (keywordValue) {
-              options[keywordValue.name] = true;
-            }
-            groupSet.add(keyword.group);
-          }
-        } else {
-          const value = interaction.options.getBoolean(keyword.name.toLowerCase());
-          if (value) {
-            options[keyword.name] = true;
-          }
-        }
-      }
-    });
-
     const patternSet = new Set<string>(command.patterns?.map(p => p.name));
 
-    command.patterns?.forEach(pattern => {
-      if (pattern.permission <= permission) {
-        if (pattern.group) {
-          if (!groupSet.has(pattern.group)) {
-            const text = interaction.options.getString(pattern.group);
-            if (text) {
-              matchPatterns(permission, patternSet, text, options, pattern.group);
-            }
-            groupSet.add(pattern.group);
-          }
-        } else {
-          const text = interaction.options.getString(pattern.name.toLowerCase());
-          if (text) {
-            const result = pattern.matchText(text, SyntaxType.SLASH);
-            if (result.matches) {
-              options[pattern.name] = result.args;
-            } else {
-              throw new EolianUserError(`Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``);
-            }
-          }
-        }
-      }
-    });
-
+    command.keywords?.forEach(keyword => parseSlashKeyword(keyword, permission, interaction, options, groupSet));
+    command.patterns?.forEach(pattern => parseSlashPattern(pattern, permission, interaction, options, patternSet, groupSet));
   } else {
-    const args = (interaction.options.getString('args', false) ?? '').trim();
-    if (args.length > 0) {
-      options.ARG = args.split(' ');
-    }
+    options = simpleOptionsStrategy(interaction.options.getString('args', false) ?? '');
   }
 
   return { command, options };
+}
+
+function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, groupSet: Set<string>) {
+  let found: Keyword | undefined;
+  if (keyword.group) {
+    if (!groupSet.has(keyword.group)) {
+      const value = interaction.options.getString(keyword.group) ?? '';
+      found = KEYWORDS[value.toUpperCase()];
+      groupSet.add(keyword.group);
+    }
+  } else if (interaction.options.getBoolean(keyword.name.toLowerCase())) {
+    found = keyword;
+  }
+  if (found) {
+    if (found.permission > permission) {
+      throw new EolianUserError(`You do not have permission to use ${found.name}!`);
+    }
+    options[keyword.name] = true;
+  }
+}
+
+function parseSlashPattern(pattern: Pattern<unknown>, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>) {
+  if (pattern.group) {
+    if (!groupSet.has(pattern.group)) {
+      const text = interaction.options.getString(pattern.group);
+      if (text) {
+        matchPatterns(text, permission, patternSet, options, pattern.group);
+      }
+      groupSet.add(pattern.group);
+    }
+  } else {
+    const text = interaction.options.getString(pattern.name.toLowerCase());
+    if (text) {
+      const result = pattern.matchText(text, SyntaxType.SLASH);
+      if (result.matches) {
+        if (pattern.permission > permission) {
+          throw new EolianUserError(`You do not have permission to use ${pattern.name}!`);
+        }
+        options[pattern.name] = result.args;
+      } else {
+        throw new EolianUserError(`Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``);
+      }
+    }
+  }
 }
 
 export function parseMessageCommand(name: string, text: string, permission: PERMISSION): ParsedCommand {
-  const command = MESSAGE_COMMAND_MAP[name];
-  if (!command) {
-    throw new Error('Unrecognized command!');
-  } else if (command.permission > permission) {
-    throw new EolianUserError('You do not have permission to use this command');
-  }
+  const command = getMessageCommand(name, permission);
 
   const options: CommandOptions = {};
-
   const patternSet = new Set<string>(command.patterns?.map(p => p.name));
-  matchPatterns(permission, patternSet, text, options);
+  matchPatterns(text, permission, patternSet, options);
 
   return { command, options };
 }
 
-function matchPatterns(permission: PERMISSION, patternSet: Set<string>, text: string, options: CommandOptions, group?: PatternGroup) {
+function matchPatterns(text: string, permission: PERMISSION, patternSet: Set<string>, options: CommandOptions, group?: PatternGroup) {
   for (const pattern of PATTERNS_SORTED) {
     if (!group || pattern!.group === group) {
       if (pattern!.permission <= permission && patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name) {
@@ -233,7 +222,7 @@ function matchPatterns(permission: PERMISSION, patternSet: Set<string>, text: st
       }
     }
   }
-  if (patternSet.has(PATTERNS.SEARCH.name) && text.length) {
+  if (patternSet.has(PATTERNS.SEARCH.name) && text.length && PATTERNS.SEARCH.permission <= permission) {
     if (!group || PATTERNS.SEARCH.group === group) {
       options.SEARCH = text;
     }

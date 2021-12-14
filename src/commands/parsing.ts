@@ -1,11 +1,11 @@
-import { COMMAND_MAP } from 'commands';
+import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, ParsedCommand, SyntaxType } from './@types';
+import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, MessageCommand, ParsedCommand, SyntaxType } from './@types';
 import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from './keywords';
 
-function simpleOptionsStrategy(text: string): CommandOptions {
+export function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};
   if (text.trim().length > 0) {
     options.ARG = text.trim().split(' ');
@@ -103,12 +103,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 
     text = textSplit.slice(1).join(' ');
 
-    const command = COMMAND_MAP[commandName];
-    if (!command) {
-      throw new EolianUserError(`There is no command \`${commandName}\``);
-    } else if (command.permission > permission) {
-      throw new EolianUserError('You do not have permission to use this command');
-    }
+    const command = getCommand(commandName, permission);
 
     const optionParsingFn = getCommandOptionParsingStrategy(command, type);
     const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name), command.patterns?.map(pattern => pattern.name));
@@ -116,6 +111,25 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     return { command, options };
   }
 
+}
+
+export function getCommand(commandName: string, permission: PERMISSION): Command {
+  const command = COMMAND_MAP[commandName];
+  return checkCommand(command, commandName, permission);
+}
+
+export function getMessageCommand(commandName: string, permission: PERMISSION): MessageCommand {
+  const command = MESSAGE_COMMAND_MAP[commandName];
+  return checkCommand(command, commandName, permission);
+}
+
+function checkCommand<T extends BaseCommand>(command: T | undefined, commandName: string, permission: PERMISSION): T {
+  if (!command) {
+    throw new EolianUserError(`There is no command \`${commandName}\``);
+  } else if (command.permission > permission) {
+    throw new EolianUserError('You do not have permission to use this command');
+  }
+  return command;
 }
 
 export function createCommandParsingStrategy(): CommandParsingStrategy {
