@@ -2,7 +2,7 @@ import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, MessageCommand, ParsedCommand, Pattern, SyntaxType } from './@types';
+import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, Keyword, MessageCommand, ParsedCommand, Pattern, SyntaxType } from './@types';
 import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from './keywords';
 
 export function simpleOptionsStrategy(text: string): CommandOptions {
@@ -27,12 +27,8 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
   const split = new Set<string>(text.toLowerCase().split(/\s+/));
 
   for (const keyword of Object.values(KEYWORDS)) {
-    if (keyword!.permission <= permission && split.has(keyword!.name.toLowerCase())) {
-      if (keywordSet.has(keyword!.name)) {
-        options[keyword!.name] = true;
-      } else {
-        throw new EolianUserError(`This command does not accept the \`${keyword!.name}\` keyword. Try again without it.`);
-      }
+    if (split.has(keyword!.name.toLowerCase())) {
+      checkSetKeyword(keyword!, permission, options, keywordSet.has(keyword!.name));
     }
   }
 
@@ -56,11 +52,7 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
       const name = match.groups['keyword'].toUpperCase();
       const keyword = KEYWORDS[name];
       if (keyword) {
-        if (keywordSet.has(keyword.name)) {
-          options[keyword.name] = true;
-        } else {
-          throw new EolianUserError(`This command does not accept the \`${keyword.name}\` keyword. Try again without it.`);
-        }
+        checkSetKeyword(keyword, permission, options, keywordSet.has(keyword.name));
       } else {
         throw new EolianUserError(`Unrecognized keyword \`${name}\`. Try again.`);
       }
@@ -73,6 +65,17 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
   }
 
   return options;
+}
+
+export function checkSetKeyword(keyword: Keyword, permission: PERMISSION, options: CommandOptions, hasKeyword = true) {
+  if (hasKeyword) {
+    if (keyword.permission > permission) {
+      throw new EolianUserError(`You do not have permission to use ${keyword.name}!`);
+    }
+    options[keyword.name] = true;
+  } else {
+    throw new EolianUserError(`This command does not accept the \`${keyword.name}\` keyword. Try again without it.`);
+  }
 }
 
 export function patternMatch(text: string, permission: PERMISSION, pattern: Pattern<unknown>, options: CommandOptions, syntax: SyntaxType, required = false): string {

@@ -1,11 +1,10 @@
 import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
-import { COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
+import { checkSetKeyword, COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
 import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, PatternGroup, SyntaxType } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS, PATTERNS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { ApplicationCommandType, Routes } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
@@ -168,10 +167,7 @@ function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction
     found = keyword;
   }
   if (found) {
-    if (found.permission > permission) {
-      throw new EolianUserError(`You do not have permission to use ${found.name}!`);
-    }
-    options[keyword.name] = true;
+    checkSetKeyword(found, permission, options);
   }
 }
 
