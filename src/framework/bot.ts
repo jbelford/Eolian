@@ -178,20 +178,23 @@ export class DiscordEolianBot implements EolianBot {
     const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
     if (embedButton) {
       const contextInteraction = new DiscordButtonInteraction(interaction, this.registry, this.db.users);
-
-      let state: ServerState | undefined;
-      if (interaction.guild) {
-        state = await this.getGuildState(interaction.guild);
-      }
-      await contextInteraction.user.updatePermissions(state?.details);
-
-      if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
-        await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
-      } else {
-        const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
-        if (destroy) {
-          contextInteraction.message.releaseButtons();
+      if (!embedButton.userId || embedButton.userId === interaction.user.id) {
+        let state: ServerState | undefined;
+        if (interaction.guild) {
+          state = await this.getGuildState(interaction.guild);
         }
+        await contextInteraction.user.updatePermissions(state?.details);
+
+        if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
+          await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
+        } else {
+          const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+          if (destroy) {
+            contextInteraction.message.releaseButtons();
+          }
+        }
+      } else {
+        await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
       }
     } else {
       logger.warn('Unknown button click received: %s %s', interaction.message.id, interaction.customId);

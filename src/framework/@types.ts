@@ -134,7 +134,6 @@ export interface EmbedMessage {
     text: string;
   };
   buttons?: EmbedMessageButton[];
-  buttonUserId?: string;
 }
 
 export const enum ButtonStyle {
@@ -150,6 +149,7 @@ export interface EmbedMessageButton {
   style?: ButtonStyle;
   disabled?: boolean;
   permission?: PERMISSION;
+  userId?: string;
   /**
    * Return true if message is to be destroyed after.
    */

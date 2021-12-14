@@ -105,9 +105,8 @@ export class DiscordSender implements ContextSendable {
 
       const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
       if (options.length < NUMBER_TO_EMOJI.length) {
-        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], onClick }));
-        selectEmbed.buttons.push({ emoji: STOP_EMOJI , onClick });
-        selectEmbed.buttonUserId = user.id;
+        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], userId: user.id, onClick }));
+        selectEmbed.buttons.push({ emoji: STOP_EMOJI, userId: user.id,  onClick });
       }
 
       const sentEmbedPromise = this.sendEmbed(selectEmbed).then(message => {
