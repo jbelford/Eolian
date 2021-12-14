@@ -35,7 +35,7 @@ You can add any type of resource to the queue. Here is the list of each type of 
 | Albums | ✅ | N/A | N/A |
 | Songs | ❌* | ✅ | ✅ |
 | Playlists | ✅ | ✅ | ✅|
-| Artists | ✅ | ✅ | 🚧 |
+| Artists | ✅ | ✅ | ❌ |
 | Likes | ❌** | ✅ | N/A |
 | Live Streams | N/A | N/A | ✅ |
 
@@ -70,6 +70,12 @@ Slash command support has also been added to this bot!
 ![Slash command](pics/slash_list.png)
 
 _On **April 22 2022** Discord will require bots on 75 servers or more to be verified in order to receive message content. On this date Slash commands will become the required interaction._
+
+## 🖱️ Message Quick Actions
+
+Quickly add or play a song by simply right clicking on a message!
+
+![Context Menu Example](pics/context_menu.png)
 
 ## 🔗 Link Spotify and SoundCloud Accounts
 
