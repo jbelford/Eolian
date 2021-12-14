@@ -16,11 +16,6 @@ export async function registerGlobalSlashCommands(): Promise<boolean> {
     return false;
   }
 
-  if (!environment.prod) {
-    logger.warn('Not prod environment. Not registering global commands');
-    return false;
-  }
-
   logger.info('Sending refresh for global slash commands');
   return registerSlashCommands(Routes.applicationCommands(environment.tokens.discord.clientId));
 }
