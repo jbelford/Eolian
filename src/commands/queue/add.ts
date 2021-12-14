@@ -140,7 +140,7 @@ export const ADD_COMMAND: Command = {
 };
 
 export const ADD_MESSAGE_COMMAND: MessageCommand = {
-  name: 'add',
+  name: 'Add to Queue',
   permission: PERMISSION.DJ_LIMITED,
   patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   execute(context, options) {

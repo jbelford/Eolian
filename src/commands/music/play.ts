@@ -120,7 +120,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
 };
 
 export const PLAY_MESSAGE_COMMAND: MessageCommand = {
-  name: 'play',
+  name: 'Play',
   permission: PERMISSION.DJ,
   patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   noDefaultReply: true,
