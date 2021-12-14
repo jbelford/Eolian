@@ -73,11 +73,11 @@ export interface ContextInteraction extends ContextSendable {
 }
 
 export interface ContextCommandInteraction extends ContextInteraction {
-  readonly content: string;
   readonly reactable: boolean;
   readonly isSlash?: boolean;
   react(emoji: string): Promise<void>;
   getCommand(config?: ServerDetails): Promise<ParsedCommand>;
+  toString(): string;
 }
 
 export interface ContextButtonInteraction extends ContextInteraction {

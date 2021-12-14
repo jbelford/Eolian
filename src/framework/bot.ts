@@ -285,7 +285,7 @@ export class DiscordEolianBot implements EolianBot {
     const start = Date.now();
     let noDefaultReply = false;
     try {
-      logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction.content);
+      logger.info(`[%s] Message event received: '%s'`, interaction.user.id, interaction);
 
       if (!interaction.sendable) {
         if (!interaction.channel.visible) {

@@ -153,23 +153,30 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
     return parseSlashCommand(this.interaction, this.user.permission);
   }
 
+  toString(): string {
+      return this.interaction.toString();
+  }
+
 }
 
 export class DiscordMessageCommandInteraction extends DiscordInteraction<ContextMenuInteraction> implements ContextCommandInteraction {
 
   readonly isSlash = true;
   readonly reactable = false;
+  private _message?: Message;
 
   constructor(interaction: ContextMenuInteraction, registry: ButtonRegistry, users: UsersDb) {
     super(interaction, registry, users);
   }
 
-  get content(): string {
-    const message = this.interaction.options.getMessage('message');
-    if (!message) {
-      throw new Error('Missing message from ContextMenu!');
+  private get message(): Message {
+    if (!this._message) {
+      this._message = this.interaction.options.getMessage('message') as Message | undefined;
+      if (!this._message) {
+        throw new Error('Missing message from ContextMenu!');
+      }
     }
-    return message.content;
+    return this._message;
   }
 
   async react(): Promise<void> {
@@ -177,7 +184,11 @@ export class DiscordMessageCommandInteraction extends DiscordInteraction<Context
   }
 
   async getCommand(): Promise<ParsedCommand> {
-    return parseMessageCommand(this.interaction.commandName, this.content, this.user.permission);
+    return parseMessageCommand(this.interaction.commandName, this.message.content, this.user.permission);
+  }
+
+  toString(): string {
+    return `(${this.interaction.commandName}) ${this.message.content}`;
   }
 
 }
@@ -209,10 +220,6 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
 
   get sendable(): boolean {
     return this.channel.sendable;
-  }
-
-  get content(): string {
-    return this.discordMessage.content;
   }
 
   get hasReplied(): boolean {
@@ -282,6 +289,10 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
       type = dto.syntax;
     }
     return this.parser.parseCommand(removeMentions(this.message.text), this.user.permission, type);
+  }
+
+  toString(): string {
+    return this.discordMessage.content;
   }
 
 }
