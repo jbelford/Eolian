@@ -305,7 +305,7 @@ export class DiscordEolianBot implements EolianBot {
 
       const { command, options } = await interaction.getCommand(server?.details);
       if (interaction.channel.isDm && !command.dmAllowed) {
-        await interaction.user.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
+        await interaction.send(`Sorry, this command is not allowed via DM. Try again in a guild channel.`);
         return false;
       }
 
