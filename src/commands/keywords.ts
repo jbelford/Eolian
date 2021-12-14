@@ -1,7 +1,7 @@
 import { AbsRangeArgument, RangeArgument } from 'common/@types';
 import { PERMISSION, SOURCE } from 'common/constants';
 import { convertRangeToAbsolute } from 'common/util';
-import { ArgumentExample, CommandOptions, Keyword, KeywordGroup, KeywordGroups, KeywordMatchResult, Keywords, PatternGroup, PatternGroups, Patterns, SyntaxType, UrlArgument } from './@types';
+import { ArgumentExample, CommandOptions, Keyword, KeywordGroup, KeywordGroups, KeywordMatchResult, Keywords, Pattern, PatternGroup, PatternGroups, Patterns, SyntaxType, UrlArgument } from './@types';
 
 export const KEYWORD_GROUPS: KeywordGroups = {
   increment: {
@@ -185,8 +185,8 @@ export const PATTERNS: Patterns = {
   }
 };
 
-export const PATTERNS_SORTED = Object.values(PATTERNS)
-  .sort((a, b) => b!.priority - a!.priority);
+export const PATTERNS_SORTED = (Object.values(PATTERNS) as Pattern<unknown>[])
+  .sort((a, b) => b.priority - a.priority);
 
 function getTopPatternReg(type: SyntaxType) {
   let reg: RegExp;

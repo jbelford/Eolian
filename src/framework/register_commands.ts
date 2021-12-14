@@ -1,6 +1,6 @@
 import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
-import { COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, simpleOptionsStrategy } from 'commands';
+import { COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
 import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, PatternGroup, SyntaxType } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS, PATTERNS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
 import { PERMISSION } from 'common/constants';
@@ -187,15 +187,7 @@ function parseSlashPattern(pattern: Pattern<unknown>, permission: PERMISSION, in
   } else {
     const text = interaction.options.getString(pattern.name.toLowerCase());
     if (text) {
-      const result = pattern.matchText(text, SyntaxType.SLASH);
-      if (result.matches) {
-        if (pattern.permission > permission) {
-          throw new EolianUserError(`You do not have permission to use ${pattern.name}!`);
-        }
-        options[pattern.name] = result.args;
-      } else {
-        throw new EolianUserError(`Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``);
-      }
+      patternMatch(text, permission, pattern, options, SyntaxType.SLASH, true);
     }
   }
 }
@@ -212,13 +204,9 @@ export function parseMessageCommand(name: string, text: string, permission: PERM
 
 function matchPatterns(text: string, permission: PERMISSION, patternSet: Set<string>, options: CommandOptions, group?: PatternGroup) {
   for (const pattern of PATTERNS_SORTED) {
-    if (!group || pattern!.group === group) {
-      if (pattern!.permission <= permission && patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name) {
-        const result = pattern!.matchText(text, SyntaxType.SLASH);
-        if (result.matches) {
-          options[pattern!.name] = result.args;
-          text = result.newText;
-        }
+    if (!group || pattern.group === group) {
+      if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {
+        text = patternMatch(text, permission, pattern, options, SyntaxType.SLASH);
       }
     }
   }

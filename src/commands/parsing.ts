@@ -2,7 +2,7 @@ import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, MessageCommand, ParsedCommand, SyntaxType } from './@types';
+import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, MessageCommand, ParsedCommand, Pattern, SyntaxType } from './@types';
 import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from './keywords';
 
 export function simpleOptionsStrategy(text: string): CommandOptions {
@@ -19,12 +19,8 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
 
   const options: CommandOptions = {};
   for (const pattern of PATTERNS_SORTED) {
-    if (pattern!.permission <= permission && patternSet.has(pattern!.name)) {
-      const result = pattern!.matchText(text, SyntaxType.KEYWORD);
-      if (result.matches) {
-        options[pattern!.name] = result.args;
-        text = result.newText;
-      }
+    if (patternSet.has(pattern.name)) {
+      text = patternMatch(text, permission, pattern, options, SyntaxType.KEYWORD);
     }
   }
 
@@ -49,12 +45,8 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
 
   const options: CommandOptions = {};
   for (const pattern of PATTERNS_SORTED) {
-    if (pattern!.permission <= permission && patternSet.has(pattern!.name) && pattern!.name !== PATTERNS.SEARCH.name) {
-      const result = pattern!.matchText(text, SyntaxType.TRADITIONAL);
-      if (result.matches) {
-        options[pattern!.name] = result.args;
-        text = result.newText;
-      }
+    if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {
+      text = patternMatch(text, permission, pattern, options, SyntaxType.TRADITIONAL);
     }
   }
 
@@ -81,6 +73,20 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
   }
 
   return options;
+}
+
+export function patternMatch(text: string, permission: PERMISSION, pattern: Pattern<unknown>, options: CommandOptions, syntax: SyntaxType, required = false): string {
+  const result = pattern.matchText(text, syntax);
+  if (result.matches) {
+    if (pattern.permission > permission) {
+      throw new EolianUserError(`You do not have permission to use ${pattern.name}!`);
+    }
+    options[pattern.name] = result.args;
+    text = result.newText;
+  } else if (required) {
+    throw new EolianUserError(`Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``);
+  }
+  return text;
 }
 
 function getCommandOptionParsingStrategy(command: Command, type: SyntaxType): CommandOptionsParsingStrategy {
