@@ -24,7 +24,7 @@ function getBySource(context: CommandContext, params: CommandOptions) {
   switch (params.URL?.source) {
     case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(params.URL.value);
     case SOURCE.YOUTUBE: return new YouTubeUrlResolver(params.URL.value, context);
-    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction);
+    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
     default: return UNKNOWN_RESOLVER;
   }
 }

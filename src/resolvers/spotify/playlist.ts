@@ -27,9 +27,9 @@ export class SpotifyPlaylistResolver implements SourceResolver {
         playlists.map(playlist => ({ name: playlist.name, subname: playlist.owner.display_name, url: playlist.external_urls.spotify })),
         this.context.interaction.user);
 
-      return createSpotifyPlaylist(playlists[result.selected], this.params, this.context.interaction, result.message);
+      return createSpotifyPlaylist(playlists[result.selected], this.params, this.context.interaction.channel, result.message);
     } else {
-      return createSpotifyPlaylist(playlists[0], this.params, this.context.interaction);
+      return createSpotifyPlaylist(playlists[0], this.params, this.context.interaction.channel);
     }
   }
 

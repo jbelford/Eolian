@@ -43,7 +43,7 @@ export class DownloaderDisplay implements ProgressUpdater {
       if (this.message) {
         await this.message.edit(text);
       } else {
-        this.message = await this.sendable.send(text);
+        this.message = await this.sendable.send(text, { ephemeral: false });
       }
     }
   }

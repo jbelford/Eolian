@@ -14,7 +14,7 @@ import { SoundCloudArtistResolver } from './artist';
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
-    return createSoundCloudLikes(result.value, this.params, this.context.interaction, result.message);
+    return createSoundCloudLikes(result.value, this.params, this.context.interaction.channel, result.message);
   }
 }
 
