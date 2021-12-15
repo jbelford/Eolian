@@ -5,7 +5,7 @@ import { ContextClient, ContextCommandInteraction, ServerState } from 'framework
 export interface BaseCommand {
   name: string;
   permission: PERMISSION;
-  patterns?: Pattern<unknown>[];
+  patterns?: Pattern[];
   dmAllowed?: boolean;
   noDefaultReply?: boolean;
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
@@ -52,39 +52,14 @@ export interface CommandContext {
   server?: ServerState;
 }
 
-export interface CommandOptions {
-  [key: string]: any;
-  ENABLE?: boolean;
-  DISABLE?: boolean;
-  CLEAR?: boolean;
-  MORE?: boolean;
-  LESS?: boolean;
-  MY?: boolean;
-  SOUNDCLOUD?: boolean;
-  SPOTIFY?: boolean;
-  YOUTUBE?: boolean;
-  PLAYLIST?: boolean;
-  ALBUM?: boolean;
-  ARTIST?: boolean;
-  NEXT?: boolean;
-  SHUFFLE?: boolean;
-  LIKES?: boolean;
-  TRACKS?: boolean;
-  TOP?: RangeArgument;
-  BOTTOM?: RangeArgument;
-  SEARCH?: string;
-  IDENTIFIER?: string;
-  NUMBER?: number[];
-  URL?: UrlArgument;
-  ARG?: string[];
-}
+export type CommandOptions = Partial<Record<KeywordName, boolean> & PatternValues>;
 
 export interface UrlArgument {
   value: string;
   source: SOURCE;
 }
 
-export interface KeywordMatchResult<T> {
+export interface PatternMatchResult<T> {
   matches: boolean;
   newText: string;
   args?: T;
@@ -95,92 +70,74 @@ export const enum KeywordGroup {
   Type = 'type',
   Switch = 'switch',
   Increment = 'increment',
+  Input = 'input'
 }
 
 export interface KeywordGroupProperties {
   details: string;
 }
 
-export type KeywordGroups = {
-  [key in KeywordGroup]: KeywordGroupProperties;
-};
-
-export const enum PatternGroup {
-  Input = 'input'
-}
-
-export interface PatternGroupProperties {
-  details: string;
-}
-
-export type PatternGroups = {
-  [key in PatternGroup]: PatternGroupProperties;
+export interface ArgumentExample {
+  text(type: SyntaxType): string;
 }
 
 export interface Keyword extends ArgumentExample {
-  readonly name: string;
+  readonly name: KeywordName;
   readonly details: string;
   readonly permission: PERMISSION;
   readonly group?: KeywordGroup;
 }
 
-export interface Pattern<T> {
-  readonly name: string;
+export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
+  readonly name: T;
   readonly details: string;
   readonly permission: PERMISSION;
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
   readonly usage: string[];
-  readonly group?: PatternGroup;
+  readonly group?: KeywordGroup;
 
   ex(text: string): ArgumentExample;
 
   /**
    * Check that the given text contains the keyword.
-   * Removes the keyword information from the text and returns a new string.
+   * Removes the pattern information from the text and returns a new string.
    *
    * @param text
    */
-  matchText(text: string, type: SyntaxType): KeywordMatchResult<T>;
+  matchText(text: string, type: SyntaxType): PatternMatchResult<PatternValues[T]>;
 }
 
-export interface Keywords {
-  [key:string]: Keyword | undefined;
-  ENABLE: Keyword;
-  DISABLE: Keyword;
-  CLEAR: Keyword;
-  MORE: Keyword;
-  LESS: Keyword;
-  MY: Keyword;
-  SOUNDCLOUD: Keyword;
-  SPOTIFY: Keyword;
-  YOUTUBE: Keyword;
-  PLAYLIST: Keyword;
-  ALBUM: Keyword;
-  ARTIST: Keyword;
-  NEXT: Keyword;
-  SHUFFLE: Keyword;
-  LIKES: Keyword;
-  TRACKS: Keyword;
-}
+export type KeywordName = Uppercase<
+  'enable'
+  | 'disable'
+  | 'clear'
+  | 'more'
+  | 'less'
+  | 'my'
+  | 'soundcloud'
+  | 'spotify'
+  | 'youtube'
+  | 'playlist'
+  | 'album'
+  | 'artist'
+  | 'next'
+  | 'shuffle'
+  | 'likes'
+  | 'tracks'>;
 
-export interface Patterns {
-  [key:string]: Pattern<unknown> | undefined;
-  TOP: Pattern<RangeArgument>;
-  BOTTOM: Pattern<RangeArgument>;
-  SEARCH: Pattern<string>;
-  IDENTIFIER: Pattern<string>;
-  URL: Pattern<UrlArgument>;
-  NUMBER: Pattern<number[]>;
-  ARG: Pattern<string[]>;
+export type PatternValues = {
+  TOP: RangeArgument;
+  BOTTOM: RangeArgument;
+  SEARCH: string;
+  IDENTIFIER: string;
+  URL: UrlArgument;
+  NUMBER: number[];
+  ARG: string[];
 }
 
 export const enum SyntaxType {
   KEYWORD = 0,
   TRADITIONAL = 1,
   SLASH = 2
-}
-
-export interface ArgumentExample {
-  text(type: SyntaxType): string;
 }

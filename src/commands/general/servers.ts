@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
-import { PATTERNS } from 'commands/keywords';
+import { PATTERNS } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 
 const PAGE_LENGTH = 10;

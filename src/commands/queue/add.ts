@@ -1,6 +1,7 @@
 import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
-import { getRangeOption, KEYWORDS, PATTERNS } from 'commands/keywords';
+import { KEYWORDS } from 'commands/keywords';
+import { getRangeOption, PATTERNS } from 'commands/patterns';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';

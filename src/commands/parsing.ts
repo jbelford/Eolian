@@ -2,8 +2,9 @@ import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, Keyword, MessageCommand, ParsedCommand, Pattern, SyntaxType } from './@types';
-import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from './keywords';
+import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, Keyword, MessageCommand, ParsedCommand, Pattern, PatternValues, SyntaxType } from './@types';
+import { KEYWORDS } from './keywords';
+import { PATTERNS, PATTERNS_SORTED } from './patterns';
 
 export function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};
@@ -78,7 +79,7 @@ export function checkSetKeyword(keyword: Keyword, permission: PERMISSION, option
   }
 }
 
-export function patternMatch(text: string, permission: PERMISSION, pattern: Pattern<unknown>, options: CommandOptions, syntax: SyntaxType, required = false): string {
+export function patternMatch<T extends keyof PatternValues>(text: string, permission: PERMISSION, pattern: Pattern<T>, options: CommandOptions, syntax: SyntaxType, required = false): string {
   const result = pattern.matchText(text, syntax);
   if (result.matches) {
     if (pattern.permission > permission) {

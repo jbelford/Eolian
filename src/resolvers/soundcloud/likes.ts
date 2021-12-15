@@ -2,7 +2,7 @@ import { soundcloud } from 'api';
 import { SoundCloudUser } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/keywords';
+import { getRangeOption } from 'commands/patterns';
 import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { IdentifierType } from 'data/@types';

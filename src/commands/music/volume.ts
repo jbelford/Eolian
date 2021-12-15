@@ -1,6 +1,7 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { KEYWORDS } from 'commands/keywords';
+import { PATTERNS } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 

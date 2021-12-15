@@ -1,8 +1,9 @@
 import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { checkSetKeyword, COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
-import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, PatternGroup, SyntaxType } from 'commands/@types';
-import { KEYWORDS, KEYWORD_GROUPS, PATTERNS, PATTERNS_SORTED, PATTERN_GROUPS } from 'commands/keywords';
+import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, SyntaxType } from 'commands/@types';
+import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
+import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
@@ -59,7 +60,7 @@ function createSlashCommand(command: Command) {
       .setDescription(description);
 
     if (command.keywords || command.patterns) {
-      const groupOption = new Map<KeywordGroup | PatternGroup, SlashCommandStringOption>();
+      const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
       command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
       command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption));
     } else {
@@ -75,7 +76,7 @@ function createSlashCommand(command: Command) {
   }
 }
 
-function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupOption: Map<KeywordGroup | PatternGroup, SlashCommandStringOption>) {
+function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupOption: Map<KeywordGroup, SlashCommandStringOption>) {
   if (keyword.group) {
     const option = groupOption.get(keyword.group);
     if (option) {
@@ -103,10 +104,10 @@ function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupO
   }
 }
 
-function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern<unknown>, groupOption: Map<KeywordGroup | PatternGroup, SlashCommandStringOption>) {
+function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern, groupOption: Map<KeywordGroup, SlashCommandStringOption>) {
   if (pattern.group) {
     if (!groupOption.has(pattern.group)) {
-      const group = PATTERN_GROUPS[pattern.group];
+      const group = KEYWORD_GROUPS[pattern.group];
       builder.addStringOption(option => {
         option.setName(pattern.group!).setDescription(group.details);
         groupOption.set(pattern.group!, option);
@@ -171,7 +172,7 @@ function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction
   }
 }
 
-function parseSlashPattern(pattern: Pattern<unknown>, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>) {
+function parseSlashPattern(pattern: Pattern, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>) {
   if (pattern.group) {
     if (!groupSet.has(pattern.group)) {
       const text = interaction.options.getString(pattern.group);
@@ -198,7 +199,7 @@ export function parseMessageCommand(name: string, text: string, permission: PERM
   return { command, options };
 }
 
-function matchPatterns(text: string, permission: PERMISSION, patternSet: Set<string>, options: CommandOptions, group?: PatternGroup) {
+function matchPatterns(text: string, permission: PERMISSION, patternSet: Set<string>, options: CommandOptions, group?: KeywordGroup) {
   for (const pattern of PATTERNS_SORTED) {
     if (!group || pattern.group === group) {
       if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {

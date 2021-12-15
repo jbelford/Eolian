@@ -2,7 +2,7 @@ import { spotify } from 'api';
 import { RangeFactory, SpotifyPlaylist, SpotifyPlaylistTracks } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/keywords';
+import { getRangeOption } from 'commands/patterns';
 import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';

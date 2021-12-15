@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
-import { PATTERNS } from 'commands/keywords';
+import { PATTERNS } from 'commands/patterns';
 import { Closable } from 'common/@types';
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';

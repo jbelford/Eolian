@@ -1,6 +1,7 @@
 import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { KEYWORDS } from 'commands/keywords';
+import { PATTERNS } from 'commands/patterns';
 import { createSelectedMessage } from 'commands/queue/add';
 import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
 import { environment } from 'common/env';

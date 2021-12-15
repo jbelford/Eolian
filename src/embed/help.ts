@@ -110,7 +110,7 @@ export function createKeywordDetailsEmbed(keyword: Keyword, type = SyntaxType.KE
   return embed;
 }
 
-export function createPatternDetailsEmbed(pattern: Pattern<unknown>, type = SyntaxType.KEYWORD): EmbedMessage {
+export function createPatternDetailsEmbed(pattern: Pattern, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
     color: COLOR.HELP,
     header: {

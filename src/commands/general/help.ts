@@ -1,7 +1,8 @@
 import { COMMAND_MAP } from 'commands';
 import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
-import { KEYWORDS, PATTERNS } from 'commands/keywords';
+import { KEYWORDS } from 'commands/keywords';
+import { PATTERNS } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
