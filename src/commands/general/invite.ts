@@ -17,5 +17,9 @@ export const INVITE_COMMAND: Command = {
   permission: PERMISSION.USER,
   dmAllowed: true,
   usage: [{ example: '' }],
+  args: {
+    base: true,
+    options: []
+  },
   execute
 };

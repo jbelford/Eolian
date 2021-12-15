@@ -1,14 +1,14 @@
-import { COMMAND_MAP } from 'commands';
+import { COMMANDS, COMMAND_MAP } from 'commands';
 import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PATTERNS } from 'commands/patterns';
+import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
 
 async function execute({ interaction, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
-  if (!ARG) {
+  if (!ARG?.length) {
     const categories = COMMAND_CATEGORIES.filter(category => category.permission <= interaction.user.permission);
     const config = await server?.details.get();
     const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
@@ -99,5 +99,40 @@ export const HELP_COMMAND: Command = {
       example: 'query'
     }
   ],
+  args: {
+    base: true,
+    options: [
+      [
+        {
+          name: 'command',
+          details: 'The command to get help for',
+          getChoices() {
+            return COMMANDS.map(cmd => cmd.name);
+          }
+        },
+        {
+          name: 'category',
+          details: 'The category to get help for',
+          getChoices() {
+            return COMMAND_CATEGORIES.map(category => category.name);
+          }
+        },
+        {
+          name: 'keyword',
+          details: 'The keyword to get help for',
+          getChoices() {
+            return Object.values(KEYWORDS).map(keyword => keyword!.name);
+          }
+        },
+        {
+          name: 'pattern',
+          details: 'The pattern to get help for',
+          getChoices() {
+            return PATTERNS_SORTED.map(pattern => pattern.name);
+          }
+        }
+      ]
+    ],
+  },
   execute
 }

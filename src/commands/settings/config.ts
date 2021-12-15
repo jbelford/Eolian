@@ -4,7 +4,7 @@ import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createServerDetailsEmbed } from 'embed';
 
-const enum CONFIG_OPTION {
+enum CONFIG_OPTION {
   PREFIX = 'prefix',
   VOLUME = 'volume',
   SYNTAX = 'syntax',
@@ -172,5 +172,25 @@ export const CONFIG_COMMAND: Command = {
       example: 'dj_limited false'
     }
   ],
+  args: {
+    base: true,
+    options: [
+      [
+        {
+          name: 'setting',
+          details: 'The setting to change',
+          getChoices() {
+            return Object.values(CONFIG_OPTION);
+          }
+        }
+      ],
+      [
+        {
+          name: 'value',
+          details: 'The value for the setting'
+        }
+      ]
+    ]
+  },
   execute
 };

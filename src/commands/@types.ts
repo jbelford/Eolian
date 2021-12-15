@@ -11,14 +11,28 @@ export interface BaseCommand {
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
 
+export type CommandArgOption = {
+  name: string;
+  details: string;
+  getChoices?: () => string[];
+};
+
+export type CommandArgs = {
+  base: boolean,
+  options: CommandArgOption[][]
+};
+
 export interface Command extends BaseCommand {
   shortDetails?: string;
   details: string;
   category: CommandCategory;
-  // If using keyword parsing
   keywords?: Keyword[];
   new?: boolean;
   usage: CommandUsage[];
+  /**
+   * Command doesn't use keywords/patterns
+   */
+  args?: CommandArgs;
 }
 
 export type MessageCommand = BaseCommand;

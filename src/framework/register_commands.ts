@@ -1,11 +1,12 @@
 import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { checkSetKeyword, COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
-import { Command, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, SyntaxType } from 'commands/@types';
+import { Command, CommandArgs, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, SyntaxType } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
+import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { ApplicationCommandType, Routes } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
@@ -63,6 +64,8 @@ function createSlashCommand(command: Command) {
       const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
       command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
       command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption));
+    } else if (command.args) {
+      addCommandArgOptions(builder, command.args);
     } else {
       builder.addStringOption(option => option = option.setName('args')
           .setDescription(`Use "/help ${command.name}" to see arguments`)
@@ -73,6 +76,29 @@ function createSlashCommand(command: Command) {
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;
+  }
+}
+
+function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
+  for (const options of args.options) {
+    for (const option of options) {
+      builder.addStringOption(optionBuilder => {
+        optionBuilder.setName(option.name)
+          .setDescription(option.details)
+          .setRequired(false)
+        if (option.getChoices) {
+          const choices = option.getChoices();
+          if (choices.length > 25) {
+            logger.warn('Too many choices for %s option. Not adding choices.', option.name);
+          } else {
+            for (const choice of choices) {
+              optionBuilder.addChoice(choice, choice);
+            }
+          }
+        }
+        return optionBuilder;
+      });
+    }
   }
 }
 
@@ -149,11 +175,35 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: P
 
     command.keywords?.forEach(keyword => parseSlashKeyword(keyword, permission, interaction, options, groupSet));
     command.patterns?.forEach(pattern => parseSlashPattern(pattern, permission, interaction, options, patternSet, groupSet));
+  } else if (command.args) {
+    options.ARG = parseCommandArgs(command.args, interaction);
   } else {
     options = simpleOptionsStrategy(interaction.options.getString('args', false) ?? '');
   }
 
   return { command, options };
+}
+
+function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteraction): string[] {
+  const args = [];
+  for (const options of commandArgs.options) {
+    let selectedName: string | undefined;
+    let selected: string | undefined;
+    for (const option of options) {
+      const value = interaction.options.getString(option.name) ?? undefined;
+      if (value) {
+        if (selected) {
+          throw new EolianUserError(`You can not specify both ${selectedName} & ${option.name}`);
+        }
+        selectedName = option.name;
+        selected = value;
+      }
+    }
+    if (selected) {
+      args.push(selected);
+    }
+  }
+  return args;
 }
 
 function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, groupSet: Set<string>) {
