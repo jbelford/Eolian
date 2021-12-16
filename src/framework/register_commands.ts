@@ -63,7 +63,7 @@ function createSlashCommand(command: Command) {
     if (command.keywords || command.patterns) {
       const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
       command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
-      command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption));
+      command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption, command.args));
     } else if (command.args) {
       addCommandArgOptions(builder, command.args);
     } else {
@@ -80,8 +80,8 @@ function createSlashCommand(command: Command) {
 }
 
 function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
-  for (const options of args.options) {
-    for (const option of options) {
+  for (const group of args.groups) {
+    for (const option of group.options) {
       builder.addStringOption(optionBuilder => {
         optionBuilder.setName(option.name)
           .setDescription(option.details)
@@ -130,8 +130,10 @@ function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupO
   }
 }
 
-function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern, groupOption: Map<KeywordGroup, SlashCommandStringOption>) {
-  if (pattern.group) {
+function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern, groupOption: Map<KeywordGroup, SlashCommandStringOption>, args?: CommandArgs) {
+  if (args && pattern.name === PATTERNS.ARG.name) {
+    addCommandArgOptions(builder, args);
+  } else if (pattern.group) {
     if (!groupOption.has(pattern.group)) {
       const group = KEYWORD_GROUPS[pattern.group];
       builder.addStringOption(option => {
@@ -174,7 +176,7 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: P
     const patternSet = new Set<string>(command.patterns?.map(p => p.name));
 
     command.keywords?.forEach(keyword => parseSlashKeyword(keyword, permission, interaction, options, groupSet));
-    command.patterns?.forEach(pattern => parseSlashPattern(pattern, permission, interaction, options, patternSet, groupSet));
+    command.patterns?.forEach(pattern => parseSlashPattern(pattern, permission, interaction, options, patternSet, groupSet, command.args));
   } else if (command.args) {
     options.ARG = parseCommandArgs(command.args, interaction);
   } else {
@@ -186,10 +188,10 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: P
 
 function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteraction): string[] {
   const args = [];
-  for (const options of commandArgs.options) {
+  for (const group of commandArgs.groups) {
     let selectedName: string | undefined;
     let selected: string | undefined;
-    for (const option of options) {
+    for (const option of group.options) {
       const value = interaction.options.getString(option.name) ?? undefined;
       if (value) {
         if (selected) {
@@ -201,6 +203,8 @@ function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteract
     }
     if (selected) {
       args.push(selected);
+    } else if (group.required) {
+      throw new EolianUserError(`You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`);
     }
   }
   return args;
@@ -222,8 +226,10 @@ function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction
   }
 }
 
-function parseSlashPattern(pattern: Pattern, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>) {
-  if (pattern.group) {
+function parseSlashPattern(pattern: Pattern, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>, args?: CommandArgs) {
+  if (args && pattern.name === PATTERNS.ARG.name) {
+    options.ARG = parseCommandArgs(args, interaction);
+  } else if (pattern.group) {
     if (!groupSet.has(pattern.group)) {
       const text = interaction.options.getString(pattern.group);
       if (text) {

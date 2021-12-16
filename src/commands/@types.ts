@@ -17,9 +17,14 @@ export type CommandArgOption = {
   getChoices?: () => string[];
 };
 
+export type CommandArgGroup = {
+  required: boolean;
+  options: CommandArgOption[];
+}
+
 export type CommandArgs = {
   base: boolean,
-  options: CommandArgOption[][]
+  groups: CommandArgGroup[]
 };
 
 export interface Command extends BaseCommand {

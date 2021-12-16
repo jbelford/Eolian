@@ -113,5 +113,26 @@ export const POLL_COMMAND: Command = {
       example: '/ What is your favorite color? / Red / Green / Blue /'
     }
   ],
+  args: {
+    base: true,
+    groups: [
+      {
+        required: true,
+        options: [
+          {
+            name: 'question',
+            details: 'The poll question'
+          }
+        ],
+      }
+    ].concat(Array(10).fill(0).map((_, i) => ({
+      required: false,
+      options: [
+        {
+          name: `option_${i + 1}`,
+          details: 'Poll option'
+        }
+      ]})))
+  },
   execute
 };

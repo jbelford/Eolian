@@ -101,37 +101,40 @@ export const HELP_COMMAND: Command = {
   ],
   args: {
     base: true,
-    options: [
-      [
-        {
-          name: 'command',
-          details: 'The command to get help for',
-          getChoices() {
-            return COMMANDS.map(cmd => cmd.name);
+    groups: [
+      {
+        required: false,
+        options: [
+          {
+            name: 'command',
+            details: 'The command to get help for',
+            getChoices() {
+              return COMMANDS.map(cmd => cmd.name);
+            }
+          },
+          {
+            name: 'category',
+            details: 'The category to get help for',
+            getChoices() {
+              return COMMAND_CATEGORIES.map(category => category.name);
+            }
+          },
+          {
+            name: 'keyword',
+            details: 'The keyword to get help for',
+            getChoices() {
+              return Object.values(KEYWORDS).map(keyword => keyword!.name);
+            }
+          },
+          {
+            name: 'pattern',
+            details: 'The pattern to get help for',
+            getChoices() {
+              return PATTERNS_SORTED.map(pattern => pattern.name);
+            }
           }
-        },
-        {
-          name: 'category',
-          details: 'The category to get help for',
-          getChoices() {
-            return COMMAND_CATEGORIES.map(category => category.name);
-          }
-        },
-        {
-          name: 'keyword',
-          details: 'The keyword to get help for',
-          getChoices() {
-            return Object.values(KEYWORDS).map(keyword => keyword!.name);
-          }
-        },
-        {
-          name: 'pattern',
-          details: 'The pattern to get help for',
-          getChoices() {
-            return PATTERNS_SORTED.map(pattern => pattern.name);
-          }
-        }
-      ]
+        ]
+      }
     ],
   },
   execute

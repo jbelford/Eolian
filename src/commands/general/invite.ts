@@ -19,7 +19,7 @@ export const INVITE_COMMAND: Command = {
   usage: [{ example: '' }],
   args: {
     base: true,
-    options: []
+    groups: []
   },
   execute
 };

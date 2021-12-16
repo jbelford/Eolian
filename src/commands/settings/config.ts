@@ -174,22 +174,28 @@ export const CONFIG_COMMAND: Command = {
   ],
   args: {
     base: true,
-    options: [
-      [
-        {
-          name: 'setting',
-          details: 'The setting to change',
-          getChoices() {
-            return Object.values(CONFIG_OPTION);
+    groups: [
+      {
+        required: false,
+        options: [
+          {
+            name: 'setting',
+            details: 'The setting to change',
+            getChoices() {
+              return Object.values(CONFIG_OPTION);
+            }
           }
-        }
-      ],
-      [
-        {
-          name: 'value',
-          details: 'The value for the setting'
-        }
-      ]
+        ],
+      },
+      {
+        required: false,
+        options:[
+          {
+            name: 'value',
+            details: 'The value for the setting'
+          }
+        ]
+      }
     ]
   },
   execute
