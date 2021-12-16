@@ -50,6 +50,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     const from = sanitizeNum(options.NUMBER[0], queueLength);
     await context.server!.queue.move(targetIndex, from, 1);
   }
+
+  await context.interaction.send('⚡ Updated the queue!');
 }
 
 export const MOVE_COMMAND: Command = {

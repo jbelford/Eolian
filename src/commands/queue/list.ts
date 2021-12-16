@@ -12,7 +12,7 @@ async function executeClearQueue(context: CommandContext): Promise<void> {
   }
   const cleared = await context.server!.queue.clear();
   if (cleared) {
-    await context.interaction.send('💨 I have cleared the queue!');
+    await context.interaction.send('💨 I have cleared the queue!', { ephemeral: false });
   } else {
     await context.interaction.send('❓ The queue is already empty!');
   }
@@ -34,7 +34,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       throw new EolianUserError('You do not have permission to shuffle the queue!');
     }
     await context.server!.queue.shuffle();
-    await context.interaction.send('🔀 I have shuffled the queue!');
+    await context.interaction.send('🔀 I have shuffled the queue!', { ephemeral: false });
     return;
   }
 
