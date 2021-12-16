@@ -23,14 +23,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (options.NEXT) {
     await context.server!.queue.pop();
-    await context.interaction.send('Removed next song from the queue!');
+    await context.interaction.send('Removed next song from the queue!', { ephemeral: false });
     return;
   }
 
   const range = getRangeOption(options, queueLength)!;
 
   const removed = await context.server!.queue.remove(range.start, range.stop - range.start);
-  await context.interaction.send(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`);
+  await context.interaction.send(`Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`, { ephemeral: false });
 }
 
 export const REMOVE_COMMAND: Command = {

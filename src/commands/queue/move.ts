@@ -51,7 +51,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     await context.server!.queue.move(targetIndex, from, 1);
   }
 
-  await context.interaction.send('⚡ Updated the queue!');
+  await context.interaction.send('⚡ Updated the queue!', { ephemeral: false });
 }
 
 export const MOVE_COMMAND: Command = {
