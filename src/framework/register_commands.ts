@@ -60,6 +60,10 @@ function createSlashCommand(command: Command) {
       .setName(command.name)
       .setDescription(description);
 
+    if (command.permission >= PERMISSION.OWNER) {
+      builder.setDefaultPermission(false);
+    }
+
     if (command.keywords || command.patterns) {
       const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
       command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
