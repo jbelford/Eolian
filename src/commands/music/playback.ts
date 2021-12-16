@@ -27,6 +27,10 @@ export const STOP_COMMAND: Command = {
       example: '',
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute
 };
 
@@ -54,6 +58,10 @@ export const SKIP_COMMAND: Command = {
       example: ''
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute: executeSkip
 };
 
@@ -83,6 +91,10 @@ export const BACK_COMMAND: Command = {
       example: ''
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute: executeBack
 };
 
@@ -113,6 +125,10 @@ export const PAUSE_COMMAND: Command = {
       example: ''
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute: executePause
 };
 
@@ -143,6 +159,10 @@ export const RESUME_COMMAND: Command = {
       example: ''
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute: executeResume
 };
 
@@ -165,5 +185,9 @@ export const SHOW_COMMAND: Command = {
       example: ''
     }
   ],
+  args: {
+    base: true,
+    groups: []
+  },
   execute: executeShowPlayer
 };
