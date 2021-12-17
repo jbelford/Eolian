@@ -89,7 +89,7 @@ export const enum KeywordGroup {
   Type = 'type',
   Switch = 'switch',
   Increment = 'increment',
-  Input = 'input'
+  Search = 'search'
 }
 
 export interface KeywordGroupProperties {

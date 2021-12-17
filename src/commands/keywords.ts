@@ -14,7 +14,7 @@ export const KEYWORD_GROUPS: Readonly<Record<KeywordGroup, KeywordGroupPropertie
   type: {
     details: 'Which type of resource to fetch.'
   },
-  input: {
+  search: {
     details: 'Input either a URL or search terms.'
   }
 };

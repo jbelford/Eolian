@@ -66,8 +66,8 @@ function createSlashCommand(command: Command) {
 
     if (command.keywords || command.patterns) {
       const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
-      command.keywords?.forEach(keyword => addKeywordOption(builder, keyword, groupOption));
-      command.patterns?.forEach(pattern => addPatternOption(builder, pattern, groupOption, command.args));
+      command.patterns?.sort((a, b) => b.priority - a.priority).forEach(pattern => addPatternOption(builder, pattern, groupOption, command.args));
+      command.keywords?.sort((a, b) => a.name.localeCompare(b.name)).forEach(keyword => addKeywordOption(builder, keyword, groupOption));
     } else if (command.args) {
       addCommandArgOptions(builder, command.args);
     } else {

@@ -94,7 +94,7 @@ export const PATTERNS: Readonly<Patterns> = {
       'https://www.youtube.com/watch?v=FRjOSmc01-M'
     ],
     priority: 4,
-    group: KeywordGroup.Input,
+    group: KeywordGroup.Search,
     ex: text => new PassthroughExample(text),
     matchText: (text: string) => {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.(com|be)(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
@@ -125,7 +125,7 @@ export const PATTERNS: Readonly<Patterns> = {
     permission: PERMISSION.USER,
     usage: ['what is love', 'deadmau5'],
     priority: 6,
-    group: KeywordGroup.Input,
+    group: KeywordGroup.Search,
     ex: text => new SearchExample(text),
     matchText: (text: string, type: SyntaxType) => type === SyntaxType.SLASH
       ? { matches: true, newText: '', args: text.trim() }
