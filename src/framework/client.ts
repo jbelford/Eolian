@@ -1,7 +1,7 @@
 import { getVoiceConnection } from '@discordjs/voice';
 import { ServerDTO, ServersDb } from 'data/@types';
 import { Client, Guild, InviteScope, PermissionResolvable } from 'discord.js';
-import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
+import { ContextClient, ContextVoiceConnection, ServerInfo, ServerStateStore } from './@types';
 import { registerGlobalSlashCommands } from './register_commands';
 import { DiscordVoiceConnection } from './voice';
 
@@ -40,6 +40,7 @@ export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
 export class DiscordClient implements ContextClient {
 
   constructor(protected readonly client: Client,
+    private readonly stateStore: ServerStateStore,
     private readonly servers: ServersDb) {
   }
 
@@ -77,6 +78,10 @@ export class DiscordClient implements ContextClient {
       return registerGlobalSlashCommands();
   }
 
+  getRecentlyUsedCount(): number {
+    return this.stateStore.active;
+  }
+
   async leave(id: string): Promise<boolean> {
     await this.servers.delete(id);
     return !!(await this.client.guilds.cache.get(id)?.leave());
@@ -88,8 +93,9 @@ export class DiscordGuildClient extends DiscordClient {
 
   constructor(readonly client: Client,
       private readonly guildId: string,
+      stateStore: ServerStateStore,
       servers: ServersDb) {
-    super(client, servers);
+    super(client, stateStore, servers);
   }
 
   getVoice(): ContextVoiceConnection | undefined {

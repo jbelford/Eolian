@@ -38,6 +38,7 @@ export interface ContextClient {
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   getUnusedServers(): Promise<ServerInfo[]>;
   updateCommands(): Promise<boolean>;
+  getRecentlyUsedCount(): number;
   leave(id: string): Promise<boolean>;
 }
 
@@ -173,6 +174,7 @@ export interface QueueDisplay extends Display {
 }
 
 export interface ServerStateStore {
+  active: number;
   get(id: string): Promise<ServerState | undefined>;
   set(id: string, context: ServerState): Promise<void>;
 }

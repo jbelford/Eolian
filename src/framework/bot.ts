@@ -300,9 +300,9 @@ export class DiscordEolianBot implements EolianBot {
       let client: ContextClient;
       if (guild) {
         server = await this.getGuildState(guild);
-        client = new DiscordGuildClient(this.client, server.details.id, this.db.servers);
+        client = new DiscordGuildClient(this.client, server.details.id, this.servers, this.db.servers);
       } else {
-        client = new DiscordClient(this.client, this.db.servers);
+        client = new DiscordClient(this.client, this.servers, this.db.servers);
       }
       await interaction.user.updatePermissions(server?.details);
 
@@ -359,7 +359,7 @@ export class DiscordEolianBot implements EolianBot {
       const details = this.getGuildDetails(guild);
       const dto = await details.get();
 
-      const guildClient = new DiscordGuildClient(this.client, guild.id, this.db.servers);
+      const guildClient = new DiscordGuildClient(this.client, guild.id, this.servers, this.db.servers);
       const queue = new GuildQueue(this.queues, guild.id);
       const player = new DiscordPlayer(guildClient, queue, dto.volume);
       const queueDisplay = new DiscordQueueDisplay(queue);

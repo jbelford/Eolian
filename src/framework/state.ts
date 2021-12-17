@@ -7,9 +7,14 @@ import { ServerState, ServerStateStore } from './@types';
 export class InMemoryServerStateStore implements ServerStateStore {
 
   private cache: EolianCache<ServerState>;
+  private _active = 0;
 
   constructor(private readonly ttl: number) {
     this.cache = new InMemoryCache(this.ttl, false, this.onExpired);
+  }
+
+  get active(): number {
+    return this._active;
   }
 
   async get(guildId: string): Promise<ServerState | undefined> {
@@ -23,6 +28,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
   async set(guildId: string, context: ServerState): Promise<void> {
     logger.info('%s storing guild state', guildId);
     await this.cache.set(guildId, context, this.ttl);
+    this._active++;
   }
 
   private onExpired = async (key: string, value: ServerState) => {
@@ -35,6 +41,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
           value.display.player.close(),
           value.display.queue.close()
         ]);
+        this._active--;
       } else {
         logger.info('%s stopping partially idle guild state', key);
         if (value.player.idle) {
