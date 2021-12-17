@@ -100,7 +100,7 @@ export const PLAY_COMMAND: Command = {
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: PERMISSION.DJ,
-  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE],
+  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.FAST],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   noDefaultReply: true,
   usage: [
@@ -115,6 +115,10 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
     {
       title: 'Start playing song from SEARCH',
       example: [PATTERNS.SEARCH.ex('what is love')]
+    },
+    {
+      title: 'Start playing song from SEARCH and select first result',
+      example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.FAST]
     }
   ],
   execute: executePlay

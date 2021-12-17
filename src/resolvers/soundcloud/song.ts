@@ -17,12 +17,18 @@ export class SoundCloudSongResolver implements SourceResolver {
       throw new EolianUserError('Missing SEARCH query for SoundCloud song.');
     }
 
-    const songs = await soundcloud.searchSongs(this.params.SEARCH);
-    const result = await this.context.interaction.sendSelection('Choose a SoundCloud track',
-      songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
-      this.context.interaction.user);
+    const songs = await soundcloud.searchSongs(this.params.SEARCH, this.params.FAST ? 1 : 5);
+    if (songs.length === 0) {
+      throw new EolianUserError('No SoundCloud songs were found.');
+    } else if (songs.length === 1) {
+      return createSoundCloudSong(songs[0]);
+    } else {
+      const result = await this.context.interaction.sendSelection('Choose a SoundCloud track',
+        songs.map(song =>  ({ name: song.title, url: song.permalink_url })),
+        this.context.interaction.user);
 
-    return createSoundCloudSong(songs[result.selected], result.message);
+      return createSoundCloudSong(songs[result.selected], result.message);
+    }
   }
 }
 

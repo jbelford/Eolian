@@ -20,17 +20,22 @@ export class SpotifyAlbumResolver implements SourceResolver {
       throw new EolianUserError('Missing search query for album.');
     }
 
-    const albums = await spotify.searchAlbums(this.params.SEARCH);
+    const albums = await spotify.searchAlbums(this.params.SEARCH, this.params.FAST ? 1 : 5);
+    if (albums.length === 0) {
+      throw new EolianUserError('No Spotify albums were found.');
+    } else if (albums.length === 1) {
+      return createSpotifyAlbum(albums[0]);
+    } else {
+      const options: SelectionOption[] = albums.map(album => ({
+        name: album.name,
+        subname: album.artists.map(artist => artist.name).join(','),
+        url: album.external_urls.spotify
+      }));
+      const result = await this.context.interaction.sendSelection(
+        `Select the album you want (resolved via Spotify)`, options, this.context.interaction.user);
 
-    const options: SelectionOption[] = albums.map(album => ({
-      name: album.name,
-      subname: album.artists.map(artist => artist.name).join(','),
-      url: album.external_urls.spotify
-    }));
-    const result = await this.context.interaction.sendSelection(
-      `Select the album you want (resolved via Spotify)`, options, this.context.interaction.user);
-
-    return createSpotifyAlbum(albums[result.selected], result.message);
+      return createSpotifyAlbum(albums[result.selected], result.message);
+    }
   }
 }
 

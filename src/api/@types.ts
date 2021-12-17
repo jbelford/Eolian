@@ -9,7 +9,7 @@ interface StreamFetcher {
 export interface SoundCloudApi extends StreamFetcher {
   searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
   searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
-  searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]>;
+  searchPlaylists(query: string, limit?: number, userId?: number): Promise<SoundCloudPlaylist[]>;
   resolve(url: string): Promise<SoundCloudResource>;
   resolveUser(url: string): Promise<SoundCloudUser>;
   getUser(id: number): Promise<SoundCloudUser>;
@@ -74,8 +74,8 @@ export interface SpotifyApi extends StreamFetcher {
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
   getArtistTracks(id: string): Promise<SpotifyTrack[]>;
-  searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]>;
-  searchAlbums(query: string): Promise<SpotifyAlbum[]>;
+  searchPlaylists(query: string, limit?: number, userId?: string): Promise<SpotifyPlaylist[]>;
+  searchAlbums(query: string, limit?: number): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }
 
@@ -190,8 +190,8 @@ export interface YouTubeApi extends StreamFetcher {
   getVideo(id: string): Promise<YoutubeVideo>;
   getPlaylist(id: string): Promise<YoutubePlaylist>;
   getPlaylistVideos(id: string): Promise<YoutubeVideo[]>;
-  searchPlaylists(query: string): Promise<YoutubePlaylist[]>;
-  searchVideos(query: string): Promise<YoutubeVideo[]>;
+  searchPlaylists(query: string, limit?: number): Promise<YoutubePlaylist[]>;
+  searchVideos(query: string, limit?: number): Promise<YoutubeVideo[]>;
   searchStream(track: Track): Promise<StreamSource | undefined>;
 }
 

@@ -102,10 +102,10 @@ export class YouTubeApiImpl implements YouTubeApi {
       .map(mapVideoResponse);
   }
 
-  async searchPlaylists(query: string): Promise<YoutubePlaylist[]> {
+  async searchPlaylists(query: string, limit = 5): Promise<YoutubePlaylist[]> {
     try {
       logger.info(`YouTube HTTP: search.list type:playlist ${query}`);
-      const response = await this.youtube.search.list({ q: query, maxResults: 5, type: ['playlist'], part: ['id', 'snippet'] });
+      const response = await this.youtube.search.list({ q: query, maxResults: limit, type: ['playlist'], part: ['id', 'snippet'] });
       if (!response.data.items) return [];
 
       return response.data.items.map(mapPlaylistResponse);
@@ -115,12 +115,12 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async searchVideos(query: string): Promise<YoutubeVideo[]> {
+  async searchVideos(query: string, limit = 5): Promise<YoutubeVideo[]> {
     try {
       logger.info(`YouTube HTTP: search.list ${query}`);
       const response = await this.youtube.search.list({
         q: query,
-        maxResults: 7,
+        maxResults: limit + 2,
         // We should not provide the video type. It yields entirely different results for some videos for some reason.
         // type: 'video',
         part: ['id', 'snippet'],
@@ -134,7 +134,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       const videos = videoResponse.filter(video => !!video.snippet?.thumbnails?.default?.url)
         .map(mapVideoResponse);
 
-      return videos.slice(0, 5);
+      return videos.slice(0, limit);
     } catch (e) {
       logger.warn(`Failed to search YouTube videos: query: %s`, query);
       throw e;

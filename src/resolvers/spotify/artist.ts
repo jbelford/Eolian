@@ -19,12 +19,18 @@ export class SpotifyArtistResolver implements SourceResolver {
       throw new EolianUserError('Missing search query for Spotify artist.');
     }
 
-    const artists = await spotify.searchArtists(this.params.SEARCH);
-    const result = await this.context.interaction.sendSelection('Choose a Spotify artist',
-      artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
-      this.context.interaction.user);
+    const artists = await spotify.searchArtists(this.params.SEARCH, this.params.FAST ? 1 : 5);
+    if (artists.length === 0) {
+      throw new EolianUserError('No Spotify artists were found.');
+    } else if (artists.length === 1) {
+      return createSpotifyArtist(artists[0]);
+    } else {
+      const result = await this.context.interaction.sendSelection('Choose a Spotify artist',
+        artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
+        this.context.interaction.user);
 
-    return createSpotifyArtist(artists[result.selected], result.message);
+      return createSpotifyArtist(artists[result.selected], result.message);
+    }
   }
 }
 

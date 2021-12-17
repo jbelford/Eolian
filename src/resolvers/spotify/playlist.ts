@@ -40,14 +40,15 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     let playlists: SpotifyPlaylist[];
 
+    const limit = this.params.FAST ? 1 : 5;
     if (this.params.MY) {
       const user = await this.context.interaction.user.get();
       if (!user.spotify) {
         throw new EolianUserError(`I can't search your Spotify playlists because you haven't set your Spotify account yet!`);
       }
-      playlists = await spotify.searchPlaylists(this.params.SEARCH, user.spotify);
+      playlists = await spotify.searchPlaylists(this.params.SEARCH, limit, user.spotify);
     } else {
-      playlists = await spotify.searchPlaylists(this.params.SEARCH);
+      playlists = await spotify.searchPlaylists(this.params.SEARCH, limit);
     }
 
     return playlists;

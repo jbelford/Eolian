@@ -129,14 +129,14 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async searchPlaylists(query: string, userId?: string): Promise<SpotifyPlaylist[]> {
+  async searchPlaylists(query: string, limit = 5, userId?: string): Promise<SpotifyPlaylist[]> {
     if (userId) {
-      return this.searchUserPlaylists(query, userId);
+      return this.searchUserPlaylists(query, userId, limit);
     }
 
     try {
       const response = await this.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist>}>('search',
-        { type: 'playlist', q: query, limit: 5 });
+        { type: 'playlist', q: query, limit });
       return response.playlists.items;
     } catch (e) {
       logger.warn(`Failed to search Spotify playlists: query: %s userId: %s`, query, userId);
@@ -144,10 +144,10 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async searchAlbums(query: string): Promise<SpotifyAlbum[]> {
+  async searchAlbums(query: string, limit = 5): Promise<SpotifyAlbum[]> {
     try {
       const response = await this.get<{ albums: SpotifyPagingObject<SpotifyAlbum>}>('search',
-        { type: 'album', q: query, limit: 5 });
+        { type: 'album', q: query, limit });
       return response.albums.items;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album: query: %s`, query);
@@ -189,11 +189,11 @@ export class SpotifyApiImpl implements SpotifyApi {
     return this.youtube.searchStream(trackCopy);
   }
 
-  private async searchUserPlaylists(query: string, userId: string): Promise<SpotifyPlaylist[]> {
+  private async searchUserPlaylists(query: string, userId: string, limit = 5): Promise<SpotifyPlaylist[]> {
     try {
       const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`users/${userId}/playlists`);
       const results = await fuzzyMatch(query, playlists.map(playlist => playlist.name));
-      return results.slice(0, 5).map(result => playlists[result.key]);
+      return results.slice(0, limit).map(result => playlists[result.key]);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify user playlists: query: %s userId: %s`, query, userId);
       throw e;

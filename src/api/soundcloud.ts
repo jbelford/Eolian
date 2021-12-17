@@ -38,10 +38,10 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
-  async searchPlaylists(query: string, userId?: number): Promise<SoundCloudPlaylist[]> {
+  async searchPlaylists(query: string, limit = 5, userId?: number): Promise<SoundCloudPlaylist[]> {
     try {
       const path = userId ? `users/${userId}/playlists` : 'playlists'
-      return await this.getPaginatedItems<SoundCloudPlaylist>(path, { params: { ...TRACKS_PARAMS, q: query }, total: 5, requestLimit: 1 });
+      return await this.getPaginatedItems<SoundCloudPlaylist>(path, { params: { ...TRACKS_PARAMS, q: query }, total: limit, requestLimit: 1 });
     } catch (e) {
       logger.warn('Failed to search SoundCloud playlists: query: %s, userId: %s', query, userId);
       throw e;

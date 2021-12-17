@@ -143,7 +143,8 @@ export type KeywordName = Uppercase<
   | 'next'
   | 'shuffle'
   | 'likes'
-  | 'tracks'>;
+  | 'tracks'
+  | 'fast'>;
 
 export type PatternValues = {
   TOP: RangeArgument;

@@ -19,12 +19,18 @@ export class YouTubePlaylistResolver implements SourceResolver {
       throw new EolianUserError('Missing search query for YouTube playlist.');
     }
 
-    const playlists = await youtube.searchPlaylists(this.params.SEARCH);
-    const result = await this.context.interaction.sendSelection('Choose a YouTube playlist',
-      playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
-      this.context.interaction.user);
+    const playlists = await youtube.searchPlaylists(this.params.SEARCH, this.params.FAST ? 1 : 5);
+    if (playlists.length === 0) {
+      throw new EolianUserError('No YouTube playlists were found.');
+    } else if (playlists.length === 1) {
+      return createYouTubePlaylist(playlists[0]);
+    } else {
+      const result = await this.context.interaction.sendSelection('Choose a YouTube playlist',
+        playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
+        this.context.interaction.user);
 
-    return createYouTubePlaylist(playlists[result.selected], result.message);
+      return createYouTubePlaylist(playlists[result.selected], result.message);
+    }
   }
 }
 

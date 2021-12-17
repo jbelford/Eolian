@@ -18,12 +18,18 @@ export class YouTubeVideoResolver implements SourceResolver {
       throw new EolianUserError('Missing search query for YouTube song.');
     }
 
-    const videos = await youtube.searchVideos(this.params.SEARCH);
-    const result = await this.context.interaction.sendSelection('Choose a YouTube video',
-      videos.map(video => ({ name: video.name, url: video.url })),
-      this.context.interaction.user);
+    const videos = await youtube.searchVideos(this.params.SEARCH, this.params.FAST ? 1 : 5);
+    if (videos.length === 0) {
+      throw new EolianUserError('No YouTube videos were found.');
+    } else if (videos.length === 1) {
+      return createYouTubeVideo(videos[0]);
+    } else {
+      const result = await this.context.interaction.sendSelection('Choose a YouTube video',
+        videos.map(video => ({ name: video.name, url: video.url })),
+        this.context.interaction.user);
 
-    return createYouTubeVideo(videos[result.selected], result.message);
+      return createYouTubeVideo(videos[result.selected], result.message);
+    }
   }
 
 }

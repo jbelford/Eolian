@@ -104,13 +104,17 @@ export const ADD_COMMAND: Command = {
   permission: PERMISSION.DJ_LIMITED,
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST,
-    KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.NEXT, KEYWORDS.SHUFFLE,
+    KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.NEXT, KEYWORDS.SHUFFLE, KEYWORDS.FAST
   ],
   patterns: [PATTERNS.SEARCH, PATTERNS.IDENTIFIER, PATTERNS.URL, PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [
     {
       title: `Search song and add to top of the queue`,
       example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.NEXT]
+    },
+    {
+      title: 'Add song and select first result by default',
+      example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.FAST]
     },
     {
       title: 'Add song from URL',

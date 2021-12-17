@@ -29,12 +29,18 @@ export class SoundCloudArtistResolver implements SourceResolver {
   }
 
   private async resolveArtistQuery(query: string): Promise<UserResult> {
-    const users = await soundcloud.searchUser(query);
-    const result = await this.context.interaction.sendSelection('Choose a SoundCloud user',
-      users.map(user => ({ name: user.username, url: user.permalink_url })),
-      this.context.interaction.user);
+    const users = await soundcloud.searchUser(query, this.params.FAST ? 1 : 5);
+    if (users.length === 0) {
+      throw new EolianUserError('No SoundCloud users were found.');
+    } else if (users.length === 1) {
+      return { value: users[0] };
+    } else {
+      const result = await this.context.interaction.sendSelection('Choose a SoundCloud user',
+        users.map(user => ({ name: user.username, url: user.permalink_url })),
+        this.context.interaction.user);
 
-    return { value: users[result.selected], message: result.message };
+      return { value: users[result.selected], message: result.message };
+    }
   }
 
   private async resolveUser(): Promise<SoundCloudUser> {

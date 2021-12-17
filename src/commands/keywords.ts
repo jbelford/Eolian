@@ -51,5 +51,6 @@ export const KEYWORDS: Readonly<Record<string, Keyword | undefined> & Record<Key
   NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue.', PERMISSION.DJ),
   SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks.', PERMISSION.USER),
   LIKES: new KeywordDetails('LIKES', 'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.', PERMISSION.USER, KeywordGroup.Type),
-  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks.', PERMISSION.USER, KeywordGroup.Type)
+  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks.', PERMISSION.USER, KeywordGroup.Type),
+  FAST: new KeywordDetails('FAST', 'Select the first result if multiple options', PERMISSION.USER)
 };

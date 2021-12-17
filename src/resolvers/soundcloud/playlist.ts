@@ -37,14 +37,15 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
     let playlists: SoundCloudPlaylist[];
 
+    const limit = this.params.FAST ? 1 : 5;
     if (this.params.MY) {
       const user = await this.context.interaction.user.get();
       if (!user.soundcloud) {
         throw new EolianUserError(`I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
       }
-      playlists = await soundcloud.searchPlaylists(this.params.SEARCH, user.soundcloud);
+      playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit, user.soundcloud);
     } else {
-      playlists = await soundcloud.searchPlaylists(this.params.SEARCH);
+      playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit);
     }
 
     return playlists;
