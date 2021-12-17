@@ -52,5 +52,10 @@ export async function httpRequest<T>(url: string, options?: RequestOptions): Pro
     maxRedirections: 5
   });
 
+  if (res.statusCode >= 400) {
+    const error = await res.body.text();
+    throw new Error(`HttpRequestError: ${error}`);
+  }
+
   return options?.json ? await res.body.json() : res.body;
 }
