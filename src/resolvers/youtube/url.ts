@@ -6,6 +6,8 @@ import { ResolvedResource, SourceResolver } from 'resolvers/@types';
 import { createYouTubePlaylist } from './playlist';
 import { createYouTubeVideo } from './video';
 
+const MY_MIX_PLAYLIST_ID = 'RDMM';
+
 export class YouTubeUrlResolver implements SourceResolver {
   constructor(private readonly url: string,
     private readonly context: CommandContext) {
@@ -29,6 +31,10 @@ export class YouTubeUrlResolver implements SourceResolver {
         const video = await youtube.getVideo(resourceDetails.video);
         return createYouTubeVideo(video, message);
       } else if (resourceDetails.playlist) {
+        if (resourceDetails.playlist === MY_MIX_PLAYLIST_ID) {
+          throw new EolianUserError(`Sorry, but I can't add 'My Mix' playlists 😕`, message);
+        }
+
         const playlist = await youtube.getPlaylist(resourceDetails.playlist);
         return createYouTubePlaylist(playlist, message);
       }
