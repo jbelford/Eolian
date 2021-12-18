@@ -88,6 +88,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       let response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id', 'snippet', 'contentDetails', 'status'] });
       items = response.data.items || [];
       while (response.data.nextPageToken) {
+        logger.info(`YouTube HTTP: playlistItems.list ${id}`);
         const params = { playlistId: id, part: 'id,snippet,contentDetails', pageToken: response.data.nextPageToken };
         // @ts-ignore Typescript is dumb
         response = await this.youtube.playlistItems.list(params);
