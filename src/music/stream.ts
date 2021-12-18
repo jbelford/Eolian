@@ -20,6 +20,7 @@ export class SongStream extends EventEmitter implements Closable {
   private nightcore = false;
   private source?: StreamSource;
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
+  private start?: number;
 
   constructor(
       volume: number,
@@ -41,7 +42,7 @@ export class SongStream extends EventEmitter implements Closable {
     this.output.setVolume(v);
   }
 
-  async setStreamTrack(track: Track, nightcore = false, retry = false) {
+  async setStreamTrack(track: Track, nightcore = false, retry = false, seek?: number) {
     let source: StreamSource | undefined;
     if (!this.source) {
       source = await getTrackStream(track);
@@ -53,7 +54,7 @@ export class SongStream extends EventEmitter implements Closable {
       throw new Error('Failed to get stream source!');
     }
 
-    let stream = await source.get();
+    let stream = await source.get(seek);
     stream = stream.once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 
@@ -75,6 +76,7 @@ export class SongStream extends EventEmitter implements Closable {
       this.sleepAlg.reset();
     }
 
+    this.start = Date.now();
     this.source = source;
     this.track = track;
     this.nightcore = nightcore;
@@ -116,7 +118,8 @@ export class SongStream extends EventEmitter implements Closable {
   private async retryStream(): Promise<void> {
     try {
       await this.sleepAlg.sleep();
-      await this.setStreamTrack(this.track!, this.nightcore, true);
+      const seek = this.start && Math.max(0, Date.now() - this.start - 5000);
+      await this.setStreamTrack(this.track!, this.nightcore, true, seek);
     } catch (e: any) {
       this.cleanup(e);
     }
