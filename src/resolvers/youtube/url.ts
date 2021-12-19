@@ -36,7 +36,7 @@ export class YouTubeUrlResolver implements SourceResolver {
         }
 
         const playlist = await youtube.getPlaylist(resourceDetails.playlist);
-        return createYouTubePlaylist(playlist, message);
+        return createYouTubePlaylist(playlist, this.context.interaction.channel, message);
       }
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');

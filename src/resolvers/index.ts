@@ -110,7 +110,7 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
 export function getSourceFetcher(identifier: Identifier, params: CommandOptions, sendable: ContextSendable): SourceFetcher {
   switch (identifier.src) {
     case SOURCE.SOUNDCLOUD: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
-    case SOURCE.YOUTUBE: return getYouTubeSourceFetcher(identifier.id, identifier.type);
+    case SOURCE.YOUTUBE: return getYouTubeSourceFetcher(identifier.id, identifier.type, sendable);
     case SOURCE.SPOTIFY: return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
     default: return UNKNOWN_FETCHER;
   }

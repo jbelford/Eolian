@@ -1,3 +1,4 @@
+import { ProgressUpdater } from 'common/@types';
 import { SOURCE } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
@@ -80,18 +81,31 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async getPlaylistVideos(id: string): Promise<YoutubeVideo[]> {
+  async getPlaylistVideos(id: string, progress?: ProgressUpdater): Promise<YoutubeVideo[]> {
     let items: youtube_v3.Schema$PlaylistItem[] = [];
 
     try {
+
       logger.info(`YouTube HTTP: playlistItems.list ${id}`);
-      let response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id', 'snippet', 'contentDetails', 'status'] });
+      let response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id', 'snippet', 'contentDetails', 'status'], maxResults: 50 });
       items = response.data.items || [];
+
+      const total = response.data.pageInfo?.totalResults ?? undefined;
+      if (total && total < 100) {
+        progress = undefined;
+      }
+
+      progress?.init(total);
+      progress?.update(items.length);
+
       while (response.data.nextPageToken) {
         logger.info(`YouTube HTTP: playlistItems.list ${id}`);
-        response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id' ,'snippet', 'contentDetails'], pageToken: response.data.nextPageToken });
+        response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id' ,'snippet', 'contentDetails'], pageToken: response.data.nextPageToken, maxResults: 50 });
         items = items.concat(response.data.items || []);
+        progress?.update(items.length);
       }
+
+      await progress?.done();
     } catch (e) {
       logger.warn(`Failed to fetch YouTube playlist: id: %s`, id);
       throw e;
