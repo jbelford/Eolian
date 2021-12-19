@@ -76,7 +76,6 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
   constructor(private readonly id: string,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
-    // @ts-ignore
     private readonly playlist?: SpotifyPlaylist) {
   }
 
