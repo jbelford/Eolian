@@ -31,7 +31,7 @@ export class YouTubeUrlResolver implements SourceResolver {
         const video = await youtube.getVideo(resourceDetails.video);
         return createYouTubeVideo(video, message);
       } else if (resourceDetails.playlist) {
-        if (resourceDetails.playlist === MY_MIX_PLAYLIST_ID) {
+        if (resourceDetails.playlist.startsWith(MY_MIX_PLAYLIST_ID)) {
           throw new EolianUserError(`Sorry, but I can't add 'My Mix' playlists 😕`, message);
         }
 
