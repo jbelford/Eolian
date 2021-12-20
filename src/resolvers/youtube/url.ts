@@ -7,6 +7,7 @@ import { createYouTubePlaylist } from './playlist';
 import { createYouTubeVideo } from './video';
 
 const MY_MIX_PLAYLIST_ID = 'RDMM';
+const LIKED_MUSIC_ID = 'LM';
 
 export class YouTubeUrlResolver implements SourceResolver {
   constructor(private readonly url: string,
@@ -36,6 +37,8 @@ export class YouTubeUrlResolver implements SourceResolver {
       } else if (resourceDetails.playlist) {
         if (resourceDetails.playlist.startsWith(MY_MIX_PLAYLIST_ID)) {
           throw new EolianUserError(`Sorry, but I can't add 'My Mix' playlists 😕`, message);
+        } else if (resourceDetails.playlist === LIKED_MUSIC_ID) {
+          throw new EolianUserError(`Sorry, but I can't add 'Your Likes' playlists 😕`, message);
         }
 
         const playlist = await youtube.getPlaylist(resourceDetails.playlist);
