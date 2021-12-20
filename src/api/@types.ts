@@ -187,8 +187,8 @@ export const enum SpotifyResourceType {
 
 export interface YouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
-  getVideo(id: string): Promise<YoutubeVideo>;
-  getPlaylist(id: string): Promise<YoutubePlaylist>;
+  getVideo(id: string): Promise<YoutubeVideo | undefined>;
+  getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
   getPlaylistVideos(id: string, progress?: ProgressUpdater): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string, limit?: number): Promise<YoutubePlaylist[]>;
   searchVideos(query: string, limit?: number): Promise<YoutubeVideo[]>;

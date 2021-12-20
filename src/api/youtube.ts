@@ -53,11 +53,13 @@ export class YouTubeApiImpl implements YouTubeApi {
     return undefined;
   }
 
-  async getVideo(id: string): Promise<YoutubeVideo> {
+  async getVideo(id: string): Promise<YoutubeVideo | undefined> {
     try {
       logger.info(`YouTube HTTP: videos.list ${id}`);
       const response = await this.youtube.videos.list({ id: [id], maxResults: 1, part: ['id', 'snippet', 'contentDetails'] });
-      if (!response.data.items) throw new Error('No results from YouTube');
+      if (response.data.items?.length !== 1) {
+        return undefined;
+      }
 
       const video = response.data.items[0];
       return mapVideoResponse(video);
@@ -67,11 +69,13 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async getPlaylist(id: string): Promise<YoutubePlaylist> {
+  async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
     try {
       logger.info(`YouTube HTTP: playlists.list ${id}`);
       const response = await this.youtube.playlists.list({ id: [id], maxResults: 1, part: ['id', 'snippet', 'contentDetails'] });
-      if (!response.data.items) throw new Error('No results from YouTube');
+      if (response.data.items?.length !== 1) {
+        return undefined;
+      }
 
       const playlist = response.data.items[0];
       return mapPlaylistResponse(playlist);

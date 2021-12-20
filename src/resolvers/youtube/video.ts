@@ -55,7 +55,10 @@ export class YouTubeVideoFetcher implements SourceFetcher {
   }
 
   async fetch(): Promise<FetchResult> {
-    const video: YoutubeVideo = this.video ? this.video : await youtube.getVideo(this.id);
+    const video = this.video ? this.video : await youtube.getVideo(this.id);
+    if (!video) {
+      throw new EolianUserError(`I could not find details for video https://www.youtube.com/watch?v=${this.id}`);
+    }
     return { tracks: [mapYouTubeVideo(video)], rangeOptimized: true };
   }
 

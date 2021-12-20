@@ -29,6 +29,9 @@ export class YouTubeUrlResolver implements SourceResolver {
 
       if (resourceDetails.video) {
         const video = await youtube.getVideo(resourceDetails.video);
+        if (!video) {
+          throw new EolianUserError('I could not find details about this video!');
+        }
         return createYouTubeVideo(video, message);
       } else if (resourceDetails.playlist) {
         if (resourceDetails.playlist.startsWith(MY_MIX_PLAYLIST_ID)) {
@@ -36,6 +39,9 @@ export class YouTubeUrlResolver implements SourceResolver {
         }
 
         const playlist = await youtube.getPlaylist(resourceDetails.playlist);
+        if (!playlist) {
+          throw new EolianUserError('I could not find details about this playlist!');
+        }
         return createYouTubePlaylist(playlist, this.context.interaction.channel, message);
       }
     }
