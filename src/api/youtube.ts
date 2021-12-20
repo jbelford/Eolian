@@ -91,14 +91,16 @@ export class YouTubeApiImpl implements YouTubeApi {
       items = response.data.items || [];
 
       const total = response.data.pageInfo?.totalResults ?? undefined;
-      if (total && total < 100) {
+      if (total === undefined) {
+        throw new Error('Playlist is missing total results!');
+      } else if (total < 100) {
         progress = undefined;
       }
 
       progress?.init(total);
       progress?.update(items.length);
 
-      while (response.data.nextPageToken) {
+      while (response.data.nextPageToken && items.length < total) {
         logger.info(`YouTube HTTP: playlistItems.list ${id}`);
         response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id' ,'snippet', 'contentDetails'], pageToken: response.data.nextPageToken, maxResults: 50 });
         items = items.concat(response.data.items || []);
