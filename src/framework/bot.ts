@@ -109,8 +109,8 @@ export class DiscordEolianBot implements EolianBot {
   async start(): Promise<void> {
     if (!this.client.readyTimestamp) {
       if (!environment.prod) {
-        if (environment.devGuild) {
-          await registerGuildSlashCommands(environment.devGuild);
+        if (environment.ownerGuild) {
+          await registerGuildSlashCommands(environment.ownerGuild);
         } else {
           logger.warn('Missing dev guild. Not registering slash commands for dev environment');
         }

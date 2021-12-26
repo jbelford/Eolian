@@ -14,7 +14,7 @@ export interface AppEnv {
   owners: string[];
   queueLimit: number;
   youtubeCacheLimit: number;
-  devGuild?: string;
+  ownerGuild?: string;
   tokens: {
     discord: {
       clientId?: string;

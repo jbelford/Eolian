@@ -51,9 +51,9 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
         }
       }
 
-      if (overrides.length && environment.devGuild) {
+      if (overrides.length && environment.ownerGuild) {
         await rest.put(
-          Routes.guildApplicationCommandsPermissions(environment.tokens.discord.clientId!, environment.devGuild),
+          Routes.guildApplicationCommandsPermissions(environment.tokens.discord.clientId!, environment.ownerGuild),
           { body: overrides }
         );
       }
