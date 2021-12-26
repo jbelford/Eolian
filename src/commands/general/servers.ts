@@ -1,42 +1,11 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
+import { OWNER_COMMANDS } from 'commands/owner';
 import { PATTERNS } from 'commands/patterns';
 import { PERMISSION } from 'common/constants';
+import { EolianUserError } from 'common/errors';
 
 const PAGE_LENGTH = 10;
-
-async function kickUnused(context: CommandContext) {
-  const servers = await context.client.getUnusedServers();
-  if (servers.length === 0) {
-    await context.interaction.send('No servers!');
-    return;
-  }
-  await context.interaction.send(servers.map((s, i) => `${i}. ${s.id}`).join('\n'));
-  const result = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
-  if (result.selected === 0) {
-    await Promise.all(servers.map(s => context.client.leave(s.id)));
-    await result.message.edit(`I have left all ${servers.length} servers`);
-  } else {
-    await result.message.edit(`Cancelled kick`);
-  }
-}
-
-async function kickOld(days: number, context: CommandContext) {
-  const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
-  const servers = await context.client.getIdleServers(minDate);
-  if (servers.length === 0) {
-    await context.interaction.send('No servers!');
-    return;
-  }
-  await context.interaction.send(servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'));
-  const result = await context.interaction.sendSelection('Kick?', [{ name: 'Yes' }, { name: 'No' }], context.interaction.user);
-  if (result.selected === 0) {
-    await Promise.all(servers.map(s => context.client.leave(s._id)));
-    await result.message.edit(`I have left all ${servers.length} servers`);
-  } else {
-    await result.message.edit(`Cancelled kick`);
-  }
-}
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   await context.interaction.defer();
@@ -53,48 +22,23 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (options.ARG && options.ARG.length > 0) {
-    if (options.ARG.length > 1) {
-      switch (options.ARG[0]) {
-        case 'sort': {
-          const prop = options.ARG[1];
-          // @ts-ignore
-          if (servers.length && typeof servers[0][prop] === 'number') {
-            // @ts-ignore
-            servers = servers.sort((a, b) => b[prop] - a[prop]);
-          }
-          break;
-        }
-        case 'kick': {
-          const id = options.ARG[1];
-          const kicked = await context.client.leave(id);
-          await context.interaction.send(kicked ? `I have left ${id}` : `I don't recognize that guild!`);
-          return;
-        }
-        case 'kickOld': {
-          const days = +options.ARG[1];
-          if (!isNaN(days)) {
-            await kickOld(days, context);
-            return;
-          }
-        }
+    const name = options.ARG[0];
+    if (name === 'sort') {
+      const prop = options.ARG[1];
+      // @ts-ignore
+      if (servers.length && typeof servers[0][prop] === 'number') {
+        // @ts-ignore
+        servers = servers.sort((a, b) => b[prop] - a[prop]);
       }
     } else {
-      switch (options.ARG[0]) {
-        case 'kickUnused': {
-          await kickUnused(context);
-          return;
-        }
-        case 'updateCommands': {
-          const success = await context.client.updateCommands();
-          if (success) {
-            await context.interaction.send('Request to update commands sent successfully!');
-          } else {
-            await context.interaction.send('I failed to update commands. Check the logs.');
-          }
-          return;
-        }
-        default:
+      const command = OWNER_COMMANDS.get(name);
+      if (!command) {
+        throw new EolianUserError(`There is no subcommand \`${name}\`!`);
+      } else if (options.ARG.length - 1 != command.numArgs) {
+        throw new EolianUserError(`Command \`${name}\` requires ${command.numArgs} arguments!`);
       }
+      await command.execute(context, options.ARG.slice(1));
+      return;
     }
   }
 
@@ -142,7 +86,7 @@ export const SERVERS_COMMAND: Command = {
             name: 'action',
             details: 'The custom action to do',
             getChoices() {
-              return ['sort', 'kick', 'kickOld', 'kickUnused', 'updateCommands']
+              return ['sort'].concat(...OWNER_COMMANDS.keys())
             }
           }
         ],

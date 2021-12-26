@@ -11,6 +11,12 @@ export interface BaseCommand {
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
 }
 
+export interface OwnerCommand {
+  name: string;
+  numArgs: number;
+  execute(context: CommandContext, args: string[]): Promise<void>;
+}
+
 export type CommandArgOption = {
   name: string;
   details: string;
