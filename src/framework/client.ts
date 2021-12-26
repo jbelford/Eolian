@@ -75,7 +75,7 @@ export class DiscordClient implements ContextClient {
   }
 
   updateCommands(): Promise<boolean> {
-      return registerGlobalSlashCommands();
+    return registerGlobalSlashCommands();
   }
 
   getRecentlyUsedCount(): number {

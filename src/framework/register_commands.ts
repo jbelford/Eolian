@@ -8,7 +8,7 @@ import { PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { ApplicationCommandType, Routes } from 'discord-api-types/v9';
+import { ApplicationCommandPermissionType, ApplicationCommandType, RESTPutAPIApplicationCommandsResult, RESTPutAPIGuildApplicationCommandsPermissionsJSONBody, Routes } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
@@ -35,9 +35,29 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   try {
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
-    await rest.put(route, {
+    const result = await rest.put(route, {
       body: COMMANDS.map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand))
-    });
+    }) as RESTPutAPIApplicationCommandsResult;
+
+    if (environment.owners) {
+      const overrides: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
+      for (const command of result) {
+        if (command.default_permission === false) {
+          const permissions: typeof overrides[number] = {
+            id: command.id,
+            permissions: environment.owners.map(owner => ({ id: owner, type: ApplicationCommandPermissionType.User, permission: true }))
+          };
+          overrides.push(permissions);
+        }
+      }
+
+      if (overrides.length && environment.devGuild) {
+        await rest.put(
+          Routes.guildApplicationCommandsPermissions(environment.tokens.discord.clientId!, environment.devGuild),
+          { body: overrides }
+        );
+      }
+    }
 
     logger.info('Successfully refreshed slash commands.');
 
