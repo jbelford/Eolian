@@ -27,7 +27,7 @@ const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
 const DJ_ROLE_LIMIT = 10;
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
-  if (!options.ARG) {
+  if (!options.ARG || options.ARG.length === 0) {
     const server = await context.server!.details.get();
     const details = createServerDetailsEmbed(context.server!.details, server);
     await context.interaction.sendEmbed(details);
