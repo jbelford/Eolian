@@ -3,6 +3,7 @@
     "module": "CommonJS",
     "target": "ES2021",
     "lib": [ "ES2021" ],
+    "sourceMap": true,
     "declaration": false,
     "allowJs": true,
     "esModuleInterop": true,

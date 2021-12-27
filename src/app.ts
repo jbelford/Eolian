@@ -1,12 +1,3 @@
-
-/**
- * In development environment we need to override the module aliases at runtime.
- */
-const env = process.env.NODE_ENV || 'local';
-if (env === 'local') {
-  require('./module_setup');
-}
-
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { Closable } from 'common/@types';
