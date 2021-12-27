@@ -9,4 +9,4 @@ RUN npm install pm2 -g
 
 EXPOSE 8080
 
-CMD ["pm2", "start", "--no-daemon", "./dist/bundle.js"]
+CMD ["pm2-runtime", "./dist/bundle.js"]
