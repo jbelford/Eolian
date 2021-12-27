@@ -16,6 +16,7 @@
       "envFile": "${workspaceFolder}/.env",
       "sourceMaps": true,
       "outputCapture": "std",
+      "killBehavior": "polite"
     }
   ],
 }
