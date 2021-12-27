@@ -76,10 +76,11 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
 
 export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): EmbedMessage {
   const volume = dto.volume ?? DEFAULT_VOLUME;
+  const roles = dto.djRoleIds && dto.djRoleIds.length > 0 ? dto.djRoleIds.map(role => `<@&${role}>`).join(', ') : '`None`';
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
 **Volume:** \`${Math.floor(volume * 100)}%\`
 **Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\`
-**DJ Role:** ${dto.djRoleId ? `<@&${dto.djRoleId}>` : '`None`'}
+**DJ Roles:** ${roles}
 **Allow Limited DJ:** \`${!!dto.djAllowLimited}\``;
   return {
     header: {

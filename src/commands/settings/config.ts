@@ -8,7 +8,8 @@ enum CONFIG_OPTION {
   PREFIX = 'prefix',
   VOLUME = 'volume',
   SYNTAX = 'syntax',
-  DJ = 'dj',
+  DJ_ADD = 'dj_add',
+  DJ_REMOVE = 'dj_remove',
   DJ_LIMITED = 'dj_limited'
 }
 
@@ -18,9 +19,12 @@ const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
   [CONFIG_OPTION.PREFIX, setPrefix],
   [CONFIG_OPTION.VOLUME, setVolume],
   [CONFIG_OPTION.SYNTAX, setSyntax],
-  [CONFIG_OPTION.DJ, setDjRole],
+  [CONFIG_OPTION.DJ_ADD, addDjRole],
+  [CONFIG_OPTION.DJ_REMOVE, removeDjRole],
   [CONFIG_OPTION.DJ_LIMITED, setDjLimited]
 ]);
+
+const DJ_ROLE_LIMIT = 10;
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.ARG) {
@@ -87,21 +91,35 @@ async function setSyntax(context: CommandContext, syntax: string) {
   await context.interaction.send(`✨ The server now uses \`${syntax}\` syntax!`);
 }
 
-async function setDjRole(context: CommandContext, id: string) {
-  if (id === 'clear') {
-    await context.server!.details.setDjRole(undefined);
-    await context.interaction.send('✨ I have unset the DJ role. Everyone can DJ!');
+function extractRoleId(id: string) {
+  const result = id.match(/^(<@&)?(?<id>\d+)>?$/);
+  if (!result) {
+    throw new EolianUserError(`${id} is not a role!`);
+  }
+  id = result.groups!['id'];
+  return id;
+}
+
+async function addDjRole(context: CommandContext, id: string) {
+  id = extractRoleId(id);
+  const details = await context.server!.details.get();
+  if (details.djRoleIds && details.djRoleIds.length === DJ_ROLE_LIMIT) {
+    throw new EolianUserError(`You may only have up to ${DJ_ROLE_LIMIT} DJ roles set! Remove DJ rules with \`dj_remove\`.`);
+  }
+  const success = await context.server!.details.addDjRole(id);
+  if (!success) {
+    throw new EolianUserError(`The role with ID ${id} does not exist!`);
+  }
+  await context.interaction.send(`✨ I have set <@&${id}> to be a DJ role!`);
+}
+
+async function removeDjRole(context: CommandContext, id: string) {
+  id = extractRoleId(id);
+  const removed = await context.server!.details.removeDjRole(id);
+  if (removed) {
+    await context.interaction.send(`✨ I have unset <@&${id}> from DJ role!`);
   } else {
-    const result = id.match(/^(<@&)?(?<id>\d+)>?$/);
-    if (!result) {
-      throw new EolianUserError(`${id} is not a role!`);
-    }
-    id = result.groups!['id'];
-    const success = await context.server?.details.setDjRole(id);
-    if (!success) {
-      throw new EolianUserError(`The role with ID ${id} does not exist!`);
-    }
-    await context.interaction.send(`✨ I have set the DJ role to <@&${id}>!`);
+    await context.interaction.send(`The role <@&${id}> is not set as DJ role!`);
   }
 }
 
@@ -152,16 +170,16 @@ export const CONFIG_COMMAND: Command = {
       example: 'syntax traditional'
     },
     {
-      title: 'Set DJ role by @ mention',
-      example: 'dj @myDjRole'
+      title: 'Add DJ role by @ mention',
+      example: 'dj_add @myDjRole'
     },
     {
-      title: 'Set DJ by ID',
-      example: 'dj 920079417907224636'
+      title: 'Add DJ by ID',
+      example: 'dj_add 920079417907224636'
     },
     {
-      title: 'Unset DJ role',
-      example: 'dj clear'
+      title: 'Remove DJ role',
+      example: 'dj_remove 920079417907224636'
     },
     {
       title: 'Allow non-DJs to have ability to have limited DJ ability such as adding tracks (Only effective when DJ role is set)',

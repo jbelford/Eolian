@@ -37,8 +37,8 @@ export class DiscordUser implements ContextUser {
     if (this.permission === PERMISSION.USER) {
       if (details) {
         const config = await details.get();
-        if (config.djRoleId) {
-          if (this.hasRole(config.djRoleId)) {
+        if (config.djRoleIds && config.djRoleIds.length > 0) {
+          if (config.djRoleIds.some(role => this.hasRole(role))) {
             this._permission = PERMISSION.DJ;
           } else if (config.djAllowLimited) {
             this._permission = PERMISSION.DJ_LIMITED;

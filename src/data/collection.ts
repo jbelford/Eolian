@@ -103,8 +103,30 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
     await this.setProperty(id, 'syntax', type);
   }
 
-  async setDjRoleId(id: string, roleId?: string): Promise<void> {
-    await this.setProperty(id, 'djRoleId', roleId);
+  async addDjRole(id: string, roleId: string): Promise<void> {
+    await this.collection.updateOne({
+        _id: id
+      }, {
+        $addToSet: {
+          djRoleIds: roleId
+        },
+        $setOnInsert: {
+          _id: id
+        }
+      }, {
+        upsert: true
+    });
+  }
+
+  async removeDjRole(id: string, roleId: string): Promise<boolean> {
+    const result = await this.collection.updateOne({
+      _id: id,
+    }, {
+      $pull: {
+        djRoleIds: roleId
+      }
+    });
+    return result.modifiedCount > 0;
   }
 
   async setDjAllowLimited(id: string, allow: boolean): Promise<void> {

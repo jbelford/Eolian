@@ -195,7 +195,8 @@ export interface ServerDetails extends ServerInfo {
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;
   setSyntax(type: SyntaxType): Promise<void>;
-  setDjRole(id?: string): Promise<boolean>;
+  addDjRole(id: string): Promise<boolean>;
+  removeDjRole(id: string): Promise<boolean>;
   setDjLimited(allow: boolean): Promise<void>;
   updateUsage(): Promise<void>;
 }

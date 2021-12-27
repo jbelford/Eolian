@@ -41,7 +41,8 @@ export interface ServersDb extends CollectionDb<ServerDTO> {
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
   setSyntax(id: string, type: SyntaxType): Promise<void>;
-  setDjRoleId(id: string, roleId?: string): Promise<void>;
+  addDjRole(id: string, roleId: string): Promise<void>;
+  removeDjRole(id: string, roleId: string): Promise<boolean>;
   setDjAllowLimited(id: string, allow: boolean): Promise<void>;
 }
 
@@ -49,13 +50,17 @@ export interface DocDTO {
   _id: string;
 }
 
+export type DjRole = {
+  id: string;
+};
+
 export interface ServerDTO extends DocDTO {
   lastUsage?: Date;
   prefix?: string;
   volume?: number;
   syntax?: SyntaxType;
   queueLimit?: number;
-  djRoleId?: string;
+  djRoleIds?: string[];
   djAllowLimited?: boolean;
 }
 
