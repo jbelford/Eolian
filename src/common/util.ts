@@ -1,5 +1,6 @@
 import * as fuzz from 'fuzzball';
-import { AbsRangeArgument, RangeArgument, RetrySleepAlgorithm } from './@types';
+import { AbsRangeArgument, Closable, RangeArgument, RetrySleepAlgorithm } from './@types';
+import { logger } from './logger';
 
 export function shuffleList<T>(list: T[]): T[] {
   for (let i = 0; i < list.length; i++) {
@@ -73,4 +74,30 @@ export class ExponentialSleep implements RetrySleepAlgorithm {
     ++this._count;
   }
 
+}
+
+export function cleanupOnExit(resources: Closable[]) {
+  const onExit = (exit?: boolean) => {
+    logger.info('Executing cleanup');
+
+    const promises = resources.map(x => x.close().catch(err => logger.warn(`Failed to clean resource: ${err}`)));
+
+    Promise.all(promises).finally(() => {
+      if (exit) {
+        process.exit(1);
+      }
+    });
+  }
+
+  process.on('exit', () => onExit());
+
+  [
+    'SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
+    'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
+  ].forEach(sig => {
+    process.on(sig, () => {
+      logger.warn('Received %s', sig);
+      onExit();
+    });
+  });
 }

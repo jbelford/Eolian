@@ -19,7 +19,11 @@ export class WebServer implements Closable {
 
   close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.server.close(err => err ? reject(err) : resolve());
+      if (this.server.listening) {
+        this.server.close(err => err ? reject(err) : resolve());
+      } else {
+        resolve();
+      }
     });
   }
 }
