@@ -50,10 +50,6 @@ export interface DocDTO {
   _id: string;
 }
 
-export type DjRole = {
-  id: string;
-};
-
 export interface ServerDTO extends DocDTO {
   lastUsage?: Date;
   prefix?: string;
