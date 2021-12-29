@@ -1,24 +1,25 @@
+import { Format } from 'logform';
 import * as winston from 'winston';
 import { environment } from './env';
 
-const transports: any[] = [
-  new winston.transports.Console()
+const formats: Format[] = [
+  winston.format.timestamp(),
+  winston.format.splat()
 ];
 
-if (environment.prod) {
-  // transports.push(new LoggingWinston());
+if (!environment.prod) {
+  formats.push(winston.format.colorize());
 }
+
+formats.push(winston.format.printf(info => {
+  return `${info.timestamp} ${info.level}: ${info.message}`
+}))
 
 export const logger = winston.createLogger({
   level: environment.debug ? 'debug' : 'info',
   exitOnError: false,
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.splat(),
-    winston.format.colorize(),
-    winston.format.printf(info => {
-      return `${info.timestamp} ${info.level}: ${info.message}`
-    })
-  ),
-  transports
+  format: winston.format.combine(...formats),
+  transports: [
+    new winston.transports.Console()
+  ]
 });
