@@ -45,11 +45,6 @@ export enum SOURCE {
   SOUNDCLOUD
 }
 
-export const enum MESSAGES {
-  NO_SELECTION = `Nothing selected 😢`,
-  NOT_PLAYING = "I'm not playing anything right now!"
-}
-
 export const IDLE_TIMEOUT_MINS = 60 * 10;
 
 export const DEFAULT_VOLUME = 0.10;

@@ -1,8 +1,9 @@
 import { Command, CommandContext } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { MESSAGES, PERMISSION } from 'common/constants';
+import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
+const NOT_PLAYING = "I'm not playing anything right now!";
 
 async function execute(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
@@ -13,7 +14,7 @@ async function execute(context: CommandContext): Promise<void> {
       await context.interaction.send('⏹️', { ephemeral: false });
     }
   } else {
-    throw new EolianUserError(MESSAGES.NOT_PLAYING);
+    throw new EolianUserError(NOT_PLAYING);
   }
 }
 
@@ -44,7 +45,7 @@ async function executeSkip(context: CommandContext): Promise<void> {
       await context.interaction.send('⏩', { ephemeral: false });
     }
   } else {
-    throw new EolianUserError(MESSAGES.NOT_PLAYING);
+    throw new EolianUserError(NOT_PLAYING);
   }
 }
 
@@ -111,7 +112,7 @@ async function executePause(context: CommandContext): Promise<void> {
       }
     }
   } else {
-    throw new EolianUserError(MESSAGES.NOT_PLAYING);
+    throw new EolianUserError(NOT_PLAYING);
   }
 }
 
@@ -145,7 +146,7 @@ async function executeResume(context: CommandContext): Promise<void> {
       throw new EolianUserError('Playback is not paused!');
     }
   } else {
-    throw new EolianUserError(MESSAGES.NOT_PLAYING);
+    throw new EolianUserError(NOT_PLAYING);
   }
 }
 
@@ -171,7 +172,7 @@ async function executeShowPlayer(context: CommandContext): Promise<void> {
     context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
     await context.server!.display.player.refresh();
   } else {
-    throw new EolianUserError(MESSAGES.NOT_PLAYING);
+    throw new EolianUserError(NOT_PLAYING);
   }
 }
 
