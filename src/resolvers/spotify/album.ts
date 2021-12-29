@@ -1,8 +1,7 @@
 import { spotify } from 'api';
-import { SpotifyAlbum, SpotifyAlbumFull } from 'api/@types';
+import { SpotifyAlbum, SpotifyAlbumFull, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
@@ -45,7 +44,7 @@ export function createSpotifyAlbum(album: SpotifyAlbum, message?: ContextMessage
     authors: album.artists.map(x => x.name),
     identifier: {
       id: album.id,
-      src: SOURCE.SPOTIFY,
+      src: TrackSource.Spotify,
       type: IdentifierType.ALBUM,
       url: album.external_urls.spotify
     },

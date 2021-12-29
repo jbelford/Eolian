@@ -1,8 +1,7 @@
 import { spotify } from 'api';
-import { SpotifyArtist } from 'api/@types';
+import { SpotifyArtist, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
@@ -40,7 +39,7 @@ export function createSpotifyArtist(artist: SpotifyArtist, message?: ContextMess
     authors: [artist.name],
     identifier: {
       id: artist.id,
-      src: SOURCE.SPOTIFY,
+      src: TrackSource.Spotify,
       type: IdentifierType.ARTIST,
       url: artist.external_urls.spotify
     },

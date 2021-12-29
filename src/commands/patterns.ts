@@ -1,5 +1,6 @@
+import { TrackSource } from 'api/@types';
 import { AbsRangeArgument, RangeArgument } from 'common/@types';
-import { PERMISSION, SOURCE } from 'common/constants';
+import { PERMISSION } from 'common/constants';
 import { convertRangeToAbsolute } from 'common/util';
 import { ArgumentExample, CommandOptions, KeywordGroup, Pattern, PatternMatchResult, PatternValues, SyntaxType, UrlArgument } from './@types';
 
@@ -100,10 +101,10 @@ export const PATTERNS: Readonly<Patterns> = {
       const match = matchGroup(text, /\b((https?:\/\/)?[^\s]+\.(com|be)(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/, 0);
       let args: UrlArgument | undefined;
       if (match.matches && match.args) {
-        args = { value: match.args, source: SOURCE.UNKNOWN };
-        if (args.value.match(/youtu(be\.com|\.be)/g)) args.source = SOURCE.YOUTUBE;
-        else if (args.value.match(/soundcloud\.com/g)) args.source = SOURCE.SOUNDCLOUD;
-        else if (args.value.match(/(spotify\.com|spotify:.+:)/g)) args.source = SOURCE.SPOTIFY
+        args = { value: match.args, source: TrackSource.Unknown };
+        if (args.value.match(/youtu(be\.com|\.be)/g)) args.source = TrackSource.YouTube;
+        else if (args.value.match(/soundcloud\.com/g)) args.source = TrackSource.SoundCloud;
+        else if (args.value.match(/(spotify\.com|spotify:.+:)/g)) args.source = TrackSource.Spotify
       }
       return { matches: match.matches, newText: match.newText, args };
     },

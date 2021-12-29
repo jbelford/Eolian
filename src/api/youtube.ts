@@ -1,5 +1,4 @@
 import { ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
@@ -10,7 +9,7 @@ import { decode } from 'html-entities';
 import * as play from 'play-dl';
 import querystring from 'querystring';
 import { Readable } from 'stream';
-import { BingApi, StreamSource, Track, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
+import { BingApi, StreamSource, Track, TrackSource, YouTubeApi, YoutubePlaylist, YouTubeUrlDetails, YoutubeVideo } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
 // const MUSIC_TOPIC = '/m/04rlf';
@@ -222,7 +221,7 @@ export class YouTubeApiImpl implements YouTubeApi {
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
-    if (track.src !== SOURCE.YOUTUBE) {
+    if (track.src !== TrackSource.YouTube) {
       throw new Error(`Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`);
     }
     return new YouTubeStreamSource(track.url);
@@ -259,7 +258,7 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
   return {
     id: video.id,
     poster: video.channelName,
-    src: SOURCE.YOUTUBE,
+    src: TrackSource.YouTube,
     url: video.url,
     title: video.name,
     stream: video.url,

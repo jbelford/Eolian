@@ -1,5 +1,6 @@
+import { SOURCE_DETAILS } from 'api';
 import { Track } from 'api/@types';
-import { COLOR, getIcon, mapSourceToColor } from 'common/constants';
+import { COLOR } from 'common/constants';
 import { EmbedMessage } from 'framework/@types';
 
 function trackNameFormat(track: Track) {
@@ -40,10 +41,11 @@ export function createQueueEmbed(tracks: Track[], loopTracks: Track[], start: nu
 }
 
 export function createPlayingEmbed(track: Track, volume: number, nightcore: boolean) : EmbedMessage {
+  const details = SOURCE_DETAILS[track.src];
   const embed: EmbedMessage = {
-    color: mapSourceToColor(track.src),
+    color: details.color,
     header: {
-      icon: getIcon(track.src),
+      icon: details.icon,
       text: `🎶 Now Playing 🔊 ${Math.floor(volume * 100)}%`
     },
     title: track.title,

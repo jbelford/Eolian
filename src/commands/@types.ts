@@ -1,5 +1,6 @@
+import { TrackSource } from 'api/@types';
 import { RangeArgument } from 'common/@types';
-import { PERMISSION, SOURCE } from 'common/constants';
+import { PERMISSION } from 'common/constants';
 import { ContextClient, ContextCommandInteraction, ServerState } from 'framework/@types';
 
 export interface BaseCommand {
@@ -81,7 +82,7 @@ export type CommandOptions = Partial<Record<KeywordName, boolean> & PatternValue
 
 export interface UrlArgument {
   value: string;
-  source: SOURCE;
+  source: TrackSource;
 }
 
 export interface PatternMatchResult<T> {

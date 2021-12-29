@@ -1,5 +1,5 @@
+import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { Identifier } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
@@ -22,9 +22,9 @@ const UNKNOWN_FETCHER: SourceFetcher = {
 
 function getBySource(context: CommandContext, params: CommandOptions) {
   switch (params.URL?.source) {
-    case SOURCE.SOUNDCLOUD: return new SoundCloudUrlResolver(params.URL.value);
-    case SOURCE.YOUTUBE: return new YouTubeUrlResolver(params.URL.value, context);
-    case SOURCE.SPOTIFY: return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
+    case TrackSource.SoundCloud: return new SoundCloudUrlResolver(params.URL.value);
+    case TrackSource.YouTube: return new YouTubeUrlResolver(params.URL.value, context);
+    case TrackSource.Spotify: return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
     default: return UNKNOWN_RESOLVER;
   }
 }
@@ -109,9 +109,9 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
 
 export function getSourceFetcher(identifier: Identifier, params: CommandOptions, sendable: ContextSendable): SourceFetcher {
   switch (identifier.src) {
-    case SOURCE.SOUNDCLOUD: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
-    case SOURCE.YOUTUBE: return getYouTubeSourceFetcher(identifier.id, identifier.type, sendable);
-    case SOURCE.SPOTIFY: return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
+    case TrackSource.SoundCloud: return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
+    case TrackSource.YouTube: return getYouTubeSourceFetcher(identifier.id, identifier.type, sendable);
+    case TrackSource.Spotify: return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
     default: return UNKNOWN_FETCHER;
   }
 }

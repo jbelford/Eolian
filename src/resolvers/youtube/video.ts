@@ -1,8 +1,7 @@
 import { youtube } from 'api';
-import { YoutubeVideo } from 'api/@types';
+import { TrackSource, YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
@@ -40,7 +39,7 @@ export function createYouTubeVideo(video: YoutubeVideo, message?: ContextMessage
     authors: [video.channelName],
     identifier: {
       id: video.id,
-      src: SOURCE.YOUTUBE,
+      src: TrackSource.YouTube,
       type: IdentifierType.SONG,
       url: video.url
     },

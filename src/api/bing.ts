@@ -1,9 +1,8 @@
-import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
 import { parse, toSeconds } from 'iso8601-duration';
-import { BingApi, BingVideo, Track } from './@types';
+import { BingApi, BingVideo, Track, TrackSource } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
@@ -47,7 +46,7 @@ export class BingApiImpl implements BingApi {
         .map(video => ({
             id: video.id,
             poster: video.creator.name,
-            src: SOURCE.YOUTUBE,
+            src: TrackSource.YouTube,
             url: video.contentUrl,
             title: video.name,
             stream: video.contentUrl,

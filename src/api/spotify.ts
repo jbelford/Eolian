@@ -1,9 +1,8 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
-import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamSource, Track, YouTubeApi } from './@types';
+import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamSource, Track, TrackSource, YouTubeApi } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
   V1 = 'v1'
@@ -167,7 +166,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   }
 
   getStream(track: Track): Promise<StreamSource | undefined> {
-    if (track.src !== SOURCE.SPOTIFY) {
+    if (track.src !== TrackSource.Spotify) {
       throw new Error(`Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`);
     }
     const trackCopy: Track = { ...track };
@@ -275,7 +274,7 @@ export function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, play
     id: track.id,
     poster: track.artists.map(artist => artist.name).join(', '),
     title: track.name,
-    src: SOURCE.SPOTIFY,
+    src: TrackSource.Spotify,
     url: track.external_urls.spotify,
     artwork,
     duration: track.duration_ms

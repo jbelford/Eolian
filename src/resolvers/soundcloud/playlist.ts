@@ -1,8 +1,7 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudTrack } from 'api/@types';
+import { SoundCloudPlaylist, SoundCloudTrack, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
@@ -58,7 +57,7 @@ export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist, message?:
     authors: [playlist.user.username],
     identifier: {
       id: playlist.id.toString(),
-      src: SOURCE.SOUNDCLOUD,
+      src: TrackSource.SoundCloud,
       type: IdentifierType.PLAYLIST,
       url: playlist.permalink_url
     },

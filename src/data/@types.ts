@@ -1,7 +1,6 @@
-import { Track } from 'api/@types';
+import { Track, TrackSource } from 'api/@types';
 import { SyntaxType } from 'commands/@types';
 import { Closable, Idleable } from 'common/@types';
-import { SOURCE } from 'common/constants';
 import EventEmitter from 'events';
 
 export interface EolianCache<V> extends Closable {
@@ -68,7 +67,7 @@ export interface UserDTO extends DocDTO {
 
 export interface Identifier {
   type: IdentifierType;
-  src: SOURCE;
+  src: TrackSource;
   id: string;
   url: string;
 }

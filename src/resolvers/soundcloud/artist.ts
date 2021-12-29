@@ -1,8 +1,7 @@
 import { soundcloud } from 'api';
-import { SoundCloudUser } from 'api/@types';
+import { SoundCloudUser, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { FetchResult, MessageBundledResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
@@ -70,7 +69,7 @@ export function createSoundCloudUser({ value: user, message}: UserResult): Resol
     authors: [user.username],
     identifier: {
       id: user.id.toString(),
-      src: SOURCE.SOUNDCLOUD,
+      src: TrackSource.SoundCloud,
       type: IdentifierType.ARTIST,
       url: user.permalink_url
     },

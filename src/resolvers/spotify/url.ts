@@ -1,8 +1,7 @@
 import { spotify } from 'api';
-import { SpotifyResourceType, SpotifyTrack } from 'api/@types';
+import { SpotifyResourceType, SpotifyTrack, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
@@ -60,7 +59,7 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
     authors: track.artists.map(artist => artist.name),
     identifier: {
       id: track.id!,
-      src: SOURCE.SPOTIFY,
+      src: TrackSource.Spotify,
       type: IdentifierType.SONG,
       url: track.external_urls.spotify
     },

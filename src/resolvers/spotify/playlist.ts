@@ -1,9 +1,8 @@
 import { spotify } from 'api';
-import { RangeFactory, SpotifyPlaylist, SpotifyPlaylistTracks } from 'api/@types';
+import { RangeFactory, SpotifyPlaylist, SpotifyPlaylistTracks, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
@@ -62,7 +61,7 @@ export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: Command
     authors: [playlist.owner.display_name || '<unknown>'],
     identifier: {
       id: playlist.id,
-      src: SOURCE.SPOTIFY,
+      src: TrackSource.Spotify,
       type: IdentifierType.PLAYLIST,
       url: playlist.external_urls.spotify
     },

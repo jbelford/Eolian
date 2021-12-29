@@ -1,8 +1,7 @@
 import { soundcloud } from 'api';
-import { SoundCloudTrack } from 'api/@types';
+import { SoundCloudTrack, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
@@ -38,7 +37,7 @@ export function createSoundCloudSong(track: SoundCloudTrack, message?: ContextMe
     authors: [track.user.username],
     identifier: {
       id: track.id.toString(),
-      src: SOURCE.SOUNDCLOUD,
+      src: TrackSource.SoundCloud,
       type: IdentifierType.SONG,
       url: track.permalink_url
     },

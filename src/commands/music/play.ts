@@ -1,9 +1,10 @@
+import { SOURCE_DETAILS } from 'api';
 import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
 import { createSelectedMessage } from 'commands/queue/add';
-import { getEnumName, PERMISSION, SOURCE } from 'common/constants';
+import { getEnumName, PERMISSION } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
@@ -31,7 +32,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
     }
 
     const typeName = getEnumName(IdentifierType, identifier.type);
-    const srcName = getEnumName(SOURCE, identifier.src);
+    const srcName = SOURCE_DETAILS[identifier.src].name;
     await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
 
     fetcher = getSourceFetcher(identifier, options, context.interaction);

@@ -1,11 +1,10 @@
 import { ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
 import querystring from 'querystring';
 import { Readable } from 'stream';
-import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamSource, Track, YouTubeApi } from './@types';
+import { SoundCloudApi, SoundCloudPaginatedResult, SoundCloudPlaylist, SoundCloudResource, SoundCloudTrack, SoundCloudUser, StreamSource, Track, TrackSource, YouTubeApi } from './@types';
 
 const SOUNDCLOUD_API = 'https://api.soundcloud.com';
 const TRACKS_PARAMS = {
@@ -158,7 +157,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
-    if (track.src !== SOURCE.SOUNDCLOUD) {
+    if (track.src !== TrackSource.SoundCloud) {
       throw new Error(`Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`);
     }
 
@@ -185,7 +184,7 @@ export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
   return {
     id: track.id.toString(),
     poster: track.user.username,
-    src: SOURCE.SOUNDCLOUD,
+    src: TrackSource.SoundCloud,
     url: track.permalink_url,
     stream: track.streamable && track.access === 'playable' ? track.stream_url : undefined,
     title: track.title,

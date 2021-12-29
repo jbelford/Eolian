@@ -1,5 +1,5 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
-import { SOURCE } from 'common/constants';
+import { COLOR } from 'common/constants';
 import { Readable } from 'stream';
 
 interface StreamFetcher {
@@ -222,6 +222,19 @@ export const enum YouTubeResourceType {
   PLAYLIST
 }
 
+export const enum TrackSource {
+  Unknown = 0,
+  Spotify,
+  YouTube,
+  SoundCloud
+}
+
+export type TrackSourceDetails = {
+  name: string;
+  color: COLOR;
+  icon?: string;
+};
+
 export interface Track {
   readonly id?: string;
   readonly title: string;
@@ -229,7 +242,7 @@ export interface Track {
   readonly url: string;
   readonly stream?: string;
   readonly artwork?: string;
-  readonly src: SOURCE;
+  readonly src: TrackSource;
   readonly duration?: number;
   readonly live?: boolean;
 }

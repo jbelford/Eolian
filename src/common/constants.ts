@@ -26,42 +26,9 @@ export const enum COLOR {
   YOUTUBE = 0xFF0000
 }
 
-export function mapSourceToColor(src: SOURCE): COLOR {
-  switch (src) {
-    case SOURCE.SOUNDCLOUD:
-      return COLOR.SOUNDCLOUD;
-    case SOURCE.SPOTIFY:
-      return COLOR.SPOTIFY;
-    case SOURCE.YOUTUBE:
-    default:
-      return COLOR.YOUTUBE;
-  }
-}
-
-export enum SOURCE {
-  UNKNOWN = 0,
-  SPOTIFY,
-  YOUTUBE,
-  SOUNDCLOUD
-}
-
 export const IDLE_TIMEOUT_MINS = 60 * 10;
 
 export const DEFAULT_VOLUME = 0.10;
-
-
-export function getIcon(src: SOURCE): string | undefined {
-  switch (src) {
-    case SOURCE.SOUNDCLOUD:
-      return 'https://www.dropbox.com/s/ub1jhziixrc00da/soundcloud_icon.png?raw=1';
-    case SOURCE.SPOTIFY:
-      return 'https://www.dropbox.com/s/l1q0wrz2a5w0i64/spotify_icon.png?raw=1';
-    case SOURCE.YOUTUBE:
-      return 'https://www.dropbox.com/s/m6dwdgwwf06d67g/youtube_icon.png?raw=1';
-    default:
-      return undefined;
-  }
-}
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getEnumName(e: any, i: number): string | undefined {

@@ -1,6 +1,6 @@
-import { SOURCE } from 'common/constants';
+import { COLOR } from 'common/constants';
 import { environment } from 'common/env';
-import { BingApi, SoundCloudApi, SpotifyApi, StreamSource, Track, YouTubeApi } from './@types';
+import { BingApi, SoundCloudApi, SpotifyApi, StreamSource, Track, TrackSource, TrackSourceDetails, YouTubeApi } from './@types';
 import { BingApiImpl } from './bing';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
@@ -16,13 +16,35 @@ export const spotify: SpotifyApi = new SpotifyApiImpl(environment.tokens.spotify
 
 export function getTrackStream(track: Track) : Promise<StreamSource | undefined> {
   switch (track.src) {
-    case SOURCE.SOUNDCLOUD:
+    case TrackSource.SoundCloud:
       return soundcloud.getStream(track);
-    case SOURCE.YOUTUBE:
+    case TrackSource.YouTube:
       return youtube.getStream(track);
-    case SOURCE.SPOTIFY:
+    case TrackSource.Spotify:
       return spotify.getStream(track);
     default:
       throw new Error('Attempted to fetch stream for unknown source');
   }
 }
+
+export const SOURCE_DETAILS: Record<TrackSource, TrackSourceDetails> = {
+  [TrackSource.SoundCloud]: {
+    name: 'SoundCloud',
+    color: COLOR.SOUNDCLOUD,
+    icon: 'https://www.dropbox.com/s/ub1jhziixrc00da/soundcloud_icon.png?raw=1'
+  },
+  [TrackSource.Spotify]: {
+    name: 'Spotify',
+    color: COLOR.SPOTIFY,
+    icon: 'https://www.dropbox.com/s/l1q0wrz2a5w0i64/spotify_icon.png?raw=1'
+  },
+  [TrackSource.YouTube]: {
+    name: 'YouTube',
+    color: COLOR.YOUTUBE,
+    icon: 'https://www.dropbox.com/s/m6dwdgwwf06d67g/youtube_icon.png?raw=1'
+  },
+  [TrackSource.Unknown]: {
+    name: 'Unknown',
+    color: COLOR.YOUTUBE
+  }
+};

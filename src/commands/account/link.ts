@@ -1,10 +1,10 @@
 import { soundcloud, spotify } from 'api';
-import { SoundCloudUser, SpotifyResourceType } from 'api/@types';
+import { SoundCloudUser, SpotifyResourceType, TrackSource } from 'api/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
-import { PERMISSION, SOURCE } from 'common/constants';
+import { PERMISSION } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -30,10 +30,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 async function handleUrl(url: UrlArgument, context: CommandContext) {
   switch (url.source) {
-    case SOURCE.SPOTIFY:
+    case TrackSource.Spotify:
       await handleSpotifyUrl(url.value, context);
       break;
-    case SOURCE.SOUNDCLOUD:
+    case TrackSource.SoundCloud:
       await handleSoundCloudUrl(url.value, context);
       break;
     default:

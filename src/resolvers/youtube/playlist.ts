@@ -1,8 +1,7 @@
 import { youtube } from 'api';
-import { YoutubePlaylist } from 'api/@types';
+import { TrackSource, YoutubePlaylist } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { SOURCE } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
@@ -41,7 +40,7 @@ export function createYouTubePlaylist(playlist: YoutubePlaylist, sendable: Conte
     authors: [playlist.channelName],
     identifier: {
       id: playlist.id,
-      src: SOURCE.YOUTUBE,
+      src: TrackSource.YouTube,
       type: IdentifierType.PLAYLIST,
       url: playlist.url
     },
