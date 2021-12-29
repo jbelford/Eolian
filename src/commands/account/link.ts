@@ -37,7 +37,7 @@ async function handleUrl(url: UrlArgument, context: CommandContext) {
       await handleSoundCloudUrl(url.value, context);
       break;
     default:
-      logger.warn(`A URL was provided without a valid source. This should not happen: ${url}`);
+      logger.warn(`A URL was provided without a valid source. This should not happen: %s`, url);
       throw new EolianUserError('The URL you provided does not match any source.');
   }
 }

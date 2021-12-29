@@ -80,7 +80,7 @@ export function cleanupOnExit(resources: Closable[]) {
   const onExit = (exit?: boolean) => {
     logger.info('Executing cleanup');
 
-    const promises = resources.map(x => x.close().catch(err => logger.warn(`Failed to clean resource: ${err}`)));
+    const promises = resources.map(x => x.close().catch(err => logger.warn(`Failed to clean resource: %s`, err)));
 
     Promise.all(promises).finally(() => {
       if (exit) {

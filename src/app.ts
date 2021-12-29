@@ -19,6 +19,6 @@ import { EolianBot } from 'framework/@types';
     await bot.start();
     server.start();
   } catch (e: any) {
-    logger.error(`Something went horribly wrong: ${e.stack || e}`);
+    logger.error(`Something went horribly wrong: %s`, e);
   }
 })();

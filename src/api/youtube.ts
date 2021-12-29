@@ -55,7 +55,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getVideo(id: string): Promise<YoutubeVideo | undefined> {
     try {
-      logger.info(`YouTube HTTP: videos.list ${id}`);
+      logger.info(`YouTube HTTP: videos.list %s`, id);
       const response = await this.youtube.videos.list({ id: [id], maxResults: 1, part: ['id', 'snippet', 'contentDetails'] });
       if (response.data.items?.length !== 1) {
         return undefined;
@@ -71,7 +71,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async getPlaylist(id: string): Promise<YoutubePlaylist | undefined> {
     try {
-      logger.info(`YouTube HTTP: playlists.list ${id}`);
+      logger.info(`YouTube HTTP: playlists.list %s`, id);
       const response = await this.youtube.playlists.list({ id: [id], maxResults: 1, part: ['id', 'snippet', 'contentDetails'] });
       if (response.data.items?.length !== 1) {
         return undefined;
@@ -90,7 +90,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
     try {
 
-      logger.info(`YouTube HTTP: playlistItems.list ${id}`);
+      logger.info(`YouTube HTTP: playlistItems.list %s`, id);
       let response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id', 'snippet', 'contentDetails', 'status'], maxResults: 50 });
       items = response.data.items || [];
 
@@ -105,7 +105,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       progress?.update(items.length);
 
       while (response.data.nextPageToken && items.length < total) {
-        logger.info(`YouTube HTTP: playlistItems.list ${id}`);
+        logger.info(`YouTube HTTP: playlistItems.list %s`, id);
         response = await this.youtube.playlistItems.list({ playlistId: id, part: ['id' ,'snippet', 'contentDetails'], pageToken: response.data.nextPageToken, maxResults: 50 });
         items = items.concat(response.data.items || []);
         progress?.update(items.length);
@@ -123,7 +123,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchPlaylists(query: string, limit = 5): Promise<YoutubePlaylist[]> {
     try {
-      logger.info(`YouTube HTTP: search.list type:playlist ${query}`);
+      logger.info(`YouTube HTTP: search.list type:playlist %s`, query);
       const response = await this.youtube.search.list({ q: query, maxResults: limit, type: ['playlist'], part: ['id', 'snippet'] });
       if (!response.data.items) return [];
 
@@ -136,7 +136,7 @@ export class YouTubeApiImpl implements YouTubeApi {
 
   async searchVideos(query: string, limit = 5): Promise<YoutubeVideo[]> {
     try {
-      logger.info(`YouTube HTTP: search.list ${query}`);
+      logger.info(`YouTube HTTP: search.list %s`, query);
       const response = await this.youtube.search.list({
         q: query,
         maxResults: limit + 2,
@@ -177,7 +177,7 @@ export class YouTubeApiImpl implements YouTubeApi {
     if (videos.length > 0) {
       const video = videos.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title));
       if (video) {
-        logger.info(`Searched YouTube stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+        logger.info(`Searched YouTube stream '%s %s' selected '%s' - Score: %s`, track.poster, track.title, video.url, video.score);
         return video;
       }
     }
@@ -197,7 +197,7 @@ export class YouTubeApiImpl implements YouTubeApi {
         return await this.searchSongSorted(track);
       }
       video = tracks.find(v =>  !MUSIC_VIDEO_PATTERN.test(v.title)) ?? tracks[0];
-      logger.info(`Searched Bing stream '${track.poster} ${track.title}' selected '${video.url}' - Score: ${video.score}`);
+      logger.info(`Searched Bing stream '%s %s' selected '%s' - Score: %s`, track.poster, track.title, video.url, video.score);
       // Fallback on YouTube we get bad results
       if (video.score! < SEARCH_MIN_SCORE) {
         video = await this.searchSongSorted(track) ?? video;

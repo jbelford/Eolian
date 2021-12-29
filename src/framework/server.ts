@@ -127,7 +127,7 @@ export class DiscordGuild implements ServerDetails {
         return;
       }
     }
-    logger.info(`${this.id} refreshing guild usage timestamp`);
+    logger.info(`%s refreshing guild usage timestamp`, this.id);
     this.configCache!.lastUsage = date;
     await this.servers.setLastUsage(this.id, this.configCache!.lastUsage);
   }
