@@ -4,7 +4,7 @@ import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { ProgressUpdater } from 'common/@types';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
 import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
@@ -28,7 +28,7 @@ export function createSoundCloudLikes(
     identifier: {
       id: user.id.toString(),
       src: TrackSource.SoundCloud,
-      type: IdentifierType.LIKES,
+      type: ResourceType.Likes,
       url: `${user.permalink_url}/likes`
     },
     fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user),

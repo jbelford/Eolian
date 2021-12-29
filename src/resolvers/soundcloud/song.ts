@@ -3,7 +3,7 @@ import { SoundCloudTrack, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
@@ -38,7 +38,7 @@ export function createSoundCloudSong(track: SoundCloudTrack, message?: ContextMe
     identifier: {
       id: track.id.toString(),
       src: TrackSource.SoundCloud,
-      type: IdentifierType.SONG,
+      type: ResourceType.Song,
       url: track.permalink_url
     },
     fetcher: new SoundCloudSongFetcher(track.id, track),

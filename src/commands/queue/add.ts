@@ -3,21 +3,21 @@ import { Command, CommandContext, CommandOptions, MessageCommand } from 'command
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { getEnumName, UserPermission } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { shuffleList, truthySum } from 'common/util';
-import { Identifier, IdentifierType } from 'data/@types';
-import { getSourceFetcher, getSourceResolver } from 'resolvers';
+import { Identifier, ResourceType } from 'data/@types';
+import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 
 
 export function createSelectedMessage(name: string, authors: string[], identifier: Identifier): string {
   let text = `Selected **${name}**`;
-  if (identifier.type !== IdentifierType.ARTIST) {
+  if (identifier.type !== ResourceType.Artist) {
     text += ` by **${authors.join(',')}**`;
   }
-  const typeName = getEnumName(IdentifierType, identifier.type)!;
+  const typeName = RESOURCE_TYPE_DETAILS[identifier.type].name;
   const sourceName = SOURCE_DETAILS[identifier.src].name;
   text += ` (**${typeName}** from **${sourceName}**)`;
   return text;
@@ -39,7 +39,7 @@ async function executeAdd(context: CommandContext, options: CommandOptions): Pro
     }
     const identifier = user.identifiers[options.IDENTIFIER];
 
-    const typeName = getEnumName(IdentifierType, identifier.type);
+    const typeName = RESOURCE_TYPE_DETAILS[identifier.type].name;
     const srcName = SOURCE_DETAILS[identifier.src].name;
     await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
 

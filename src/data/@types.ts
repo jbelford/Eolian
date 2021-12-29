@@ -66,19 +66,19 @@ export interface UserDTO extends DocDTO {
 }
 
 export interface Identifier {
-  type: IdentifierType;
+  type: ResourceType;
   src: TrackSource;
   id: string;
   url: string;
 }
 
-export enum IdentifierType {
-  PLAYLIST = 0,
-  ALBUM,
-  LIKES,
-  ARTIST,
-  SONG,
-  TRACKS
+export const enum ResourceType {
+  Playlist = 0,
+  Album,
+  Likes,
+  Artist,
+  Song,
+  Tracks
 }
 
 export interface MemoryStore extends Closable {

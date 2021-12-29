@@ -4,11 +4,11 @@ import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
 import { createSelectedMessage } from 'commands/queue/add';
-import { getEnumName, UserPermission } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
-import { getSourceFetcher, getSourceResolver } from 'resolvers';
+import { ResourceType } from 'data/@types';
+import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 
 
@@ -27,11 +27,11 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
       throw new EolianUserError(`That identifier is unrecognized!`);
     }
     const identifier = user.identifiers[options.IDENTIFIER];
-    if (identifier.type !== IdentifierType.SONG) {
+    if (identifier.type !== ResourceType.Song) {
       throw new EolianUserError(`Use the \`add\` command instead!`);
     }
 
-    const typeName = getEnumName(IdentifierType, identifier.type);
+    const typeName = RESOURCE_TYPE_DETAILS[identifier.type].name;
     const srcName = SOURCE_DETAILS[identifier.src].name;
     await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
 

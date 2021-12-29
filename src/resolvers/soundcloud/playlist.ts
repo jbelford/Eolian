@@ -3,7 +3,7 @@ import { SoundCloudPlaylist, SoundCloudTrack, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
@@ -58,7 +58,7 @@ export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist, message?:
     identifier: {
       id: playlist.id.toString(),
       src: TrackSource.SoundCloud,
-      type: IdentifierType.PLAYLIST,
+      type: ResourceType.Playlist,
       url: playlist.permalink_url
     },
     fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist),

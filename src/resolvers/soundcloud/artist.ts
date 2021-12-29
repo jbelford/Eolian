@@ -3,7 +3,7 @@ import { SoundCloudUser, TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { FetchResult, MessageBundledResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 type UserResult = MessageBundledResult<SoundCloudUser>;
@@ -56,7 +56,7 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
     const result = await this.getSoundCloudUser();
     const resource = createSoundCloudUser(result);
     resource.name = 'Posted Tracks';
-    resource.identifier.type = IdentifierType.TRACKS;
+    resource.identifier.type = ResourceType.Tracks;
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;
   }
@@ -70,7 +70,7 @@ export function createSoundCloudUser({ value: user, message}: UserResult): Resol
     identifier: {
       id: user.id.toString(),
       src: TrackSource.SoundCloud,
-      type: IdentifierType.ARTIST,
+      type: ResourceType.Artist,
       url: user.permalink_url
     },
     fetcher: new SoundCloudArtistFetcher(user.id),

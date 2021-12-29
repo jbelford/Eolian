@@ -1,9 +1,9 @@
 import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { Identifier } from 'data/@types';
+import { Identifier, ResourceType } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
-import { SourceFetcher, SourceResolver } from './@types';
+import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
 import { getSoundCloudSourceFetcher, SoundCloudArtistResolver, SoundCloudFavoritesResolver, SoundCloudPlaylistResolver, SoundCloudSongResolver, SoundCloudTracksResolver, SoundCloudUrlResolver } from './soundcloud';
 import { getSpotifySourceFetcher, SpotifyAlbumResolver, SpotifyArtistResolver, SpotifyPlaylistResolver, SpotifyUrlResolver } from './spotify';
 import { getYouTubeSourceFetcher, YouTubePlaylistResolver, YouTubeUrlResolver, YouTubeVideoResolver } from './youtube';
@@ -115,3 +115,24 @@ export function getSourceFetcher(identifier: Identifier, params: CommandOptions,
     default: return UNKNOWN_FETCHER;
   }
 }
+
+export const RESOURCE_TYPE_DETAILS: Record<ResourceType, ResourceTypeDetails> = {
+  [ResourceType.Album]: {
+    name: 'Album',
+  },
+  [ResourceType.Artist]: {
+    name: 'Artist',
+  },
+  [ResourceType.Likes]: {
+    name: 'Likes',
+  },
+  [ResourceType.Playlist]: {
+    name: 'Playlist',
+  },
+  [ResourceType.Song]: {
+    name: 'Song',
+  },
+  [ResourceType.Tracks]: {
+    name: 'Tracks'
+  },
+};

@@ -3,7 +3,7 @@ import { SpotifyAlbum, SpotifyAlbumFull, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
@@ -45,7 +45,7 @@ export function createSpotifyAlbum(album: SpotifyAlbum, message?: ContextMessage
     identifier: {
       id: album.id,
       src: TrackSource.Spotify,
-      type: IdentifierType.ALBUM,
+      type: ResourceType.Album,
       url: album.external_urls.spotify
     },
     fetcher: new SpotifyAlbumFetcher(album.id, album),

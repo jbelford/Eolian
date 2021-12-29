@@ -3,7 +3,7 @@ import { SpotifyArtist, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
@@ -40,7 +40,7 @@ export function createSpotifyArtist(artist: SpotifyArtist, message?: ContextMess
     identifier: {
       id: artist.id,
       src: TrackSource.Spotify,
-      type: IdentifierType.ARTIST,
+      type: ResourceType.Artist,
       url: artist.external_urls.spotify
     },
     fetcher: new SpotifyArtistFetcher(artist.id),

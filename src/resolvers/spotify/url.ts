@@ -3,7 +3,7 @@ import { SpotifyResourceType, SpotifyTrack, TrackSource } from 'api/@types';
 import { mapSpotifyTrack } from 'api/spotify';
 import { CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 import { createSpotifyAlbum } from './album';
@@ -60,7 +60,7 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
     identifier: {
       id: track.id!,
       src: TrackSource.Spotify,
-      type: IdentifierType.SONG,
+      type: ResourceType.Song,
       url: track.external_urls.spotify
     },
     fetcher: new SpotifySongFetcher(track.id!, track)

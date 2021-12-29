@@ -3,7 +3,7 @@ import { TrackSource, YoutubeVideo } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
@@ -40,7 +40,7 @@ export function createYouTubeVideo(video: YoutubeVideo, message?: ContextMessage
     identifier: {
       id: video.id,
       src: TrackSource.YouTube,
-      type: IdentifierType.SONG,
+      type: ResourceType.Song,
       url: video.url
     },
     fetcher: new YouTubeVideoFetcher(video.id, video),

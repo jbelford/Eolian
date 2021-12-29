@@ -1,5 +1,5 @@
 import { CommandOptions } from 'commands/@types';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
 import { SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistFetcher } from './artist';
@@ -14,18 +14,18 @@ export { SoundCloudSongResolver } from './song';
 export { SoundCloudUrlResolver } from './url';
 
 export function getSoundCloudSourceFetcher(id: number,
-  type: IdentifierType,
+  type: ResourceType,
   params: CommandOptions,
   sendable: ContextSendable): SourceFetcher {
 switch (type) {
-  case IdentifierType.TRACKS:
-  case IdentifierType.ARTIST:
+  case ResourceType.Tracks:
+  case ResourceType.Artist:
     return new SoundCloudArtistFetcher(id);
-  case IdentifierType.LIKES:
+  case ResourceType.Likes:
     return new SoundCloudFavoritesFetcher(id, params, sendable);
-  case IdentifierType.PLAYLIST:
+  case ResourceType.Playlist:
     return new SoundCloudPlaylistFetcher(id);
-  case IdentifierType.SONG:
+  case ResourceType.Song:
     return new SoundCloudSongFetcher(id);
   default:
     throw new Error(`Invalid type for SoundCloud fetcher`);

@@ -4,7 +4,7 @@ import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
 import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
@@ -62,7 +62,7 @@ export function createSpotifyPlaylist(playlist: SpotifyPlaylist, params: Command
     identifier: {
       id: playlist.id,
       src: TrackSource.Spotify,
-      type: IdentifierType.PLAYLIST,
+      type: ResourceType.Playlist,
       url: playlist.external_urls.spotify
     },
     fetcher: new SpotifyPlaylistFetcher(playlist.id, params, sendable, playlist),

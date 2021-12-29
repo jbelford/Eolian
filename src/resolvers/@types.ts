@@ -28,3 +28,7 @@ export type MessageBundledResult<T> = {
   value: T,
   message?: ContextMessage;
 }
+
+export type ResourceTypeDetails = {
+  name: string;
+}

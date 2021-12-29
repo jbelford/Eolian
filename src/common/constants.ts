@@ -30,11 +30,6 @@ export const IDLE_TIMEOUT_MINS = 60 * 10;
 
 export const DEFAULT_VOLUME = 0.10;
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function getEnumName(e: any, i: number): string | undefined {
-  return Object.keys(e).find(k => e[k] === i);
-}
-
 export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
 export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;
 export const GITHUB_PAGE_WIKI = `${GITHUB_PAGE}/wiki`;

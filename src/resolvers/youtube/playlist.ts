@@ -3,7 +3,7 @@ import { TrackSource, YoutubePlaylist } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { IdentifierType } from 'data/@types';
+import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
 import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
@@ -41,7 +41,7 @@ export function createYouTubePlaylist(playlist: YoutubePlaylist, sendable: Conte
     identifier: {
       id: playlist.id,
       src: TrackSource.YouTube,
-      type: IdentifierType.PLAYLIST,
+      type: ResourceType.Playlist,
       url: playlist.url
     },
     fetcher: new YouTubePlaylistFetcher(playlist.id, sendable),
