@@ -1,11 +1,11 @@
 import { TrackSource } from 'api/@types';
 import { RangeArgument } from 'common/@types';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { ContextClient, ContextCommandInteraction, ServerState } from 'framework/@types';
 
 export interface BaseCommand {
   name: string;
-  permission: PERMISSION;
+  permission: UserPermission;
   patterns?: Pattern[];
   dmAllowed?: boolean;
   noDefaultReply?: boolean;
@@ -57,15 +57,15 @@ export interface CommandUsage {
 export interface CommandCategory {
   name: string;
   details: string;
-  permission: PERMISSION;
+  permission: UserPermission;
 }
 
 export interface CommandParsingStrategy {
   messageInvokesBot(message: string, prefix?: string): boolean;
-  parseCommand(message: string, permission: PERMISSION, type?: SyntaxType): ParsedCommand;
+  parseCommand(message: string, permission: UserPermission, type?: SyntaxType): ParsedCommand;
 }
 
-export type CommandOptionsParsingStrategy = (text: string, permission: PERMISSION, keywords?: string[], patterns?: string[]) => CommandOptions;
+export type CommandOptionsParsingStrategy = (text: string, permission: UserPermission, keywords?: string[], patterns?: string[]) => CommandOptions;
 
 export interface ParsedCommand {
   command: BaseCommand;
@@ -110,14 +110,14 @@ export interface ArgumentExample {
 export interface Keyword extends ArgumentExample {
   readonly name: KeywordName;
   readonly details: string;
-  readonly permission: PERMISSION;
+  readonly permission: UserPermission;
   readonly group?: KeywordGroup;
 }
 
 export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
   readonly name: T;
   readonly details: string;
-  readonly permission: PERMISSION;
+  readonly permission: UserPermission;
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
   readonly usage: string[];

@@ -1,6 +1,6 @@
 import { TrackSource } from 'api/@types';
 import { AbsRangeArgument, RangeArgument } from 'common/@types';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { convertRangeToAbsolute } from 'common/util';
 import { ArgumentExample, CommandOptions, KeywordGroup, Pattern, PatternMatchResult, PatternValues, SyntaxType, UrlArgument } from './@types';
 
@@ -12,7 +12,7 @@ export const PATTERNS: Readonly<Patterns> = {
   NUMBER: {
     name: 'NUMBER',
     details: 'Indicates to specify a number.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: [
       '50',
       '0.5',
@@ -29,7 +29,7 @@ export const PATTERNS: Readonly<Patterns> = {
   TOP: {
     name: 'TOP',
     details: 'Indicates to fetch the range of tracks starting from the beginning in the list.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: [
       '100  # Get the first 100 songs',
       '4:10  # Get the 4th song to the 10th song',
@@ -51,7 +51,7 @@ export const PATTERNS: Readonly<Patterns> = {
   BOTTOM: {
     name: 'BOTTOM',
     details: 'Indicates to fetch the range of tracks starting from the end of the list.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: [
       '100  # Get the last 100 songs',
       '4:10  # Get the 4th last song to the 10th last song',
@@ -73,7 +73,7 @@ export const PATTERNS: Readonly<Patterns> = {
   ARG: {
     name: 'ARG',
     details: `Used for when keywords just won't cut it.`,
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: [
       '/ argument 1 / argument 2 / argument 3 /'
     ],
@@ -87,7 +87,7 @@ export const PATTERNS: Readonly<Patterns> = {
   URL: {
     name: 'URL',
     details: 'Indicates that you may specify a URI to a resource from YouTube, Spotify, or SoundCloud.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: [
       'https://open.spotify.com/album/3cWA6fj7NEfoGuGRYGxsam?si=cAQnHBD0Q6GO62egKBJmFQ',
       'soundcloud.com/kayfluxx/timbaland-apologize-ft-one-republic-kayfluxx-remix',
@@ -112,7 +112,7 @@ export const PATTERNS: Readonly<Patterns> = {
   IDENTIFIER: {
     name: 'IDENTIFIER',
     details: 'Used for referring to an identifier (a shortcut) for some resource such as a playlist.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: ['[my identifier]', '[music playlist #2]'],
     priority: 5,
     ex: text => new PassthroughExample(text),
@@ -123,7 +123,7 @@ export const PATTERNS: Readonly<Patterns> = {
   SEARCH: {
     name: 'SEARCH',
     details: 'Used for searching.',
-    permission: PERMISSION.USER,
+    permission: UserPermission.User,
     usage: ['what is love', 'deadmau5'],
     priority: 6,
     group: KeywordGroup.Search,

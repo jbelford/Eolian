@@ -1,7 +1,7 @@
 import { Track } from 'api/@types';
 import { ParsedCommand, SyntaxType } from 'commands/@types';
 import { Closable } from 'common/@types';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { Identifier, ServerDTO, ServerQueue, UserDTO } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 import { Player } from 'music/@types';
@@ -103,7 +103,7 @@ export interface ContextUser {
   readonly id: string;
   readonly name: string;
   readonly avatar?: string;
-  readonly permission: PERMISSION;
+  readonly permission: UserPermission;
   updatePermissions(details?: ServerDetails): Promise<void>;
   send(message: string): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
@@ -149,7 +149,7 @@ export interface EmbedMessageButton {
   emoji: string;
   style?: ButtonStyle;
   disabled?: boolean;
-  permission?: PERMISSION;
+  permission?: UserPermission;
   userId?: string;
   /**
    * Return true if message is to be destroyed after.

@@ -1,7 +1,7 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 
 async function execute({ interaction }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
   let response: string | undefined;
@@ -31,7 +31,7 @@ export const UNLINK_COMMAND: Command = {
   name: 'unlink',
   category: ACCOUNT_CATEGORY,
   details: 'Remove a Spotify or SoundCloud account you are linked to.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   dmAllowed: true,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
   usage: [

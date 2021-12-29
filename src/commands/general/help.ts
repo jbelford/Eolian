@@ -3,7 +3,7 @@ import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@t
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
 
@@ -44,21 +44,21 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
   }
 
   const command = COMMAND_MAP[arg];
-  if (command && (command.permission < PERMISSION.ADMIN || command.permission <= interaction.user.permission)) {
+  if (command && (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
     await interaction.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
-  if (keyword && (keyword.permission < PERMISSION.ADMIN || keyword.permission <= interaction.user.permission)) {
+  if (keyword && (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await interaction.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
-  if (pattern && (pattern.permission < PERMISSION.ADMIN || pattern.permission <= interaction.user.permission)) {
+  if (pattern && (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await interaction.sendEmbed(patternEmbed);
     return;
@@ -70,7 +70,7 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
 export const HELP_COMMAND: Command = {
   name: 'help',
   details: 'Shows list of all available categories, commands, keywords, and their details.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   category: GENERAL_CATEGORY,
   dmAllowed: true,
   usage: [

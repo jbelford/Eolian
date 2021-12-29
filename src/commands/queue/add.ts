@@ -3,7 +3,7 @@ import { Command, CommandContext, CommandOptions, MessageCommand } from 'command
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { getEnumName, PERMISSION } from 'common/constants';
+import { getEnumName, UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { shuffleList, truthySum } from 'common/util';
@@ -102,7 +102,7 @@ export const ADD_COMMAND: Command = {
   name: 'add',
   details: 'Add songs to the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.DJ_LIMITED,
+  permission: UserPermission.DJLimited,
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.PLAYLIST, KEYWORDS.ALBUM, KEYWORDS.ARTIST,
     KEYWORDS.LIKES, KEYWORDS.TRACKS, KEYWORDS.NEXT, KEYWORDS.SHUFFLE, KEYWORDS.FAST
@@ -147,7 +147,7 @@ export const ADD_COMMAND: Command = {
 
 export const ADD_MESSAGE_COMMAND: MessageCommand = {
   name: 'Add to Queue',
-  permission: PERMISSION.DJ_LIMITED,
+  permission: UserPermission.DJLimited,
   patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   execute(context, options) {
     if (!options.URL && !options.SEARCH) {

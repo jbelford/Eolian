@@ -1,4 +1,4 @@
-import { COLOR } from 'common/constants';
+import { Color } from 'common/constants';
 import { environment } from 'common/env';
 import { BingApi, SoundCloudApi, SpotifyApi, StreamSource, Track, TrackSource, TrackSourceDetails, YouTubeApi } from './@types';
 import { BingApiImpl } from './bing';
@@ -30,21 +30,21 @@ export function getTrackStream(track: Track) : Promise<StreamSource | undefined>
 export const SOURCE_DETAILS: Record<TrackSource, TrackSourceDetails> = {
   [TrackSource.SoundCloud]: {
     name: 'SoundCloud',
-    color: COLOR.SOUNDCLOUD,
+    color: Color.SoundCloud,
     icon: 'https://www.dropbox.com/s/ub1jhziixrc00da/soundcloud_icon.png?raw=1'
   },
   [TrackSource.Spotify]: {
     name: 'Spotify',
-    color: COLOR.SPOTIFY,
+    color: Color.Spotify,
     icon: 'https://www.dropbox.com/s/l1q0wrz2a5w0i64/spotify_icon.png?raw=1'
   },
   [TrackSource.YouTube]: {
     name: 'YouTube',
-    color: COLOR.YOUTUBE,
+    color: Color.YouTube,
     icon: 'https://www.dropbox.com/s/m6dwdgwwf06d67g/youtube_icon.png?raw=1'
   },
   [TrackSource.Unknown]: {
     name: 'Unknown',
-    color: COLOR.YOUTUBE
+    color: Color.YouTube
   }
 };

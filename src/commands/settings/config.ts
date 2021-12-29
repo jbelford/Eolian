@@ -1,6 +1,6 @@
 import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { SETTINGS_CATEGORY } from 'commands/category';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createServerDetailsEmbed } from 'embed';
 
@@ -147,7 +147,7 @@ export const CONFIG_COMMAND: Command = {
   name: 'config',
   details: 'Show configuration or change configurations for server.',
   category: SETTINGS_CATEGORY,
-  permission: PERMISSION.ADMIN,
+  permission: UserPermission.Admin,
   usage: [
     {
       title: 'Show server configs',

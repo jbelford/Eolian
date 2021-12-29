@@ -1,5 +1,5 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
-import { COLOR } from 'common/constants';
+import { Color } from 'common/constants';
 import { Readable } from 'stream';
 
 interface StreamFetcher {
@@ -231,7 +231,7 @@ export const enum TrackSource {
 
 export type TrackSourceDetails = {
   name: string;
-  color: COLOR;
+  color: Color;
   icon?: string;
 };
 

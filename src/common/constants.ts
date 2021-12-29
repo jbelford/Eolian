@@ -6,24 +6,24 @@ for (let i = 0; i < NUMBER_TO_EMOJI.length; ++i) {
   EMOJI_TO_NUMBER[NUMBER_TO_EMOJI[i]] = i;
 }
 
-export const enum PERMISSION {
-  UNKNOWN = 0,
-  USER,
-  DJ_LIMITED,
+export const enum UserPermission {
+  Unknown = 0,
+  User,
+  DJLimited,
   DJ,
-  ADMIN,
-  OWNER
+  Admin,
+  Owner
 }
 
-export const enum COLOR {
-  HELP = 0x5A54B8,
-  INVITE = 0x7985f0,
-  POLL = 0x46DBC0,
-  SELECTION = 0xe4ff1c,
-  PROFILE = 0x4286f4,
-  SPOTIFY = 0x1DB954,
-  SOUNDCLOUD = 0xFF7700,
-  YOUTUBE = 0xFF0000
+export const enum Color {
+  Help = 0x5A54B8,
+  Invite = 0x7985f0,
+  Poll = 0x46DBC0,
+  Selection = 0xe4ff1c,
+  Profile = 0x4286f4,
+  Spotify = 0x1DB954,
+  SoundCloud = 0xFF7700,
+  YouTube = 0xFF0000
 }
 
 export const IDLE_TIMEOUT_MINS = 60 * 10;

@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { getSourceResolver } from 'resolvers';
 
@@ -52,7 +52,7 @@ export const IDENTIFY_COMMAND: Command = {
   category: ACCOUNT_CATEGORY,
   shortDetails: 'Set a shortcut identifier for any song, playlist, album or artist.',
   details: 'Set a shortcut identifier for any song, playlist, album or artist from Spotify, SoundCloud, or YouTube.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   dmAllowed: true,
   keywords: [
     KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE,

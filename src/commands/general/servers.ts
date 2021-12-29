@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
 import { OWNER_COMMANDS } from 'commands/owner';
 import { PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 const PAGE_LENGTH = 10;
@@ -54,7 +54,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 export const SERVERS_COMMAND: Command = {
   name: 'servers',
   details: 'Show all servers this bot is joined to.',
-  permission: PERMISSION.OWNER,
+  permission: UserPermission.Owner,
   category: GENERAL_CATEGORY,
   patterns: [PATTERNS.NUMBER, PATTERNS.ARG],
   dmAllowed: true,

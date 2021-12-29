@@ -1,4 +1,4 @@
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
@@ -8,11 +8,11 @@ import { DiscordVoiceChannel } from './voice';
 export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
-  private _permission: PERMISSION;
+  private _permission: UserPermission;
 
   constructor(private readonly user: User,
       private readonly users: UsersDb,
-      permission: PERMISSION,
+      permission: UserPermission,
       private readonly guildUser?: GuildMember) {
     this._permission = permission;
   }
@@ -29,25 +29,25 @@ export class DiscordUser implements ContextUser {
     return this.user.avatarURL({ dynamic: true }) || undefined;
   }
 
-  get permission(): PERMISSION {
+  get permission(): UserPermission {
     return this._permission;
   }
 
   async updatePermissions(details?: ServerDetails): Promise<void> {
-    if (this.permission === PERMISSION.USER) {
+    if (this.permission === UserPermission.User) {
       if (details) {
         const config = await details.get();
         if (config.djRoleIds && config.djRoleIds.length > 0) {
           if (config.djRoleIds.some(role => this.hasRole(role))) {
-            this._permission = PERMISSION.DJ;
+            this._permission = UserPermission.DJ;
           } else if (config.djAllowLimited) {
-            this._permission = PERMISSION.DJ_LIMITED;
+            this._permission = UserPermission.DJLimited;
           }
         } else {
-          this._permission = PERMISSION.DJ;
+          this._permission = UserPermission.DJ;
         }
       } else {
-        this._permission = PERMISSION.DJ;
+        this._permission = UserPermission.DJ;
       }
     }
   }
@@ -123,11 +123,11 @@ export class DiscordUser implements ContextUser {
 
 }
 
-export function getPermissionLevel(user: User, memberPermissions?: Readonly<Permissions> | null): PERMISSION {
+export function getPermissionLevel(user: User, memberPermissions?: Readonly<Permissions> | null): UserPermission {
   if (environment.owners.includes(user.id)) {
-    return PERMISSION.OWNER;
+    return UserPermission.Owner;
   } else if (memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
-    return PERMISSION.ADMIN;
+    return UserPermission.Admin;
   }
-  return PERMISSION.USER;
+  return UserPermission.User;
 }

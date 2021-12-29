@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { truthySum } from 'common/util';
 
@@ -37,7 +37,7 @@ export const REMOVE_COMMAND: Command = {
   name: 'remove',
   details: 'Remove songs from the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   keywords: [KEYWORDS.NEXT],
   patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [

@@ -1,6 +1,6 @@
 import { SOURCE_DETAILS } from 'api';
 import { Track } from 'api/@types';
-import { COLOR } from 'common/constants';
+import { Color } from 'common/constants';
 import { EmbedMessage } from 'framework/@types';
 
 function trackNameFormat(track: Track) {
@@ -9,7 +9,7 @@ function trackNameFormat(track: Track) {
 
 export function createQueueEmbed(tracks: Track[], loopTracks: Track[], start: number, total: number, loop: boolean) : EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.SELECTION,
+    color: Color.Selection,
     header: {
       text: '🎶 Music Queue 🎶'
     },

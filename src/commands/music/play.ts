@@ -4,7 +4,7 @@ import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
 import { createSelectedMessage } from 'commands/queue/add';
-import { getEnumName, PERMISSION } from 'common/constants';
+import { getEnumName, UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { IdentifierType } from 'data/@types';
@@ -100,7 +100,7 @@ export const PLAY_COMMAND: Command = {
   details: `Join the current channel. Starts playing first song in the queue if not already.
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.FAST],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   noDefaultReply: true,
@@ -127,7 +127,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
 
 export const PLAY_MESSAGE_COMMAND: MessageCommand = {
   name: 'Play',
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   patterns: [PATTERNS.SEARCH, PATTERNS.URL],
   noDefaultReply: true,
   execute(context, options) {

@@ -1,6 +1,6 @@
 import { Command, CommandContext } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { createInviteEmbed } from 'embed';
 
 async function execute(context: CommandContext): Promise<void> {
@@ -14,7 +14,7 @@ export const INVITE_COMMAND: Command = {
   category: GENERAL_CATEGORY,
   details: 'Create a link to invite the bot to another server.',
   keywords: [],
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   dmAllowed: true,
   usage: [{ example: '' }],
   args: {

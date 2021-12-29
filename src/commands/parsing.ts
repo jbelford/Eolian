@@ -1,5 +1,5 @@
 import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, Keyword, MessageCommand, ParsedCommand, Pattern, PatternValues, SyntaxType } from './@types';
@@ -14,7 +14,7 @@ export function simpleOptionsStrategy(text: string): CommandOptions {
   return options;
 }
 
-function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+function keywordOptionsStrategy(text: string, permission: UserPermission, keywords: string[] = [], patterns: string[] = []): CommandOptions {
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
@@ -36,7 +36,7 @@ function keywordOptionsStrategy(text: string, permission: PERMISSION, keywords: 
   return options;
 }
 
-function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+function traditionalOptionsStrategy(text: string, permission: UserPermission, keywords: string[] = [], patterns: string[] = []): CommandOptions {
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
@@ -68,7 +68,7 @@ function traditionalOptionsStrategy(text: string, permission: PERMISSION, keywor
   return options;
 }
 
-export function checkSetKeyword(keyword: Keyword, permission: PERMISSION, options: CommandOptions, hasKeyword = true) {
+export function checkSetKeyword(keyword: Keyword, permission: UserPermission, options: CommandOptions, hasKeyword = true) {
   if (hasKeyword) {
     if (keyword.permission > permission) {
       throw new EolianUserError(`You do not have permission to use ${keyword.name}!`);
@@ -79,7 +79,7 @@ export function checkSetKeyword(keyword: Keyword, permission: PERMISSION, option
   }
 }
 
-export function patternMatch<T extends keyof PatternValues>(text: string, permission: PERMISSION, pattern: Pattern<T>, options: CommandOptions, syntax: SyntaxType, required = false): string {
+export function patternMatch<T extends keyof PatternValues>(text: string, permission: UserPermission, pattern: Pattern<T>, options: CommandOptions, syntax: SyntaxType, required = false): string {
   const result = pattern.matchText(text, syntax);
   if (result.matches) {
     if (pattern.permission > permission) {
@@ -105,7 +105,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     return message.trim().charAt(0) === prefix;
   }
 
-  parseCommand(message: string, permission: PERMISSION, type = SyntaxType.KEYWORD): ParsedCommand {
+  parseCommand(message: string, permission: UserPermission, type = SyntaxType.KEYWORD): ParsedCommand {
     let text = message.trim();
 
     const textSplit = text.split(/\s+/g);
@@ -123,17 +123,17 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 
 }
 
-export function getCommand(commandName: string, permission: PERMISSION): Command {
+export function getCommand(commandName: string, permission: UserPermission): Command {
   const command = COMMAND_MAP[commandName];
   return checkCommand(command, commandName, permission);
 }
 
-export function getMessageCommand(commandName: string, permission: PERMISSION): MessageCommand {
+export function getMessageCommand(commandName: string, permission: UserPermission): MessageCommand {
   const command = MESSAGE_COMMAND_MAP[commandName];
   return checkCommand(command, commandName, permission);
 }
 
-function checkCommand<T extends BaseCommand>(command: T | undefined, commandName: string, permission: PERMISSION): T {
+function checkCommand<T extends BaseCommand>(command: T | undefined, commandName: string, permission: UserPermission): T {
   if (!command) {
     throw new EolianUserError(`There is no command \`${commandName}\``);
   } else if (command.permission > permission) {

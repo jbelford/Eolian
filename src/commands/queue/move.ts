@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 function sanitizeNum(num: number, size: number): number {
@@ -58,7 +58,7 @@ export const MOVE_COMMAND: Command = {
   name: 'move',
   details: 'Move songs in the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   keywords: [KEYWORDS.NEXT],
   patterns: [PATTERNS.NUMBER, PATTERNS.TOP, PATTERNS.BOTTOM],
   new: true,

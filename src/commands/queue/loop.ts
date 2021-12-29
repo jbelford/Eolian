@@ -1,7 +1,7 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -34,7 +34,7 @@ export const LOOP_COMMAND: Command = {
   name: 'loop',
   details: 'Enable or disable loop mode.\nLoop mode adds played tracks back to the end of the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],
   new: true,
   usage: [

@@ -4,7 +4,7 @@ import { checkSetKeyword, COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMA
 import { Command, CommandArgs, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, SyntaxType } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
@@ -80,7 +80,7 @@ function createSlashCommand(command: Command) {
       .setName(command.name)
       .setDescription(description);
 
-    if (command.permission >= PERMISSION.OWNER) {
+    if (command.permission >= UserPermission.Owner) {
       builder.setDefaultPermission(false);
     }
 
@@ -191,7 +191,7 @@ function createContextMenuCommand(command: MessageCommand) {
   }
 }
 
-export function parseSlashCommand(interaction: CommandInteraction, permission: PERMISSION): ParsedCommand {
+export function parseSlashCommand(interaction: CommandInteraction, permission: UserPermission): ParsedCommand {
   const command = getCommand(interaction.commandName, permission);
 
   let options: CommandOptions = {};
@@ -234,7 +234,7 @@ function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteract
   return args;
 }
 
-function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, groupSet: Set<string>) {
+function parseSlashKeyword(keyword: Keyword, permission: UserPermission, interaction: CommandInteraction, options: CommandOptions, groupSet: Set<string>) {
   let found: Keyword | undefined;
   if (keyword.group) {
     if (!groupSet.has(keyword.group)) {
@@ -250,7 +250,7 @@ function parseSlashKeyword(keyword: Keyword, permission: PERMISSION, interaction
   }
 }
 
-function parseSlashPattern(pattern: Pattern, permission: PERMISSION, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>, args?: CommandArgs) {
+function parseSlashPattern(pattern: Pattern, permission: UserPermission, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>, args?: CommandArgs) {
   if (args && pattern.name === PATTERNS.ARG.name) {
     options.ARG = parseCommandArgs(args, interaction);
   } else if (pattern.group) {
@@ -269,7 +269,7 @@ function parseSlashPattern(pattern: Pattern, permission: PERMISSION, interaction
   }
 }
 
-export function parseMessageCommand(name: string, text: string, permission: PERMISSION): ParsedCommand {
+export function parseMessageCommand(name: string, text: string, permission: UserPermission): ParsedCommand {
   const command = getMessageCommand(name, permission);
 
   const options: CommandOptions = {};
@@ -279,7 +279,7 @@ export function parseMessageCommand(name: string, text: string, permission: PERM
   return { command, options };
 }
 
-function matchPatterns(text: string, permission: PERMISSION, patternSet: Set<string>, options: CommandOptions, group?: KeywordGroup) {
+function matchPatterns(text: string, permission: UserPermission, patternSet: Set<string>, options: CommandOptions, group?: KeywordGroup) {
   for (const pattern of PATTERNS_SORTED) {
     if (!group || pattern.group === group) {
       if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {

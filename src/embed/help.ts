@@ -1,6 +1,6 @@
 import { COMMANDS } from 'commands';
 import { Command, CommandCategory, Keyword, Pattern, SyntaxType } from 'commands/@types';
-import { COLOR, GITHUB_PAGE_WIKI, PERMISSION } from 'common/constants';
+import { Color, GITHUB_PAGE_WIKI, UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EmbedMessage } from 'framework/@types';
 
@@ -8,7 +8,7 @@ const helpFooter = `_Want to know more? [See the Wiki](${GITHUB_PAGE_WIKI})_`;
 
 export function createCategoryListEmbed(categories: CommandCategory[], prefix = environment.cmdToken): EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.HELP,
+    color: Color.Help,
     title: 'Command Categories',
     description: 'The following are categories for the various commands available:\n\n',
     footer: {
@@ -21,9 +21,9 @@ export function createCategoryListEmbed(categories: CommandCategory[], prefix = 
   return embed;
 }
 
-export function createCommandListEmbed(category: CommandCategory, permission: PERMISSION): EmbedMessage {
+export function createCommandListEmbed(category: CommandCategory, permission: UserPermission): EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.HELP,
+    color: Color.Help,
     header: {
       text: `📁  Category  📁`,
     },
@@ -32,7 +32,7 @@ export function createCommandListEmbed(category: CommandCategory, permission: PE
   };
 
   const commands = COMMANDS.filter(cmd => cmd.category.name === category.name)
-    .filter(cmd => cmd.permission < PERMISSION.ADMIN || cmd.permission <= permission)
+    .filter(cmd => cmd.permission < UserPermission.Admin || cmd.permission <= permission)
     .map(cmd => cmd.new ? `${cmd.name} *NEW*` : cmd.name);
 
   embed.description += `\`\`\`
@@ -46,11 +46,11 @@ ${helpFooter}
   return embed;
 }
 
-function getRequiresDjState(permission: PERMISSION) {
+function getRequiresDjState(permission: UserPermission) {
   switch (permission) {
-    case PERMISSION.DJ:
+    case UserPermission.DJ:
       return 'Yes';
-    case PERMISSION.DJ_LIMITED:
+    case UserPermission.DJLimited:
       return 'Limited';
     default:
       return 'No';
@@ -59,7 +59,7 @@ function getRequiresDjState(permission: PERMISSION) {
 
 export function createCommandDetailsEmbed(command: Command, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.HELP,
+    color: Color.Help,
     header: {
       text: `📁  Command  📁`
     },
@@ -95,7 +95,7 @@ export function createCommandDetailsEmbed(command: Command, type = SyntaxType.KE
 
 export function createKeywordDetailsEmbed(keyword: Keyword, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.HELP,
+    color: Color.Help,
     header: {
       text: `🚩  Keyword  🚩`
     },
@@ -112,7 +112,7 @@ export function createKeywordDetailsEmbed(keyword: Keyword, type = SyntaxType.KE
 
 export function createPatternDetailsEmbed(pattern: Pattern, type = SyntaxType.KEYWORD): EmbedMessage {
   const embed: EmbedMessage = {
-    color: COLOR.HELP,
+    color: Color.Help,
     header: {
       text: `🚩  Pattern  🚩`
     },

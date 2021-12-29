@@ -2,7 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { GENERAL_CATEGORY } from 'commands/category';
 import { PATTERNS } from 'commands/patterns';
 import { Closable } from 'common/@types';
-import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, PERMISSION } from 'common/constants';
+import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
@@ -105,7 +105,7 @@ export const POLL_COMMAND: Command = {
   name: 'poll',
   category: GENERAL_CATEGORY,
   details: 'Create a poll in the channel. Up to 10 options are allowed.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   patterns: [PATTERNS.ARG],
   usage: [
     {

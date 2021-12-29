@@ -1,6 +1,6 @@
 import { SoundCloudUser, SpotifyUser } from 'api/@types';
 import { SyntaxType } from 'commands/@types';
-import { COLOR, DEFAULT_VOLUME } from 'common/constants';
+import { Color, DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, ServerDTO } from 'data/@types';
 import { ContextUser, EmbedMessage, ServerInfo } from 'framework/@types';
@@ -12,7 +12,7 @@ export function createInviteEmbed(link: string, username: string, pic?: string):
     description: 'Click to invite bot to server',
     url: link,
     thumbnail: pic,
-    color: COLOR.INVITE
+    color: Color.Invite
   }
 }
 
@@ -39,7 +39,7 @@ export function createSelectionEmbed(question: string, options: SelectionOption[
       text: '👈🏻 Select one 👉🏻'
     },
     title: `*${question}*`,
-    color: COLOR.SELECTION,
+    color: Color.Selection,
     description: options.map(mapOption).join('\n') + '\n0: Cancel',
     footer: {
       icon: pic,
@@ -66,7 +66,7 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
       text: `🎫 Profile Details 🎫`
     },
     title: `Here's what I know about you ${contextUser.name}!`,
-    color: COLOR.PROFILE,
+    color: Color.Profile,
     description,
     footer: {
       text: `See 'help' for the 'Account' category to configure your profile.`
@@ -88,7 +88,7 @@ export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): Emb
       text: `🎫 Server Details 🎫`
     },
     title: `Here's settings for ${guild.name}`,
-    color: COLOR.PROFILE,
+    color: Color.Profile,
     description,
     footer: {
       text: `See 'help' for the 'Settings' category to configure these settings`
@@ -106,6 +106,6 @@ function syntaxTypeToName(type: SyntaxType) {
 export function createBasicEmbed(message: string): EmbedMessage {
   return {
     title: message,
-    color: COLOR.SELECTION
+    color: Color.Selection
   };
 }

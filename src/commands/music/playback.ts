@@ -1,6 +1,6 @@
 import { Command, CommandContext } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 const NOT_PLAYING = "I'm not playing anything right now!";
@@ -22,7 +22,7 @@ export const STOP_COMMAND: Command = {
   name: 'stop',
   details: 'Stop playing music.',
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: '',
@@ -53,7 +53,7 @@ export const SKIP_COMMAND: Command = {
   name: 'skip',
   details: 'Skip current song.',
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: ''
@@ -86,7 +86,7 @@ export const BACK_COMMAND: Command = {
   name: 'back',
   details: 'Go back a song.',
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: ''
@@ -120,7 +120,7 @@ export const PAUSE_COMMAND: Command = {
   name: 'pause',
   details: 'Pause the current song.',
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: ''
@@ -154,7 +154,7 @@ export const RESUME_COMMAND: Command = {
   name: 'resume',
   details: 'Resume the current song.',
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: ''
@@ -180,7 +180,7 @@ export const SHOW_COMMAND: Command = {
   name: 'show',
   details: `Show what's playing. This will move the player and bind it to this channel.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   usage: [
     {
       example: ''

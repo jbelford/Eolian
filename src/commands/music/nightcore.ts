@@ -1,7 +1,7 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { MUSIC_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 async function executeNightcore(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -47,7 +47,7 @@ export const NIGHTCORE_COMMAND: Command = {
   name: 'nightcore',
   details: `Enable or disable nightcore mode.`,
   category: MUSIC_CATEGORY,
-  permission: PERMISSION.DJ,
+  permission: UserPermission.DJ,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],
   usage: [
     {

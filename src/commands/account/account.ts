@@ -2,7 +2,7 @@ import { soundcloud, spotify } from 'api';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { createUserDetailsEmbed } from 'embed';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -28,7 +28,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 export const ACCOUNT_COMMAND: Command = {
   name: 'me',
   details: 'Show your account details. Including linked music accounts and identifiers.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   category: ACCOUNT_CATEGORY,
   dmAllowed: true,
   keywords: [KEYWORDS.CLEAR],

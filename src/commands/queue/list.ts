@@ -2,12 +2,12 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
 
 async function executeClearQueue(context: CommandContext): Promise<void> {
-  if (context.interaction.user.permission < PERMISSION.DJ) {
+  if (context.interaction.user.permission < UserPermission.DJ) {
     throw new EolianUserError('You do not have permission to clear the queue!');
   }
   const cleared = await context.server!.queue.clear();
@@ -30,7 +30,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (options.SHUFFLE) {
-    if (context.interaction.user.permission < PERMISSION.DJ) {
+    if (context.interaction.user.permission < UserPermission.DJ) {
       throw new EolianUserError('You do not have permission to shuffle the queue!');
     }
     await context.server!.queue.shuffle();
@@ -54,7 +54,7 @@ export const LIST_COMMAND: Command = {
   name: 'list',
   details: 'Show or clear the queue.',
   category: QUEUE_CATEGORY,
-  permission: PERMISSION.DJ_LIMITED,
+  permission: UserPermission.DJLimited,
   keywords: [KEYWORDS.CLEAR, KEYWORDS.SHUFFLE],
   patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [

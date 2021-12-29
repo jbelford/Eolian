@@ -4,7 +4,7 @@ import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
-import { PERMISSION } from 'common/constants';
+import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -86,7 +86,7 @@ export const LINK_COMMAND: Command = {
   name: 'link',
   category: ACCOUNT_CATEGORY,
   details: 'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',
-  permission: PERMISSION.USER,
+  permission: UserPermission.User,
   dmAllowed: true,
   keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL],
