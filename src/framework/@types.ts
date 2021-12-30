@@ -179,15 +179,19 @@ export interface ServerStateStore {
   set(id: string, context: ServerState): Promise<void>;
 }
 
-export interface ServerState {
+export interface ServerStateDisplay {
+  queue: QueueDisplay;
+  player: PlayerDisplay;
+}
+
+export interface ServerState extends Closable {
   details: ServerDetails;
   player: Player;
   queue: ServerQueue;
-  display: {
-    queue: QueueDisplay;
-    player: PlayerDisplay;
-  },
-  disposable: Closable[];
+  display: ServerStateDisplay;
+  isIdle(): boolean;
+  closeIdle(): Promise<void>;
+  addDisposable(disposable: Closable): void;
 }
 
 export interface ServerDetails extends ServerInfo {

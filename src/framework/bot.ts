@@ -2,19 +2,15 @@ import { CommandParsingStrategy } from 'commands/@types';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { InMemoryQueues, LockManager } from 'data';
-import { AppDatabase, MusicQueueCache } from 'data/@types';
+import { LockManager } from 'data';
+import { AppDatabase } from 'data/@types';
 import { ButtonInteraction, Client, ClientOptions, CommandInteraction, ContextMenuInteraction, Guild, Intents, Interaction, Message } from 'discord.js';
-import { DiscordPlayer } from 'music/player';
-import { ContextClient, ContextCommandInteraction, EolianBot, ServerDetails, ServerState, ServerStateStore } from './@types';
+import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
 import { ButtonRegistry } from "./button";
 import { DiscordClient, DiscordGuildClient, DISCORD_INVITE_PERMISSIONS, INVITE_SCOPES } from './client';
-import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
 import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageCommandInteraction, DiscordMessageInteraction } from './interaction';
-import { GuildQueue } from './queue';
 import { registerGuildSlashCommands } from './register_commands';
-import { DiscordGuild } from './server';
-import { InMemoryServerStateStore } from './state';
+import { DiscordGuildStore } from './state';
 
 const enum DiscordEvents {
   READY = 'ready',
@@ -46,8 +42,6 @@ DISCORD_ENABLED_INTENTS.add(
   'DIRECT_MESSAGES',
   'DIRECT_MESSAGE_REACTIONS');
 
-const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
-const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 const USER_COMMAND_LOCK_TIMEOUT = 60;
 
 export interface DiscordEolianBotArgs {
@@ -61,14 +55,12 @@ export class DiscordEolianBot implements EolianBot {
 
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
+  private readonly guildStore: DiscordGuildStore;
   private readonly registry = new ButtonRegistry();
-  private readonly guildMap = new Map<string, ServerDetails>();
   private oldClient?: Client;
   private invite?: string;
 
   private readonly db: AppDatabase;
-  private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
-  private readonly servers: ServerStateStore = new InMemoryServerStateStore(SERVER_STATE_CACHE_TIMEOUT);
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
   constructor({ parser, db }: DiscordEolianBotArgs) {
@@ -104,6 +96,8 @@ export class DiscordEolianBot implements EolianBot {
       this.oldClient.once(DiscordEvents.READY, this.setPresence);
       this.oldClient.on(DiscordEvents.MESSAGE_CREATE, this.onMessageHandlerOld);
     }
+
+    this.guildStore = new DiscordGuildStore(this.client, this.db.servers);
   }
 
   async start(): Promise<void> {
@@ -181,7 +175,7 @@ export class DiscordEolianBot implements EolianBot {
       if (!embedButton.userId || embedButton.userId === interaction.user.id) {
         let state: ServerState | undefined;
         if (interaction.guild) {
-          state = await this.getGuildState(interaction.guild);
+          state = await this.guildStore.getState(interaction.guild);
         }
         await contextInteraction.user.updatePermissions(state?.details);
 
@@ -269,7 +263,7 @@ export class DiscordEolianBot implements EolianBot {
     if (!invoked) {
       let prefix: string | undefined;
       if (message.guild) {
-        const details = this.getGuildDetails(message.guild);
+        const details = this.guildStore.getDetails(message.guild);
         const config = await details.get();
         prefix = config.prefix;
       }
@@ -299,10 +293,10 @@ export class DiscordEolianBot implements EolianBot {
       let server: ServerState | undefined;
       let client: ContextClient;
       if (guild) {
-        server = await this.getGuildState(guild);
-        client = new DiscordGuildClient(this.client, server.details.id, this.servers, this.db.servers);
+        server = await this.guildStore.getState(guild);
+        client = new DiscordGuildClient(this.client, guild.id, this.guildStore, this.db.servers);
       } else {
-        client = new DiscordClient(this.client, this.servers, this.db.servers);
+        client = new DiscordClient(this.client, this.guildStore, this.db.servers);
       }
       await interaction.user.updatePermissions(server?.details);
 
@@ -312,7 +306,7 @@ export class DiscordEolianBot implements EolianBot {
         return false;
       }
 
-      await command.execute({ interaction, server, client}, options);
+      await command.execute({ interaction, server, client }, options);
 
       await server?.details.updateUsage();
 
@@ -351,33 +345,6 @@ export class DiscordEolianBot implements EolianBot {
       default:
         return false;
     }
-  }
-
-  private async getGuildState(guild: Guild): Promise<ServerState> {
-    let state = await this.servers.get(guild.id);
-    if (!state) {
-      const details = this.getGuildDetails(guild);
-      const dto = await details.get();
-
-      const guildClient = new DiscordGuildClient(this.client, guild.id, this.servers, this.db.servers);
-      const queue = new GuildQueue(this.queues, guild.id);
-      const player = new DiscordPlayer(guildClient, queue, dto.volume);
-      const queueDisplay = new DiscordQueueDisplay(queue);
-      const playerDisplay = new DiscordPlayerDisplay(player, queueDisplay);
-
-      state = { details, player, queue, display: { queue: queueDisplay, player: playerDisplay }, disposable: [] };
-      await this.servers.set(guild.id, state);
-    }
-    return state;
-  }
-
-  private getGuildDetails(guild: Guild): ServerDetails {
-    let details = this.guildMap.get(guild.id);
-    if (!details) {
-      details = new DiscordGuild(this.db.servers, guild);
-      this.guildMap.set(guild.id, details);
-    }
-    return details;
   }
 
 }

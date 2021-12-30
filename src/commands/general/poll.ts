@@ -96,7 +96,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const poll = new PollMessage(context.interaction, context.interaction.user, question, pollOptions);
 
-  context.server!.disposable.push(poll);
+  context.server!.addDisposable(poll);
 
   await poll.send();
 }
