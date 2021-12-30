@@ -35,7 +35,7 @@ export class DiscordSender implements ContextSendable {
   }
 
   async send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
-    if (this.sendable) {
+    if (this.sendable || options?.force) {
       try {
         const discordMessage = await this.sender.send({ content: message }, options?.ephemeral);
         return new DiscordMessage(discordMessage);

@@ -284,7 +284,7 @@ export class DiscordEolianBot implements EolianBot {
 
       if (!interaction.sendable) {
         if (!interaction.channel.visible) {
-          await interaction.send(`I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`)
+          await interaction.send(`I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`, { force: true });
         } else {
           await interaction.user.send(`I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`);
         }
