@@ -97,7 +97,7 @@ export function cleanupOnExit(resources: Closable[]) {
   ].forEach(sig => {
     process.on(sig, () => {
       logger.warn('Received %s', sig);
-      onExit();
+      onExit(true);
     });
   });
 }
