@@ -173,7 +173,7 @@ export interface QueueDisplay extends Display {
   delete(): Promise<void>;
 }
 
-export interface ServerStateStore {
+export interface ServerStateStore extends Closable {
   active: number;
   get(id: string): Promise<ServerState | undefined>;
   set(id: string, context: ServerState): Promise<void>;

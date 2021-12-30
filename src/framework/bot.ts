@@ -115,6 +115,7 @@ export class DiscordEolianBot implements EolianBot {
   }
 
   async close(): Promise<void> {
+    await this.guildStore.close();
     this.client.destroy();
   }
 

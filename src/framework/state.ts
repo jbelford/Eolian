@@ -18,7 +18,7 @@ export class InMemoryServerStateStore implements ServerStateStore {
   private _active = 0;
 
   constructor(private readonly ttl: number) {
-    this.cache = new InMemoryCache(this.ttl, false, this.onExpired);
+    this.cache = new InMemoryCache(this.ttl, false, this.onExpired, this.onClose);
   }
 
   get active(): number {
@@ -37,6 +37,14 @@ export class InMemoryServerStateStore implements ServerStateStore {
     logger.info('%s storing guild state', guildId);
     await this.cache.set(guildId, context, this.ttl);
     this._active++;
+  }
+
+  async close(): Promise<void> {
+    await this.cache.close();
+  }
+
+  private onClose = (state: ServerState) => {
+    return state.close();
   }
 
   private onExpired = async (key: string, state: ServerState) => {
@@ -143,7 +151,7 @@ class DiscordGuildState implements ServerState {
   }
 
   async close(): Promise<void> {
-    logger.info('%s deleting idle guild state', this.guildId);
+    logger.info('%s deleting guild state', this.guildId);
     await Promise.allSettled([
       this._player?.close(),
       this.display.close(),
@@ -157,7 +165,7 @@ class DiscordGuildState implements ServerState {
 const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 
-export class DiscordGuildStore {
+export class DiscordGuildStore implements Closable {
 
   private readonly guildMap = new Map<string, ServerDetails>();
   private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
@@ -192,6 +200,10 @@ export class DiscordGuildStore {
       await this.stateStore.set(guild.id, state);
     }
     return state;
+  }
+
+  async close(): Promise<void> {
+    await this.stateStore.close();
   }
 
 }

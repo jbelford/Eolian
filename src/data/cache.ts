@@ -6,7 +6,8 @@ export class InMemoryCache<V> implements EolianCache<V> {
   private cache: NodeCache;
 
   constructor(private readonly ttl: number, clone = true,
-      private readonly onExpired?: (key: string, value: V) => void) {
+      private readonly onExpired?: (key: string, value: V) => void,
+      private readonly onClose?: (value: V) => Promise<void>) {
     this.cache = new NodeCache({ stdTTL: this.ttl, checkperiod: 300,  useClones: clone, deleteOnExpire: true });
     if (this.onExpired) {
       this.cache.on('del', this.onExpired);
@@ -17,8 +18,18 @@ export class InMemoryCache<V> implements EolianCache<V> {
     if (this.onExpired) {
       this.cache.removeListener('del', this.onExpired);
     }
+
+    let promises: Promise<void>[] | undefined;
+    if (this.onClose) {
+      promises = this.cache.keys().map(key => this.onClose!(this.cache.get(key)!));
+    }
+
     this.cache.flushAll();
     this.cache.close();
+
+    if (promises) {
+      await Promise.allSettled(promises);
+    }
   }
 
   async get(key: string): Promise<V | undefined> {
