@@ -33,3 +33,13 @@ export const DEFAULT_VOLUME = 0.10;
 export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
 export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;
 export const GITHUB_PAGE_WIKI = `${GITHUB_PAGE}/wiki`;
+
+export const LOGGER_HEADER = `
+__________     __________                    ________      _____
+___  ____/________  /__(_)_____ _______      ___  __ )_______  /_
+__  __/  _  __ \\_  /__  /_  __ \`/_  __ \\     __  __  |  __ \\  __/
+_  /___  / /_/ /  / _  / / /_/ /_  / / /     _  /_/ // /_/ / /_
+/_____/  \\____//_/  /_/  \\__,_/ /_/ /_/      /_____/ \\____/\\__/
+Copyright 2018-${new Date().getFullYear()} Jack Belford
+
+`;

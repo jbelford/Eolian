@@ -1,11 +1,14 @@
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
+import { LOGGER_HEADER } from 'common/constants';
 import { logger } from 'common/logger';
 import { cleanupOnExit } from 'common/util';
 import { createDatabase } from 'data';
 import { AppDatabase } from 'data/@types';
 import { DiscordEolianBot, WebServer } from 'framework';
 import { EolianBot } from 'framework/@types';
+
+process.stdout.write(LOGGER_HEADER);
 
 (async () => {
   try {
