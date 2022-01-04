@@ -9,6 +9,7 @@ const MAX_PREV = 10;
  * Temporary implementation storing music queues in-memory.
  */
 export class InMemoryQueues implements MusicQueueCache {
+
   private readonly cache: ListCache<Track>;
 
   constructor(ttl: number) {
@@ -128,4 +129,5 @@ export class InMemoryQueues implements MusicQueueCache {
   }
 
   private prevKey = (guildId: string) => `${guildId}_prev`;
+
 }

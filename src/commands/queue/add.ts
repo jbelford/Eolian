@@ -58,8 +58,8 @@ async function executeAdd(context: CommandContext, options: CommandOptions): Pro
     await context.interaction.defer(false);
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
-      const msg =
-        '🔎 ' + createSelectedMessage(resource.name, resource.authors, resource.identifier);
+      const msg
+        = '🔎 ' + createSelectedMessage(resource.name, resource.authors, resource.identifier);
       if (resource.selectionMessage) {
         await resource.selectionMessage.edit(msg);
       } else {
@@ -101,8 +101,8 @@ async function executeAdd(context: CommandContext, options: CommandOptions): Pro
 
   await context.server!.queue.add(tracks, options.NEXT);
 
-  const bodyText =
-    tracks.length > 1 ? `Added ${tracks.length} songs` : `Added **${tracks[0].title}**`;
+  const bodyText
+    = tracks.length > 1 ? `Added ${tracks.length} songs` : `Added **${tracks[0].title}**`;
   const endText = options.NEXT ? 'to be played next!' : 'to the queue!';
   await context.interaction.channel.send(`✨ ${bodyText} ${endText}`, { ephemeral: false });
 }

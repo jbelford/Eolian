@@ -9,12 +9,13 @@ import {
   ContextTextChannel,
   MessageButtonOnClickHandler,
   PlayerDisplay,
-  QueueDisplay,
+  QueueDisplay
 } from './@types';
 
 const QUEUE_PAGE_LENGTH = 15;
 
 export class DiscordQueueDisplay implements QueueDisplay {
+
   private message: ContextMessage | null = null;
   private channel: ContextTextChannel | null = null;
   private sendable?: ContextSendable;
@@ -147,9 +148,11 @@ export class DiscordQueueDisplay implements QueueDisplay {
     await interaction.deferUpdate();
     return false;
   };
+
 }
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
+
   private track: Track | null = null;
   private message: ContextMessage | null = null;
 
@@ -362,4 +365,5 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
     return false;
   });
+
 }

@@ -7,6 +7,7 @@ import { BingApi, BingVideo, Track, TrackSource } from './@types';
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
 export class BingApiImpl implements BingApi {
+
   constructor(private readonly key: string, private readonly configId: string) {}
 
   async searchVideos(query: string, publisher?: string, limit = 5): Promise<BingVideo[]> {
@@ -84,6 +85,7 @@ export class BingApiImpl implements BingApi {
     };
     return await httpRequest<T>(uri, { params, headers, json: true });
   }
+
 }
 
 interface BingVideos {

@@ -12,7 +12,7 @@ import {
   ServerDetails,
   ServerState,
   ServerStateDisplay,
-  ServerStateStore,
+  ServerStateStore
 } from './@types';
 import { DiscordGuildClient } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
@@ -20,6 +20,7 @@ import { GuildQueue } from './queue';
 import { DiscordGuild } from './server';
 
 export class InMemoryServerStateStore implements ServerStateStore {
+
   private cache: EolianCache<ServerState>;
   private _active = 0;
 
@@ -67,9 +68,11 @@ export class InMemoryServerStateStore implements ServerStateStore {
       logger.warn(`Error occured clearing guild state: %s`, e);
     }
   };
+
 }
 
 class DiscordGuildStateDisplay implements ServerStateDisplay, Closable {
+
   private _queue?: QueueDisplay;
   private _player?: PlayerDisplay;
 
@@ -94,9 +97,11 @@ class DiscordGuildStateDisplay implements ServerStateDisplay, Closable {
     this._player = undefined;
     this._queue = undefined;
   }
+
 }
 
 class DiscordGuildState implements ServerState {
+
   private _player?: Player;
   private _queue?: ServerQueue;
   private disposable: Closable[] = [];
@@ -158,12 +163,14 @@ class DiscordGuildState implements ServerState {
     ]);
     this._player = undefined;
   }
+
 }
 
 const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 
 export class DiscordGuildStore implements Closable {
+
   private readonly guildMap = new Map<string, ServerDetails>();
   private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
   private readonly stateStore: ServerStateStore = new InMemoryServerStateStore(
@@ -201,4 +208,5 @@ export class DiscordGuildStore implements Closable {
   async close(): Promise<void> {
     await this.stateStore.close();
   }
+
 }

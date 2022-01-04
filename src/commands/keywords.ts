@@ -20,6 +20,7 @@ export const KEYWORD_GROUPS: Readonly<Record<KeywordGroup, KeywordGroupPropertie
 };
 
 class KeywordDetails implements Keyword {
+
   constructor(
     readonly name: KeywordName,
     readonly details: string,
@@ -30,6 +31,7 @@ class KeywordDetails implements Keyword {
   text(type: SyntaxType): string {
     return type === SyntaxType.KEYWORD ? this.name.toLowerCase() : `-${this.name.toLowerCase()}`;
   }
+
 }
 
 export const KEYWORDS: Readonly<

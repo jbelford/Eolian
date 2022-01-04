@@ -10,7 +10,7 @@ import {
   PatternMatchResult,
   PatternValues,
   SyntaxType,
-  UrlArgument,
+  UrlArgument
 } from './@types';
 
 type Patterns = Partial<Record<string, Pattern>> & {
@@ -221,22 +221,27 @@ function matchGroup(text: string, reg: RegExp, group: number): PatternMatchResul
 }
 
 class PassthroughExample implements ArgumentExample {
+
   constructor(private readonly _text: string) {}
 
   text(): string {
     return this._text;
   }
+
 }
 
 class SearchExample implements ArgumentExample {
+
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
     return type === SyntaxType.KEYWORD ? `(${this._text})` : this._text;
   }
+
 }
 
 class RangeExample implements ArgumentExample {
+
   constructor(private readonly _text: string, private readonly name: string) {}
 
   text(type: SyntaxType): string {
@@ -249,6 +254,7 @@ class RangeExample implements ArgumentExample {
         return this._text;
     }
   }
+
 }
 
 export function getRangeOption(

@@ -13,7 +13,7 @@ import {
   Guild,
   Intents,
   Interaction,
-  Message,
+  Message
 } from 'discord.js';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
 import { ButtonRegistry } from './button';
@@ -21,13 +21,13 @@ import {
   DiscordClient,
   DiscordGuildClient,
   DISCORD_INVITE_PERMISSIONS,
-  INVITE_SCOPES,
+  INVITE_SCOPES
 } from './client';
 import {
   DiscordButtonInteraction,
   DiscordCommandInteraction,
   DiscordMessageCommandInteraction,
-  DiscordMessageInteraction,
+  DiscordMessageInteraction
 } from './interaction';
 import { registerGuildSlashCommands } from './register_commands';
 import { DiscordGuildStore } from './state';
@@ -76,6 +76,7 @@ const DISCORD_CLIENT_OPTIONS: ClientOptions = {
 };
 
 export class DiscordEolianBot implements EolianBot {
+
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
   private readonly guildStore: DiscordGuildStore;
@@ -188,8 +189,8 @@ export class DiscordEolianBot implements EolianBot {
       if (interaction.isButton()) {
         await this.onButtonClickHandler(interaction);
       } else if (
-        interaction.isCommand() ||
-        (interaction.isContextMenu() && interaction.targetType === 'MESSAGE')
+        interaction.isCommand()
+        || (interaction.isContextMenu() && interaction.targetType === 'MESSAGE')
       ) {
         await this.onCommandHandler(interaction);
       } else {
@@ -410,4 +411,5 @@ export class DiscordEolianBot implements EolianBot {
         return false;
     }
   }
+
 }

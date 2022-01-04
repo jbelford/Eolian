@@ -17,7 +17,7 @@ import {
   YouTubeApi,
   YoutubePlaylist,
   YouTubeUrlDetails,
-  YoutubeVideo,
+  YoutubeVideo
 } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;
@@ -31,6 +31,7 @@ const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+vi
 play.setToken({ youtube: { cookie: environment.tokens.youtube.cookie } });
 
 export class YouTubeApiImpl implements YouTubeApi {
+
   private readonly cache: MemoryCache<{ url: string; live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
@@ -178,8 +179,8 @@ export class YouTubeApiImpl implements YouTubeApi {
         // topicId: MUSIC_TOPIC,
         // videoCategoryId: MUSIC_CATEGORY_ID
       });
-      const videoResponse =
-        response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
+      const videoResponse
+        = response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
       if (!videoResponse.length) return [];
 
       const videos = videoResponse
@@ -280,25 +281,26 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
     return new YouTubeStreamSource(track.url);
   }
+
 }
 
 function mapVideoResponse(
   video: youtube_v3.Schema$Video | youtube_v3.Schema$PlaylistItem | youtube_v3.Schema$SearchResult
 ): YoutubeVideo {
   const thumbnails = video.snippet!.thumbnails!;
-  const id =
-    (video as youtube_v3.Schema$PlaylistItem).snippet?.resourceId?.videoId ??
-    (typeof video.id! === 'string' ? video.id! : video.id!.videoId!);
+  const id
+    = (video as youtube_v3.Schema$PlaylistItem).snippet?.resourceId?.videoId
+    ?? (typeof video.id! === 'string' ? video.id! : video.id!.videoId!);
   return {
     id,
     name: decode(video.snippet!.title!),
     channelName: decode(video.snippet!.channelTitle!),
     url: `https://www.youtube.com/watch?v=${id}`,
     artwork:
-      thumbnails.maxres?.url ??
-      thumbnails.standard?.url ??
-      thumbnails.medium?.url ??
-      thumbnails.default!.url!,
+      thumbnails.maxres?.url
+      ?? thumbnails.standard?.url
+      ?? thumbnails.medium?.url
+      ?? thumbnails.default!.url!,
     isLive: (video.snippet as youtube_v3.Schema$VideoSnippet).liveBroadcastContent === 'live',
   };
 }
@@ -330,6 +332,7 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
 }
 
 class YouTubeStreamSource implements StreamSource {
+
   constructor(private readonly url: string) {}
 
   async get(seek?: number): Promise<Readable> {
@@ -337,4 +340,5 @@ class YouTubeStreamSource implements StreamSource {
     const result = await play.stream(this.url, { seek });
     return result.stream;
   }
+
 }

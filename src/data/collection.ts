@@ -7,6 +7,7 @@ interface MongoDoc {
 }
 
 export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
+
   constructor(protected readonly collection: Collection<T>) {}
 
   async get(id: string): Promise<T | null> {
@@ -38,9 +39,11 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     const result = await this.collection.updateOne({ _id: id } as Filter<T>, { $unset: unset });
     return result.modifiedCount > 0;
   }
+
 }
 
 export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
+
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {
     await this.setProperty(id, 'soundcloud', soundcloud);
   }
@@ -64,9 +67,11 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
   async removeIdentifier(id: string, key: string): Promise<boolean> {
     return await this.unsetProperty(id, `identifiers.${key}`);
   }
+
 }
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
+
   async getIdleServers(minDate: Date): Promise<ServerDTO[]> {
     const result = await this.collection
       .find({
@@ -139,4 +144,5 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
   async setDjAllowLimited(id: string, allow: boolean): Promise<void> {
     await this.setProperty(id, 'djAllowLimited', allow);
   }
+
 }

@@ -7,7 +7,7 @@ import {
   MessageCollector,
   MessageOptions,
   Permissions,
-  TextChannel,
+  TextChannel
 } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
@@ -19,7 +19,7 @@ import {
   ContextUser,
   EmbedMessage,
   MessageButtonOnClickHandler,
-  SelectionResult,
+  SelectionResult
 } from './@types';
 import { ButtonRegistry } from './button';
 import {
@@ -27,7 +27,7 @@ import {
   DiscordMessage,
   DiscordMessageButtons,
   mapDiscordEmbed,
-  mapDiscordEmbedButtons,
+  mapDiscordEmbedButtons
 } from './message';
 
 export const STOP_EMOJI = '🚫';
@@ -37,6 +37,7 @@ export interface DiscordMessageSender {
 }
 
 export class DiscordSender implements ContextSendable {
+
   private _sendable?: boolean;
 
   constructor(
@@ -53,10 +54,10 @@ export class DiscordSender implements ContextSendable {
           (this.channel as TextChannel).guild.me!
         );
         this._sendable &&= !!permissions?.has(
-          Permissions.FLAGS.VIEW_CHANNEL |
-            Permissions.FLAGS.SEND_MESSAGES |
-            Permissions.FLAGS.EMBED_LINKS |
-            Permissions.FLAGS.READ_MESSAGE_HISTORY
+          Permissions.FLAGS.VIEW_CHANNEL
+            | Permissions.FLAGS.SEND_MESSAGES
+            | Permissions.FLAGS.EMBED_LINKS
+            | Permissions.FLAGS.READ_MESSAGE_HISTORY
         );
       }
     }
@@ -219,9 +220,11 @@ export class DiscordSender implements ContextSendable {
     }
     return undefined;
   }
+
 }
 
 export class DiscordTextChannel implements ContextTextChannel {
+
   private readonly sender: DiscordSender;
 
   constructor(
@@ -279,4 +282,5 @@ export class DiscordTextChannel implements ContextTextChannel {
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed);
   }
+
 }

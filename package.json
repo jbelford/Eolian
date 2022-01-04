@@ -7,8 +7,7 @@
     "build": "webpack --config webpack.prod.js",
     "build-dev": "webpack --config webpack.dev.js",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
-    "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
-    "format": "prettier --write ."
+    "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi"
   },
   "keywords": [
     "music",

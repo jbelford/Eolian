@@ -57,9 +57,9 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
   const spotifyUser = await spotify.getUser(resource.id);
   await context.interaction.user.setSpotify(spotifyUser.id);
   await context.interaction.send(
-    `I have set your Spotify account to \`${spotifyUser.display_name}\`!` +
-      ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\`` +
-      ` keyword to search your playlists.`
+    `I have set your Spotify account to \`${spotifyUser.display_name}\`!`
+      + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
+      + ` keyword to search your playlists.`
   );
 }
 
@@ -97,9 +97,9 @@ async function handleSoundCloud(
 ): Promise<string> {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
   return (
-    `I have set your SoundCloud account to \`${soundCloudUser.username}\`!` +
-    ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword` +
-    ` to use your playlists, likes, and tracks.`
+    `I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
+    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
+    + ` to use your playlists, likes, and tracks.`
   );
 }
 

@@ -2,6 +2,7 @@ import NodeCache from 'node-cache';
 import { EolianCache, ListCache, MemoryCache } from './@types';
 
 export class InMemoryCache<V> implements EolianCache<V> {
+
   private cache: NodeCache;
 
   constructor(
@@ -54,9 +55,11 @@ export class InMemoryCache<V> implements EolianCache<V> {
   async refreshTTL(key: string): Promise<boolean> {
     return this.cache.ttl(key, this.ttl);
   }
+
 }
 
 export class InMemoryListCache<V> implements ListCache<V> {
+
   private counts = new Map<string, number>();
   private cache: EolianCache<V[]>;
 
@@ -145,9 +148,11 @@ export class InMemoryListCache<V> implements ListCache<V> {
   async close(): Promise<void> {
     await this.cache.close();
   }
+
 }
 
 class CacheNode<T> {
+
   prev?: CacheNode<T>;
   next?: CacheNode<T>;
 
@@ -165,9 +170,11 @@ class CacheNode<T> {
     this._id = id;
     this._value = value;
   }
+
 }
 
 export class InMemoryLRUCache<T> implements MemoryCache<T> {
+
   private map = new Map<string, CacheNode<T>>();
   private head?: CacheNode<T>;
   private tail?: CacheNode<T>;
@@ -226,4 +233,5 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
     node.prev = undefined;
     node.next = undefined;
   }
+
 }

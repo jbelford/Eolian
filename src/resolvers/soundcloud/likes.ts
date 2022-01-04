@@ -11,6 +11,7 @@ import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistResolver } from './artist';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
+
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
     return createSoundCloudLikes(
@@ -20,6 +21,7 @@ export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
       result.message
     );
   }
+
 }
 
 export function createSoundCloudLikes(
@@ -43,6 +45,7 @@ export function createSoundCloudLikes(
 }
 
 export class SoundCloudFavoritesFetcher implements SourceFetcher {
+
   constructor(
     private readonly id: number,
     private readonly params: CommandOptions,
@@ -74,4 +77,5 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
     return { max, downloader };
   }
+
 }

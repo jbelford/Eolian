@@ -4,6 +4,7 @@ import { MusicQueueCache, ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
 
 export class GuildQueue extends EventEmitter implements ServerQueue {
+
   private lastUpdated = Date.now();
   private loopEnabled = false;
 
@@ -99,4 +100,5 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
     this.emit('remove');
     this.emitUpdate();
   };
+
 }

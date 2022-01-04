@@ -11,6 +11,7 @@ import { createSpotifyArtist } from './artist';
 import { createSpotifyPlaylist } from './playlist';
 
 export class SpotifyUrlResolver implements SourceResolver {
+
   constructor(
     private readonly url: string,
     private readonly params: CommandOptions,
@@ -48,6 +49,7 @@ export class SpotifyUrlResolver implements SourceResolver {
     }
     throw new EolianUserError('The Spotify URL is not valid!');
   }
+
 }
 
 function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
@@ -65,10 +67,12 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
 }
 
 export class SpotifySongFetcher implements SourceFetcher {
+
   constructor(private readonly id: string, private readonly track?: SpotifyTrack) {}
 
   async fetch(): Promise<FetchResult> {
     const track = this.track ? this.track : await spotify.getTrack(this.id);
     return { tracks: [mapSpotifyTrack(track)] };
   }
+
 }

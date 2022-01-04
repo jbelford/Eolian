@@ -2,6 +2,7 @@ import { Closable } from 'common/@types';
 import { createServer, Server } from 'http';
 
 export class WebServer implements Closable {
+
   private readonly server: Server;
 
   constructor() {
@@ -25,4 +26,5 @@ export class WebServer implements Closable {
       }
     });
   }
+
 }

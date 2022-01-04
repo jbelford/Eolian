@@ -14,7 +14,7 @@ import {
   StreamSource,
   Track,
   TrackSource,
-  YouTubeApi,
+  YouTubeApi
 } from './@types';
 
 const SOUNDCLOUD_API = 'https://api.soundcloud.com';
@@ -23,6 +23,7 @@ const TRACKS_PARAMS = {
 };
 
 export class SoundCloudApiImpl implements SoundCloudApi {
+
   private scReq: SoundCloudRequest;
 
   constructor(clientId: string, clientSecret: string, private readonly youtube: YouTubeApi) {
@@ -180,9 +181,9 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     let requests = 1;
     while (
-      result.next_href &&
-      (!options.total || items.length < options.total) &&
-      (!options.requestLimit || requests < options.requestLimit)
+      result.next_href
+      && (!options.total || items.length < options.total)
+      && (!options.requestLimit || requests < options.requestLimit)
     ) {
       result = await this.scReq.getUri<SoundCloudPaginatedResult<T>>(
         `${result.next_href}&${extraParams}`
@@ -217,6 +218,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     return new SoundCloudStreamSource(this.scReq, track.url, track.stream);
   }
+
 }
 
 type GetPaginatedItemsOptions = {
@@ -240,6 +242,7 @@ export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
 }
 
 class SoundCloudRequest {
+
   private expiration = 0;
   private accessToken?: string;
 
@@ -284,9 +287,11 @@ class SoundCloudRequest {
 
     return await httpRequest(tokenUrl, { method: 'POST', form, json: true });
   }
+
 }
 
 class SoundCloudStreamSource implements StreamSource {
+
   constructor(
     private readonly scReq: SoundCloudRequest,
     private readonly url: string,
@@ -297,4 +302,5 @@ class SoundCloudStreamSource implements StreamSource {
     logger.info('Getting soundcloud stream %s', this.url);
     return this.scReq.getAysnc(this.stream);
   }
+
 }

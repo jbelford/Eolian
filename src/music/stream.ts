@@ -23,6 +23,7 @@ const FFMPEG_ARGUMENTS = [
 const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 
 export class SongStream extends EventEmitter implements Closable {
+
   private output: prism.VolumeTransformer;
   private songStream?: Readable;
   private pcmTransform?: prism.FFmpeg;
@@ -136,4 +137,5 @@ export class SongStream extends EventEmitter implements Closable {
       this.cleanup(e);
     }
   }
+
 }

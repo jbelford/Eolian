@@ -6,6 +6,7 @@ import { ContextUser, ContextVoiceChannel, ServerDetails } from './@types';
 import { DiscordVoiceChannel } from './voice';
 
 export class DiscordUser implements ContextUser {
+
   private dto?: UserDTO;
   private _permission: UserPermission;
 
@@ -120,6 +121,7 @@ export class DiscordUser implements ContextUser {
       await this.users.removeSoundCloud(this.id);
     }
   }
+
 }
 
 export function getPermissionLevel(

@@ -17,8 +17,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const user = await context.interaction.user.get();
     const spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
-    const soundCloudAccount =
-      user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
+    const soundCloudAccount
+      = user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
 
     const message = createUserDetailsEmbed(
       context.interaction.user,

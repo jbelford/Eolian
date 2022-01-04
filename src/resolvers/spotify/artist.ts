@@ -8,6 +8,7 @@ import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SpotifyArtistResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -30,6 +31,7 @@ export class SpotifyArtistResolver implements SourceResolver {
       return createSpotifyArtist(artists[result.selected], result.message);
     }
   }
+
 }
 
 export function createSpotifyArtist(
@@ -51,10 +53,12 @@ export function createSpotifyArtist(
 }
 
 export class SpotifyArtistFetcher implements SourceFetcher {
+
   constructor(private readonly id: string) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks = await spotify.getArtistTracks(this.id);
     return { tracks: tracks.map(track => mapSpotifyTrack(track)) };
   }
+
 }

@@ -2,6 +2,7 @@ import { logger } from 'common/logger';
 import { EmbedMessageButton } from './@types';
 
 export class ButtonRegistry {
+
   private readonly registry = new Map<string, Map<string, EmbedMessageButton>>();
 
   register(messageId: string, buttons: Map<string, EmbedMessageButton>): void {
@@ -19,4 +20,5 @@ export class ButtonRegistry {
     logger.info('Unregistering buttons for message %s', messageId);
     this.registry.delete(messageId);
   }
+
 }

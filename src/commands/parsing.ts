@@ -13,7 +13,7 @@ import {
   ParsedCommand,
   Pattern,
   PatternValues,
-  SyntaxType,
+  SyntaxType
 } from './@types';
 import { KEYWORDS } from './keywords';
 import { PATTERNS, PATTERNS_SORTED } from './patterns';
@@ -143,6 +143,7 @@ function getCommandOptionParsingStrategy(
 }
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
+
   messageInvokesBot(message: string, prefix = environment.cmdToken): boolean {
     return message.trim().charAt(0) === prefix;
   }
@@ -171,6 +172,7 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
 
     return { command, options };
   }
+
 }
 
 export function getCommand(commandName: string, permission: UserPermission): Command {

@@ -3,7 +3,7 @@ import {
   SoundCloudPlaylist,
   SoundCloudResourceType,
   SoundCloudTrack,
-  SoundCloudUser,
+  SoundCloudUser
 } from 'api/@types';
 import { EolianUserError } from 'common/errors';
 import { ResolvedResource, SourceResolver } from '../@types';
@@ -12,6 +12,7 @@ import { createSoundCloudPlaylist } from './playlist';
 import { createSoundCloudSong } from './song';
 
 export class SoundCloudUrlResolver implements SourceResolver {
+
   constructor(private readonly url: string) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -27,4 +28,5 @@ export class SoundCloudUrlResolver implements SourceResolver {
         throw new EolianUserError('The SoundCloud URL is not valid!');
     }
   }
+
 }

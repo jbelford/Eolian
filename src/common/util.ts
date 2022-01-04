@@ -26,8 +26,8 @@ export function convertRangeToAbsolute(
 
   if (range.stop) {
     newStart = Math.min(max - 1, Math.max(1, range.start) - 1);
-    newStop =
-      range.stop < 0 ? max + range.stop + 1 : Math.min(max - 1, Math.max(1, range.stop) - 1);
+    newStop
+      = range.stop < 0 ? max + range.stop + 1 : Math.min(max - 1, Math.max(1, range.stop) - 1);
 
     if (reverse) {
       newStart = max - newStart;
@@ -63,6 +63,7 @@ export const noop = (): void => {
 };
 
 export class ExponentialSleep implements RetrySleepAlgorithm {
+
   private _count = 0;
 
   constructor(private readonly initial = 1000, private readonly multiplier = 2) {
@@ -83,6 +84,7 @@ export class ExponentialSleep implements RetrySleepAlgorithm {
     await sleep(this.initial * this.multiplier ** this.count);
     ++this._count;
   }
+
 }
 
 export function cleanupOnExit(resources: Closable[]) {

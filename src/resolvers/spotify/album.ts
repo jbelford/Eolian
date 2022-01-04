@@ -9,6 +9,7 @@ import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SpotifyAlbumResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -36,6 +37,7 @@ export class SpotifyAlbumResolver implements SourceResolver {
       return createSpotifyAlbum(albums[result.selected], result.message);
     }
   }
+
 }
 
 export function createSpotifyAlbum(
@@ -57,6 +59,7 @@ export function createSpotifyAlbum(
 }
 
 export class SpotifyAlbumFetcher implements SourceFetcher {
+
   constructor(private readonly id: string, private readonly album?: SpotifyAlbum) {}
 
   async fetch(): Promise<FetchResult> {
@@ -71,4 +74,5 @@ export class SpotifyAlbumFetcher implements SourceFetcher {
     const tracks = album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
     return { tracks };
   }
+
 }

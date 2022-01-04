@@ -6,7 +6,7 @@ import {
   createAudioResource,
   NoSubscriberBehavior,
   StreamType,
-  VoiceConnectionStatus,
+  VoiceConnectionStatus
 } from '@discordjs/voice';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
 import { environment } from 'common/env';
@@ -34,6 +34,7 @@ const PLAYER_RETRIES = 2;
  *
  */
 export class DiscordPlayer extends EventEmitter implements Player {
+
   private lastUsed = Date.now();
   private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: SongStream | null = null;
@@ -310,4 +311,5 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stop();
     this.emitError();
   };
+
 }

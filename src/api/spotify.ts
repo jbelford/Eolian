@@ -19,7 +19,7 @@ import {
   StreamSource,
   Track,
   TrackSource,
-  YouTubeApi,
+  YouTubeApi
 } from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
@@ -30,6 +30,7 @@ const SPOTIFY_API = 'https://api.spotify.com';
 const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
 
 export class SpotifyApiImpl implements SpotifyApi {
+
   private expiration = 0;
   private accessToken?: string;
 
@@ -300,6 +301,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
     return items;
   }
+
 }
 
 type GetAllItemsOptions<T> = {

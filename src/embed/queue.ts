@@ -31,9 +31,9 @@ export function createQueueEmbed(
 
   if (tracks.length) {
     embed.title = `${start + 1}. ${tracks[0].title}`;
-    embed.description +=
-      `from ${tracks[0].poster}\n\n` +
-      tracks
+    embed.description
+      += `from ${tracks[0].poster}\n\n`
+      + tracks
         .slice(1)
         .map((t, i) => `**${i + start + 2}. ${trackNameFormat(t)}**`)
         .join('\n');

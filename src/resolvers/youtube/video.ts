@@ -8,6 +8,7 @@ import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class YouTubeVideoResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -30,6 +31,7 @@ export class YouTubeVideoResolver implements SourceResolver {
       return createYouTubeVideo(videos[result.selected], result.message);
     }
   }
+
 }
 
 export function createYouTubeVideo(
@@ -51,6 +53,7 @@ export function createYouTubeVideo(
 }
 
 export class YouTubeVideoFetcher implements SourceFetcher {
+
   constructor(private readonly id: string, private readonly video?: YoutubeVideo) {}
 
   async fetch(): Promise<FetchResult> {
@@ -62,4 +65,5 @@ export class YouTubeVideoFetcher implements SourceFetcher {
     }
     return { tracks: [mapYouTubeVideo(video)], rangeOptimized: true };
   }
+
 }

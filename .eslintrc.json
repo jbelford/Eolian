@@ -15,6 +15,14 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "no-fallthrough": "off"
+    "no-fallthrough": "off",
+    "padded-blocks": [
+      "error",
+      { "classes": "always" }
+    ],
+    "operator-linebreak": [
+      "error",
+      "before"
+    ]
   }
 }

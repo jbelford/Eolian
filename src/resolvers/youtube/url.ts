@@ -10,6 +10,7 @@ const MY_MIX_PLAYLIST_ID = 'RDMM';
 const LIKED_MUSIC_ID = 'LM';
 
 export class YouTubeUrlResolver implements SourceResolver {
+
   constructor(private readonly url: string, private readonly context: CommandContext) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -52,4 +53,5 @@ export class YouTubeUrlResolver implements SourceResolver {
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');
   }
+
 }

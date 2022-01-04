@@ -9,6 +9,7 @@ import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class YouTubePlaylistResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -35,6 +36,7 @@ export class YouTubePlaylistResolver implements SourceResolver {
       );
     }
   }
+
 }
 
 export function createYouTubePlaylist(
@@ -57,6 +59,7 @@ export function createYouTubePlaylist(
 }
 
 export class YouTubePlaylistFetcher implements SourceFetcher {
+
   constructor(private readonly id: string, private readonly sendable: ContextSendable) {}
 
   async fetch(): Promise<FetchResult> {
@@ -64,4 +67,5 @@ export class YouTubePlaylistFetcher implements SourceFetcher {
     const videos = await youtube.getPlaylistVideos(this.id, progress);
     return { tracks: videos.map(mapYouTubeVideo) };
   }
+
 }

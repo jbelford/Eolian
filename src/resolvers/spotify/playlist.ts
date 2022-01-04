@@ -10,6 +10,7 @@ import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SpotifyPlaylistResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -62,6 +63,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     return playlists;
   }
+
 }
 
 export function createSpotifyPlaylist(
@@ -85,6 +87,7 @@ export function createSpotifyPlaylist(
 }
 
 export class SpotifyPlaylistFetcher implements SourceFetcher {
+
   constructor(
     private readonly id: string,
     private readonly params: CommandOptions,
@@ -97,8 +100,8 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
     let rangeOptimized = false;
 
     if (
-      this.playlist?.tracks.items &&
-      this.playlist.tracks.total === this.playlist.tracks.items.length
+      this.playlist?.tracks.items
+      && this.playlist.tracks.total === this.playlist.tracks.items.length
     ) {
       playlist = this.playlist as SpotifyPlaylistTracks;
     } else {
@@ -116,4 +119,5 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
       .map(item => mapSpotifyTrack(item.track!, undefined, defaultForLocals));
     return { tracks, rangeOptimized };
   }
+
 }

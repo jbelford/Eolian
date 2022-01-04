@@ -44,9 +44,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   await context.interaction.user.setIdentifier(options.IDENTIFIER, resource.identifier);
-  const response =
-    `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\`` +
-    ` can now be identified with \`${options.IDENTIFIER}\`.`;
+  const response
+    = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
+    + ` can now be identified with \`${options.IDENTIFIER}\`.`;
   if (resource.selectionMessage) {
     await resource.selectionMessage.edit(response);
   } else {

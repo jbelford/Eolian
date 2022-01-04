@@ -9,12 +9,13 @@ import {
   MessageBundledResult,
   ResolvedResource,
   SourceFetcher,
-  SourceResolver,
+  SourceResolver
 } from 'resolvers/@types';
 
 type UserResult = MessageBundledResult<SoundCloudUser>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
+
   constructor(
     protected readonly context: CommandContext,
     protected readonly params: CommandOptions
@@ -58,9 +59,11 @@ export class SoundCloudArtistResolver implements SourceResolver {
     }
     return await soundcloud.getUser(user.soundcloud);
   }
+
 }
 
 export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
+
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
     const resource = createSoundCloudUser(result);
@@ -69,6 +72,7 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;
   }
+
 }
 
 export function createSoundCloudUser({ value: user, message }: UserResult): ResolvedResource {
@@ -87,10 +91,12 @@ export function createSoundCloudUser({ value: user, message }: UserResult): Reso
 }
 
 export class SoundCloudArtistFetcher implements SourceFetcher {
+
   constructor(private readonly id: number) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks = await soundcloud.getUserTracks(this.id);
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
+
 }

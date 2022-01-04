@@ -10,7 +10,7 @@ import {
   createCommandDetailsEmbed,
   createCommandListEmbed,
   createKeywordDetailsEmbed,
-  createPatternDetailsEmbed,
+  createPatternDetailsEmbed
 } from 'embed';
 
 async function execute(
@@ -37,8 +37,8 @@ async function execute(
     idx--;
   }
 
-  const category =
-    !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
+  const category
+    = !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
       ? COMMAND_CATEGORIES[idx]
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
@@ -57,8 +57,8 @@ async function execute(
 
   const command = COMMAND_MAP[arg];
   if (
-    command &&
-    (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
+    command
+    && (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
   ) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
     await interaction.sendEmbed(commandEmbed);
@@ -67,8 +67,8 @@ async function execute(
 
   const keyword = KEYWORDS[arg.toUpperCase()];
   if (
-    keyword &&
-    (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)
+    keyword
+    && (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)
   ) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await interaction.sendEmbed(keywordEmbed);
@@ -77,8 +77,8 @@ async function execute(
 
   const pattern = PATTERNS[arg.toUpperCase()];
   if (
-    pattern &&
-    (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)
+    pattern
+    && (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)
   ) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await interaction.sendEmbed(patternEmbed);

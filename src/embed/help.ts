@@ -18,12 +18,12 @@ export function createCategoryListEmbed(
       text: `You can activate commands by tagging me directly OR by placing a \`${prefix}\` symbol at the beginning of the message.`,
     },
   };
-  embed.description +=
-    '```\n' +
-    categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n') +
-    '```' +
-    `\nUse \`help help\` to see more details about using this command` +
-    `\n\n${helpFooter}`;
+  embed.description
+    += '```\n'
+    + categories.map((category, i) => `${i + 1}: ${category.name}`).join('\n')
+    + '```'
+    + `\nUse \`help help\` to see more details about using this command`
+    + `\n\n${helpFooter}`;
   return embed;
 }
 
@@ -85,21 +85,21 @@ export function createCommandDetailsEmbed(
   };
 
   if (command.keywords?.length) {
-    embed.description +=
-      '**Accepted Keywords**\n```\n' +
-      command.keywords.map(keyword => keyword.name).join(' ') +
-      '```\n';
+    embed.description
+      += '**Accepted Keywords**\n```\n'
+      + command.keywords.map(keyword => keyword.name).join(' ')
+      + '```\n';
   }
   if (command.patterns?.length) {
-    embed.description +=
-      '**Accepted Patterns**\n```\n' +
-      command.patterns.map(pattern => pattern.name).join(' ') +
-      '```\n';
+    embed.description
+      += '**Accepted Patterns**\n```\n'
+      + command.patterns.map(pattern => pattern.name).join(' ')
+      + '```\n';
   }
 
   if (command.patterns?.length) {
-    embed.description +=
-      'Use `help <name of pattern or keyword>` to learn more about patterns and keywords. Most arguments are based on them!\n\n';
+    embed.description
+      += 'Use `help <name of pattern or keyword>` to learn more about patterns and keywords. Most arguments are based on them!\n\n';
   }
 
   embed.description += helpFooter;
@@ -149,10 +149,10 @@ export function createPatternDetailsEmbed(
       text: `Requires DJ Role? ${getRequiresDjState(pattern.permission)}`,
     },
   };
-  embed.description +=
-    '**Example Usage:**\n```\n' +
-    pattern.usage.map(example => pattern.ex(example).text(type)).join('\n') +
-    '```';
+  embed.description
+    += '**Example Usage:**\n```\n'
+    + pattern.usage.map(example => pattern.ex(example).text(type)).join('\n')
+    + '```';
   embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
   embed.description += `\n\n${helpFooter}`;
   return embed;

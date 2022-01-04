@@ -3,13 +3,14 @@ import {
   entersState,
   joinVoiceChannel,
   VoiceConnection,
-  VoiceConnectionStatus,
+  VoiceConnectionStatus
 } from '@discordjs/voice';
 import { logger } from 'common/logger';
 import { Client, VoiceChannel } from 'discord.js';
 import { ContextVoiceChannel, ContextVoiceConnection } from './@types';
 
 export class DiscordVoiceChannel implements ContextVoiceChannel {
+
   constructor(private readonly channel: VoiceChannel) {}
 
   get id(): string {
@@ -31,9 +32,11 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
   hasPeopleListening(): boolean {
     return !!this.channel.members.find(member => !member.user.bot && !member.voice.deaf);
   }
+
 }
 
 export class DiscordVoiceConnection implements ContextVoiceConnection {
+
   constructor(private readonly client: Client, readonly discordConnection: VoiceConnection) {}
 
   get channelId(): string {
@@ -74,4 +77,5 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
   async close(): Promise<void> {
     this.discordConnection.destroy();
   }
+
 }

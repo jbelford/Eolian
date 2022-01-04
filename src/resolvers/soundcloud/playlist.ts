@@ -8,6 +8,7 @@ import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SoundCloudPlaylistResolver implements SourceResolver {
+
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -55,6 +56,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
     return playlists;
   }
+
 }
 
 export function createSoundCloudPlaylist(
@@ -76,6 +78,7 @@ export function createSoundCloudPlaylist(
 }
 
 export class SoundCloudPlaylistFetcher implements SourceFetcher {
+
   constructor(private readonly id: number, private readonly playlist?: SoundCloudPlaylist) {}
 
   async fetch(): Promise<FetchResult> {
@@ -88,4 +91,5 @@ export class SoundCloudPlaylistFetcher implements SourceFetcher {
     }
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
+
 }

@@ -5,7 +5,7 @@ import {
   MessageActionRow,
   MessageButton,
   MessageEditOptions,
-  MessageEmbed,
+  MessageEmbed
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
@@ -17,6 +17,7 @@ export interface DiscordMessageButtons {
 }
 
 export class DiscordMessage implements ContextMessage {
+
   constructor(
     private readonly message: Message,
     private readonly buttons?: DiscordMessageButtons
@@ -102,6 +103,7 @@ export class DiscordMessage implements ContextMessage {
       }
     }
   }
+
 }
 
 export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {

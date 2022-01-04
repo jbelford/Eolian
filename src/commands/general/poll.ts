@@ -11,10 +11,11 @@ import {
   ContextMessage,
   ContextSendable,
   ContextUser,
-  MessageButtonOnClickHandler,
+  MessageButtonOnClickHandler
 } from 'framework/@types';
 
 class PollMessage implements Closable {
+
   private options: PollOption[];
   private userSelections = new Map<string, PollOption>();
 
@@ -97,6 +98,7 @@ class PollMessage implements Closable {
     await this.sendResults();
     return true;
   };
+
 }
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {

@@ -10,7 +10,7 @@ import {
   Message,
   MessageActionRow,
   MessageOptions,
-  TextChannel,
+  TextChannel
 } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
 import {
@@ -23,7 +23,7 @@ import {
   ContextUser,
   EmbedMessage,
   SelectionResult,
-  ServerDetails,
+  ServerDetails
 } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
@@ -32,6 +32,7 @@ import { parseMessageCommand, parseSlashCommand } from './register_commands';
 import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
+
   constructor(private readonly interaction: ButtonInteraction | BaseCommandInteraction) {}
 
   async send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message> {
@@ -60,11 +61,13 @@ class CommandInteractionSender implements DiscordMessageSender {
     }
     return reply;
   }
+
 }
 
 class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
   implements ContextInteraction
 {
+
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _sender?: DiscordSender;
@@ -146,12 +149,14 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
   ): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed, options);
   }
+
 }
 
 export class DiscordButtonInteraction
   extends DiscordInteraction<ButtonInteraction>
   implements ContextButtonInteraction
 {
+
   private _message?: ContextMessage;
 
   constructor(interaction: ButtonInteraction, registry: ButtonRegistry, users: UsersDb) {
@@ -172,12 +177,14 @@ export class DiscordButtonInteraction
   async deferUpdate(): Promise<void> {
     await this.interaction.deferUpdate();
   }
+
 }
 
 export class DiscordCommandInteraction
   extends DiscordInteraction<CommandInteraction>
   implements ContextCommandInteraction
 {
+
   readonly isSlash = true;
 
   constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
@@ -203,12 +210,14 @@ export class DiscordCommandInteraction
   toString(): string {
     return this.interaction.toString();
   }
+
 }
 
 export class DiscordMessageCommandInteraction
   extends DiscordInteraction<ContextMenuInteraction>
   implements ContextCommandInteraction
 {
+
   readonly isSlash = true;
   readonly reactable = false;
   private _message?: Message;
@@ -242,17 +251,21 @@ export class DiscordMessageCommandInteraction
   toString(): string {
     return `(${this.interaction.commandName}) ${this.message.content}`;
   }
+
 }
 
 class MessageInteractionSender implements DiscordMessageSender {
+
   constructor(private readonly message: Message) {}
 
   async send(options: MessageOptions): Promise<Message<boolean>> {
     return this.message.reply(options);
   }
+
 }
 
 export class DiscordMessageInteraction implements ContextCommandInteraction {
+
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
@@ -358,6 +371,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
   toString(): string {
     return this.discordMessage.content;
   }
+
 }
 
 function removeMentions(text: string): string {

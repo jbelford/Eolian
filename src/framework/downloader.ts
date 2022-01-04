@@ -2,6 +2,7 @@ import { ProgressUpdater } from 'common/@types';
 import { ContextMessage, ContextSendable } from './@types';
 
 export class DownloaderDisplay implements ProgressUpdater {
+
   private lastSent = 0;
   private value = 0;
   private message?: ContextMessage;
@@ -46,4 +47,5 @@ export class DownloaderDisplay implements ProgressUpdater {
       }
     }
   };
+
 }
