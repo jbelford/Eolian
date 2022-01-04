@@ -19,7 +19,11 @@
     "semi": "error",
     "no-mixed-operators": "error",
     "no-fallthrough": "off",
-    "no-multiple-empty-lines": "error",
+    "no-multiple-empty-lines": [
+      "error",
+      { "max": 1, "maxEOF": 0 }
+    ],
+    "eol-last": "error",
     "object-curly-spacing": [
       "error",
       "always"
