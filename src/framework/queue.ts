@@ -21,7 +21,7 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
   }
 
   async setLoopMode(enabled: boolean): Promise<void> {
-    if (this.loopEnabled != enabled) {
+    if (this.loopEnabled !== enabled) {
       this.loopEnabled = enabled;
       this.emitUpdate();
     }

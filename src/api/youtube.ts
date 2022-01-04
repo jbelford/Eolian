@@ -47,13 +47,13 @@ export class YouTubeApiImpl implements YouTubeApi {
     if (match) {
       if (match.groups?.video) {
         return {
-          video: match.groups['video'],
+          video: match.groups.video,
         };
       } else {
         const parsed = querystring.parse(query);
         return {
-          playlist: parsed['list'] as string,
-          video: parsed['v'] as string,
+          playlist: parsed.list as string,
+          video: parsed.v as string,
         };
       }
     }

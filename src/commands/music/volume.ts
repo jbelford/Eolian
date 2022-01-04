@@ -19,7 +19,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     volume = options.NUMBER[0] / 100;
   }
 
-  if (context.server!.player.volume != volume) {
+  if (context.server!.player.volume !== volume) {
     context.server!.player.setVolume(volume);
   }
 

@@ -98,7 +98,7 @@ function extractRoleId(id: string) {
   if (!result) {
     throw new EolianUserError(`${id} is not a role!`);
   }
-  id = result.groups!['id'];
+  id = result.groups!.id;
   return id;
 }
 

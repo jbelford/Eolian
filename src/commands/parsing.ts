@@ -72,7 +72,7 @@ function traditionalOptionsStrategy(
   const reg = /(^|\s)-(?<keyword>\w+)/g;
   for (const match of text.matchAll(reg)) {
     if (match.groups) {
-      const name = match.groups['keyword'].toUpperCase();
+      const name = match.groups.keyword.toUpperCase();
       const keyword = KEYWORDS[name];
       if (keyword) {
         checkSetKeyword(keyword, permission, options, keywordSet.has(keyword.name));

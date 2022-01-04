@@ -15,7 +15,16 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "eqeqeq": "error",
+    "semi": "error",
+    "no-mixed-operators": "error",
     "no-fallthrough": "off",
+    "no-multiple-empty-lines": "error",
+    "object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "dot-notation": "error",
     "padded-blocks": [
       "error",
       { "classes": "always" }

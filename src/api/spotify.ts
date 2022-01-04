@@ -214,8 +214,8 @@ export class SpotifyApiImpl implements SpotifyApi {
     const reg = /^\s*(?<title>.*[^\s])\s+-\s+(?<extra>[^-]+)\s*$/i;
     const match = reg.exec(trackCopy.title);
     if (match && match.groups) {
-      const title = match.groups['title'];
-      const extra = match.groups['extra'];
+      const title = match.groups.title;
+      const extra = match.groups.extra;
 
       // Remove 'remastered' as it often leads to flaky search results
       const noRemastered = extra.replace(/\s*remastered\s*/i, '');
@@ -248,7 +248,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     if (Date.now() + 10000 >= this.expiration) {
       const data = await this.getToken();
       this.accessToken = data.access_token;
-      this.expiration = Date.now() + data.expires_in * 1000;
+      this.expiration = Date.now() + (data.expires_in * 1000);
     }
   }
 

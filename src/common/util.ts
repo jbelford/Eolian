@@ -81,7 +81,7 @@ export class ExponentialSleep implements RetrySleepAlgorithm {
   }
 
   async sleep(): Promise<void> {
-    await sleep(this.initial * this.multiplier ** this.count);
+    await sleep(this.initial * (this.multiplier ** this.count));
     ++this._count;
   }
 

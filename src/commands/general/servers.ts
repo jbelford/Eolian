@@ -34,7 +34,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       const command = OWNER_COMMANDS.get(name);
       if (!command) {
         throw new EolianUserError(`There is no subcommand \`${name}\`!`);
-      } else if (options.ARG.length - 1 != command.numArgs) {
+      } else if (options.ARG.length - 1 !== command.numArgs) {
         throw new EolianUserError(`Command \`${name}\` requires ${command.numArgs} arguments!`);
       }
       await command.execute(context, options.ARG.slice(1));

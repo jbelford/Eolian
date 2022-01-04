@@ -16,7 +16,7 @@ async function kickOld(context: CommandContext, [id]: string[]): Promise<void> {
     throw new EolianUserError('Must provide a number for days!');
   }
 
-  const minDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
+  const minDate = new Date(Date.now() - (1000 * 60 * 60 * 24 * days));
   const servers = await context.client.getIdleServers(minDate);
   if (servers.length === 0) {
     throw new EolianUserError('No servers!');
