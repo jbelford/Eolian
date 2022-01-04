@@ -1,13 +1,13 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "npm",
-			"script": "build-dev",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "npm: build-dev",
-			"detail": "webpack --config webpack.dev.config.js",
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build-dev",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build-dev",
+      "detail": "webpack --config webpack.dev.config.js"
+    }
+  ]
 }

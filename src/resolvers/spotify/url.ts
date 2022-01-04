@@ -10,13 +10,12 @@ import { createSpotifyAlbum } from './album';
 import { createSpotifyArtist } from './artist';
 import { createSpotifyPlaylist } from './playlist';
 
-
 export class SpotifyUrlResolver implements SourceResolver {
-
-  constructor(private readonly url: string,
+  constructor(
+    private readonly url: string,
     private readonly params: CommandOptions,
-    private readonly sendable: ContextSendable) {
-  }
+    private readonly sendable: ContextSendable
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const resourceDetails = spotify.resolve(this.url);
@@ -49,9 +48,7 @@ export class SpotifyUrlResolver implements SourceResolver {
     }
     throw new EolianUserError('The Spotify URL is not valid!');
   }
-
 }
-
 
 function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
   return {
@@ -61,22 +58,17 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
       id: track.id!,
       src: TrackSource.Spotify,
       type: ResourceType.Song,
-      url: track.external_urls.spotify
+      url: track.external_urls.spotify,
     },
-    fetcher: new SpotifySongFetcher(track.id!, track)
+    fetcher: new SpotifySongFetcher(track.id!, track),
   };
 }
 
-
 export class SpotifySongFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string,
-    private readonly track?: SpotifyTrack) {
-  }
+  constructor(private readonly id: string, private readonly track?: SpotifyTrack) {}
 
   async fetch(): Promise<FetchResult> {
     const track = this.track ? this.track : await spotify.getTrack(this.id);
     return { tracks: [mapSpotifyTrack(track)] };
   }
-
 }

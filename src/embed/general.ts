@@ -12,8 +12,8 @@ export function createInviteEmbed(link: string, username: string, pic?: string):
     description: 'Click to invite bot to server',
     url: link,
     thumbnail: pic,
-    color: Color.Invite
-  }
+    color: Color.Invite,
+  };
 }
 
 const mapOption = (option: SelectionOption, i: number): string => {
@@ -31,31 +31,42 @@ const mapOption = (option: SelectionOption, i: number): string => {
     text += name;
   }
   return text;
-}
+};
 
-export function createSelectionEmbed(question: string, options: SelectionOption[], username: string, pic?: string): EmbedMessage {
+export function createSelectionEmbed(
+  question: string,
+  options: SelectionOption[],
+  username: string,
+  pic?: string
+): EmbedMessage {
   return {
     header: {
-      text: '👈🏻 Select one 👉🏻'
+      text: '👈🏻 Select one 👉🏻',
     },
     title: `*${question}*`,
     color: Color.Selection,
     description: options.map(mapOption).join('\n') + '\n0: Cancel',
     footer: {
       icon: pic,
-      text: `${username}, enter the number of your selection in chat or click emoji`
-    }
+      text: `${username}, enter the number of your selection in chat or click emoji`,
+    },
   };
 }
 
-export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: SpotifyUser, soundcloud?: SoundCloudUser,
-    identifiers?: { [key: string]: Identifier }): EmbedMessage {
-
-  let description = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`
-    + `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n`
-    + `**Identifiers:** `;
+export function createUserDetailsEmbed(
+  contextUser: ContextUser,
+  spotify?: SpotifyUser,
+  soundcloud?: SoundCloudUser,
+  identifiers?: { [key: string]: Identifier }
+): EmbedMessage {
+  let description =
+    `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n` +
+    `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n` +
+    `**Identifiers:** `;
   if (identifiers && Object.keys(identifiers).length > 0) {
-    description += Object.keys(identifiers).map(key => `[${key}](${identifiers[key].url})`).join(', ');
+    description += Object.keys(identifiers)
+      .map(key => `[${key}](${identifiers[key].url})`)
+      .join(', ');
   } else {
     description += 'N/A';
   }
@@ -63,20 +74,23 @@ export function createUserDetailsEmbed(contextUser: ContextUser, spotify?: Spoti
   return {
     header: {
       icon: contextUser.avatar,
-      text: `🎫 Profile Details 🎫`
+      text: `🎫 Profile Details 🎫`,
     },
     title: `Here's what I know about you ${contextUser.name}!`,
     color: Color.Profile,
     description,
     footer: {
-      text: `See 'help' for the 'Account' category to configure your profile.`
-    }
-  }
+      text: `See 'help' for the 'Account' category to configure your profile.`,
+    },
+  };
 }
 
 export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): EmbedMessage {
   const volume = dto.volume ?? DEFAULT_VOLUME;
-  const roles = dto.djRoleIds && dto.djRoleIds.length > 0 ? dto.djRoleIds.map(role => `<@&${role}>`).join(', ') : '`None`';
+  const roles =
+    dto.djRoleIds && dto.djRoleIds.length > 0
+      ? dto.djRoleIds.map(role => `<@&${role}>`).join(', ')
+      : '`None`';
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
 **Volume:** \`${Math.floor(volume * 100)}%\`
 **Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\`
@@ -85,14 +99,14 @@ export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): Emb
   return {
     header: {
       icon: guild.avatar,
-      text: `🎫 Server Details 🎫`
+      text: `🎫 Server Details 🎫`,
     },
     title: `Here's settings for ${guild.name}`,
     color: Color.Profile,
     description,
     footer: {
-      text: `See 'help' for the 'Settings' category to configure these settings`
-    }
+      text: `See 'help' for the 'Settings' category to configure these settings`,
+    },
   };
 }
 
@@ -106,6 +120,6 @@ function syntaxTypeToName(type: SyntaxType) {
 export function createBasicEmbed(message: string): EmbedMessage {
   return {
     title: message,
-    color: Color.Selection
+    color: Color.Selection,
   };
 }

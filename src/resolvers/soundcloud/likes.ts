@@ -13,15 +13,21 @@ import { SoundCloudArtistResolver } from './artist';
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
-    return createSoundCloudLikes(result.value, this.params, this.context.interaction.channel, result.message);
+    return createSoundCloudLikes(
+      result.value,
+      this.params,
+      this.context.interaction.channel,
+      result.message
+    );
   }
 }
 
 export function createSoundCloudLikes(
-    user: SoundCloudUser,
-    params: CommandOptions,
-    sendable: ContextSendable,
-    message?: ContextMessage): ResolvedResource {
+  user: SoundCloudUser,
+  params: CommandOptions,
+  sendable: ContextSendable,
+  message?: ContextMessage
+): ResolvedResource {
   return {
     name: 'Liked Tracks',
     authors: [user.username],
@@ -29,21 +35,20 @@ export function createSoundCloudLikes(
       id: user.id.toString(),
       src: TrackSource.SoundCloud,
       type: ResourceType.Likes,
-      url: `${user.permalink_url}/likes`
+      url: `${user.permalink_url}/likes`,
     },
     fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user),
-    selectionMessage: message
+    selectionMessage: message,
   };
 }
 
-
 export class SoundCloudFavoritesFetcher implements SourceFetcher {
-
-  constructor(private readonly id: number,
+  constructor(
+    private readonly id: number,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
-    private readonly user?: SoundCloudUser) {
-  }
+    private readonly user?: SoundCloudUser
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const user = this.user ? this.user : await soundcloud.getUser(this.id);
@@ -52,7 +57,10 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
 
-  private getListOptions(downloaderName: string, max: number): { max: number, downloader?: ProgressUpdater } {
+  private getListOptions(
+    downloaderName: string,
+    max: number
+  ): { max: number; downloader?: ProgressUpdater } {
     let downloader: ProgressUpdater | undefined;
 
     const range = getRangeOption(this.params, max);
@@ -66,5 +74,4 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
     return { max, downloader };
   }
-
 }

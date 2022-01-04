@@ -7,13 +7,16 @@ import { BingApi, BingVideo, Track, TrackSource } from './@types';
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
 export class BingApiImpl implements BingApi {
-
-  constructor(private readonly key: string, private readonly configId: string) {
-  }
+  constructor(private readonly key: string, private readonly configId: string) {}
 
   async searchVideos(query: string, publisher?: string, limit = 5): Promise<BingVideo[]> {
     try {
-      const response = await this.get<BingVideos>('custom/videos/search', { q: query, count: limit, pricing: 'Free', safeSearch: 'Off' });
+      const response = await this.get<BingVideos>('custom/videos/search', {
+        q: query,
+        count: limit,
+        pricing: 'Free',
+        safeSearch: 'Off',
+      });
       if (publisher) {
         return response.value
           .filter(video => !!video.creator)
@@ -27,11 +30,18 @@ export class BingApiImpl implements BingApi {
     }
   }
 
-  async searchYoutubeSong(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]> {
+  async searchYoutubeSong(
+    name: string,
+    artist: string,
+    duration?: number
+  ): Promise<(Track & { score: number })[]> {
     const query = `${artist} ${name}`;
     const videos = await this.searchVideos(query, 'YouTube', 15);
     if (videos.length) {
-      const sorted = await fuzzyMatch(query, videos.map(video => `${video.creator.name} ${video.name}`));
+      const sorted = await fuzzyMatch(
+        query,
+        videos.map(video => `${video.creator.name} ${video.name}`)
+      );
       if (duration) {
         sorted.sort((a, b) => {
           if (Math.abs(a.score - b.score) > 2) {
@@ -42,15 +52,16 @@ export class BingApiImpl implements BingApi {
           return Math.abs(durationA - duration) - Math.abs(durationB - duration);
         });
       }
-      return sorted.map(scored => ({ ...videos[scored.key], score: scored.score }))
+      return sorted
+        .map(scored => ({ ...videos[scored.key], score: scored.score }))
         .map(video => ({
-            id: video.id,
-            poster: video.creator.name,
-            src: TrackSource.YouTube,
-            url: video.contentUrl,
-            title: video.name,
-            stream: video.contentUrl,
-            score: video.score
+          id: video.id,
+          poster: video.creator.name,
+          src: TrackSource.YouTube,
+          url: video.contentUrl,
+          title: video.name,
+          stream: video.contentUrl,
+          score: video.score,
         }));
     } else {
       logger.warn(`Failed to fetch YouTube track for query: %s`, query);
@@ -58,7 +69,10 @@ export class BingApiImpl implements BingApi {
     return [];
   }
 
-  private async get<T>(path: string, params: { [key: string]: string | number | boolean } = {}): Promise<T> {
+  private async get<T>(
+    path: string,
+    params: { [key: string]: string | number | boolean } = {}
+  ): Promise<T> {
     params.customConfig = this.configId;
 
     const uri = `${BING_API}/${path}`;
@@ -66,11 +80,10 @@ export class BingApiImpl implements BingApi {
     logger.info(`Bing HTTP: %s`, uri);
 
     const headers = {
-      'Ocp-Apim-Subscription-Key': this.key
+      'Ocp-Apim-Subscription-Key': this.key,
     };
     return await httpRequest<T>(uri, { params, headers, json: true });
   }
-
 }
 
 interface BingVideos {

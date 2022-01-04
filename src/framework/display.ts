@@ -3,12 +3,18 @@ import { GITHUB_PAGE_ISSUES, UserPermission } from 'common/constants';
 import { ServerQueue } from 'data/@types';
 import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
 import { Player } from 'music/@types';
-import { ContextMessage, ContextSendable, ContextTextChannel, MessageButtonOnClickHandler, PlayerDisplay, QueueDisplay } from './@types';
+import {
+  ContextMessage,
+  ContextSendable,
+  ContextTextChannel,
+  MessageButtonOnClickHandler,
+  PlayerDisplay,
+  QueueDisplay,
+} from './@types';
 
 const QUEUE_PAGE_LENGTH = 15;
 
 export class DiscordQueueDisplay implements QueueDisplay {
-
   private message: ContextMessage | null = null;
   private channel: ContextTextChannel | null = null;
   private sendable?: ContextSendable;
@@ -47,22 +53,37 @@ export class DiscordQueueDisplay implements QueueDisplay {
 
     this.start = start;
 
-    const messageDelete = this.message ? this.message.delete() :Promise.resolve();
+    const messageDelete = this.message ? this.message.delete() : Promise.resolve();
 
     const pagingButtonsDisabled = total <= QUEUE_PAGE_LENGTH;
     tracks = tracks.slice(0, QUEUE_PAGE_LENGTH);
     loop = loop.slice(0, QUEUE_PAGE_LENGTH - tracks.length);
     const embed = createQueueEmbed(tracks, loop, this.start, total, this.queue.loop);
     embed.buttons = [
-      { emoji: '🔀', onClick: this.shuffleHandler, disabled: total <= 1, permission: UserPermission.DJ },
-      { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled, permission: UserPermission.DJLimited },
-      { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled, permission: UserPermission.DJLimited }
+      {
+        emoji: '🔀',
+        onClick: this.shuffleHandler,
+        disabled: total <= 1,
+        permission: UserPermission.DJ,
+      },
+      {
+        emoji: '⬅',
+        onClick: this.prevPageHandler,
+        disabled: pagingButtonsDisabled,
+        permission: UserPermission.DJLimited,
+      },
+      {
+        emoji: '➡',
+        onClick: this.nextPageHandler,
+        disabled: pagingButtonsDisabled,
+        permission: UserPermission.DJLimited,
+      },
     ];
     if (this.sendable) {
-      this.message = await this.sendable.sendEmbed(embed) ?? null;
+      this.message = (await this.sendable.sendEmbed(embed)) ?? null;
       this.sendable = undefined;
     } else {
-      this.message = await this.channel.sendEmbed(embed) ?? null;
+      this.message = (await this.channel.sendEmbed(embed)) ?? null;
     }
 
     await messageDelete;
@@ -94,7 +115,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
             newEmbed.buttons = [
               { emoji: '🔀', onClick: this.shuffleHandler, disabled: size <= 1 },
               { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
-              { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled }
+              { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled },
             ];
             await this.message.editEmbed(newEmbed);
           } else {
@@ -105,33 +126,30 @@ export class DiscordQueueDisplay implements QueueDisplay {
         this.updating = false;
       }
     }
-  }
+  };
 
-  private shuffleHandler: MessageButtonOnClickHandler = async (interaction) => {
+  private shuffleHandler: MessageButtonOnClickHandler = async interaction => {
     await this.queue.shuffle();
     await interaction.deferUpdate();
     return false;
-  }
+  };
 
-  private prevPageHandler: MessageButtonOnClickHandler = async (interaction) => {
+  private prevPageHandler: MessageButtonOnClickHandler = async interaction => {
     this.start -= QUEUE_PAGE_LENGTH;
     await this.updateHandler();
     await interaction.deferUpdate();
     return false;
-  }
+  };
 
-
-  private nextPageHandler: MessageButtonOnClickHandler = async (interaction) => {
+  private nextPageHandler: MessageButtonOnClickHandler = async interaction => {
     this.start += QUEUE_PAGE_LENGTH;
     await this.updateHandler();
     await interaction.deferUpdate();
     return false;
-  }
-
+  };
 }
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
-
   private track: Track | null = null;
   private message: ContextMessage | null = null;
 
@@ -141,8 +159,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private inputLock = false;
   private nightcore = false;
 
-  constructor(private readonly player: Player,
-      private readonly queueDisplay: QueueDisplay) {
+  constructor(private readonly player: Player, private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
     this.player.on('update', this.onUpdateHandler);
     this.player.on('idle', this.onIdleHandler);
@@ -187,7 +204,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onQueueUpdateHandler = async () => {
     await this.updateMessage(true);
-  }
+  };
 
   private onNextHandler = async (track: Track) => {
     this.nightcore = this.player.nightcore;
@@ -197,22 +214,34 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private async updateMessage(editOnly = false): Promise<void> {
     if (this.channel && this.track && (!editOnly || this.message)) {
-      const [next, prev] = await Promise.all([this.player.queue.size(), this.player.queue.peekReverse(1)]);
+      const [next, prev] = await Promise.all([
+        this.player.queue.size(),
+        this.player.queue.peekReverse(1),
+      ]);
       const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
       embed.buttons = [
-        { emoji: '⏏', onClick: this.queueHandler, disabled: !next && (!this.player.queue.loop || !prev), permission: UserPermission.DJLimited },
+        {
+          emoji: '⏏',
+          onClick: this.queueHandler,
+          disabled: !next && (!this.player.queue.loop || !prev),
+          permission: UserPermission.DJLimited,
+        },
         { emoji: '⏪', onClick: this.backHandler, disabled: !prev, permission: UserPermission.DJ },
-        { emoji: this.player.paused ? '▶️' : '⏸️', onClick: this.onPauseResumeHandler, permission: UserPermission.DJ },
+        {
+          emoji: this.player.paused ? '▶️' : '⏸️',
+          onClick: this.onPauseResumeHandler,
+          permission: UserPermission.DJ,
+        },
         { emoji: '⏩', onClick: this.skipHandler, permission: UserPermission.DJ },
         { emoji: '⏹', onClick: this.stopHandler, permission: UserPermission.DJ },
       ];
       if (!editOnly && (!this.message || this.channel.lastMessageId !== this.message.id)) {
         await this.safeDelete();
         if (this.sendable) {
-          this.message = await this.sendable.sendEmbed(embed) ?? null;
+          this.message = (await this.sendable.sendEmbed(embed)) ?? null;
           this.sendable = undefined;
         } else {
-          this.message = await this.channel.sendEmbed(embed) ?? null;
+          this.message = (await this.channel.sendEmbed(embed)) ?? null;
         }
         if (this.message) {
           this.queueAhead = false;
@@ -248,7 +277,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     if (this.track) {
       this.track = null;
       await this.safeDelete();
-      await this.channel?.send(`Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`);
+      await this.channel?.send(
+        `Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`
+      );
     }
   };
 
@@ -273,7 +304,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
             this.inputLock = false;
           }
         } else {
-          await interaction.send('You are not currently listening! Join my voice channel and try again.', { ephemeral: true });
+          await interaction.send(
+            'You are not currently listening! Join my voice channel and try again.',
+            { ephemeral: true }
+          );
         }
       }
       return false;
@@ -328,5 +362,4 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
     return false;
   });
-
 }

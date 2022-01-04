@@ -6,7 +6,6 @@ Eolian is a Discord music bot that aims to be easy to use and provide a very pow
 
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
-
 # 🚧 Under Construction
 
 This bot is still actively being improved and updates are being pushed frequently.
@@ -30,14 +29,14 @@ https://discord.gg/pzD6UyrCTn
 
 You can add any type of resource to the queue. Here is the list of each type of resource and where they can be fetched from using this bot.
 
-| Type | Spotify | SoundCloud | YouTube |
-| ---- | ------- | ---------- | ------- |
-| Albums | ✅ | N/A | N/A |
-| Songs | ❌* | ✅ | ✅ |
-| Playlists | ✅ | ✅ | ✅|
-| Artists | ✅ | ✅ | ❌ |
-| Likes | ❌** | ✅ | N/A |
-| Live Streams | N/A | N/A | ✅ |
+| Type         | Spotify | SoundCloud | YouTube |
+| ------------ | ------- | ---------- | ------- |
+| Albums       | ✅      | N/A        | N/A     |
+| Songs        | ❌\*    | ✅         | ✅      |
+| Playlists    | ✅      | ✅         | ✅      |
+| Artists      | ✅      | ✅         | ❌      |
+| Likes        | ❌\*\*  | ✅         | N/A     |
+| Live Streams | N/A     | N/A        | ✅      |
 
 <sub>
 * Songs searched from Spotify will default to YouTube<br>
@@ -49,7 +48,6 @@ You can add any type of resource to the queue. Here is the list of each type of 
 This bot takes every opportunity to simplify usage through the use of modern Discord buttons.
 
 ![Player](pics/player.png)
-
 
 ## 🗣 Keyword Based Command Syntax
 
@@ -88,7 +86,6 @@ Here is an example of searching my own public playlists on Spotify.
 ## 💾 Save Shortcuts to your favorite albums, playlists or more!
 
 You can create an "identifier" to any URL or search result. These allow you to quickly queue up the songs found at that resource much quicker in the future!
-
 
 ![Create identifier](pics/create_identifier.png)
 

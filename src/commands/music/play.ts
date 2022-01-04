@@ -11,7 +11,6 @@ import { ResourceType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 
-
 async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();
   if (!userVoice) {
@@ -33,7 +32,10 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
 
     const typeName = RESOURCE_TYPE_DETAILS[identifier.type].name;
     const srcName = SOURCE_DETAILS[identifier.src].name;
-    await context.interaction.send(`🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`, { ephemeral: false });
+    await context.interaction.send(
+      `🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`,
+      { ephemeral: false }
+    );
 
     fetcher = getSourceFetcher(identifier, options, context.interaction);
   } else if (options.SEARCH || options.URL) {
@@ -59,7 +61,9 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
       const queueSize = await context.server!.queue.size();
       const queueLimit = details.queueLimit ?? environment.queueLimit;
       if (queueSize + tracks.length > queueLimit) {
-        throw new EolianUserError(`Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`);
+        throw new EolianUserError(
+          `Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`
+        );
       }
       await context.server!.queue.add(tracks, true);
       added = true;
@@ -107,22 +111,22 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
   usage: [
     {
       title: 'Join voice channel and start playing (if not already)',
-      example: ''
+      example: '',
     },
     {
       title: 'Start playing song from URL',
-      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I'
+      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I',
     },
     {
       title: 'Start playing song from SEARCH',
-      example: [PATTERNS.SEARCH.ex('what is love')]
+      example: [PATTERNS.SEARCH.ex('what is love')],
     },
     {
       title: 'Start playing song from SEARCH and select first result',
-      example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.FAST]
-    }
+      example: [PATTERNS.SEARCH.ex('what is love'), KEYWORDS.FAST],
+    },
   ],
-  execute: executePlay
+  execute: executePlay,
 };
 
 export const PLAY_MESSAGE_COMMAND: MessageCommand = {
@@ -138,5 +142,5 @@ export const PLAY_MESSAGE_COMMAND: MessageCommand = {
       options.SEARCH = undefined;
     }
     return executePlay(context, options);
-  }
+  },
 };

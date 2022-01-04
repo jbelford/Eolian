@@ -4,14 +4,21 @@ import { mapSoundCloudTrack } from 'api/soundcloud';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';
-import { FetchResult, MessageBundledResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import {
+  FetchResult,
+  MessageBundledResult,
+  ResolvedResource,
+  SourceFetcher,
+  SourceResolver,
+} from 'resolvers/@types';
 
 type UserResult = MessageBundledResult<SoundCloudUser>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
-
-  constructor(protected readonly context: CommandContext, protected readonly params: CommandOptions) {
-  }
+  constructor(
+    protected readonly context: CommandContext,
+    protected readonly params: CommandOptions
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
@@ -34,9 +41,11 @@ export class SoundCloudArtistResolver implements SourceResolver {
     } else if (users.length === 1) {
       return { value: users[0] };
     } else {
-      const result = await this.context.interaction.sendSelection('Choose a SoundCloud user',
+      const result = await this.context.interaction.sendSelection(
+        'Choose a SoundCloud user',
         users.map(user => ({ name: user.username, url: user.permalink_url })),
-        this.context.interaction.user);
+        this.context.interaction.user
+      );
 
       return { value: users[result.selected], message: result.message };
     }
@@ -62,8 +71,7 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
   }
 }
 
-
-export function createSoundCloudUser({ value: user, message}: UserResult): ResolvedResource {
+export function createSoundCloudUser({ value: user, message }: UserResult): ResolvedResource {
   return {
     name: user.username,
     authors: [user.username],
@@ -71,21 +79,18 @@ export function createSoundCloudUser({ value: user, message}: UserResult): Resol
       id: user.id.toString(),
       src: TrackSource.SoundCloud,
       type: ResourceType.Artist,
-      url: user.permalink_url
+      url: user.permalink_url,
     },
     fetcher: new SoundCloudArtistFetcher(user.id),
-    selectionMessage: message
-  }
+    selectionMessage: message,
+  };
 }
 
 export class SoundCloudArtistFetcher implements SourceFetcher {
-
-  constructor(private readonly id: number) {
-  }
+  constructor(private readonly id: number) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks = await soundcloud.getUserTracks(this.id);
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
-
 }

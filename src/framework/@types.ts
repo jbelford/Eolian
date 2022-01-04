@@ -18,8 +18,15 @@ export type SelectionResult = {
 export interface ContextSendable {
   readonly sendable: boolean;
   send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined>;
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult>
-  sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined>;
+  sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult>;
+  sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined>;
 }
 
 export interface ContextTextChannel extends ContextSendable {
@@ -65,7 +72,7 @@ export interface ContextMessage {
 export type ContextInteractionOptions = {
   ephemeral?: boolean;
   force?: boolean;
-}
+};
 
 export interface ContextInteraction extends ContextSendable {
   readonly user: ContextUser;
@@ -143,7 +150,7 @@ export const enum ButtonStyle {
   SECONDARY,
   SUCCESS,
   DANGER,
-  LINK
+  LINK,
 }
 
 export interface EmbedMessageButton {
@@ -158,7 +165,10 @@ export interface EmbedMessageButton {
   onClick: MessageButtonOnClickHandler;
 }
 
-export type MessageButtonOnClickHandler = (interaction: ContextButtonInteraction, emoji: string) => Promise<boolean>;
+export type MessageButtonOnClickHandler = (
+  interaction: ContextButtonInteraction,
+  emoji: string
+) => Promise<boolean>;
 
 export interface Display extends Closable {
   setChannel(channel: ContextTextChannel, sendable?: ContextSendable): void;

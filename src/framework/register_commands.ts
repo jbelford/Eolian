@@ -1,14 +1,42 @@
-import { ContextMenuCommandBuilder, SlashCommandBuilder, SlashCommandStringOption } from '@discordjs/builders';
+import {
+  ContextMenuCommandBuilder,
+  SlashCommandBuilder,
+  SlashCommandStringOption,
+} from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
-import { checkSetKeyword, COMMANDS, getCommand, getMessageCommand, MESSAGE_COMMANDS, patternMatch, simpleOptionsStrategy } from 'commands';
-import { Command, CommandArgs, CommandOptions, Keyword, KeywordGroup, MessageCommand, ParsedCommand, Pattern, SyntaxType } from 'commands/@types';
+import {
+  checkSetKeyword,
+  COMMANDS,
+  getCommand,
+  getMessageCommand,
+  MESSAGE_COMMANDS,
+  patternMatch,
+  simpleOptionsStrategy,
+} from 'commands';
+import {
+  Command,
+  CommandArgs,
+  CommandOptions,
+  Keyword,
+  KeywordGroup,
+  MessageCommand,
+  ParsedCommand,
+  Pattern,
+  SyntaxType,
+} from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { ApplicationCommandPermissionType, ApplicationCommandType, RESTPutAPIApplicationCommandsResult, RESTPutAPIGuildApplicationCommandsPermissionsJSONBody, Routes } from 'discord-api-types/v9';
+import {
+  ApplicationCommandPermissionType,
+  ApplicationCommandType,
+  RESTPutAPIApplicationCommandsResult,
+  RESTPutAPIGuildApplicationCommandsPermissionsJSONBody,
+  Routes,
+} from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
@@ -28,16 +56,18 @@ export async function registerGuildSlashCommands(guildId: string): Promise<boole
   }
 
   logger.info('Sending refresh for slash commands for guild %s', guildId);
-  return registerSlashCommands(Routes.applicationGuildCommands(environment.tokens.discord.clientId, guildId));
+  return registerSlashCommands(
+    Routes.applicationGuildCommands(environment.tokens.discord.clientId, guildId)
+  );
 }
 
 async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   try {
     const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
 
-    const result = await rest.put(route, {
-      body: COMMANDS.map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand))
-    }) as RESTPutAPIApplicationCommandsResult;
+    const result = (await rest.put(route, {
+      body: COMMANDS.map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
+    })) as RESTPutAPIApplicationCommandsResult;
 
     if (environment.owners) {
       const overrides: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
@@ -45,7 +75,11 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
         if (command.default_permission === false) {
           const permissions: typeof overrides[number] = {
             id: command.id,
-            permissions: environment.owners.map(owner => ({ id: owner, type: ApplicationCommandPermissionType.User, permission: true }))
+            permissions: environment.owners.map(owner => ({
+              id: owner,
+              type: ApplicationCommandPermissionType.User,
+              permission: true,
+            })),
           };
           overrides.push(permissions);
         }
@@ -53,7 +87,10 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
 
       if (overrides.length && environment.ownerGuild) {
         await rest.put(
-          Routes.guildApplicationCommandsPermissions(environment.tokens.discord.clientId!, environment.ownerGuild),
+          Routes.guildApplicationCommandsPermissions(
+            environment.tokens.discord.clientId!,
+            environment.ownerGuild
+          ),
           { body: overrides }
         );
       }
@@ -76,9 +113,7 @@ function createSlashCommand(command: Command) {
       description = description.slice(0, 100);
     }
 
-    const builder = new SlashCommandBuilder()
-      .setName(command.name)
-      .setDescription(description);
+    const builder = new SlashCommandBuilder().setName(command.name).setDescription(description);
 
     if (command.permission >= UserPermission.Owner) {
       builder.setDefaultPermission(false);
@@ -86,14 +121,22 @@ function createSlashCommand(command: Command) {
 
     if (command.keywords || command.patterns) {
       const groupOption = new Map<KeywordGroup, SlashCommandStringOption>();
-      command.patterns?.sort((a, b) => b.priority - a.priority).forEach(pattern => addPatternOption(builder, pattern, groupOption, command.args));
-      command.keywords?.sort((a, b) => a.name.localeCompare(b.name)).forEach(keyword => addKeywordOption(builder, keyword, groupOption));
+      command.patterns
+        ?.sort((a, b) => b.priority - a.priority)
+        .forEach(pattern => addPatternOption(builder, pattern, groupOption, command.args));
+      command.keywords
+        ?.sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(keyword => addKeywordOption(builder, keyword, groupOption));
     } else if (command.args) {
       addCommandArgOptions(builder, command.args);
     } else {
-      builder.addStringOption(option => option = option.setName('args')
-          .setDescription(`Use "/help ${command.name}" to see arguments`)
-          .setRequired(false));
+      builder.addStringOption(
+        option =>
+          (option = option
+            .setName('args')
+            .setDescription(`Use "/help ${command.name}" to see arguments`)
+            .setRequired(false))
+      );
     }
 
     return builder.toJSON();
@@ -107,9 +150,7 @@ function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
   for (const group of args.groups) {
     for (const option of group.options) {
       builder.addStringOption(optionBuilder => {
-        optionBuilder.setName(option.name)
-          .setDescription(option.details)
-          .setRequired(false)
+        optionBuilder.setName(option.name).setDescription(option.details).setRequired(false);
         if (option.getChoices) {
           const choices = option.getChoices();
           if (choices.length > 25) {
@@ -126,7 +167,11 @@ function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
   }
 }
 
-function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupOption: Map<KeywordGroup, SlashCommandStringOption>) {
+function addKeywordOption(
+  builder: SlashCommandBuilder,
+  keyword: Keyword,
+  groupOption: Map<KeywordGroup, SlashCommandStringOption>
+) {
   if (keyword.group) {
     const option = groupOption.get(keyword.group);
     if (option) {
@@ -134,7 +179,8 @@ function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupO
     } else {
       const group = KEYWORD_GROUPS[keyword.group];
       builder.addStringOption(option => {
-        option.setName(keyword.group!)
+        option
+          .setName(keyword.group!)
           .setDescription(group.details)
           .addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
         groupOption.set(keyword.group!, option);
@@ -148,13 +194,18 @@ function addKeywordOption(builder: SlashCommandBuilder, keyword: Keyword, groupO
       details = details.slice(0, 100);
     }
 
-    builder.addBooleanOption(option => option.setName(keyword.name.toLowerCase())
-      .setDescription(details)
-      .setRequired(false));
+    builder.addBooleanOption(option =>
+      option.setName(keyword.name.toLowerCase()).setDescription(details).setRequired(false)
+    );
   }
 }
 
-function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern, groupOption: Map<KeywordGroup, SlashCommandStringOption>, args?: CommandArgs) {
+function addPatternOption(
+  builder: SlashCommandBuilder,
+  pattern: Pattern,
+  groupOption: Map<KeywordGroup, SlashCommandStringOption>,
+  args?: CommandArgs
+) {
   if (args && pattern.name === PATTERNS.ARG.name) {
     addCommandArgOptions(builder, args);
   } else if (pattern.group) {
@@ -173,25 +224,30 @@ function addPatternOption(builder: SlashCommandBuilder, pattern: Pattern, groupO
       details = details.slice(0, 100);
     }
 
-    builder.addStringOption(option => option.setName(pattern.name.toLowerCase())
-      .setDescription(details)
-      .setRequired(false));
+    builder.addStringOption(option =>
+      option.setName(pattern.name.toLowerCase()).setDescription(details).setRequired(false)
+    );
   }
 }
 
 function createContextMenuCommand(command: MessageCommand) {
   try {
-    return new ContextMenuCommandBuilder()
-      .setName(command.name)
-      // @ts-ignore Discord.js doesn't play nice with types for some reason
-      .setType(ApplicationCommandType.Message);
+    return (
+      new ContextMenuCommandBuilder()
+        .setName(command.name)
+        // @ts-ignore Discord.js doesn't play nice with types for some reason
+        .setType(ApplicationCommandType.Message)
+    );
   } catch (e) {
     logger.warn('Failed validation for %s', command);
-    throw e
+    throw e;
   }
 }
 
-export function parseSlashCommand(interaction: CommandInteraction, permission: UserPermission): ParsedCommand {
+export function parseSlashCommand(
+  interaction: CommandInteraction,
+  permission: UserPermission
+): ParsedCommand {
   const command = getCommand(interaction.commandName, permission);
 
   let options: CommandOptions = {};
@@ -199,8 +255,20 @@ export function parseSlashCommand(interaction: CommandInteraction, permission: U
     const groupSet = new Set<string>();
     const patternSet = new Set<string>(command.patterns?.map(p => p.name));
 
-    command.keywords?.forEach(keyword => parseSlashKeyword(keyword, permission, interaction, options, groupSet));
-    command.patterns?.forEach(pattern => parseSlashPattern(pattern, permission, interaction, options, patternSet, groupSet, command.args));
+    command.keywords?.forEach(keyword =>
+      parseSlashKeyword(keyword, permission, interaction, options, groupSet)
+    );
+    command.patterns?.forEach(pattern =>
+      parseSlashPattern(
+        pattern,
+        permission,
+        interaction,
+        options,
+        patternSet,
+        groupSet,
+        command.args
+      )
+    );
   } else if (command.args) {
     options.ARG = parseCommandArgs(command.args, interaction);
   } else {
@@ -228,13 +296,21 @@ function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteract
     if (selected) {
       args.push(selected);
     } else if (group.required) {
-      throw new EolianUserError(`You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`);
+      throw new EolianUserError(
+        `You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`
+      );
     }
   }
   return args;
 }
 
-function parseSlashKeyword(keyword: Keyword, permission: UserPermission, interaction: CommandInteraction, options: CommandOptions, groupSet: Set<string>) {
+function parseSlashKeyword(
+  keyword: Keyword,
+  permission: UserPermission,
+  interaction: CommandInteraction,
+  options: CommandOptions,
+  groupSet: Set<string>
+) {
   let found: Keyword | undefined;
   if (keyword.group) {
     if (!groupSet.has(keyword.group)) {
@@ -250,7 +326,15 @@ function parseSlashKeyword(keyword: Keyword, permission: UserPermission, interac
   }
 }
 
-function parseSlashPattern(pattern: Pattern, permission: UserPermission, interaction: CommandInteraction, options: CommandOptions, patternSet: Set<string>, groupSet: Set<string>, args?: CommandArgs) {
+function parseSlashPattern(
+  pattern: Pattern,
+  permission: UserPermission,
+  interaction: CommandInteraction,
+  options: CommandOptions,
+  patternSet: Set<string>,
+  groupSet: Set<string>,
+  args?: CommandArgs
+) {
   if (args && pattern.name === PATTERNS.ARG.name) {
     options.ARG = parseCommandArgs(args, interaction);
   } else if (pattern.group) {
@@ -269,7 +353,11 @@ function parseSlashPattern(pattern: Pattern, permission: UserPermission, interac
   }
 }
 
-export function parseMessageCommand(name: string, text: string, permission: UserPermission): ParsedCommand {
+export function parseMessageCommand(
+  name: string,
+  text: string,
+  permission: UserPermission
+): ParsedCommand {
   const command = getMessageCommand(name, permission);
 
   const options: CommandOptions = {};
@@ -279,7 +367,13 @@ export function parseMessageCommand(name: string, text: string, permission: User
   return { command, options };
 }
 
-function matchPatterns(text: string, permission: UserPermission, patternSet: Set<string>, options: CommandOptions, group?: KeywordGroup) {
+function matchPatterns(
+  text: string,
+  permission: UserPermission,
+  patternSet: Set<string>,
+  options: CommandOptions,
+  group?: KeywordGroup
+) {
   for (const pattern of PATTERNS_SORTED) {
     if (!group || pattern.group === group) {
       if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {
@@ -287,10 +381,13 @@ function matchPatterns(text: string, permission: UserPermission, patternSet: Set
       }
     }
   }
-  if (patternSet.has(PATTERNS.SEARCH.name) && text.length && PATTERNS.SEARCH.permission <= permission) {
+  if (
+    patternSet.has(PATTERNS.SEARCH.name) &&
+    text.length &&
+    PATTERNS.SEARCH.permission <= permission
+  ) {
     if (!group || PATTERNS.SEARCH.group === group) {
       options.SEARCH = text;
     }
   }
 }
-

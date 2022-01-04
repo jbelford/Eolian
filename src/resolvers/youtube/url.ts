@@ -10,16 +10,18 @@ const MY_MIX_PLAYLIST_ID = 'RDMM';
 const LIKED_MUSIC_ID = 'LM';
 
 export class YouTubeUrlResolver implements SourceResolver {
-  constructor(private readonly url: string,
-    private readonly context: CommandContext) {
-  }
+  constructor(private readonly url: string, private readonly context: CommandContext) {}
 
   async resolve(): Promise<ResolvedResource> {
     const resourceDetails = youtube.getResourceType(this.url);
     if (resourceDetails) {
       let message: ContextMessage | undefined;
       if (resourceDetails.video && resourceDetails.playlist) {
-        const result = await this.context.interaction.sendSelection('Do you want this video or the playlist?', ['Video', 'Playlist'], this.context.interaction.user);
+        const result = await this.context.interaction.sendSelection(
+          'Do you want this video or the playlist?',
+          ['Video', 'Playlist'],
+          this.context.interaction.user
+        );
         if (result.selected === 0) {
           resourceDetails.playlist = undefined;
         } else {

@@ -6,14 +6,15 @@ import { ContextUser, ContextVoiceChannel, ServerDetails } from './@types';
 import { DiscordVoiceChannel } from './voice';
 
 export class DiscordUser implements ContextUser {
-
   private dto?: UserDTO;
   private _permission: UserPermission;
 
-  constructor(private readonly user: User,
-      private readonly users: UsersDb,
-      permission: UserPermission,
-      private readonly guildUser?: GuildMember) {
+  constructor(
+    private readonly user: User,
+    private readonly users: UsersDb,
+    permission: UserPermission,
+    private readonly guildUser?: GuildMember
+  ) {
     this._permission = permission;
   }
 
@@ -71,9 +72,8 @@ export class DiscordUser implements ContextUser {
   }
 
   async get(): Promise<UserDTO> {
-    return this.dto || (this.dto = (await this.users.get(this.id) ?? { _id: this.id }));
+    return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
-
 
   clearData(): Promise<boolean> {
     if (this.dto) {
@@ -120,10 +120,12 @@ export class DiscordUser implements ContextUser {
       await this.users.removeSoundCloud(this.id);
     }
   }
-
 }
 
-export function getPermissionLevel(user: User, memberPermissions?: Readonly<Permissions> | null): UserPermission {
+export function getPermissionLevel(
+  user: User,
+  memberPermissions?: Readonly<Permissions> | null
+): UserPermission {
   if (environment.owners.includes(user.id)) {
     return UserPermission.Owner;
   } else if (memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {

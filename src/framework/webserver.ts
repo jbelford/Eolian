@@ -2,7 +2,6 @@ import { Closable } from 'common/@types';
 import { createServer, Server } from 'http';
 
 export class WebServer implements Closable {
-
   private readonly server: Server;
 
   constructor() {
@@ -20,7 +19,7 @@ export class WebServer implements Closable {
   close(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.server.listening) {
-        this.server.close(err => err ? reject(err) : resolve());
+        this.server.close(err => (err ? reject(err) : resolve()));
       } else {
         resolve();
       }

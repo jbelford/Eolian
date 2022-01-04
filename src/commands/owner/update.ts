@@ -1,6 +1,5 @@
 import { OwnerCommand } from 'commands/@types';
 
-
 export const UPDATE_SLASH_COMMAND: OwnerCommand = {
   name: 'updateCommands',
   numArgs: 0,
@@ -11,5 +10,5 @@ export const UPDATE_SLASH_COMMAND: OwnerCommand = {
     } else {
       await context.interaction.send('I failed to update commands. Check the logs.');
     }
-  }
+  },
 };

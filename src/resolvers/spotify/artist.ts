@@ -7,11 +7,8 @@ import { ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
-
 export class SpotifyArtistResolver implements SourceResolver {
-
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
-  }
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -24,16 +21,21 @@ export class SpotifyArtistResolver implements SourceResolver {
     } else if (artists.length === 1) {
       return createSpotifyArtist(artists[0]);
     } else {
-      const result = await this.context.interaction.sendSelection('Choose a Spotify artist',
+      const result = await this.context.interaction.sendSelection(
+        'Choose a Spotify artist',
         artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
-        this.context.interaction.user);
+        this.context.interaction.user
+      );
 
       return createSpotifyArtist(artists[result.selected], result.message);
     }
   }
 }
 
-export function createSpotifyArtist(artist: SpotifyArtist, message?: ContextMessage): ResolvedResource {
+export function createSpotifyArtist(
+  artist: SpotifyArtist,
+  message?: ContextMessage
+): ResolvedResource {
   return {
     name: artist.name,
     authors: [artist.name],
@@ -41,21 +43,18 @@ export function createSpotifyArtist(artist: SpotifyArtist, message?: ContextMess
       id: artist.id,
       src: TrackSource.Spotify,
       type: ResourceType.Artist,
-      url: artist.external_urls.spotify
+      url: artist.external_urls.spotify,
     },
     fetcher: new SpotifyArtistFetcher(artist.id),
-    selectionMessage: message
+    selectionMessage: message,
   };
 }
 
 export class SpotifyArtistFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string) {
-  }
+  constructor(private readonly id: string) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks = await spotify.getArtistTracks(this.id);
     return { tracks: tracks.map(track => mapSpotifyTrack(track)) };
   }
-
 }

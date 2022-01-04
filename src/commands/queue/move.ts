@@ -65,16 +65,16 @@ export const MOVE_COMMAND: Command = {
   usage: [
     {
       title: 'Move 5th song to play next',
-      example: [PATTERNS.NUMBER.ex('5'), KEYWORDS.NEXT]
+      example: [PATTERNS.NUMBER.ex('5'), KEYWORDS.NEXT],
     },
     {
       title: 'Move range of songs to 2nd index',
-      example: [PATTERNS.TOP.ex('8:15'), PATTERNS.NUMBER.ex('2')]
+      example: [PATTERNS.TOP.ex('8:15'), PATTERNS.NUMBER.ex('2')],
     },
     {
       title: 'Move 10th song to 3rd position',
-      example: [PATTERNS.NUMBER.ex('10'), PATTERNS.NUMBER.ex('3')]
-    }
+      example: [PATTERNS.NUMBER.ex('10'), PATTERNS.NUMBER.ex('3')],
+    },
   ],
-  execute
+  execute,
 };

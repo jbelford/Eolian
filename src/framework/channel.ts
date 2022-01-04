@@ -1,12 +1,34 @@
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { DMChannel, Message, MessageCollector, MessageOptions, Permissions, TextChannel } from 'discord.js';
+import {
+  DMChannel,
+  Message,
+  MessageCollector,
+  MessageOptions,
+  Permissions,
+  TextChannel,
+} from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
-import { ContextInteractionOptions, ContextMessage, ContextSendable, ContextTextChannel, ContextUser, EmbedMessage, MessageButtonOnClickHandler, SelectionResult } from './@types';
-import { ButtonRegistry } from "./button";
-import { DiscordButtonMapping, DiscordMessage, DiscordMessageButtons, mapDiscordEmbed, mapDiscordEmbedButtons } from './message';
+import {
+  ContextInteractionOptions,
+  ContextMessage,
+  ContextSendable,
+  ContextTextChannel,
+  ContextUser,
+  EmbedMessage,
+  MessageButtonOnClickHandler,
+  SelectionResult,
+} from './@types';
+import { ButtonRegistry } from './button';
+import {
+  DiscordButtonMapping,
+  DiscordMessage,
+  DiscordMessageButtons,
+  mapDiscordEmbed,
+  mapDiscordEmbedButtons,
+} from './message';
 
 export const STOP_EMOJI = '🚫';
 
@@ -15,26 +37,36 @@ export interface DiscordMessageSender {
 }
 
 export class DiscordSender implements ContextSendable {
-
   private _sendable?: boolean;
 
-  constructor(private readonly sender: DiscordMessageSender,
+  constructor(
+    private readonly sender: DiscordMessageSender,
     private readonly registry: ButtonRegistry,
-    private readonly channel: TextChannel | DMChannel) {
-  }
+    private readonly channel: TextChannel | DMChannel
+  ) {}
 
   get sendable(): boolean {
     if (this._sendable === undefined) {
       this._sendable = !this.channel.deleted;
       if (this.channel.type === 'GUILD_TEXT') {
-        const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
-        this._sendable &&= !!permissions?.has(Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.SEND_MESSAGES | Permissions.FLAGS.EMBED_LINKS | Permissions.FLAGS.READ_MESSAGE_HISTORY);
+        const permissions = (this.channel as TextChannel).permissionsFor(
+          (this.channel as TextChannel).guild.me!
+        );
+        this._sendable &&= !!permissions?.has(
+          Permissions.FLAGS.VIEW_CHANNEL |
+            Permissions.FLAGS.SEND_MESSAGES |
+            Permissions.FLAGS.EMBED_LINKS |
+            Permissions.FLAGS.READ_MESSAGE_HISTORY
+        );
       }
     }
     return this._sendable;
   }
 
-  async send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  async send(
+    message: string,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     if (this.sendable || options?.force) {
       try {
         const discordMessage = await this.sender.send({ content: message }, options?.ephemeral);
@@ -46,7 +78,11 @@ export class DiscordSender implements ContextSendable {
     return undefined;
   }
 
-  async sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
+  async sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult> {
     if (this.sendable) {
       const result = await this._sendSelection(question, options, user);
       if (result) {
@@ -60,11 +96,15 @@ export class DiscordSender implements ContextSendable {
   }
 
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
-  private _sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult | undefined> {
+  private _sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult | undefined> {
     return new Promise((resolve, reject) => {
       let resolved = false;
 
-      const collector = this.awaitUserSelection(user.id, options.length, async (msg) => {
+      const collector = this.awaitUserSelection(user.id, options.length, async msg => {
         if (!resolved) {
           try {
             resolved = true;
@@ -80,7 +120,7 @@ export class DiscordSender implements ContextSendable {
               if (msg.deletable) {
                 await msg.delete();
               }
-              resolve({ message: sentEmbed, selected: +msg.content - 1});
+              resolve({ message: sentEmbed, selected: +msg.content - 1 });
             }
           } catch (e) {
             reject(e);
@@ -105,8 +145,12 @@ export class DiscordSender implements ContextSendable {
 
       const selectEmbed = createSelectionEmbed(question, options, user.name, user.avatar);
       if (options.length < NUMBER_TO_EMOJI.length) {
-        selectEmbed.buttons = options.map((o, i) => ({ emoji: NUMBER_TO_EMOJI[i + 1], userId: user.id, onClick }));
-        selectEmbed.buttons.push({ emoji: STOP_EMOJI, userId: user.id,  onClick });
+        selectEmbed.buttons = options.map((o, i) => ({
+          emoji: NUMBER_TO_EMOJI[i + 1],
+          userId: user.id,
+          onClick,
+        }));
+        selectEmbed.buttons.push({ emoji: STOP_EMOJI, userId: user.id, onClick });
       }
 
       const sentEmbedPromise = this.sendEmbed(selectEmbed).then(message => {
@@ -120,7 +164,11 @@ export class DiscordSender implements ContextSendable {
     });
   }
 
-  private awaitUserSelection(userId: string, count: number, cb: (message: Message | undefined) => void): MessageCollector {
+  private awaitUserSelection(
+    userId: string,
+    count: number,
+    cb: (message: Message | undefined) => void
+  ): MessageCollector {
     const collector = this.channel.createMessageCollector({
       filter(message: Message) {
         if (message.author.id !== userId) {
@@ -130,17 +178,20 @@ export class DiscordSender implements ContextSendable {
         return !isNaN(idx) && idx >= 0 && idx <= count;
       },
       max: 1,
-      time: 60000
+      time: 60000,
     });
 
-    collector.once('end', (collected) => {
+    collector.once('end', collected => {
       cb(collected.first());
     });
 
     return collector;
   }
 
-  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  async sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       try {
         const rich = mapDiscordEmbed(embed);
@@ -168,15 +219,15 @@ export class DiscordSender implements ContextSendable {
     }
     return undefined;
   }
-
 }
 
 export class DiscordTextChannel implements ContextTextChannel {
-
   private readonly sender: DiscordSender;
 
-  constructor(private readonly channel: TextChannel | DMChannel,
-      private readonly registry: ButtonRegistry) {
+  constructor(
+    private readonly channel: TextChannel | DMChannel,
+    private readonly registry: ButtonRegistry
+  ) {
     this.sender = new DiscordSender(channel, this.registry, this.channel);
   }
 
@@ -190,7 +241,9 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   get visible(): boolean {
     if (!this.isDm) {
-      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
+      const permissions = (this.channel as TextChannel).permissionsFor(
+        (this.channel as TextChannel).guild.me!
+      );
       return permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
     }
     return true;
@@ -202,7 +255,9 @@ export class DiscordTextChannel implements ContextTextChannel {
 
   get reactable(): boolean {
     if (!this.isDm) {
-      const permissions = (this.channel as TextChannel).permissionsFor((this.channel as TextChannel).guild.me!);
+      const permissions = (this.channel as TextChannel).permissionsFor(
+        (this.channel as TextChannel).guild.me!
+      );
       return permissions.has(Permissions.FLAGS.ADD_REACTIONS);
     }
     return true;
@@ -213,12 +268,15 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   // Simutaneously need to accept a text input OR emoji reaction so this is a mess
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
+  sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult> {
     return this.sender.sendSelection(question, options, user);
   }
 
   sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed);
   }
-
 }

@@ -52,16 +52,16 @@ export const NIGHTCORE_COMMAND: Command = {
   usage: [
     {
       title: 'See current nightcore status',
-      example: ''
+      example: '',
     },
     {
       title: 'Enable nightcore',
-      example: [KEYWORDS.ENABLE]
+      example: [KEYWORDS.ENABLE],
     },
     {
       title: 'Disable nightcore',
-      example: [KEYWORDS.DISABLE]
-    }
+      example: [KEYWORDS.DISABLE],
+    },
   ],
-  execute: executeNightcore
+  execute: executeNightcore,
 };

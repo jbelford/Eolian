@@ -10,7 +10,7 @@ export const QUEUE_COMMANDS: Command[] = [
   REMOVE_COMMAND,
   MOVE_COMMAND,
   LIST_COMMAND,
-  LOOP_COMMAND
+  LOOP_COMMAND,
 ];
 
 export { ADD_MESSAGE_COMMAND } from './add';

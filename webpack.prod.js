@@ -15,7 +15,6 @@ fs.readdirSync(dir)
     alias[filename] = absPath;
   });
 
-
 module.exports = {
   mode: 'production',
   entry: path.join(dir, 'app.ts'),
@@ -24,18 +23,18 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-    alias: alias
+    alias: alias,
   },
   target: 'node',
   externals: [nodeExternals()],
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
-  }
+    path: path.resolve(__dirname, 'dist'),
+  },
 };

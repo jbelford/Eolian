@@ -26,15 +26,14 @@ export const STOP_COMMAND: Command = {
   usage: [
     {
       example: '',
-    }
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute
+  execute,
 };
-
 
 async function executeSkip(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
@@ -56,14 +55,14 @@ export const SKIP_COMMAND: Command = {
   permission: UserPermission.DJ,
   usage: [
     {
-      example: ''
-    }
+      example: '',
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute: executeSkip
+  execute: executeSkip,
 };
 
 async function executeBack(context: CommandContext): Promise<void> {
@@ -78,7 +77,7 @@ async function executeBack(context: CommandContext): Promise<void> {
       await context.interaction.send('⏪', { ephemeral: false });
     }
   } else {
-    throw new EolianUserError("There are no previous songs!");
+    throw new EolianUserError('There are no previous songs!');
   }
 }
 
@@ -89,14 +88,14 @@ export const BACK_COMMAND: Command = {
   permission: UserPermission.DJ,
   usage: [
     {
-      example: ''
-    }
+      example: '',
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute: executeBack
+  execute: executeBack,
 };
 
 async function executePause(context: CommandContext): Promise<void> {
@@ -123,14 +122,14 @@ export const PAUSE_COMMAND: Command = {
   permission: UserPermission.DJ,
   usage: [
     {
-      example: ''
-    }
+      example: '',
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute: executePause
+  execute: executePause,
 };
 
 async function executeResume(context: CommandContext): Promise<void> {
@@ -157,14 +156,14 @@ export const RESUME_COMMAND: Command = {
   permission: UserPermission.DJ,
   usage: [
     {
-      example: ''
-    }
+      example: '',
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute: executeResume
+  execute: executeResume,
 };
 
 async function executeShowPlayer(context: CommandContext): Promise<void> {
@@ -183,12 +182,12 @@ export const SHOW_COMMAND: Command = {
   permission: UserPermission.DJ,
   usage: [
     {
-      example: ''
-    }
+      example: '',
+    },
   ],
   args: {
     base: true,
-    groups: []
+    groups: [],
   },
-  execute: executeShowPlayer
+  execute: executeShowPlayer,
 };

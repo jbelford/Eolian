@@ -11,7 +11,9 @@ import { SelectionOption } from 'embed/@types';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.SEARCH && options.URL) {
-    throw new EolianUserError(`You provided both SEARCH and URL patterns. Please provide just one of those items.`);
+    throw new EolianUserError(
+      `You provided both SEARCH and URL patterns. Please provide just one of those items.`
+    );
   }
 
   if (options.URL) {
@@ -19,12 +21,16 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     await handleUrl(options.URL, context);
   } else if (options.SEARCH) {
     if (options.SPOTIFY) {
-      throw new EolianUserError(`Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`);
+      throw new EolianUserError(
+        `Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`
+      );
     }
     await context.interaction.defer();
     await handleSoundCloudQuery(context, options.SEARCH);
   } else {
-    throw new EolianUserError('You must provide valid URL or SEARCH for me to link your account to!');
+    throw new EolianUserError(
+      'You must provide valid URL or SEARCH for me to link your account to!'
+    );
   }
 }
 
@@ -50,9 +56,11 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 
   const spotifyUser = await spotify.getUser(resource.id);
   await context.interaction.user.setSpotify(spotifyUser.id);
-  await context.interaction.send(`I have set your Spotify account to \`${spotifyUser.display_name}\`!`
-    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
-    + ` keyword to search your playlists.`);
+  await context.interaction.send(
+    `I have set your Spotify account to \`${spotifyUser.display_name}\`!` +
+      ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\`` +
+      ` keyword to search your playlists.`
+  );
 }
 
 async function handleSoundCloudUrl(url: string, context: CommandContext) {
@@ -68,24 +76,38 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
   }
 
   const question = 'Which SoundCloud account do you want me to link?';
-  const options: SelectionOption[] = soundCloudUsers.map(user => ({ name: user.username, subname: user.permalink_url, url: user.permalink_url }));
-  const result = await context.interaction.sendSelection(question, options, context.interaction.user);
+  const options: SelectionOption[] = soundCloudUsers.map(user => ({
+    name: user.username,
+    subname: user.permalink_url,
+    url: user.permalink_url,
+  }));
+  const result = await context.interaction.sendSelection(
+    question,
+    options,
+    context.interaction.user
+  );
 
   const message = await handleSoundCloud(context, soundCloudUsers[result.selected]);
   await result.message.edit(message);
 }
 
-async function handleSoundCloud(context: CommandContext, soundCloudUser: SoundCloudUser): Promise<string> {
+async function handleSoundCloud(
+  context: CommandContext,
+  soundCloudUser: SoundCloudUser
+): Promise<string> {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
-  return `I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
-  + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
-  + ` to use your playlists, likes, and tracks.`;
+  return (
+    `I have set your SoundCloud account to \`${soundCloudUser.username}\`!` +
+    ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword` +
+    ` to use your playlists, likes, and tracks.`
+  );
 }
 
 export const LINK_COMMAND: Command = {
   name: 'link',
   category: ACCOUNT_CATEGORY,
-  details: 'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',
+  details:
+    'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',
   permission: UserPermission.User,
   dmAllowed: true,
   keywords: [KEYWORDS.SPOTIFY, KEYWORDS.SOUNDCLOUD],
@@ -93,16 +115,16 @@ export const LINK_COMMAND: Command = {
   usage: [
     {
       title: `Search for SoundCloud user to link`,
-      example: [KEYWORDS.SOUNDCLOUD, PATTERNS.SEARCH.ex('john smith')]
+      example: [KEYWORDS.SOUNDCLOUD, PATTERNS.SEARCH.ex('john smith')],
     },
     {
       title: 'Provide URL to SoundCloud user to link',
-      example: 'https://soundcloud.com/john-smith'
+      example: 'https://soundcloud.com/john-smith',
     },
     {
       title: 'Provide URL to Spotify user to link',
       example: 'https://open.spotify.com/user/1111111111?si=1111111111111',
-    }
+    },
   ],
-  execute
+  execute,
 };

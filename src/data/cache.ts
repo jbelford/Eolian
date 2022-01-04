@@ -2,13 +2,20 @@ import NodeCache from 'node-cache';
 import { EolianCache, ListCache, MemoryCache } from './@types';
 
 export class InMemoryCache<V> implements EolianCache<V> {
-
   private cache: NodeCache;
 
-  constructor(private readonly ttl: number, clone = true,
-      private readonly onExpired?: (key: string, value: V) => void,
-      private readonly onClose?: (value: V) => Promise<void>) {
-    this.cache = new NodeCache({ stdTTL: this.ttl, checkperiod: 300,  useClones: clone, deleteOnExpire: true });
+  constructor(
+    private readonly ttl: number,
+    clone = true,
+    private readonly onExpired?: (key: string, value: V) => void,
+    private readonly onClose?: (value: V) => Promise<void>
+  ) {
+    this.cache = new NodeCache({
+      stdTTL: this.ttl,
+      checkperiod: 300,
+      useClones: clone,
+      deleteOnExpire: true,
+    });
     if (this.onExpired) {
       this.cache.on('del', this.onExpired);
     }
@@ -47,11 +54,9 @@ export class InMemoryCache<V> implements EolianCache<V> {
   async refreshTTL(key: string): Promise<boolean> {
     return this.cache.ttl(key, this.ttl);
   }
-
 }
 
 export class InMemoryListCache<V> implements ListCache<V> {
-
   private counts = new Map<string, number>();
   private cache: EolianCache<V[]>;
 
@@ -110,7 +115,7 @@ export class InMemoryListCache<V> implements ListCache<V> {
   }
 
   async get(key: string): Promise<V[]> {
-    const values = await this.cache.get(key) ?? [];
+    const values = (await this.cache.get(key)) ?? [];
     this.counts.set(key, values.length);
     return values;
   }
@@ -140,16 +145,13 @@ export class InMemoryListCache<V> implements ListCache<V> {
   async close(): Promise<void> {
     await this.cache.close();
   }
-
 }
 
 class CacheNode<T> {
-
   prev?: CacheNode<T>;
   next?: CacheNode<T>;
 
-  constructor(private _id: string, private _value: T) {
-  }
+  constructor(private _id: string, private _value: T) {}
 
   get id(): string {
     return this._id;
@@ -163,17 +165,14 @@ class CacheNode<T> {
     this._id = id;
     this._value = value;
   }
-
 }
 
 export class InMemoryLRUCache<T> implements MemoryCache<T> {
-
   private map = new Map<string, CacheNode<T>>();
   private head?: CacheNode<T>;
   private tail?: CacheNode<T>;
 
-  constructor(private readonly size: number) {
-  }
+  constructor(private readonly size: number) {}
 
   get(id: string): T | undefined {
     let val: T | undefined;
@@ -227,5 +226,4 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
     node.prev = undefined;
     node.next = undefined;
   }
-
 }

@@ -8,7 +8,11 @@ export { YouTubePlaylistResolver } from './playlist';
 export { YouTubeUrlResolver } from './url';
 export { YouTubeVideoResolver } from './video';
 
-export function getYouTubeSourceFetcher(id: string, type: ResourceType, sendable: ContextSendable): SourceFetcher {
+export function getYouTubeSourceFetcher(
+  id: string,
+  type: ResourceType,
+  sendable: ContextSendable
+): SourceFetcher {
   switch (type) {
     case ResourceType.Playlist:
       return new YouTubePlaylistFetcher(id, sendable);

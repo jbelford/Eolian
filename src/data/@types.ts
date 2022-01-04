@@ -78,7 +78,7 @@ export const enum ResourceType {
   Likes,
   Artist,
   Song,
-  Tracks
+  Tracks,
 }
 
 export interface MemoryStore extends Closable {
@@ -106,7 +106,7 @@ export interface MusicQueueCache {
   unpop(guildId: string, count: number): Promise<boolean>;
   get(guildId: string, index: number, count: number): Promise<Track[]>;
   getLoop(guildId: string, count: number): Promise<Track[]>;
-  remove(guildId: string, index: number, count: number): Promise<number>
+  remove(guildId: string, index: number, count: number): Promise<number>;
   move(guildId: string, to: number, from: number, count: number): Promise<void>;
   add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
   shuffle(guildId: string): Promise<boolean>;

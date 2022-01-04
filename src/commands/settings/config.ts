@@ -10,7 +10,7 @@ enum CONFIG_OPTION {
   SYNTAX = 'syntax',
   DJ_ADD = 'dj_add',
   DJ_REMOVE = 'dj_remove',
-  DJ_LIMITED = 'dj_limited'
+  DJ_LIMITED = 'dj_limited',
 }
 
 type ConfigSetFunc = (context: CommandContext, value: string) => Promise<void>;
@@ -21,7 +21,7 @@ const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
   [CONFIG_OPTION.SYNTAX, setSyntax],
   [CONFIG_OPTION.DJ_ADD, addDjRole],
   [CONFIG_OPTION.DJ_REMOVE, removeDjRole],
-  [CONFIG_OPTION.DJ_LIMITED, setDjLimited]
+  [CONFIG_OPTION.DJ_LIMITED, setDjLimited],
 ]);
 
 const DJ_ROLE_LIMIT = 10;
@@ -35,7 +35,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   if (options.ARG.length !== 2) {
-    throw new EolianUserError('To set a config, I require two arguments: `<name> <value>`')
+    throw new EolianUserError('To set a config, I require two arguments: `<name> <value>`');
   }
 
   const name = options.ARG[0].toLowerCase();
@@ -84,7 +84,9 @@ async function setSyntax(context: CommandContext, syntax: string) {
       type = SyntaxType.TRADITIONAL;
       break;
     default:
-      throw new EolianUserError(`Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`);
+      throw new EolianUserError(
+        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`
+      );
   }
 
   await context.server!.details.setSyntax(type);
@@ -104,7 +106,9 @@ async function addDjRole(context: CommandContext, id: string) {
   id = extractRoleId(id);
   const details = await context.server!.details.get();
   if (details.djRoleIds && details.djRoleIds.length === DJ_ROLE_LIMIT) {
-    throw new EolianUserError(`You may only have up to ${DJ_ROLE_LIMIT} DJ roles set! Remove DJ rules with \`dj_remove\`.`);
+    throw new EolianUserError(
+      `You may only have up to ${DJ_ROLE_LIMIT} DJ roles set! Remove DJ rules with \`dj_remove\`.`
+    );
   }
   const success = await context.server!.details.addDjRole(id);
   if (!success) {
@@ -133,11 +137,15 @@ async function setDjLimited(context: CommandContext, allow: string) {
       enabled = false;
       break;
     default:
-      throw new EolianUserError('Unrecognized value! Provide `true` or `false` for `dj_limited` config.');
+      throw new EolianUserError(
+        'Unrecognized value! Provide `true` or `false` for `dj_limited` config.'
+      );
   }
   await context.server!.details.setDjLimited(enabled);
   if (enabled) {
-    await context.interaction.send(`✨ Users can now limited DJ! This means they can add songs to the queue as well as some very basic operations.`)
+    await context.interaction.send(
+      `✨ Users can now limited DJ! This means they can add songs to the queue as well as some very basic operations.`
+    );
   } else {
     await context.interaction.send(`✨ I have removed limited DJ permissions!`);
   }
@@ -155,40 +163,41 @@ export const CONFIG_COMMAND: Command = {
     },
     {
       title: 'Set prefix config',
-      example: 'prefix $'
+      example: 'prefix $',
     },
     {
       title: 'Set default volume config',
-      example: 'volume 50'
+      example: 'volume 50',
     },
     {
       title: 'Set syntax preference to keyword based',
-      example: 'syntax keyword'
+      example: 'syntax keyword',
     },
     {
       title: 'Set syntax preference to traditional',
-      example: 'syntax traditional'
+      example: 'syntax traditional',
     },
     {
       title: 'Add DJ role by @ mention',
-      example: 'dj_add @myDjRole'
+      example: 'dj_add @myDjRole',
     },
     {
       title: 'Add DJ by ID',
-      example: 'dj_add 920079417907224636'
+      example: 'dj_add 920079417907224636',
     },
     {
       title: 'Remove DJ role',
-      example: 'dj_remove 920079417907224636'
+      example: 'dj_remove 920079417907224636',
     },
     {
-      title: 'Allow non-DJs to have ability to have limited DJ ability such as adding tracks (Only effective when DJ role is set)',
-      example: 'dj_limited true'
+      title:
+        'Allow non-DJs to have ability to have limited DJ ability such as adding tracks (Only effective when DJ role is set)',
+      example: 'dj_limited true',
     },
     {
       title: 'Make non-DJs not allowed to set any',
-      example: 'dj_limited false'
-    }
+      example: 'dj_limited false',
+    },
   ],
   args: {
     base: true,
@@ -201,20 +210,20 @@ export const CONFIG_COMMAND: Command = {
             details: 'The setting to change',
             getChoices() {
               return Object.values(CONFIG_OPTION);
-            }
-          }
+            },
+          },
         ],
       },
       {
         required: false,
-        options:[
+        options: [
           {
             name: 'value',
-            details: 'The value for the setting'
-          }
-        ]
-      }
-    ]
+            details: 'The value for the setting',
+          },
+        ],
+      },
+    ],
   },
-  execute
+  execute,
 };

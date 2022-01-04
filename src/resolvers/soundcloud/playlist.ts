@@ -8,9 +8,7 @@ import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SoundCloudPlaylistResolver implements SourceResolver {
-
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
-  }
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
     const playlists = await this.searchSoundCloudPlaylists();
@@ -19,9 +17,15 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
     }
 
     if (playlists.length > 1) {
-      const result = await this.context.interaction.sendSelection('Choose a SoundCloud playlist',
-        playlists.map(playlist => ({ name: playlist.title, subname: playlist.user.username, url: playlist.permalink_url })),
-        this.context.interaction.user);
+      const result = await this.context.interaction.sendSelection(
+        'Choose a SoundCloud playlist',
+        playlists.map(playlist => ({
+          name: playlist.title,
+          subname: playlist.user.username,
+          url: playlist.permalink_url,
+        })),
+        this.context.interaction.user
+      );
 
       return createSoundCloudPlaylist(playlists[result.selected], result.message);
     } else {
@@ -40,7 +44,9 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
     if (this.params.MY) {
       const user = await this.context.interaction.user.get();
       if (!user.soundcloud) {
-        throw new EolianUserError(`I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`);
+        throw new EolianUserError(
+          `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`
+        );
       }
       playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit, user.soundcloud);
     } else {
@@ -51,7 +57,10 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
   }
 }
 
-export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist, message?: ContextMessage): ResolvedResource {
+export function createSoundCloudPlaylist(
+  playlist: SoundCloudPlaylist,
+  message?: ContextMessage
+): ResolvedResource {
   return {
     name: playlist.title,
     authors: [playlist.user.username],
@@ -59,18 +68,15 @@ export function createSoundCloudPlaylist(playlist: SoundCloudPlaylist, message?:
       id: playlist.id.toString(),
       src: TrackSource.SoundCloud,
       type: ResourceType.Playlist,
-      url: playlist.permalink_url
+      url: playlist.permalink_url,
     },
     fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist),
-    selectionMessage: message
+    selectionMessage: message,
   };
 }
 
 export class SoundCloudPlaylistFetcher implements SourceFetcher {
-
-  constructor(private readonly id: number,
-    private readonly playlist?: SoundCloudPlaylist) {
-  }
+  constructor(private readonly id: number, private readonly playlist?: SoundCloudPlaylist) {}
 
   async fetch(): Promise<FetchResult> {
     let tracks: SoundCloudTrack[];
@@ -82,5 +88,4 @@ export class SoundCloudPlaylistFetcher implements SourceFetcher {
     }
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
-
 }

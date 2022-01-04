@@ -5,11 +5,22 @@ import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
-import { createCategoryListEmbed, createCommandDetailsEmbed, createCommandListEmbed, createKeywordDetailsEmbed, createPatternDetailsEmbed } from 'embed';
+import {
+  createCategoryListEmbed,
+  createCommandDetailsEmbed,
+  createCommandListEmbed,
+  createKeywordDetailsEmbed,
+  createPatternDetailsEmbed,
+} from 'embed';
 
-async function execute({ interaction, server }: CommandContext, { ARG }: CommandOptions): Promise<void> {
+async function execute(
+  { interaction, server }: CommandContext,
+  { ARG }: CommandOptions
+): Promise<void> {
   if (!ARG?.length) {
-    const categories = COMMAND_CATEGORIES.filter(category => category.permission <= interaction.user.permission);
+    const categories = COMMAND_CATEGORIES.filter(
+      category => category.permission <= interaction.user.permission
+    );
     const config = await server?.details.get();
     const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
     await interaction.sendEmbed(categoryListEmbed);
@@ -26,7 +37,8 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
     idx--;
   }
 
-  const category = !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
+  const category =
+    !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
       ? COMMAND_CATEGORIES[idx]
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
@@ -44,21 +56,30 @@ async function execute({ interaction, server }: CommandContext, { ARG }: Command
   }
 
   const command = COMMAND_MAP[arg];
-  if (command && (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)) {
+  if (
+    command &&
+    (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
+  ) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
     await interaction.sendEmbed(commandEmbed);
     return;
   }
 
   const keyword = KEYWORDS[arg.toUpperCase()];
-  if (keyword && (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)) {
+  if (
+    keyword &&
+    (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)
+  ) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await interaction.sendEmbed(keywordEmbed);
     return;
   }
 
   const pattern = PATTERNS[arg.toUpperCase()];
-  if (pattern && (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)) {
+  if (
+    pattern &&
+    (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)
+  ) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await interaction.sendEmbed(patternEmbed);
     return;
@@ -84,20 +105,20 @@ export const HELP_COMMAND: Command = {
     },
     {
       title: `Show commands for 'General' category`,
-      example: 'General'
+      example: 'General',
     },
     {
       title: `Show help for 'poll' command`,
-      example: 'poll'
+      example: 'poll',
     },
     {
       title: `Show help for SPOTIFY keyword`,
-      example: 'spotify'
+      example: 'spotify',
     },
     {
       title: `Show help for QUERY pattern`,
-      example: 'query'
-    }
+      example: 'query',
+    },
   ],
   args: {
     base: true,
@@ -110,32 +131,32 @@ export const HELP_COMMAND: Command = {
             details: 'The command to get help for',
             getChoices() {
               return COMMANDS.map(cmd => cmd.name);
-            }
+            },
           },
           {
             name: 'category',
             details: 'The category to get help for',
             getChoices() {
               return COMMAND_CATEGORIES.map(category => category.name);
-            }
+            },
           },
           {
             name: 'keyword',
             details: 'The keyword to get help for',
             getChoices() {
               return Object.values(KEYWORDS).map(keyword => keyword!.name);
-            }
+            },
           },
           {
             name: 'pattern',
             details: 'The pattern to get help for',
             getChoices() {
               return PATTERNS_SORTED.map(pattern => pattern.name);
-            }
-          }
-        ]
-      }
+            },
+          },
+        ],
+      },
     ],
   },
-  execute
-}
+  execute,
+};

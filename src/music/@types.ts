@@ -4,7 +4,6 @@ import EventEmitter from 'events';
 import { ContextVoiceChannel } from 'framework/@types';
 
 export interface Player extends EventEmitter, Idleable, Closable {
-
   readonly isStreaming: boolean;
   readonly paused: boolean;
   readonly queue: ServerQueue;
@@ -40,5 +39,4 @@ export interface Player extends EventEmitter, Idleable, Closable {
    * Tells the player to resume the stream.
    */
   resume(): Promise<void>;
-
 }

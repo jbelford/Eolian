@@ -12,11 +12,12 @@ export { SpotifyArtistResolver } from './artist';
 export { SpotifyPlaylistResolver } from './playlist';
 export { SpotifyUrlResolver } from './url';
 
-export function getSpotifySourceFetcher(id: string,
+export function getSpotifySourceFetcher(
+  id: string,
   type: ResourceType,
   params: CommandOptions,
-  sendable: ContextSendable): SourceFetcher {
-
+  sendable: ContextSendable
+): SourceFetcher {
   switch (type) {
     case ResourceType.Album:
       return new SpotifyAlbumFetcher(id);

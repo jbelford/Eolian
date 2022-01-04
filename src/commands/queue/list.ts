@@ -5,7 +5,6 @@ import { getRangeOption, PATTERNS } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 
-
 async function executeClearQueue(context: CommandContext): Promise<void> {
   if (context.interaction.user.permission < UserPermission.DJ) {
     throw new EolianUserError('You do not have permission to clear the queue!');
@@ -64,21 +63,20 @@ export const LIST_COMMAND: Command = {
     },
     {
       title: 'Clear the queue',
-      example: [KEYWORDS.CLEAR]
+      example: [KEYWORDS.CLEAR],
     },
     {
       title: 'Show the top 10 songs in the queue',
-      example: [PATTERNS.TOP.ex('10')]
+      example: [PATTERNS.TOP.ex('10')],
     },
     {
       title: 'Show the last 10 songs in the queue',
-      example: [PATTERNS.BOTTOM.ex('10')]
+      example: [PATTERNS.BOTTOM.ex('10')],
     },
     {
       title: 'Shuffle the queue',
-      example: [KEYWORDS.SHUFFLE]
-    }
+      example: [KEYWORDS.SHUFFLE],
+    },
   ],
-  execute
+  execute,
 };
-

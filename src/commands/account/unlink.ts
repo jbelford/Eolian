@@ -3,7 +3,10 @@ import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { UserPermission } from 'common/constants';
 
-async function execute({ interaction }: CommandContext, { SOUNDCLOUD, SPOTIFY }: CommandOptions): Promise<void> {
+async function execute(
+  { interaction }: CommandContext,
+  { SOUNDCLOUD, SPOTIFY }: CommandOptions
+): Promise<void> {
   let response: string | undefined;
 
   if (SOUNDCLOUD || SPOTIFY) {
@@ -37,16 +40,16 @@ export const UNLINK_COMMAND: Command = {
   usage: [
     {
       title: 'Unlink SoundCloud account',
-      example: [KEYWORDS.SOUNDCLOUD]
+      example: [KEYWORDS.SOUNDCLOUD],
     },
     {
       title: 'Unlink Spotify account',
-      example: [KEYWORDS.SPOTIFY]
+      example: [KEYWORDS.SPOTIFY],
     },
     {
       title: 'Unlink Spotify and SoundCloud',
-      example: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY]
-    }
+      example: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY],
+    },
   ],
-  execute
+  execute,
 };

@@ -16,7 +16,11 @@ export interface SoundCloudApi extends StreamFetcher {
   getTrack(id: number): Promise<SoundCloudTrack>;
   getPlaylist(id: number): Promise<SoundCloudPlaylist>;
   getUserTracks(id: number): Promise<SoundCloudTrack[]>;
-  getUserFavorites(id: number, max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]>;
+  getUserFavorites(
+    id: number,
+    max?: number,
+    progress?: ProgressUpdater
+  ): Promise<SoundCloudTrack[]>;
 }
 
 export type SoundCloudFavoritesCallback = (count: number) => Promise<void>;
@@ -65,11 +69,15 @@ export interface SoundCloudPaginatedResult<T> {
 }
 
 export interface SpotifyApi extends StreamFetcher {
-  resolve(uri: string): SpotifyUrlDetails | undefined
+  resolve(uri: string): SpotifyUrlDetails | undefined;
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
-  getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistTracks>;
+  getPlaylistTracks(
+    id: string,
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory
+  ): Promise<SpotifyPlaylistTracks>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;
   getArtist(id: string): Promise<SpotifyArtist>;
@@ -103,7 +111,7 @@ export interface SpotifyPlaylist {
     href: string;
     total: number;
     items?: SpotifyPlaylistTrack[];
-  }
+  };
 }
 
 export interface SpotifyPlaylistTracks extends SpotifyPlaylist {
@@ -111,7 +119,7 @@ export interface SpotifyPlaylistTracks extends SpotifyPlaylist {
 }
 
 export interface SpotifyPlaylistTrack {
-  track?: SpotifyTrack
+  track?: SpotifyTrack;
 }
 
 export interface SpotifyAlbum {
@@ -125,11 +133,11 @@ export interface SpotifyAlbum {
     href: string;
     total: number;
     items?: SpotifyTrack[];
-  }
+  };
 }
 
 export interface SpotifyAlbumFull extends SpotifyAlbum {
-  tracks: SpotifyPagingObject<SpotifyTrack>
+  tracks: SpotifyPagingObject<SpotifyTrack>;
 }
 
 export interface SpotifyPagingObject<T> {
@@ -181,9 +189,8 @@ export const enum SpotifyResourceType {
   TRACK = 'track',
   PLAYLIST = 'playlist',
   ARTIST = 'artist',
-  ALBUM = 'album'
+  ALBUM = 'album',
 }
-
 
 export interface YouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
@@ -219,14 +226,14 @@ export interface YoutubePlaylist {
 
 export const enum YouTubeResourceType {
   VIDEO = 0,
-  PLAYLIST
+  PLAYLIST,
 }
 
 export const enum TrackSource {
   Unknown = 0,
   Spotify,
   YouTube,
-  SoundCloud
+  SoundCloud,
 }
 
 export type TrackSourceDetails = {
@@ -253,7 +260,11 @@ export interface StreamSource {
 
 export interface BingApi {
   searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;
-  searchYoutubeSong(name: string, artist: string, duration?: number): Promise<(Track & { score: number })[]>;
+  searchYoutubeSong(
+    name: string,
+    artist: string,
+    duration?: number
+  ): Promise<(Track & { score: number })[]>;
 }
 
 export interface BingVideoPublisher {
@@ -265,6 +276,6 @@ export interface BingVideo {
   name: string;
   duration: string;
   contentUrl: string;
-  publisher: BingVideoPublisher[]
-  creator: BingVideoPublisher
+  publisher: BingVideoPublisher[];
+  creator: BingVideoPublisher;
 }

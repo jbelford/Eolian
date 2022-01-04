@@ -3,54 +3,129 @@ import { Keyword, KeywordGroup, KeywordGroupProperties, KeywordName, SyntaxType 
 
 export const KEYWORD_GROUPS: Readonly<Record<KeywordGroup, KeywordGroupProperties>> = {
   increment: {
-    details: 'Indicates to increment or decrement a value.'
+    details: 'Indicates to increment or decrement a value.',
   },
   source: {
-    details: 'Select which supported service to fetch from.'
+    details: 'Select which supported service to fetch from.',
   },
   switch: {
-    details: 'Whether to enable or disable.'
+    details: 'Whether to enable or disable.',
   },
   type: {
-    details: 'Which type of resource to fetch.'
+    details: 'Which type of resource to fetch.',
   },
   search: {
-    details: 'Input either a URL or search terms.'
-  }
+    details: 'Input either a URL or search terms.',
+  },
 };
 
 class KeywordDetails implements Keyword {
-
   constructor(
     readonly name: KeywordName,
     readonly details: string,
     readonly permission: UserPermission,
     readonly group?: KeywordGroup
-  ) {
-  }
+  ) {}
 
   text(type: SyntaxType): string {
     return type === SyntaxType.KEYWORD ? this.name.toLowerCase() : `-${this.name.toLowerCase()}`;
   }
-
 }
 
-export const KEYWORDS: Readonly<Record<string, Keyword | undefined> & Record<KeywordName, Keyword>> = {
-  ENABLE: new KeywordDetails('ENABLE', 'Indicates to enable a particular feature.', UserPermission.User, KeywordGroup.Switch),
-  DISABLE: new KeywordDetails('DISABLE', 'Indicates to disable a particular feature.', UserPermission.User, KeywordGroup.Switch),
+export const KEYWORDS: Readonly<
+  Record<string, Keyword | undefined> & Record<KeywordName, Keyword>
+> = {
+  ENABLE: new KeywordDetails(
+    'ENABLE',
+    'Indicates to enable a particular feature.',
+    UserPermission.User,
+    KeywordGroup.Switch
+  ),
+  DISABLE: new KeywordDetails(
+    'DISABLE',
+    'Indicates to disable a particular feature.',
+    UserPermission.User,
+    KeywordGroup.Switch
+  ),
   CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data.', UserPermission.User),
-  MORE: new KeywordDetails('MORE', 'Indicates to increase a value.', UserPermission.User, KeywordGroup.Increment),
-  LESS: new KeywordDetails('LESS', 'Indicates to decrease a value.', UserPermission.User, KeywordGroup.Increment),
-  MY: new KeywordDetails('MY', 'Indicates to fetch information from your account. Be it SoundCloud or Spotify.', UserPermission.User),
-  SOUNDCLOUD: new KeywordDetails('SOUNDCLOUD', 'Indicates to fetch a resource from SoundCloud if applicable.', UserPermission.User, KeywordGroup.Source),
-  SPOTIFY: new KeywordDetails('SPOTIFY', 'Indicates to fetch a resource from Spotify if applicable.', UserPermission.User, KeywordGroup.Source),
-  YOUTUBE: new KeywordDetails('YOUTUBE', 'Indicates to fetch a resource from YouTube if applicable.', UserPermission.User, KeywordGroup.Source),
-  PLAYLIST: new KeywordDetails('PLAYLIST', 'Indicates to fetch songs from a playlist given a query.', UserPermission.User, KeywordGroup.Type),
-  ALBUM: new KeywordDetails('ALBUM', 'Indicates to fetch songs from an album given a query.', UserPermission.User, KeywordGroup.Type),
-  ARTIST: new KeywordDetails('ARTIST', 'Indicates to fetch songs for an artist given the query.', UserPermission.User, KeywordGroup.Type),
-  NEXT: new KeywordDetails('NEXT', 'Indicates to apply operation to the top of queue.', UserPermission.DJ),
-  SHUFFLE: new KeywordDetails('SHUFFLE', 'Indicates to shuffle the fetched tracks.', UserPermission.User),
-  LIKES: new KeywordDetails('LIKES', 'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.', UserPermission.User, KeywordGroup.Type),
-  TRACKS: new KeywordDetails('TRACKS', 'Indicates to fetch SoundCloud tracks.', UserPermission.User, KeywordGroup.Type),
-  FAST: new KeywordDetails('FAST', 'Select the first result if multiple options', UserPermission.User)
+  MORE: new KeywordDetails(
+    'MORE',
+    'Indicates to increase a value.',
+    UserPermission.User,
+    KeywordGroup.Increment
+  ),
+  LESS: new KeywordDetails(
+    'LESS',
+    'Indicates to decrease a value.',
+    UserPermission.User,
+    KeywordGroup.Increment
+  ),
+  MY: new KeywordDetails(
+    'MY',
+    'Indicates to fetch information from your account. Be it SoundCloud or Spotify.',
+    UserPermission.User
+  ),
+  SOUNDCLOUD: new KeywordDetails(
+    'SOUNDCLOUD',
+    'Indicates to fetch a resource from SoundCloud if applicable.',
+    UserPermission.User,
+    KeywordGroup.Source
+  ),
+  SPOTIFY: new KeywordDetails(
+    'SPOTIFY',
+    'Indicates to fetch a resource from Spotify if applicable.',
+    UserPermission.User,
+    KeywordGroup.Source
+  ),
+  YOUTUBE: new KeywordDetails(
+    'YOUTUBE',
+    'Indicates to fetch a resource from YouTube if applicable.',
+    UserPermission.User,
+    KeywordGroup.Source
+  ),
+  PLAYLIST: new KeywordDetails(
+    'PLAYLIST',
+    'Indicates to fetch songs from a playlist given a query.',
+    UserPermission.User,
+    KeywordGroup.Type
+  ),
+  ALBUM: new KeywordDetails(
+    'ALBUM',
+    'Indicates to fetch songs from an album given a query.',
+    UserPermission.User,
+    KeywordGroup.Type
+  ),
+  ARTIST: new KeywordDetails(
+    'ARTIST',
+    'Indicates to fetch songs for an artist given the query.',
+    UserPermission.User,
+    KeywordGroup.Type
+  ),
+  NEXT: new KeywordDetails(
+    'NEXT',
+    'Indicates to apply operation to the top of queue.',
+    UserPermission.DJ
+  ),
+  SHUFFLE: new KeywordDetails(
+    'SHUFFLE',
+    'Indicates to shuffle the fetched tracks.',
+    UserPermission.User
+  ),
+  LIKES: new KeywordDetails(
+    'LIKES',
+    'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.',
+    UserPermission.User,
+    KeywordGroup.Type
+  ),
+  TRACKS: new KeywordDetails(
+    'TRACKS',
+    'Indicates to fetch SoundCloud tracks.',
+    UserPermission.User,
+    KeywordGroup.Type
+  ),
+  FAST: new KeywordDetails(
+    'FAST',
+    'Select the first result if multiple options',
+    UserPermission.User
+  ),
 };

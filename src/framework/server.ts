@@ -9,11 +9,9 @@ import { ServerDetails } from './@types';
 const RECORD_USAGE_INTERVAL = 1000 * 60 * 60 * 24;
 
 export class DiscordGuild implements ServerDetails {
-
   private configCache: ServerDTO | null = null;
 
-  constructor(private readonly servers: ServersDb, private readonly guild: Guild) {
-  }
+  constructor(private readonly servers: ServersDb, private readonly guild: Guild) {}
 
   get id(): string {
     return this.guild.id;
@@ -44,7 +42,7 @@ export class DiscordGuild implements ServerDetails {
           prefix: environment.cmdToken,
           volume: DEFAULT_VOLUME,
           syntax: SyntaxType.KEYWORD,
-          queueLimit: environment.queueLimit
+          queueLimit: environment.queueLimit,
         };
       }
     }
@@ -81,7 +79,7 @@ export class DiscordGuild implements ServerDetails {
   }
 
   async addDjRole(id: string): Promise<boolean> {
-    const exists  = this.guild.roles.cache.has(id);
+    const exists = this.guild.roles.cache.has(id);
     if (!exists) {
       return false;
     }
@@ -131,5 +129,4 @@ export class DiscordGuild implements ServerDetails {
     this.configCache!.lastUsage = date;
     await this.servers.setLastUsage(this.id, this.configCache!.lastUsage);
   }
-
 }

@@ -42,20 +42,20 @@ export const VOLUME_COMMAND: Command = {
   usage: [
     {
       title: 'Get current volume',
-      example: ''
+      example: '',
     },
     {
       title: 'Increase the volume',
-      example: [KEYWORDS.MORE]
+      example: [KEYWORDS.MORE],
     },
     {
       title: 'Decrease the volume',
-      example: [KEYWORDS.LESS]
+      example: [KEYWORDS.LESS],
     },
     {
       title: 'Set the volume to 75%',
-      example: '75'
-    }
+      example: '75',
+    },
   ],
-  execute
+  execute,
 };

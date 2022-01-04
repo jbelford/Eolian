@@ -1,4 +1,3 @@
-
 export const NUMBER_TO_EMOJI = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 export const EMOJI_TO_NUMBER: Record<string, number> = {};
@@ -12,23 +11,23 @@ export const enum UserPermission {
   DJLimited,
   DJ,
   Admin,
-  Owner
+  Owner,
 }
 
 export const enum Color {
-  Help = 0x5A54B8,
+  Help = 0x5a54b8,
   Invite = 0x7985f0,
-  Poll = 0x46DBC0,
+  Poll = 0x46dbc0,
   Selection = 0xe4ff1c,
   Profile = 0x4286f4,
-  Spotify = 0x1DB954,
-  SoundCloud = 0xFF7700,
-  YouTube = 0xFF0000
+  Spotify = 0x1db954,
+  SoundCloud = 0xff7700,
+  YouTube = 0xff0000,
 }
 
 export const IDLE_TIMEOUT_MINS = 60 * 10;
 
-export const DEFAULT_VOLUME = 0.10;
+export const DEFAULT_VOLUME = 0.1;
 
 export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
 export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;

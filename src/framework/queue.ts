@@ -4,13 +4,10 @@ import { MusicQueueCache, ServerQueue } from 'data/@types';
 import { EventEmitter } from 'events';
 
 export class GuildQueue extends EventEmitter implements ServerQueue {
-
   private lastUpdated = Date.now();
   private loopEnabled = false;
 
-  constructor(
-      private readonly queue: MusicQueueCache,
-      private readonly guildId: string) {
+  constructor(private readonly queue: MusicQueueCache, private readonly guildId: string) {
     super();
   }
 
@@ -90,17 +87,16 @@ export class GuildQueue extends EventEmitter implements ServerQueue {
 
   private emitUpdate = () => {
     this.lastUpdated = Date.now();
-    this.emit('update')
+    this.emit('update');
   };
 
   private emitAdd = () => {
     this.emit('add');
     this.emitUpdate();
-  }
+  };
 
   private emitRemove = () => {
     this.emit('remove');
     this.emitUpdate();
-  }
-
+  };
 }

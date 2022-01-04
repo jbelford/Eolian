@@ -2,26 +2,45 @@ import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
-import { RangeFactory, SpotifyAlbum, SpotifyAlbumFull, SpotifyApi, SpotifyArtist, SpotifyPagingObject, SpotifyPlaylist, SpotifyPlaylistTrack, SpotifyPlaylistTracks, SpotifyResourceType, SpotifyTrack, SpotifyUrlDetails, SpotifyUser, StreamSource, Track, TrackSource, YouTubeApi } from './@types';
+import {
+  RangeFactory,
+  SpotifyAlbum,
+  SpotifyAlbumFull,
+  SpotifyApi,
+  SpotifyArtist,
+  SpotifyPagingObject,
+  SpotifyPlaylist,
+  SpotifyPlaylistTrack,
+  SpotifyPlaylistTracks,
+  SpotifyResourceType,
+  SpotifyTrack,
+  SpotifyUrlDetails,
+  SpotifyUser,
+  StreamSource,
+  Track,
+  TrackSource,
+  YouTubeApi,
+} from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
-  V1 = 'v1'
+  V1 = 'v1',
 }
 
 const SPOTIFY_API = 'https://api.spotify.com';
 const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
 
-
 export class SpotifyApiImpl implements SpotifyApi {
-
   private expiration = 0;
   private accessToken?: string;
 
-  constructor(private readonly clientId: string, private readonly clientSecret: string, private readonly youtube: YouTubeApi) {
-  }
+  constructor(
+    private readonly clientId: string,
+    private readonly clientSecret: string,
+    private readonly youtube: YouTubeApi
+  ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
-    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:/]([^?]+)/g
+    const matcher = /(spotify\.com\/|spotify:)(user|track|album|playlist|artist)[:/]([^?]+)/g;
     const regArr = matcher.exec(uri);
     if (!regArr) return;
     return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };
@@ -54,7 +73,11 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getPlaylistTracks(id: string, progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyPlaylistTracks> {
+  async getPlaylistTracks(
+    id: string,
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory
+  ): Promise<SpotifyPlaylistTracks> {
     try {
       const playlist = await this.getPlaylist(id);
       const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { limit: 100 };
@@ -101,7 +124,9 @@ export class SpotifyApiImpl implements SpotifyApi {
   async getAlbumTracks(id: string): Promise<SpotifyAlbumFull> {
     try {
       const album = await this.getAlbum(id);
-      album.tracks.items = await this.getPaginatedItems(`albums/${id}/tracks`, { initial: album.tracks });
+      album.tracks.items = await this.getPaginatedItems(`albums/${id}/tracks`, {
+        initial: album.tracks,
+      });
       return album;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album tracks: id: %s`, id);
@@ -120,7 +145,9 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getArtistTracks(id: string): Promise<SpotifyTrack[]> {
     try {
-      const response = await this.get<{ tracks: SpotifyTrack[] }>(`artists/${id}/top-tracks`, { country: 'US' });
+      const response = await this.get<{ tracks: SpotifyTrack[] }>(`artists/${id}/top-tracks`, {
+        country: 'US',
+      });
       return response.tracks;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify artist tracks: id: %s`, id);
@@ -134,8 +161,10 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
 
     try {
-      const response = await this.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist>}>('search',
-        { type: 'playlist', q: query, limit });
+      const response = await this.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist> }>(
+        'search',
+        { type: 'playlist', q: query, limit }
+      );
       return response.playlists.items;
     } catch (e) {
       logger.warn(`Failed to search Spotify playlists: query: %s userId: %s`, query, userId);
@@ -145,8 +174,11 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async searchAlbums(query: string, limit = 5): Promise<SpotifyAlbum[]> {
     try {
-      const response = await this.get<{ albums: SpotifyPagingObject<SpotifyAlbum>}>('search',
-        { type: 'album', q: query, limit });
+      const response = await this.get<{ albums: SpotifyPagingObject<SpotifyAlbum> }>('search', {
+        type: 'album',
+        q: query,
+        limit,
+      });
       return response.albums.items;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album: query: %s`, query);
@@ -156,8 +188,11 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async searchArtists(query: string, limit = 5): Promise<SpotifyArtist[]> {
     try {
-      const response = await this.get<{ artists: SpotifyPagingObject<SpotifyArtist>}>('search',
-        { type: 'artist', q: query, limit });
+      const response = await this.get<{ artists: SpotifyPagingObject<SpotifyArtist> }>('search', {
+        type: 'artist',
+        q: query,
+        limit,
+      });
       return response.artists.items;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify artists: query: %s limit: %d`, query, limit);
@@ -167,7 +202,9 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.Spotify) {
-      throw new Error(`Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`);
+      throw new Error(
+        `Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`
+      );
     }
     const trackCopy: Track = { ...track };
 
@@ -188,10 +225,17 @@ export class SpotifyApiImpl implements SpotifyApi {
     return this.youtube.searchStream(trackCopy);
   }
 
-  private async searchUserPlaylists(query: string, userId: string, limit = 5): Promise<SpotifyPlaylist[]> {
+  private async searchUserPlaylists(
+    query: string,
+    userId: string,
+    limit = 5
+  ): Promise<SpotifyPlaylist[]> {
     try {
       const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`users/${userId}/playlists`);
-      const results = await fuzzyMatch(query, playlists.map(playlist => playlist.name));
+      const results = await fuzzyMatch(
+        query,
+        playlists.map(playlist => playlist.name)
+      );
       return results.slice(0, limit).map(result => playlists[result.key]);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify user playlists: query: %s userId: %s`, query, userId);
@@ -207,30 +251,36 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  private async getToken(): Promise<{ access_token: string, expires_in: number }> {
+  private async getToken(): Promise<{ access_token: string; expires_in: number }> {
     logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
     return await httpRequest(SPOTIFY_TOKEN, {
       method: 'POST',
       form: { grant_type: 'client_credentials' },
       auth: { basic: { id: this.clientId, password: this.clientSecret } },
-      json: true
+      json: true,
     });
   }
 
-  private get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1) : Promise<T> {
+  private get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1): Promise<T> {
     return this.getUrl(`${SPOTIFY_API}/${version}/${path}`, params);
   }
 
-  private async getUrl<T>(url: string, params = {}) : Promise<T> {
+  private async getUrl<T>(url: string, params = {}): Promise<T> {
     logger.info(`Spotify HTTP: %s - %s`, url, params);
     await this.checkAndUpdateToken();
-    return await httpRequest(url, { params, json: true, auth: { bearer: this.accessToken } }) as unknown as Promise<T>;
+    return (await httpRequest(url, {
+      params,
+      json: true,
+      auth: { bearer: this.accessToken },
+    })) as unknown as Promise<T>;
   }
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {
     const limit = options?.limit ?? 50;
     const offset = options?.offset ?? 0;
-    let data: SpotifyPagingObject<T> = options?.initial ? options.initial : await this.get(path, { limit, offset });
+    let data: SpotifyPagingObject<T> = options?.initial
+      ? options.initial
+      : await this.get(path, { limit, offset });
     const total = options?.total ?? data.total;
 
     options?.progress?.init(total);
@@ -250,7 +300,6 @@ export class SpotifyApiImpl implements SpotifyApi {
 
     return items;
   }
-
 }
 
 type GetAllItemsOptions<T> = {
@@ -261,7 +310,11 @@ type GetAllItemsOptions<T> = {
   progress?: ProgressUpdater;
 };
 
-export function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, playlistArtwork?: string): Track {
+export function mapSpotifyTrack(
+  track: SpotifyTrack,
+  albumArtwork?: string,
+  playlistArtwork?: string
+): Track {
   let artwork: string | undefined;
   if (track.is_local && playlistArtwork) {
     artwork = playlistArtwork;
@@ -277,6 +330,6 @@ export function mapSpotifyTrack(track: SpotifyTrack, albumArtwork?: string, play
     src: TrackSource.Spotify,
     url: track.external_urls.spotify,
     artwork,
-    duration: track.duration_ms
+    duration: track.duration_ms,
   };
 }

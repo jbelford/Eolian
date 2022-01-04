@@ -19,16 +19,16 @@ export interface SourceFetcher {
 }
 
 export type FetchResult = {
-  tracks: Track[],
+  tracks: Track[];
   // Whether range params will be considered while fetching and already applied to the result
-  rangeOptimized?: boolean
+  rangeOptimized?: boolean;
 };
 
 export type MessageBundledResult<T> = {
-  value: T,
+  value: T;
   message?: ContextMessage;
-}
+};
 
 export type ResourceTypeDetails = {
   name: string;
-}
+};

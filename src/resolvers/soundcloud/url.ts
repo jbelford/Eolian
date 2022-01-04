@@ -1,5 +1,10 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudResourceType, SoundCloudTrack, SoundCloudUser } from 'api/@types';
+import {
+  SoundCloudPlaylist,
+  SoundCloudResourceType,
+  SoundCloudTrack,
+  SoundCloudUser,
+} from 'api/@types';
 import { EolianUserError } from 'common/errors';
 import { ResolvedResource, SourceResolver } from '../@types';
 import { createSoundCloudUser } from './artist';
@@ -7,9 +12,7 @@ import { createSoundCloudPlaylist } from './playlist';
 import { createSoundCloudSong } from './song';
 
 export class SoundCloudUrlResolver implements SourceResolver {
-
-  constructor(private readonly url: string) {
-  }
+  constructor(private readonly url: string) {}
 
   async resolve(): Promise<ResolvedResource> {
     const resource = await soundcloud.resolve(this.url);

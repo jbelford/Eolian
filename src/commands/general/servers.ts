@@ -44,8 +44,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const members = servers.reduce((sum, server) => sum + server.members, 0);
   const recentlyUsed = context.client.getRecentlyUsedCount();
-  let response = `Total Servers: ${servers.length}\nTotal Users: ${members}\nActive Servers: ${recentlyUsed}` + '```'
-  response += servers.slice(start, start + PAGE_LENGTH).map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`).join('\n');
+  let response =
+    `Total Servers: ${servers.length}\nTotal Users: ${members}\nActive Servers: ${recentlyUsed}` +
+    '```';
+  response += servers
+    .slice(start, start + PAGE_LENGTH)
+    .map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`)
+    .join('\n');
   response += '\n```';
 
   await context.interaction.send(response);
@@ -61,20 +66,20 @@ export const SERVERS_COMMAND: Command = {
   usage: [
     {
       title: 'Show servers',
-      example: ''
+      example: '',
     },
     {
       title: 'Show servers at page',
-      example: '2'
+      example: '2',
     },
     {
       title: 'Sort by bot',
-      example: [PATTERNS.ARG.ex('/sort/botCount/')]
+      example: [PATTERNS.ARG.ex('/sort/botCount/')],
     },
     {
       title: 'Kick server',
-      example: [PATTERNS.ARG.ex('/kick/<id>/')]
-    }
+      example: [PATTERNS.ARG.ex('/kick/<id>/')],
+    },
   ],
   args: {
     base: true,
@@ -86,9 +91,9 @@ export const SERVERS_COMMAND: Command = {
             name: 'action',
             details: 'The custom action to do',
             getChoices() {
-              return ['sort'].concat(...OWNER_COMMANDS.keys())
-            }
-          }
+              return ['sort'].concat(...OWNER_COMMANDS.keys());
+            },
+          },
         ],
       },
       {
@@ -96,11 +101,11 @@ export const SERVERS_COMMAND: Command = {
         options: [
           {
             name: 'arg',
-            details: 'Argument for the action'
-          }
-        ]
-      }
-    ]
+            details: 'Argument for the action',
+          },
+        ],
+      },
+    ],
   },
-  execute
-}
+  execute,
+};

@@ -7,9 +7,7 @@ interface MongoDoc {
 }
 
 export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
-
-  constructor(protected readonly collection: Collection<T>) {
-  }
+  constructor(protected readonly collection: Collection<T>) {}
 
   async get(id: string): Promise<T | null> {
     return await this.collection.findOne({ _id: id } as Filter<T>);
@@ -20,29 +18,29 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     return !!result.deletedCount;
   }
 
-  protected async setProperty<K extends Extract<keyof T, string>, V>(id: string, key: K | `${K}.${string}`, value: V): Promise<void> {
+  protected async setProperty<K extends Extract<keyof T, string>, V>(
+    id: string,
+    key: K | `${K}.${string}`,
+    value: V
+  ): Promise<void> {
     const set: any = {};
     set[key] = value;
     await this.collection.updateOne(
       { _id: id } as Filter<T>,
       { $set: set, $setOnInsert: { _id: id } } as UpdateFilter<T>,
-      { upsert: true });
+      { upsert: true }
+    );
   }
 
   protected async unsetProperty(id: string, key: string): Promise<boolean> {
     const unset: any = {};
     unset[key] = true;
-    const result = await this.collection.updateOne(
-      { _id: id } as Filter<T>,
-      { $unset: unset });
+    const result = await this.collection.updateOne({ _id: id } as Filter<T>, { $unset: unset });
     return result.modifiedCount > 0;
   }
-
 }
 
-
 export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
-
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {
     await this.setProperty(id, 'soundcloud', soundcloud);
   }
@@ -66,24 +64,26 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
   async removeIdentifier(id: string, key: string): Promise<boolean> {
     return await this.unsetProperty(id, `identifiers.${key}`);
   }
-
 }
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
-
   async getIdleServers(minDate: Date): Promise<ServerDTO[]> {
-    const result = await this.collection.find({ $or: [
-        {
-          lastUsage: {
-            $exists: false
-          }
-        },
-        {
-          lastUsage: {
-            $lte: minDate
-          }
-        }
-      ]}).toArray();
+    const result = await this.collection
+      .find({
+        $or: [
+          {
+            lastUsage: {
+              $exists: false,
+            },
+          },
+          {
+            lastUsage: {
+              $lte: minDate,
+            },
+          },
+        ],
+      })
+      .toArray();
     return result;
   }
 
@@ -104,34 +104,39 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
   }
 
   async addDjRole(id: string, roleId: string): Promise<void> {
-    await this.collection.updateOne({
-        _id: id
-      }, {
+    await this.collection.updateOne(
+      {
+        _id: id,
+      },
+      {
         $addToSet: {
-          djRoleIds: roleId
+          djRoleIds: roleId,
         },
         $setOnInsert: {
-          _id: id
-        }
-      }, {
-        upsert: true
-    });
+          _id: id,
+        },
+      },
+      {
+        upsert: true,
+      }
+    );
   }
 
   async removeDjRole(id: string, roleId: string): Promise<boolean> {
-    const result = await this.collection.updateOne({
-      _id: id,
-    }, {
-      $pull: {
-        djRoleIds: roleId
+    const result = await this.collection.updateOne(
+      {
+        _id: id,
+      },
+      {
+        $pull: {
+          djRoleIds: roleId,
+        },
       }
-    });
+    );
     return result.modifiedCount > 0;
   }
 
   async setDjAllowLimited(id: string, allow: boolean): Promise<void> {
     await this.setProperty(id, 'djAllowLimited', allow);
   }
-
 }
-

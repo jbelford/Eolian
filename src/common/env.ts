@@ -28,7 +28,9 @@ function getNumberEnv(name: string, defaultValue?: number): number {
 }
 
 function getArrayEnv(name: string): string[] {
-  return getEnv(name, '').split(',').map(s => s.trim());
+  return getEnv(name, '')
+    .split(',')
+    .map(s => s.trim());
 }
 
 function getBing() {
@@ -62,15 +64,15 @@ export const environment: AppEnv = {
     },
     soundcloud: {
       clientId: getEnv('SOUNDCLOUD_CLIENT_ID'),
-      clientSecret: getEnv('SOUNDCLOUD_CLIENT_SECRET')
+      clientSecret: getEnv('SOUNDCLOUD_CLIENT_SECRET'),
     },
     spotify: {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
-      clientSecret: getEnv('SPOTIFY_CLIENT_SECRET')
-    }
+      clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
+    },
   },
   mongo: {
     uri: getEnv('MONGO_URI'),
-    db_name: getEnv('MONGO_DB_NAME')
-  }
+    db_name: getEnv('MONGO_DB_NAME'),
+  },
 };

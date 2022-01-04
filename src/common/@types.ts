@@ -1,4 +1,3 @@
-
 export interface Closable {
   close(): Promise<void>;
 }
@@ -42,7 +41,7 @@ export interface AppEnv {
   mongo: {
     uri: string;
     db_name: string;
-  }
+  };
 }
 
 export interface RangeArgument {

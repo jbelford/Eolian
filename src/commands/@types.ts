@@ -27,11 +27,11 @@ export type CommandArgOption = {
 export type CommandArgGroup = {
   required: boolean;
   options: CommandArgOption[];
-}
+};
 
 export type CommandArgs = {
-  base: boolean,
-  groups: CommandArgGroup[]
+  base: boolean;
+  groups: CommandArgGroup[];
 };
 
 export interface Command extends BaseCommand {
@@ -65,7 +65,12 @@ export interface CommandParsingStrategy {
   parseCommand(message: string, permission: UserPermission, type?: SyntaxType): ParsedCommand;
 }
 
-export type CommandOptionsParsingStrategy = (text: string, permission: UserPermission, keywords?: string[], patterns?: string[]) => CommandOptions;
+export type CommandOptionsParsingStrategy = (
+  text: string,
+  permission: UserPermission,
+  keywords?: string[],
+  patterns?: string[]
+) => CommandOptions;
 
 export interface ParsedCommand {
   command: BaseCommand;
@@ -96,7 +101,7 @@ export const enum KeywordGroup {
   Type = 'type',
   Switch = 'switch',
   Increment = 'increment',
-  Search = 'search'
+  Search = 'search',
 }
 
 export interface KeywordGroupProperties {
@@ -135,7 +140,7 @@ export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
 }
 
 export type KeywordName = Uppercase<
-  'enable'
+  | 'enable'
   | 'disable'
   | 'clear'
   | 'more'
@@ -151,7 +156,8 @@ export type KeywordName = Uppercase<
   | 'shuffle'
   | 'likes'
   | 'tracks'
-  | 'fast'>;
+  | 'fast'
+>;
 
 export type PatternValues = {
   TOP: RangeArgument;
@@ -161,10 +167,10 @@ export type PatternValues = {
   URL: UrlArgument;
   NUMBER: number[];
   ARG: string[];
-}
+};
 
 export const enum SyntaxType {
   KEYWORD = 0,
   TRADITIONAL = 1,
-  SLASH = 2
+  SLASH = 2,
 }

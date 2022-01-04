@@ -1,8 +1,30 @@
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
-import { BaseCommandInteraction, ButtonInteraction, CommandInteraction, ContextMenuInteraction, DMChannel, GuildMember, Message, MessageActionRow, MessageOptions, TextChannel } from 'discord.js';
+import {
+  BaseCommandInteraction,
+  ButtonInteraction,
+  CommandInteraction,
+  ContextMenuInteraction,
+  DMChannel,
+  GuildMember,
+  Message,
+  MessageActionRow,
+  MessageOptions,
+  TextChannel,
+} from 'discord.js';
 import { SelectionOption } from 'embed/@types';
-import { ContextButtonInteraction, ContextCommandInteraction, ContextInteraction, ContextInteractionOptions, ContextMessage, ContextTextChannel, ContextUser, EmbedMessage, SelectionResult, ServerDetails } from './@types';
+import {
+  ContextButtonInteraction,
+  ContextCommandInteraction,
+  ContextInteraction,
+  ContextInteractionOptions,
+  ContextMessage,
+  ContextTextChannel,
+  ContextUser,
+  EmbedMessage,
+  SelectionResult,
+  ServerDetails,
+} from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
@@ -10,9 +32,7 @@ import { parseMessageCommand, parseSlashCommand } from './register_commands';
 import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
-
-  constructor(private readonly interaction: ButtonInteraction | BaseCommandInteraction) {
-  }
+  constructor(private readonly interaction: ButtonInteraction | BaseCommandInteraction) {}
 
   async send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;
@@ -20,32 +40,40 @@ class CommandInteractionSender implements DiscordMessageSender {
     let reply: Message;
     if (!this.interaction.replied) {
       if (!this.interaction.deferred) {
-        reply = await this.interaction.reply({ ...options, ephemeral, fetchReply: true }) as Message;
+        reply = (await this.interaction.reply({
+          ...options,
+          ephemeral,
+          fetchReply: true,
+        })) as Message;
       } else {
         if (this.interaction.ephemeral && hasButtons) {
           throw new Error('Buttons on ephemeral message are not allowed');
         }
-        reply = await this.interaction.editReply(options) as Message;
+        reply = (await this.interaction.editReply(options)) as Message;
       }
     } else {
-      reply = await this.interaction.followUp({ ...options, ephemeral, fetchReply: true }) as Message;
+      reply = (await this.interaction.followUp({
+        ...options,
+        ephemeral,
+        fetchReply: true,
+      })) as Message;
     }
     return reply;
   }
-
 }
 
-
-class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> implements ContextInteraction {
-
+class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
+  implements ContextInteraction
+{
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _sender?: DiscordSender;
 
-  constructor(protected readonly interaction: T,
+  constructor(
+    protected readonly interaction: T,
     protected readonly registry: ButtonRegistry,
-    private readonly users: UsersDb) {
-  }
+    private readonly users: UsersDb
+  ) {}
 
   get sendable(): boolean {
     return this.sender.sendable;
@@ -53,9 +81,17 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> i
 
   get user(): ContextUser {
     if (!this._user) {
-      const permission = getPermissionLevel(this.interaction.user, this.interaction.memberPermissions);
+      const permission = getPermissionLevel(
+        this.interaction.user,
+        this.interaction.memberPermissions
+      );
       if (this.interaction.member) {
-        this._user = new DiscordUser(this.interaction.user, this.users, permission, this.interaction.member as GuildMember);
+        this._user = new DiscordUser(
+          this.interaction.user,
+          this.users,
+          permission,
+          this.interaction.member as GuildMember
+        );
       } else {
         this._user = new DiscordUser(this.interaction.user, this.users, permission);
       }
@@ -65,7 +101,10 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> i
 
   get channel(): ContextTextChannel {
     if (!this._channel) {
-      this._channel = new DiscordTextChannel(<TextChannel | DMChannel>this.interaction.channel, this.registry);
+      this._channel = new DiscordTextChannel(
+        <TextChannel | DMChannel>this.interaction.channel,
+        this.registry
+      );
     }
     return this._channel;
   }
@@ -79,7 +118,8 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> i
       this._sender = new DiscordSender(
         new CommandInteractionSender(this.interaction),
         this.registry,
-        <TextChannel | DMChannel>this.interaction.channel);
+        <TextChannel | DMChannel>this.interaction.channel
+      );
     }
     return this._sender;
   }
@@ -92,18 +132,26 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction> i
     return this.sender.send(message, options);
   }
 
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
+  sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult> {
     return this.sender.sendSelection(question, options, user);
   }
 
-  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  async sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed, options);
   }
-
 }
 
-export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteraction> implements ContextButtonInteraction {
-
+export class DiscordButtonInteraction
+  extends DiscordInteraction<ButtonInteraction>
+  implements ContextButtonInteraction
+{
   private _message?: ContextMessage;
 
   constructor(interaction: ButtonInteraction, registry: ButtonRegistry, users: UsersDb) {
@@ -112,13 +160,11 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
 
   get message(): ContextMessage {
     if (!this._message) {
-      this._message = new DiscordMessage(
-        this.interaction.message as Message,
-        {
-          registry: this.registry,
-          components: this.interaction.message.components as MessageActionRow[] ?? [],
-          interaction: this.interaction
-        });
+      this._message = new DiscordMessage(this.interaction.message as Message, {
+        registry: this.registry,
+        components: (this.interaction.message.components as MessageActionRow[]) ?? [],
+        interaction: this.interaction,
+      });
     }
     return this._message;
   }
@@ -126,11 +172,12 @@ export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteracti
   async deferUpdate(): Promise<void> {
     await this.interaction.deferUpdate();
   }
-
 }
 
-export class DiscordCommandInteraction extends DiscordInteraction<CommandInteraction> implements ContextCommandInteraction {
-
+export class DiscordCommandInteraction
+  extends DiscordInteraction<CommandInteraction>
+  implements ContextCommandInteraction
+{
   readonly isSlash = true;
 
   constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
@@ -154,13 +201,14 @@ export class DiscordCommandInteraction extends DiscordInteraction<CommandInterac
   }
 
   toString(): string {
-      return this.interaction.toString();
+    return this.interaction.toString();
   }
-
 }
 
-export class DiscordMessageCommandInteraction extends DiscordInteraction<ContextMenuInteraction> implements ContextCommandInteraction {
-
+export class DiscordMessageCommandInteraction
+  extends DiscordInteraction<ContextMenuInteraction>
+  implements ContextCommandInteraction
+{
   readonly isSlash = true;
   readonly reactable = false;
   private _message?: Message;
@@ -184,39 +232,39 @@ export class DiscordMessageCommandInteraction extends DiscordInteraction<Context
   }
 
   async getCommand(): Promise<ParsedCommand> {
-    return parseMessageCommand(this.interaction.commandName, this.message.content, this.user.permission);
+    return parseMessageCommand(
+      this.interaction.commandName,
+      this.message.content,
+      this.user.permission
+    );
   }
 
   toString(): string {
     return `(${this.interaction.commandName}) ${this.message.content}`;
   }
-
 }
 
 class MessageInteractionSender implements DiscordMessageSender {
-
-  constructor(private readonly message: Message) {
-  }
+  constructor(private readonly message: Message) {}
 
   async send(options: MessageOptions): Promise<Message<boolean>> {
-      return this.message.reply(options);
+    return this.message.reply(options);
   }
-
 }
 
 export class DiscordMessageInteraction implements ContextCommandInteraction {
-
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
   private _hasReplied = false;
   private _sender?: DiscordSender;
 
-  constructor(private readonly discordMessage: Message,
+  constructor(
+    private readonly discordMessage: Message,
     private readonly parser: CommandParsingStrategy,
     private readonly registry: ButtonRegistry,
-    private readonly users: UsersDb) {
-  }
+    private readonly users: UsersDb
+  ) {}
 
   get sendable(): boolean {
     return this.channel.sendable;
@@ -228,15 +276,26 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
 
   get user(): ContextUser {
     if (!this._user) {
-      const permission = getPermissionLevel(this.discordMessage.author, this.discordMessage.member?.permissions);
-      this._user = new DiscordUser(this.discordMessage.author, this.users, permission, this.discordMessage.member ?? undefined);
+      const permission = getPermissionLevel(
+        this.discordMessage.author,
+        this.discordMessage.member?.permissions
+      );
+      this._user = new DiscordUser(
+        this.discordMessage.author,
+        this.users,
+        permission,
+        this.discordMessage.member ?? undefined
+      );
     }
     return this._user;
   }
 
   get channel(): ContextTextChannel {
     if (!this._channel) {
-      this._channel = new DiscordTextChannel(<TextChannel | DMChannel>this.discordMessage.channel, this.registry);
+      this._channel = new DiscordTextChannel(
+        <TextChannel | DMChannel>this.discordMessage.channel,
+        this.registry
+      );
     }
     return this._channel;
   }
@@ -257,7 +316,8 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
       this._sender = new DiscordSender(
         new MessageInteractionSender(this.discordMessage),
         this.registry,
-        <TextChannel | DMChannel>this.discordMessage.channel);
+        <TextChannel | DMChannel>this.discordMessage.channel
+      );
     }
     return this._sender;
   }
@@ -270,7 +330,11 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.sender.send(message);
   }
 
-  sendSelection(question: string, options: SelectionOption[], user: ContextUser): Promise<SelectionResult> {
+  sendSelection(
+    question: string,
+    options: SelectionOption[],
+    user: ContextUser
+  ): Promise<SelectionResult> {
     return this.sender.sendSelection(question, options, user);
   }
 
@@ -294,7 +358,6 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
   toString(): string {
     return this.discordMessage.content;
   }
-
 }
 
 function removeMentions(text: string): string {

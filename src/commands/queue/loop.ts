@@ -27,12 +27,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     return;
   }
 
-  await context.interaction.send(`🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`);
+  await context.interaction.send(
+    `🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`
+  );
 }
 
 export const LOOP_COMMAND: Command = {
   name: 'loop',
-  details: 'Enable or disable loop mode.\nLoop mode adds played tracks back to the end of the queue.',
+  details:
+    'Enable or disable loop mode.\nLoop mode adds played tracks back to the end of the queue.',
   category: QUEUE_CATEGORY,
   permission: UserPermission.DJ,
   keywords: [KEYWORDS.ENABLE, KEYWORDS.DISABLE],
@@ -40,16 +43,16 @@ export const LOOP_COMMAND: Command = {
   usage: [
     {
       title: 'See current loop mode status',
-      example: ''
+      example: '',
     },
     {
       title: 'Enable loop mode',
-      example: [KEYWORDS.ENABLE]
+      example: [KEYWORDS.ENABLE],
     },
     {
       title: 'Disable loop mode',
-      example: [KEYWORDS.DISABLE]
-    }
+      example: [KEYWORDS.DISABLE],
+    },
   ],
-  execute
+  execute,
 };

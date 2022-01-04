@@ -7,7 +7,8 @@
     "build": "webpack --config webpack.prod.js",
     "build-dev": "webpack --config webpack.dev.js",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
-    "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi"
+    "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
+    "format": "prettier --write ."
   },
   "keywords": [
     "music",
@@ -57,6 +58,8 @@
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.1.0",
     "eslint": "^8.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "2.5.1",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.2",
     "webpack": "^5.36.2",

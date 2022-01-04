@@ -9,14 +9,12 @@
       "request": "launch",
       "name": "(Webpack) Launch Program",
       "program": "${workspaceFolder}/src/app.ts",
-      "outFiles": [
-        "${workspaceFolder}/dist/bundle.js"
-      ],
+      "outFiles": ["${workspaceFolder}/dist/bundle.js"],
       "preLaunchTask": "npm: build-dev",
       "envFile": "${workspaceFolder}/.env",
       "sourceMaps": true,
       "outputCapture": "std",
       "killBehavior": "polite"
     }
-  ],
+  ]
 }

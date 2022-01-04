@@ -1,7 +1,14 @@
 import { logger } from 'common/logger';
-import { ButtonInteraction, Message, MessageActionRow, MessageButton, MessageEditOptions, MessageEmbed } from 'discord.js';
+import {
+  ButtonInteraction,
+  Message,
+  MessageActionRow,
+  MessageButton,
+  MessageEditOptions,
+  MessageEmbed,
+} from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
-import { ButtonRegistry } from "./button";
+import { ButtonRegistry } from './button';
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;
@@ -10,9 +17,10 @@ export interface DiscordMessageButtons {
 }
 
 export class DiscordMessage implements ContextMessage {
-
-  constructor(private readonly message: Message,
-    private readonly buttons?: DiscordMessageButtons) { }
+  constructor(
+    private readonly message: Message,
+    private readonly buttons?: DiscordMessageButtons
+  ) {}
 
   get text(): string {
     return this.message.content;
@@ -50,10 +58,10 @@ export class DiscordMessage implements ContextMessage {
     await this.editMessage(rich);
   }
 
-  private async editMessage(message: string | MessageEmbed) : Promise<void> {
+  private async editMessage(message: string | MessageEmbed): Promise<void> {
     if (this.editable) {
       try {
-        const options: MessageEditOptions = { };
+        const options: MessageEditOptions = {};
         if (typeof message === 'string') {
           options.content = message;
           options.embeds = [];
@@ -90,34 +98,26 @@ export class DiscordMessage implements ContextMessage {
           logger.warn('Failed to delete message: %s', e);
         }
       } else if (this.message.author.id === this.message.client.user?.id) {
-        logger.warn(`Failed to delete message created by ourself`)
+        logger.warn(`Failed to delete message created by ourself`);
       }
     }
   }
-
 }
 
 export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
   const rich = new MessageEmbed();
 
-  if (embed.color)
-    rich.setColor(embed.color);
-  if (embed.header)
-    rich.setAuthor(embed.header.text, embed.header.icon);
-  if (embed.title)
-    rich.setTitle(clampLength(embed.title, 256));
-  if (embed.description)
-    rich.setDescription(clampLength(embed.description, 2048));
-  if (embed.thumbnail)
-    rich.setThumbnail(embed.thumbnail);
-  if (embed.image)
-    rich.setImage(embed.image);
-  if (embed.url)
-    rich.setURL(embed.url);
-  if (embed.footer)
-    rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
+  if (embed.color) rich.setColor(embed.color);
+  if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
+  if (embed.title) rich.setTitle(clampLength(embed.title, 256));
+  if (embed.description) rich.setDescription(clampLength(embed.description, 2048));
+  if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
+  if (embed.image) rich.setImage(embed.image);
+  if (embed.url) rich.setURL(embed.url);
+  if (embed.footer) rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
   if (embed.fields) {
-    const fields = embed.fields.slice(0, 25)
+    const fields = embed.fields
+      .slice(0, 25)
       .map(f => ({ name: clampLength(f.name, 256), value: clampLength(f.value, 1024) }));
     rich.addFields(fields);
   }
@@ -137,11 +137,11 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
     const id = `button_${idx}`;
     buttonMap.set(id, button);
     return new MessageButton()
-        .setEmoji(button.emoji)
-        .setDisabled(!!button.disabled)
-        .setStyle(buttonStyleToDiscordStyle(button.style))
-        .setCustomId(id);
-  })
+      .setEmoji(button.emoji)
+      .setDisabled(!!button.disabled)
+      .setStyle(buttonStyleToDiscordStyle(button.style))
+      .setCustomId(id);
+  });
 
   for (let i = 0; i < buttons.length; i += 5) {
     const row = new MessageActionRow().addComponents(...messageButtons.slice(i, i + 5));

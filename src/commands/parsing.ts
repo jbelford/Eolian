@@ -2,7 +2,19 @@ import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { BaseCommand, Command, CommandOptions, CommandOptionsParsingStrategy, CommandParsingStrategy, Keyword, MessageCommand, ParsedCommand, Pattern, PatternValues, SyntaxType } from './@types';
+import {
+  BaseCommand,
+  Command,
+  CommandOptions,
+  CommandOptionsParsingStrategy,
+  CommandParsingStrategy,
+  Keyword,
+  MessageCommand,
+  ParsedCommand,
+  Pattern,
+  PatternValues,
+  SyntaxType,
+} from './@types';
 import { KEYWORDS } from './keywords';
 import { PATTERNS, PATTERNS_SORTED } from './patterns';
 
@@ -14,7 +26,12 @@ export function simpleOptionsStrategy(text: string): CommandOptions {
   return options;
 }
 
-function keywordOptionsStrategy(text: string, permission: UserPermission, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+function keywordOptionsStrategy(
+  text: string,
+  permission: UserPermission,
+  keywords: string[] = [],
+  patterns: string[] = []
+): CommandOptions {
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
@@ -36,7 +53,12 @@ function keywordOptionsStrategy(text: string, permission: UserPermission, keywor
   return options;
 }
 
-function traditionalOptionsStrategy(text: string, permission: UserPermission, keywords: string[] = [], patterns: string[] = []): CommandOptions {
+function traditionalOptionsStrategy(
+  text: string,
+  permission: UserPermission,
+  keywords: string[] = [],
+  patterns: string[] = []
+): CommandOptions {
   const keywordSet = new Set<string>(keywords);
   const patternSet = new Set<string>(patterns);
 
@@ -68,18 +90,32 @@ function traditionalOptionsStrategy(text: string, permission: UserPermission, ke
   return options;
 }
 
-export function checkSetKeyword(keyword: Keyword, permission: UserPermission, options: CommandOptions, hasKeyword = true) {
+export function checkSetKeyword(
+  keyword: Keyword,
+  permission: UserPermission,
+  options: CommandOptions,
+  hasKeyword = true
+) {
   if (hasKeyword) {
     if (keyword.permission > permission) {
       throw new EolianUserError(`You do not have permission to use ${keyword.name}!`);
     }
     options[keyword.name] = true;
   } else {
-    throw new EolianUserError(`This command does not accept the \`${keyword.name}\` keyword. Try again without it.`);
+    throw new EolianUserError(
+      `This command does not accept the \`${keyword.name}\` keyword. Try again without it.`
+    );
   }
 }
 
-export function patternMatch<T extends keyof PatternValues>(text: string, permission: UserPermission, pattern: Pattern<T>, options: CommandOptions, syntax: SyntaxType, required = false): string {
+export function patternMatch<T extends keyof PatternValues>(
+  text: string,
+  permission: UserPermission,
+  pattern: Pattern<T>,
+  options: CommandOptions,
+  syntax: SyntaxType,
+  required = false
+): string {
   const result = pattern.matchText(text, syntax);
   if (result.matches) {
     if (pattern.permission > permission) {
@@ -88,24 +124,34 @@ export function patternMatch<T extends keyof PatternValues>(text: string, permis
     options[pattern.name] = result.args;
     text = result.newText;
   } else if (required) {
-    throw new EolianUserError(`Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``);
+    throw new EolianUserError(
+      `Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``
+    );
   }
   return text;
 }
 
-function getCommandOptionParsingStrategy(command: Command, type: SyntaxType): CommandOptionsParsingStrategy {
+function getCommandOptionParsingStrategy(
+  command: Command,
+  type: SyntaxType
+): CommandOptionsParsingStrategy {
   return command.keywords || command.patterns
-    ? type === SyntaxType.KEYWORD ? keywordOptionsStrategy : traditionalOptionsStrategy
+    ? type === SyntaxType.KEYWORD
+      ? keywordOptionsStrategy
+      : traditionalOptionsStrategy
     : simpleOptionsStrategy;
 }
 
 class KeywordParsingStrategy implements CommandParsingStrategy {
-
   messageInvokesBot(message: string, prefix = environment.cmdToken): boolean {
     return message.trim().charAt(0) === prefix;
   }
 
-  parseCommand(message: string, permission: UserPermission, type = SyntaxType.KEYWORD): ParsedCommand {
+  parseCommand(
+    message: string,
+    permission: UserPermission,
+    type = SyntaxType.KEYWORD
+  ): ParsedCommand {
     let text = message.trim();
 
     const textSplit = text.split(/\s+/g);
@@ -116,11 +162,15 @@ class KeywordParsingStrategy implements CommandParsingStrategy {
     const command = getCommand(commandName, permission);
 
     const optionParsingFn = getCommandOptionParsingStrategy(command, type);
-    const options = optionParsingFn(text, permission, command.keywords?.map(keyword => keyword.name), command.patterns?.map(pattern => pattern.name));
+    const options = optionParsingFn(
+      text,
+      permission,
+      command.keywords?.map(keyword => keyword.name),
+      command.patterns?.map(pattern => pattern.name)
+    );
 
     return { command, options };
   }
-
 }
 
 export function getCommand(commandName: string, permission: UserPermission): Command {
@@ -133,7 +183,11 @@ export function getMessageCommand(commandName: string, permission: UserPermissio
   return checkCommand(command, commandName, permission);
 }
 
-function checkCommand<T extends BaseCommand>(command: T | undefined, commandName: string, permission: UserPermission): T {
+function checkCommand<T extends BaseCommand>(
+  command: T | undefined,
+  commandName: string,
+  permission: UserPermission
+): T {
   if (!command) {
     throw new EolianUserError(`There is no command \`${commandName}\``);
   } else if (command.permission > permission) {

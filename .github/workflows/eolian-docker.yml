@@ -10,28 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: azure/docker-login@v1
-      with:
-        login-server: ${{ secrets.CONTAINER_REGISTRY }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-    - run: |
-        docker build . -t ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
-        docker push ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
+      - uses: actions/checkout@v2
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - run: |
+          docker build . -t ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
+          docker push ${{ secrets.CONTAINER_REGISTRY }}/eolian:master
 
-    - uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'eolian-container-webapp'
-        publish-profile: ${{ secrets.AZURE_APP_PUBLISH_PROFILE_CONTAINER }}
-        images: '${{ secrets.CONTAINER_REGISTRY }}/eolian:master'
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'eolian-container-webapp'
+          publish-profile: ${{ secrets.AZURE_APP_PUBLISH_PROFILE_CONTAINER }}
+          images: '${{ secrets.CONTAINER_REGISTRY }}/eolian:master'
 
     # - uses: azure/login@v1
     #   with:
     #     creds: ${{ secrets.AZURE_CREDENTIALS }}
-
 #   Because Azure doesn't automatically do this when the container name is the same
 
-    # - run: |
-    #     az webapp restart --ids ${{ secrets.WEBAPP_RESOURCE_ID }}
+# - run: |
+#     az webapp restart --ids ${{ secrets.WEBAPP_RESOURCE_ID }}
 

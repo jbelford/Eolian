@@ -8,11 +8,8 @@ import { SelectionOption } from 'embed/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
-
 export class SpotifyAlbumResolver implements SourceResolver {
-
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {
-  }
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -28,17 +25,23 @@ export class SpotifyAlbumResolver implements SourceResolver {
       const options: SelectionOption[] = albums.map(album => ({
         name: album.name,
         subname: album.artists.map(artist => artist.name).join(','),
-        url: album.external_urls.spotify
+        url: album.external_urls.spotify,
       }));
       const result = await this.context.interaction.sendSelection(
-        `Select the album you want (resolved via Spotify)`, options, this.context.interaction.user);
+        `Select the album you want (resolved via Spotify)`,
+        options,
+        this.context.interaction.user
+      );
 
       return createSpotifyAlbum(albums[result.selected], result.message);
     }
   }
 }
 
-export function createSpotifyAlbum(album: SpotifyAlbum, message?: ContextMessage): ResolvedResource {
+export function createSpotifyAlbum(
+  album: SpotifyAlbum,
+  message?: ContextMessage
+): ResolvedResource {
   return {
     name: album.name,
     authors: album.artists.map(x => x.name),
@@ -46,18 +49,15 @@ export function createSpotifyAlbum(album: SpotifyAlbum, message?: ContextMessage
       id: album.id,
       src: TrackSource.Spotify,
       type: ResourceType.Album,
-      url: album.external_urls.spotify
+      url: album.external_urls.spotify,
     },
     fetcher: new SpotifyAlbumFetcher(album.id, album),
-    selectionMessage: message
+    selectionMessage: message,
   };
 }
 
 export class SpotifyAlbumFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string,
-    private readonly album?: SpotifyAlbum) {
-  }
+  constructor(private readonly id: string, private readonly album?: SpotifyAlbum) {}
 
   async fetch(): Promise<FetchResult> {
     let album: SpotifyAlbumFull;
@@ -71,5 +71,4 @@ export class SpotifyAlbumFetcher implements SourceFetcher {
     const tracks = album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
     return { tracks };
   }
-
 }

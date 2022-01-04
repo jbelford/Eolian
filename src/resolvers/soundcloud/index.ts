@@ -13,21 +13,23 @@ export { SoundCloudPlaylistResolver } from './playlist';
 export { SoundCloudSongResolver } from './song';
 export { SoundCloudUrlResolver } from './url';
 
-export function getSoundCloudSourceFetcher(id: number,
+export function getSoundCloudSourceFetcher(
+  id: number,
   type: ResourceType,
   params: CommandOptions,
-  sendable: ContextSendable): SourceFetcher {
-switch (type) {
-  case ResourceType.Tracks:
-  case ResourceType.Artist:
-    return new SoundCloudArtistFetcher(id);
-  case ResourceType.Likes:
-    return new SoundCloudFavoritesFetcher(id, params, sendable);
-  case ResourceType.Playlist:
-    return new SoundCloudPlaylistFetcher(id);
-  case ResourceType.Song:
-    return new SoundCloudSongFetcher(id);
-  default:
-    throw new Error(`Invalid type for SoundCloud fetcher`);
-}
+  sendable: ContextSendable
+): SourceFetcher {
+  switch (type) {
+    case ResourceType.Tracks:
+    case ResourceType.Artist:
+      return new SoundCloudArtistFetcher(id);
+    case ResourceType.Likes:
+      return new SoundCloudFavoritesFetcher(id, params, sendable);
+    case ResourceType.Playlist:
+      return new SoundCloudPlaylistFetcher(id);
+    case ResourceType.Song:
+      return new SoundCloudSongFetcher(id);
+    default:
+      throw new Error(`Invalid type for SoundCloud fetcher`);
+  }
 }

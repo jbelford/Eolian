@@ -8,11 +8,21 @@ import EventEmitter from 'events';
 import prism from 'prism-media';
 import { Readable } from 'stream';
 
-const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
+const FFMPEG_ARGUMENTS = [
+  '-analyzeduration',
+  '0',
+  '-loglevel',
+  '0',
+  '-f',
+  's16le',
+  '-ar',
+  '48000',
+  '-ac',
+  '2',
+];
 const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
 
 export class SongStream extends EventEmitter implements Closable {
-
   private output: prism.VolumeTransformer;
   private songStream?: Readable;
   private pcmTransform?: prism.FFmpeg;
@@ -22,9 +32,7 @@ export class SongStream extends EventEmitter implements Closable {
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
   private start?: number;
 
-  constructor(
-      volume: number,
-      private readonly retries = 1) {
+  constructor(volume: number, private readonly retries = 1) {
     super();
     this.output = new prism.VolumeTransformer({ type: 's16le', volume: volume });
     this.output.on('close', () => logger.debug(`Song output closed`));
@@ -55,11 +63,15 @@ export class SongStream extends EventEmitter implements Closable {
     }
 
     let stream = await source.get(seek);
-    stream = stream.once('error', this.onSongErrorHandler)
+    stream = stream
+      .once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 
-    const ffmpeg = new prism.FFmpeg({ args: !track.live && nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS });
-    stream.pipe(ffmpeg)
+    const ffmpeg = new prism.FFmpeg({
+      args: !track.live && nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS,
+    });
+    stream
+      .pipe(ffmpeg)
       .once('error', (err: Error) => this.cleanup(err))
       .once('end', () => this.emit('end'));
 
@@ -89,7 +101,7 @@ export class SongStream extends EventEmitter implements Closable {
   }
 
   async close(): Promise<void> {
-      this.cleanup();
+    this.cleanup();
   }
 
   private cleanup(err?: Error): void {
@@ -113,7 +125,7 @@ export class SongStream extends EventEmitter implements Closable {
     } else {
       this.cleanup(err);
     }
-  }
+  };
 
   private async retryStream(): Promise<void> {
     try {
@@ -124,5 +136,4 @@ export class SongStream extends EventEmitter implements Closable {
       this.cleanup(e);
     }
   }
-
 }
