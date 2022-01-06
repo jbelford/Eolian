@@ -125,10 +125,10 @@ export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
   readonly permission: UserPermission;
   // Higher priority means that this keyword should be parsed and removed from the text before others.
   readonly priority: number;
-  readonly usage: string[];
+  readonly usage: (string | string[])[];
   readonly group?: KeywordGroup;
 
-  ex(text: string): ArgumentExample;
+  ex(...text: string[]): ArgumentExample;
 
   /**
    * Check that the given text contains the keyword.

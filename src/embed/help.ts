@@ -152,7 +152,9 @@ export function createPatternDetailsEmbed(
   };
   embed.description
     += '**Example Usage:**\n```\n'
-    + pattern.usage.map(example => pattern.ex(example).text(type)).join('\n')
+    + pattern.usage
+      .map(example => pattern.ex(...(typeof example === 'string' ? [example] : example)).text(type))
+      .join('\n')
     + '```';
   embed.description += `\n_Note: Don't stare at this description too hard! Commands that use this pattern will show examples!_`;
   embed.description += `\n\n${helpFooter}`;

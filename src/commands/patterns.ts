@@ -10,7 +10,7 @@ import {
   PatternMatchResult,
   PatternValues,
   SyntaxType,
-  UrlArgument
+  UrlArgument,
 } from './@types';
 
 type Patterns = Partial<Record<string, Pattern>> & {
@@ -82,9 +82,9 @@ export const PATTERNS: Readonly<Patterns> = {
     name: 'ARG',
     details: `Used for when keywords just won't cut it.`,
     permission: UserPermission.User,
-    usage: ['/ argument 1 / argument 2 / argument 3 /'],
+    usage: [['argument 1', 'argument 2', 'argument 3']],
     priority: 3,
-    ex: text => new PassthroughExample(PATTERNS.ARG.name, text),
+    ex: (...text) => new ArgumentPatternExample(text),
     matchText: (text: string) => {
       const match = matchGroup(text, /\B\/\s*([^/]+(\/[^/]+)*)\/\B/, 0);
       return {
@@ -233,6 +233,20 @@ class PassthroughExample implements ArgumentExample {
 
 }
 
+class ArgumentPatternExample implements ArgumentExample {
+
+  constructor(private readonly args: string[]) {}
+
+  text(type: SyntaxType): string {
+    if (type === SyntaxType.SLASH) {
+      return `${PATTERNS.ARG.name.toLowerCase()}:/ ` + this.args.join(' / ') + ' /';
+    } else {
+      return '/ ' + this.args.join(' / ') + ' /';
+    }
+  }
+
+}
+
 class IdentifierExample implements ArgumentExample {
 
   private static NAME = PATTERNS.IDENTIFIER.name.toLowerCase();
@@ -240,9 +254,7 @@ class IdentifierExample implements ArgumentExample {
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
-    return type === SyntaxType.SLASH
-      ? `${IdentifierExample.NAME}:${this._text}`
-      : `[${this.text}]`;
+    return type === SyntaxType.SLASH ? `${IdentifierExample.NAME}:${this._text}` : `[${this.text}]`;
   }
 
 }

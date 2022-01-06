@@ -11,7 +11,7 @@ import {
   ContextMessage,
   ContextSendable,
   ContextUser,
-  MessageButtonOnClickHandler
+  MessageButtonOnClickHandler,
 } from 'framework/@types';
 
 class PollMessage implements Closable {
@@ -140,7 +140,7 @@ export const POLL_COMMAND: Command = {
   usage: [
     {
       title: `Create a simple poll`,
-      example: '/ What is your favorite color? / Red / Green / Blue /',
+      example: [PATTERNS.ARG.ex('What is your favorite color?', 'Red', 'Green', 'Blue')],
     },
   ],
   args: {

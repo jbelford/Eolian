@@ -74,11 +74,11 @@ export const SERVERS_COMMAND: Command = {
     },
     {
       title: 'Sort by bot',
-      example: [PATTERNS.ARG.ex('/sort/botCount/')],
+      example: [PATTERNS.ARG.ex('sort', 'botCount')],
     },
     {
       title: 'Kick server',
-      example: [PATTERNS.ARG.ex('/kick/<id>/')],
+      example: [PATTERNS.ARG.ex('kick', '<id>')],
     },
   ],
   args: {
