@@ -104,9 +104,10 @@ export function createCommandDetailsEmbed(
 
   embed.description += helpFooter;
 
+  const slash = type === SyntaxType.SLASH ? '/' : '';
   embed.fields = command.usage.map(({ title, example }, idx) => ({
     name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`,
-    value: `\`\`\`\n${command.name} ${
+    value: `\`\`\`\n${slash}${command.name} ${
       typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ')
     }\n\`\`\``,
   }));

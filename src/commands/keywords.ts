@@ -29,7 +29,18 @@ class KeywordDetails implements Keyword {
   ) {}
 
   text(type: SyntaxType): string {
-    return type === SyntaxType.KEYWORD ? this.name.toLowerCase() : `-${this.name.toLowerCase()}`;
+    switch (type) {
+      case SyntaxType.KEYWORD:
+        return this.name.toLowerCase();
+      case SyntaxType.TRADITIONAL:
+        return '-' + this.name.toLowerCase();
+      case SyntaxType.SLASH:
+        return this.group
+          ? `${this.group}:${this.name.toLowerCase()}`
+          : `${this.name.toLowerCase()}:True`;
+      default:
+        throw new Error(`Unknown syntax type '${type}'!`);
+    }
   }
 
 }

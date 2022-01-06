@@ -138,11 +138,11 @@ export const ADD_COMMAND: Command = {
     },
     {
       title: 'Add song from URL',
-      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I',
+      example: [PATTERNS.URL.ex('https://www.youtube.com/watch?v=HEXWRTEbj1I')],
     },
     {
       title: 'Add songs from your saved identifier',
-      example: '[retro]',
+      example: [PATTERNS.IDENTIFIER.ex('retro')],
     },
     {
       title: 'Search for artist and add their top 5 songs',

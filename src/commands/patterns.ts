@@ -23,7 +23,7 @@ export const PATTERNS: Readonly<Patterns> = {
     details: 'Indicates to specify a number.',
     permission: UserPermission.User,
     usage: ['50', '0.5', '-100', '10 11'],
-    ex: text => new PassthroughExample(text),
+    ex: text => new PassthroughExample(PATTERNS.NUMBER.name, text),
     priority: 1,
     matchText: (text: string) => {
       const match = matchAll(text, /(?<=\s|^)(-?\d+(\.\d+)?)(?=\s|$)/g, 0);
@@ -84,7 +84,7 @@ export const PATTERNS: Readonly<Patterns> = {
     permission: UserPermission.User,
     usage: ['/ argument 1 / argument 2 / argument 3 /'],
     priority: 3,
-    ex: text => new PassthroughExample(text),
+    ex: text => new PassthroughExample(PATTERNS.ARG.name, text),
     matchText: (text: string) => {
       const match = matchGroup(text, /\B\/\s*([^/]+(\/[^/]+)*)\/\B/, 0);
       return {
@@ -107,7 +107,7 @@ export const PATTERNS: Readonly<Patterns> = {
     ],
     priority: 4,
     group: KeywordGroup.Search,
-    ex: text => new PassthroughExample(text),
+    ex: text => new PassthroughExample(PATTERNS.URL.group!, text),
     matchText: (text: string) => {
       const match = matchGroup(
         text,
@@ -129,9 +129,9 @@ export const PATTERNS: Readonly<Patterns> = {
     details:
       'Used for referring to an identifier (a shortcut) for some resource such as a playlist.',
     permission: UserPermission.User,
-    usage: ['[my identifier]', '[music playlist #2]'],
+    usage: ['my identifier', 'music playlist #2'],
     priority: 5,
-    ex: text => new PassthroughExample(text),
+    ex: text => new IdentifierExample(text),
     matchText: (text: string, type: SyntaxType) =>
       type === SyntaxType.SLASH
         ? { matches: true, newText: '', args: text.trim() }
@@ -222,20 +222,48 @@ function matchGroup(text: string, reg: RegExp, group: number): PatternMatchResul
 
 class PassthroughExample implements ArgumentExample {
 
+  constructor(private readonly name: string, private readonly _text: string) {}
+
+  text(type: SyntaxType): string {
+    if (type === SyntaxType.SLASH) {
+      return `${this.name.toLowerCase()}:${this._text}`;
+    }
+    return this._text;
+  }
+
+}
+
+class IdentifierExample implements ArgumentExample {
+
+  private static NAME = PATTERNS.IDENTIFIER.name.toLowerCase();
+
   constructor(private readonly _text: string) {}
 
-  text(): string {
-    return this._text;
+  text(type: SyntaxType): string {
+    return type === SyntaxType.SLASH
+      ? `${IdentifierExample.NAME}:${this._text}`
+      : `[${this.text}]`;
   }
 
 }
 
 class SearchExample implements ArgumentExample {
 
+  private static NAME = PATTERNS.SEARCH.group!.toLowerCase();
+
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
-    return type === SyntaxType.KEYWORD ? `(${this._text})` : this._text;
+    switch (type) {
+      case SyntaxType.KEYWORD:
+        return `(${this._text})`;
+      case SyntaxType.TRADITIONAL:
+        return this._text;
+      case SyntaxType.SLASH:
+        return `${SearchExample.NAME}:${this._text}`;
+      default:
+        throw new Error(`Unknown syntax type ${type}!`);
+    }
   }
 
 }
@@ -251,7 +279,9 @@ class RangeExample implements ArgumentExample {
       case SyntaxType.TRADITIONAL:
         return `-${this.name} ${this._text}`;
       case SyntaxType.SLASH:
-        return this._text;
+        return `${this.name}:${this._text}`;
+      default:
+        throw new Error(`Unknown syntax type ${type}!`);
     }
   }
 

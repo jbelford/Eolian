@@ -115,7 +115,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
     },
     {
       title: 'Start playing song from URL',
-      example: 'https://www.youtube.com/watch?v=HEXWRTEbj1I',
+      example: [PATTERNS.URL.ex('https://www.youtube.com/watch?v=HEXWRTEbj1I')],
     },
     {
       title: 'Start playing song from SEARCH',

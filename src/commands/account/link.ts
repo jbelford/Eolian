@@ -119,11 +119,11 @@ export const LINK_COMMAND: Command = {
     },
     {
       title: 'Provide URL to SoundCloud user to link',
-      example: 'https://soundcloud.com/john-smith',
+      example: [PATTERNS.URL.ex('https://soundcloud.com/john-smith')],
     },
     {
       title: 'Provide URL to Spotify user to link',
-      example: 'https://open.spotify.com/user/1111111111?si=1111111111111',
+      example: [PATTERNS.URL.ex('https://open.spotify.com/user/1111111111?si=1111111111111')],
     },
   ],
   execute,

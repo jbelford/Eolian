@@ -70,7 +70,7 @@ export const SERVERS_COMMAND: Command = {
     },
     {
       title: 'Show servers at page',
-      example: '2',
+      example: [PATTERNS.NUMBER.ex('2')],
     },
     {
       title: 'Sort by bot',

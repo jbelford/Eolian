@@ -54,7 +54,7 @@ export const VOLUME_COMMAND: Command = {
     },
     {
       title: 'Set the volume to 75%',
-      example: '75',
+      example: [PATTERNS.NUMBER.ex('75')],
     },
   ],
   execute,
