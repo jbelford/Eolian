@@ -2,17 +2,14 @@ import { Format } from 'logform';
 import * as winston from 'winston';
 import { environment } from './env';
 
-const formats: Format[] = [winston.format.timestamp(), winston.format.splat()];
-
-if (!environment.prod) {
-  formats.push(winston.format.colorize());
-}
-
-formats.push(
-  winston.format.printf(info => {
-    return `${info.timestamp} ${info.level}: ${info.message}`;
-  })
-);
+const formats: Format[] = !environment.prod
+  ? [
+      winston.format.timestamp(),
+      winston.format.splat(),
+      winston.format.colorize(),
+      winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`),
+    ]
+  : [winston.format.splat(), winston.format.simple()];
 
 export const logger = winston.createLogger({
   level: environment.debug ? 'debug' : 'info',
