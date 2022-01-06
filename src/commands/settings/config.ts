@@ -1,5 +1,6 @@
-import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
+import { Command, CommandArgs, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { SETTINGS_CATEGORY } from 'commands/category';
+import { SimpleExample } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { createServerDetailsEmbed } from 'embed';
@@ -151,6 +152,33 @@ async function setDjLimited(context: CommandContext, allow: string) {
   }
 }
 
+const args: CommandArgs = {
+  base: true,
+  groups: [
+    {
+      required: false,
+      options: [
+        {
+          name: 'setting',
+          details: 'The setting to change',
+          getChoices() {
+            return Object.values(CONFIG_OPTION);
+          },
+        },
+      ],
+    },
+    {
+      required: false,
+      options: [
+        {
+          name: 'value',
+          details: 'The value for the setting',
+        },
+      ],
+    },
+  ],
+};
+
 export const CONFIG_COMMAND: Command = {
   name: 'config',
   details: 'Show configuration or change configurations for server.',
@@ -163,67 +191,42 @@ export const CONFIG_COMMAND: Command = {
     },
     {
       title: 'Set prefix config',
-      example: 'prefix $',
+      example: SimpleExample.create(args, 'prefix', '$'),
     },
     {
       title: 'Set default volume config',
-      example: 'volume 50',
+      example: SimpleExample.create(args, 'volume', '50'),
     },
     {
       title: 'Set syntax preference to keyword based',
-      example: 'syntax keyword',
+      example: SimpleExample.create(args, 'syntax', 'keyword'),
     },
     {
       title: 'Set syntax preference to traditional',
-      example: 'syntax traditional',
+      example: SimpleExample.create(args, 'syntax', 'traditional'),
     },
     {
       title: 'Add DJ role by @ mention',
-      example: 'dj_add @myDjRole',
+      example: SimpleExample.create(args, 'dj_add', '@myDjRole'),
     },
     {
       title: 'Add DJ by ID',
-      example: 'dj_add 920079417907224636',
+      example: SimpleExample.create(args, 'dj_add', '920079417907224636'),
     },
     {
       title: 'Remove DJ role',
-      example: 'dj_remove 920079417907224636',
+      example: SimpleExample.create(args, 'dj_remove', '920079417907224636'),
     },
     {
       title:
         'Allow non-DJs to have ability to have limited DJ ability such as adding tracks (Only effective when DJ role is set)',
-      example: 'dj_limited true',
+      example: SimpleExample.create(args, 'dj_limited', 'true'),
     },
     {
       title: 'Make non-DJs not allowed to set any',
-      example: 'dj_limited false',
+      example: SimpleExample.create(args, 'dj_limited', 'false'),
     },
   ],
-  args: {
-    base: true,
-    groups: [
-      {
-        required: false,
-        options: [
-          {
-            name: 'setting',
-            details: 'The setting to change',
-            getChoices() {
-              return Object.values(CONFIG_OPTION);
-            },
-          },
-        ],
-      },
-      {
-        required: false,
-        options: [
-          {
-            name: 'value',
-            details: 'The value for the setting',
-          },
-        ],
-      },
-    ],
-  },
+  args,
   execute,
 };

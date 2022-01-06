@@ -1,8 +1,8 @@
 import { COMMANDS, COMMAND_MAP } from 'commands';
-import { Command, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
+import { Command, CommandArgs, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
+import { SimpleExample, PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import {
@@ -88,6 +88,45 @@ async function execute(
   throw new EolianUserError(`Sorry! I don't think anything is referred to as \`${arg}\``);
 }
 
+const args: CommandArgs = {
+  base: true,
+  groups: [
+    {
+      required: false,
+      options: [
+        {
+          name: 'command',
+          details: 'The command to get help for',
+          getChoices() {
+            return COMMANDS.map(cmd => cmd.name);
+          },
+        },
+        {
+          name: 'category',
+          details: 'The category to get help for',
+          getChoices() {
+            return COMMAND_CATEGORIES.map(category => category.name);
+          },
+        },
+        {
+          name: 'keyword',
+          details: 'The keyword to get help for',
+          getChoices() {
+            return Object.values(KEYWORDS).map(keyword => keyword!.name);
+          },
+        },
+        {
+          name: 'pattern',
+          details: 'The pattern to get help for',
+          getChoices() {
+            return PATTERNS_SORTED.map(pattern => pattern.name);
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export const HELP_COMMAND: Command = {
   name: 'help',
   details: 'Shows list of all available categories, commands, keywords, and their details.',
@@ -100,63 +139,26 @@ export const HELP_COMMAND: Command = {
       example: '',
     },
     {
-      title: 'Show commands for first category',
+      title: 'Show commands for first category (legacy only)',
       example: '1',
     },
     {
       title: `Show commands for 'General' category`,
-      example: 'General',
+      example: SimpleExample.create(args, 'category:General'),
     },
     {
-      title: `Show help for 'poll' command`,
-      example: 'poll',
+      title: `Show help for 'add' command`,
+      example: SimpleExample.create(args, 'command:add'),
     },
     {
       title: `Show help for SPOTIFY keyword`,
-      example: 'spotify',
+      example: SimpleExample.create(args, 'keyword:SPOTIFY'),
     },
     {
-      title: `Show help for QUERY pattern`,
-      example: 'query',
+      title: `Show help for SEARCH pattern`,
+      example: SimpleExample.create(args, 'pattern:SEARCH'),
     },
   ],
-  args: {
-    base: true,
-    groups: [
-      {
-        required: false,
-        options: [
-          {
-            name: 'command',
-            details: 'The command to get help for',
-            getChoices() {
-              return COMMANDS.map(cmd => cmd.name);
-            },
-          },
-          {
-            name: 'category',
-            details: 'The category to get help for',
-            getChoices() {
-              return COMMAND_CATEGORIES.map(category => category.name);
-            },
-          },
-          {
-            name: 'keyword',
-            details: 'The keyword to get help for',
-            getChoices() {
-              return Object.values(KEYWORDS).map(keyword => keyword!.name);
-            },
-          },
-          {
-            name: 'pattern',
-            details: 'The pattern to get help for',
-            getChoices() {
-              return PATTERNS_SORTED.map(pattern => pattern.name);
-            },
-          },
-        ],
-      },
-    ],
-  },
+  args,
   execute,
 };
