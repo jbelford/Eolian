@@ -3,7 +3,7 @@ import {
   SoundCloudPlaylist,
   SoundCloudResourceType,
   SoundCloudTrack,
-  SoundCloudUser
+  SoundCloudUser,
 } from 'api/@types';
 import { EolianUserError } from 'common/errors';
 import { ResolvedResource, SourceResolver } from '../@types';

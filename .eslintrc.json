@@ -17,7 +17,6 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "eqeqeq": "error",
     "semi": "error",
-    "no-mixed-operators": "error",
     "no-fallthrough": "off",
     "no-multiple-empty-lines": [
       "error",

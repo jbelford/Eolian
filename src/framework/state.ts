@@ -12,7 +12,7 @@ import {
   ServerDetails,
   ServerState,
   ServerStateDisplay,
-  ServerStateStore
+  ServerStateStore,
 } from './@types';
 import { DiscordGuildClient } from './client';
 import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';

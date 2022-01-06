@@ -17,7 +17,7 @@ import {
   YouTubeApi,
   YoutubePlaylist,
   YouTubeUrlDetails,
-  YoutubeVideo
+  YoutubeVideo,
 } from './@types';
 
 // const MUSIC_CATEGORY_ID = 10;

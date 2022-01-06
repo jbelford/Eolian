@@ -6,7 +6,7 @@ import {
   createAudioResource,
   NoSubscriberBehavior,
   StreamType,
-  VoiceConnectionStatus
+  VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
 import { environment } from 'common/env';

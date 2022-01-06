@@ -9,7 +9,7 @@
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
     "lint": "eslint src/**/*.ts",
-    "lint-fix": "eslint --fix src/**/*.ts"
+    "format": "prettier --write ./src && eslint --fix src/**/*.ts"
   },
   "keywords": [
     "music",

@@ -13,7 +13,7 @@ import {
   Guild,
   Intents,
   Interaction,
-  Message
+  Message,
 } from 'discord.js';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
 import { ButtonRegistry } from './button';
@@ -21,13 +21,13 @@ import {
   DiscordClient,
   DiscordGuildClient,
   DISCORD_INVITE_PERMISSIONS,
-  INVITE_SCOPES
+  INVITE_SCOPES,
 } from './client';
 import {
   DiscordButtonInteraction,
   DiscordCommandInteraction,
   DiscordMessageCommandInteraction,
-  DiscordMessageInteraction
+  DiscordMessageInteraction,
 } from './interaction';
 import { registerGuildSlashCommands } from './register_commands';
 import { DiscordGuildStore } from './state';

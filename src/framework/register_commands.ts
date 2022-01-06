@@ -1,7 +1,7 @@
 import {
   ContextMenuCommandBuilder,
   SlashCommandBuilder,
-  SlashCommandStringOption
+  SlashCommandStringOption,
 } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import {
@@ -11,7 +11,7 @@ import {
   getMessageCommand,
   MESSAGE_COMMANDS,
   patternMatch,
-  simpleOptionsStrategy
+  simpleOptionsStrategy,
 } from 'commands';
 import {
   Command,
@@ -22,7 +22,7 @@ import {
   MessageCommand,
   ParsedCommand,
   Pattern,
-  SyntaxType
+  SyntaxType,
 } from 'commands/@types';
 import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
 import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
@@ -35,7 +35,7 @@ import {
   ApplicationCommandType,
   RESTPutAPIApplicationCommandsResult,
   RESTPutAPIGuildApplicationCommandsPermissionsJSONBody,
-  Routes
+  Routes,
 } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 

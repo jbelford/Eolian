@@ -5,7 +5,7 @@ import {
   MessageActionRow,
   MessageButton,
   MessageEditOptions,
-  MessageEmbed
+  MessageEmbed,
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';

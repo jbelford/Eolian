@@ -7,7 +7,7 @@ import {
   MessageCollector,
   MessageOptions,
   Permissions,
-  TextChannel
+  TextChannel,
 } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
 import { SelectionOption } from 'embed/@types';
@@ -19,7 +19,7 @@ import {
   ContextUser,
   EmbedMessage,
   MessageButtonOnClickHandler,
-  SelectionResult
+  SelectionResult,
 } from './@types';
 import { ButtonRegistry } from './button';
 import {
@@ -27,7 +27,7 @@ import {
   DiscordMessage,
   DiscordMessageButtons,
   mapDiscordEmbed,
-  mapDiscordEmbedButtons
+  mapDiscordEmbedButtons,
 } from './message';
 
 export const STOP_EMOJI = '🚫';

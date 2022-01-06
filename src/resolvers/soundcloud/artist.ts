@@ -9,7 +9,7 @@ import {
   MessageBundledResult,
   ResolvedResource,
   SourceFetcher,
-  SourceResolver
+  SourceResolver,
 } from 'resolvers/@types';
 
 type UserResult = MessageBundledResult<SoundCloudUser>;

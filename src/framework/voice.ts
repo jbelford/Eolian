@@ -3,7 +3,7 @@ import {
   entersState,
   joinVoiceChannel,
   VoiceConnection,
-  VoiceConnectionStatus
+  VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { logger } from 'common/logger';
 import { Client, VoiceChannel } from 'discord.js';

@@ -13,7 +13,7 @@ import {
   ParsedCommand,
   Pattern,
   PatternValues,
-  SyntaxType
+  SyntaxType,
 } from './@types';
 import { KEYWORDS } from './keywords';
 import { PATTERNS, PATTERNS_SORTED } from './patterns';

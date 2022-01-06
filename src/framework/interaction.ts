@@ -10,7 +10,7 @@ import {
   Message,
   MessageActionRow,
   MessageOptions,
-  TextChannel
+  TextChannel,
 } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
 import {
@@ -23,7 +23,7 @@ import {
   ContextUser,
   EmbedMessage,
   SelectionResult,
-  ServerDetails
+  ServerDetails,
 } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';

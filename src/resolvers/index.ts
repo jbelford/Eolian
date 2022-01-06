@@ -11,20 +11,20 @@ import {
   SoundCloudPlaylistResolver,
   SoundCloudSongResolver,
   SoundCloudTracksResolver,
-  SoundCloudUrlResolver
+  SoundCloudUrlResolver,
 } from './soundcloud';
 import {
   getSpotifySourceFetcher,
   SpotifyAlbumResolver,
   SpotifyArtistResolver,
   SpotifyPlaylistResolver,
-  SpotifyUrlResolver
+  SpotifyUrlResolver,
 } from './spotify';
 import {
   getYouTubeSourceFetcher,
   YouTubePlaylistResolver,
   YouTubeUrlResolver,
-  YouTubeVideoResolver
+  YouTubeVideoResolver,
 } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {

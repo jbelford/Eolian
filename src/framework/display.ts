@@ -9,7 +9,7 @@ import {
   ContextTextChannel,
   MessageButtonOnClickHandler,
   PlayerDisplay,
-  QueueDisplay
+  QueueDisplay,
 } from './@types';
 
 const QUEUE_PAGE_LENGTH = 15;

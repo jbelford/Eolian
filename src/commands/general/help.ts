@@ -10,7 +10,7 @@ import {
   createCommandDetailsEmbed,
   createCommandListEmbed,
   createKeywordDetailsEmbed,
-  createPatternDetailsEmbed
+  createPatternDetailsEmbed,
 } from 'embed';
 
 async function execute(
