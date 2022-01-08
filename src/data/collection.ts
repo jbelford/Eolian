@@ -11,11 +11,11 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   constructor(protected readonly collection: Collection<T>) {}
 
   async get(id: string): Promise<T | null> {
-    return await this.collection.findOne({ _id: id } as Filter<T>);
+    return await this.collection.findOne({ _id: id } as unknown as Filter<T>) as T | null;
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: id } as Filter<T>);
+    const result = await this.collection.deleteOne({ _id: id } as unknown as Filter<T>);
     return !!result.deletedCount;
   }
 
@@ -27,7 +27,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     const set: any = {};
     set[key] = value;
     await this.collection.updateOne(
-      { _id: id } as Filter<T>,
+      { _id: id } as unknown as Filter<T>,
       { $set: set, $setOnInsert: { _id: id } } as UpdateFilter<T>,
       { upsert: true }
     );
@@ -36,7 +36,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   protected async unsetProperty(id: string, key: string): Promise<boolean> {
     const unset: any = {};
     unset[key] = true;
-    const result = await this.collection.updateOne({ _id: id } as Filter<T>, { $unset: unset });
+    const result = await this.collection.updateOne({ _id: id } as unknown as Filter<T>, { $unset: unset });
     return result.modifiedCount > 0;
   }
 
