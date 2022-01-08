@@ -11,7 +11,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   constructor(protected readonly collection: Collection<T>) {}
 
   async get(id: string): Promise<T | null> {
-    return await this.collection.findOne({ _id: id } as unknown as Filter<T>) as T | null;
+    return (await this.collection.findOne({ _id: id } as unknown as Filter<T>)) as T | null;
   }
 
   async delete(id: string): Promise<boolean> {
@@ -24,19 +24,25 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
     key: K | `${K}.${string}`,
     value: V
   ): Promise<void> {
-    const set: any = {};
-    set[key] = value;
     await this.collection.updateOne(
       { _id: id } as unknown as Filter<T>,
-      { $set: set, $setOnInsert: { _id: id } } as UpdateFilter<T>,
+      { $set: { [key]: value }, $setOnInsert: { _id: id } } as UpdateFilter<T>,
       { upsert: true }
     );
   }
 
-  protected async unsetProperty(id: string, key: string): Promise<boolean> {
-    const unset: any = {};
-    unset[key] = true;
-    const result = await this.collection.updateOne({ _id: id } as unknown as Filter<T>, { $unset: unset });
+  protected async unsetProperty<K extends Extract<keyof T, string>>(
+    id: string,
+    key: K | `${K}.${string}`
+  ): Promise<boolean> {
+    const result = await this.collection.updateOne(
+      { _id: id } as unknown as Filter<T>,
+      {
+        $unset: {
+          [key]: true,
+        },
+      } as UpdateFilter<T>
+    );
     return result.modifiedCount > 0;
   }
 
