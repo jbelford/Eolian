@@ -1,5 +1,6 @@
 import {
   AudioPlayer,
+  DiscordGatewayAdapterCreator,
   entersState,
   joinVoiceChannel,
   VoiceConnection,
@@ -25,7 +26,8 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
     joinVoiceChannel({
       channelId: this.channel.id,
       guildId: this.channel.guild.id,
-      adapterCreator: this.channel.guild.voiceAdapterCreator,
+      adapterCreator: this.channel.guild
+        .voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator,
     });
   }
 

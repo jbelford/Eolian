@@ -9,11 +9,11 @@ import {
   Client,
   ClientOptions,
   CommandInteraction,
-  ContextMenuInteraction,
   Guild,
   Intents,
   Interaction,
   Message,
+  MessageContextMenuInteraction,
 } from 'discord.js';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
 import { ButtonRegistry } from './button';
@@ -188,10 +188,7 @@ export class DiscordEolianBot implements EolianBot {
       }
       if (interaction.isButton()) {
         await this.onButtonClickHandler(interaction);
-      } else if (
-        interaction.isCommand()
-        || (interaction.isContextMenu() && interaction.targetType === 'MESSAGE')
-      ) {
+      } else if (interaction.isCommand() || interaction.isMessageContextMenu()) {
         await this.onCommandHandler(interaction);
       } else {
         logger.warn('Received unknown interaction type: %s', interaction.type);
@@ -238,7 +235,9 @@ export class DiscordEolianBot implements EolianBot {
     }
   };
 
-  private onCommandHandler = async (interaction: CommandInteraction | ContextMenuInteraction) => {
+  private onCommandHandler = async (
+    interaction: CommandInteraction | MessageContextMenuInteraction
+  ) => {
     const locked = await this.lockManager.isLocked(interaction.user.id);
     if (!locked) {
       try {

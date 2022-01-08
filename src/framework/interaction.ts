@@ -4,11 +4,11 @@ import {
   BaseCommandInteraction,
   ButtonInteraction,
   CommandInteraction,
-  ContextMenuInteraction,
   DMChannel,
   GuildMember,
   Message,
   MessageActionRow,
+  MessageContextMenuInteraction,
   MessageOptions,
   TextChannel,
 } from 'discord.js';
@@ -214,7 +214,7 @@ export class DiscordCommandInteraction
 }
 
 export class DiscordMessageCommandInteraction
-  extends DiscordInteraction<ContextMenuInteraction>
+  extends DiscordInteraction<MessageContextMenuInteraction>
   implements ContextCommandInteraction
 {
 
@@ -222,16 +222,17 @@ export class DiscordMessageCommandInteraction
   readonly reactable = false;
   private _message?: Message;
 
-  constructor(interaction: ContextMenuInteraction, registry: ButtonRegistry, users: UsersDb) {
+  constructor(
+    interaction: MessageContextMenuInteraction,
+    registry: ButtonRegistry,
+    users: UsersDb
+  ) {
     super(interaction, registry, users);
   }
 
   private get message(): Message {
     if (!this._message) {
-      this._message = this.interaction.options.getMessage('message') as Message | undefined;
-      if (!this._message) {
-        throw new Error('Missing message from ContextMenu!');
-      }
+      this._message = this.interaction.targetMessage as Message;
     }
     return this._message;
   }

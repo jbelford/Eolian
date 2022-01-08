@@ -110,13 +110,14 @@ export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
   const rich = new MessageEmbed();
 
   if (embed.color) rich.setColor(embed.color);
-  if (embed.header) rich.setAuthor(embed.header.text, embed.header.icon);
+  if (embed.header) rich.setAuthor({ name: embed.header.text, iconURL: embed.header.icon });
   if (embed.title) rich.setTitle(clampLength(embed.title, 256));
   if (embed.description) rich.setDescription(clampLength(embed.description, 2048));
   if (embed.thumbnail) rich.setThumbnail(embed.thumbnail);
   if (embed.image) rich.setImage(embed.image);
   if (embed.url) rich.setURL(embed.url);
-  if (embed.footer) rich.setFooter(clampLength(embed.footer.text, 2048), embed.footer.icon);
+  if (embed.footer)
+    rich.setFooter({ text: clampLength(embed.footer.text, 2048), iconURL: embed.footer.icon });
   if (embed.fields) {
     const fields = embed.fields
       .slice(0, 25)
