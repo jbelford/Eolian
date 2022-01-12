@@ -1556,7 +1556,7 @@ __metadata:
     discord-api-types: ^0.26.1
     discord.js: ^13.5.1
     dotenv: ^10.0.0
-    erlpack: "git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874"
+    erlpack: ^0.1.4
     eslint: ^8.6.0
     eslint-config-prettier: ^8.3.0
     ffmpeg-static: ^4.4.1
@@ -1583,13 +1583,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"erlpack@git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874":
-  version: 0.1.3
-  resolution: "erlpack@https://github.com/discord/erlpack.git#commit=f7d730debe32c416d1b55b4217f8aef2ade05874"
+"erlpack@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "erlpack@npm:0.1.4"
   dependencies:
     bindings: ^1.5.0
     nan: ^2.15.0
-  checksum: 37d85a27f0e15c7cc10f5b605e7b860d38a291f616dadb1e2ff2a49215c56fa8724ca53923615e355229c85cc84713c762b04f8038f74789ce8e52504eaf7e1f
+    node-gyp: latest
+  checksum: d5bcc4a5eddec0b6040f9ef9dc028250c14343d275d6e091dc2db2bcaecc11b09cdf119720a333afba688cf35cd5a1da4ecdc79862c4d15f5426a90e756cfc50
   languageName: node
   linkType: hard
 

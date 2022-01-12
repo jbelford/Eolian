@@ -32,7 +32,7 @@
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.5.1",
     "dotenv": "^10.0.0",
-    "erlpack": "git+https://github.com/discord/erlpack.git#f7d730debe32c416d1b55b4217f8aef2ade05874",
+    "erlpack": "^0.1.4",
     "ffmpeg-static": "^4.4.1",
     "fuzzball": "^2.1.2",
     "googleapis": "^92.0.0",
