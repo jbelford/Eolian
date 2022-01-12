@@ -1,5 +1,5 @@
 import { youtube } from 'api';
-import { CommandContext } from 'commands/@types';
+import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { ContextMessage } from 'framework/@types';
 import { ResolvedResource, SourceResolver } from 'resolvers/@types';
@@ -11,7 +11,11 @@ const LIKED_MUSIC_ID = 'LM';
 
 export class YouTubeUrlResolver implements SourceResolver {
 
-  constructor(private readonly url: string, private readonly context: CommandContext) {}
+  constructor(
+    private readonly url: string,
+    private readonly params: CommandOptions,
+    private readonly context: CommandContext
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const resourceDetails = youtube.getResourceType(this.url);
@@ -48,7 +52,12 @@ export class YouTubeUrlResolver implements SourceResolver {
         if (!playlist) {
           throw new EolianUserError('I could not find details about this playlist!');
         }
-        return createYouTubePlaylist(playlist, this.context.interaction.channel, message);
+        return createYouTubePlaylist(
+          playlist,
+          this.params,
+          this.context.interaction.channel,
+          message
+        );
       }
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');

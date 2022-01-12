@@ -44,7 +44,7 @@ function getBySource(context: CommandContext, params: CommandOptions) {
     case TrackSource.SoundCloud:
       return new SoundCloudUrlResolver(params.URL.value);
     case TrackSource.YouTube:
-      return new YouTubeUrlResolver(params.URL.value, context);
+      return new YouTubeUrlResolver(params.URL.value, params, context);
     case TrackSource.Spotify:
       return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
     default:
@@ -141,7 +141,7 @@ export function getSourceFetcher(
     case TrackSource.SoundCloud:
       return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
     case TrackSource.YouTube:
-      return getYouTubeSourceFetcher(identifier.id, identifier.type, sendable);
+      return getYouTubeSourceFetcher(identifier.id, identifier.type, params, sendable);
     case TrackSource.Spotify:
       return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
     default:

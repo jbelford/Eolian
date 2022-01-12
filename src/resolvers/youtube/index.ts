@@ -1,3 +1,4 @@
+import { CommandOptions } from 'commands/@types';
 import { ResourceType } from 'data/@types';
 import { ContextSendable } from 'framework/@types';
 import { SourceFetcher } from 'resolvers/@types';
@@ -11,11 +12,12 @@ export { YouTubeVideoResolver } from './video';
 export function getYouTubeSourceFetcher(
   id: string,
   type: ResourceType,
+  params: CommandOptions,
   sendable: ContextSendable
 ): SourceFetcher {
   switch (type) {
     case ResourceType.Playlist:
-      return new YouTubePlaylistFetcher(id, sendable);
+      return new YouTubePlaylistFetcher(id, params, sendable);
     case ResourceType.Song:
       return new YouTubeVideoFetcher(id);
     default:

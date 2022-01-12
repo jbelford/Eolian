@@ -11,6 +11,7 @@ import querystring from 'querystring';
 import { Readable } from 'stream';
 import {
   BingApi,
+  RangeFactory,
   StreamSource,
   Track,
   TrackSource,
@@ -101,7 +102,11 @@ export class YouTubeApiImpl implements YouTubeApi {
     }
   }
 
-  async getPlaylistVideos(id: string, progress?: ProgressUpdater): Promise<YoutubeVideo[]> {
+  async getPlaylistVideos(
+    id: string,
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory
+  ): Promise<YoutubeVideo[]> {
     let items: youtube_v3.Schema$PlaylistItem[] = [];
 
     try {
@@ -113,12 +118,15 @@ export class YouTubeApiImpl implements YouTubeApi {
       });
       items = response.data.items || [];
 
-      const total = response.data.pageInfo?.totalResults ?? undefined;
+      let total = response.data.pageInfo?.totalResults ?? undefined;
       if (total === undefined) {
         throw new Error('Playlist is missing total results!');
       } else if (total < 100) {
         progress = undefined;
       }
+
+      const range = rangeFn && rangeFn(total);
+      total = range ? range.stop : total;
 
       progress?.init(total);
       progress?.update(items.length);
@@ -136,6 +144,10 @@ export class YouTubeApiImpl implements YouTubeApi {
       }
 
       await progress?.done();
+
+      if (range) {
+        items = items.slice(range.start, range.stop);
+      }
     } catch (e) {
       logger.warn(`Failed to fetch YouTube playlist: id: %s`, id);
       throw e;

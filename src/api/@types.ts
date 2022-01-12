@@ -196,7 +196,11 @@ export interface YouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
   getVideo(id: string): Promise<YoutubeVideo | undefined>;
   getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;
-  getPlaylistVideos(id: string, progress?: ProgressUpdater): Promise<YoutubeVideo[]>;
+  getPlaylistVideos(
+    id: string,
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory
+  ): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string, limit?: number): Promise<YoutubePlaylist[]>;
   searchVideos(query: string, limit?: number): Promise<YoutubeVideo[]>;
   searchStream(track: Track): Promise<StreamSource | undefined>;

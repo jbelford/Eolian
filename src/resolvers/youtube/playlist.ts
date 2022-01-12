@@ -1,7 +1,8 @@
 import { youtube } from 'api';
-import { TrackSource, YoutubePlaylist } from 'api/@types';
+import { RangeFactory, TrackSource, YoutubePlaylist } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
 import { CommandContext, CommandOptions } from 'commands/@types';
+import { getRangeOption } from 'commands/patterns';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
@@ -21,7 +22,7 @@ export class YouTubePlaylistResolver implements SourceResolver {
     if (playlists.length === 0) {
       throw new EolianUserError('No YouTube playlists were found.');
     } else if (playlists.length === 1) {
-      return createYouTubePlaylist(playlists[0], this.context.interaction.channel);
+      return createYouTubePlaylist(playlists[0], this.params, this.context.interaction.channel);
     } else {
       const result = await this.context.interaction.sendSelection(
         'Choose a YouTube playlist',
@@ -31,6 +32,7 @@ export class YouTubePlaylistResolver implements SourceResolver {
 
       return createYouTubePlaylist(
         playlists[result.selected],
+        this.params,
         this.context.interaction.channel,
         result.message
       );
@@ -41,6 +43,7 @@ export class YouTubePlaylistResolver implements SourceResolver {
 
 export function createYouTubePlaylist(
   playlist: YoutubePlaylist,
+  params: CommandOptions,
   sendable: ContextSendable,
   message?: ContextMessage
 ): ResolvedResource {
@@ -53,19 +56,24 @@ export function createYouTubePlaylist(
       type: ResourceType.Playlist,
       url: playlist.url,
     },
-    fetcher: new YouTubePlaylistFetcher(playlist.id, sendable),
+    fetcher: new YouTubePlaylistFetcher(playlist.id, params, sendable),
     selectionMessage: message,
   };
 }
 
 export class YouTubePlaylistFetcher implements SourceFetcher {
 
-  constructor(private readonly id: string, private readonly sendable: ContextSendable) {}
+  constructor(
+    private readonly id: string,
+    private readonly params: CommandOptions,
+    private readonly sendable: ContextSendable
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const progress = new DownloaderDisplay(this.sendable, 'Fetching playlist tracks');
-    const videos = await youtube.getPlaylistVideos(this.id, progress);
-    return { tracks: videos.map(mapYouTubeVideo) };
+    const rangeFn: RangeFactory = total => getRangeOption(this.params, total);
+    const videos = await youtube.getPlaylistVideos(this.id, progress, rangeFn);
+    return { tracks: videos.map(mapYouTubeVideo), rangeOptimized: true };
   }
 
 }
