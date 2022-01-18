@@ -88,7 +88,13 @@ export class ExponentialSleep implements RetrySleepAlgorithm {
 }
 
 export function cleanupOnExit(resources: Closable[]) {
+  const exitCb = () => onExit();
+
+  process.on('exit', exitCb);
+
   const onExit = (exit?: boolean) => {
+    process.removeListener('exit', exitCb);
+
     logger.info('Executing cleanup');
 
     const promises = resources.map(x =>
@@ -101,8 +107,6 @@ export function cleanupOnExit(resources: Closable[]) {
       }
     });
   };
-
-  process.on('exit', () => onExit());
 
   [
     'SIGHUP',
