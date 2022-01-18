@@ -21,7 +21,7 @@ if (environment.tokens.bing) {
 }
 export const youtube: YouTubeApi = new YouTubeApiImpl(
   environment.tokens.youtube.token,
-  environment.youtubeCacheLimit,
+  environment.config.youtubeCacheLimit,
   bing
 );
 export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(

@@ -47,8 +47,6 @@ export const environment: AppEnv = {
   debug: getEnv('DEBUG_ENABLED') === 'true',
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
-  queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
-  youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
   ownerGuild: getEnvOpt('OWNER_GUILD'),
   tokens: {
     discord: {
@@ -74,5 +72,10 @@ export const environment: AppEnv = {
   mongo: {
     uri: getEnv('MONGO_URI'),
     db_name: getEnv('MONGO_DB_NAME'),
+  },
+  config: {
+    queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
+    youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
+    guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
 };

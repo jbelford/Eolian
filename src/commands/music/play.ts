@@ -59,7 +59,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
     if (tracks.length > 0) {
       const details = await context.server!.details.get();
       const queueSize = await context.server!.queue.size();
-      const queueLimit = details.queueLimit ?? environment.queueLimit;
+      const queueLimit = details.queueLimit ?? environment.config.queueLimit;
       if (queueSize + tracks.length > queueLimit) {
         throw new EolianUserError(
           `Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`

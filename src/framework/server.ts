@@ -43,7 +43,7 @@ export class DiscordGuild implements ServerDetails {
           prefix: environment.cmdToken,
           volume: DEFAULT_VOLUME,
           syntax: SyntaxType.KEYWORD,
-          queueLimit: environment.queueLimit,
+          queueLimit: environment.config.queueLimit,
         };
       }
     }

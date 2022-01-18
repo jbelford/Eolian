@@ -1,4 +1,5 @@
 import { Closable } from 'common/@types';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { InMemoryCache, InMemoryQueues } from 'data';
 import { EolianCache, MusicQueueCache, ServerDTO, ServerQueue, ServersDb } from 'data/@types';
@@ -167,14 +168,13 @@ class DiscordGuildState implements ServerState {
 }
 
 const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
-const SERVER_STATE_CACHE_TIMEOUT = 60 * 15;
 
 export class DiscordGuildStore implements Closable {
 
   private readonly guildMap = new Map<string, ServerDetails>();
   private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
   private readonly stateStore: ServerStateStore = new InMemoryServerStateStore(
-    SERVER_STATE_CACHE_TIMEOUT
+    environment.config.guildCacheTTL
   );
 
   constructor(private readonly client: Client, private readonly serversDb: ServersDb) {}

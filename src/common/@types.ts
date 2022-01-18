@@ -11,8 +11,6 @@ export interface AppEnv {
   debug: boolean;
   cmdToken: string;
   owners: string[];
-  queueLimit: number;
-  youtubeCacheLimit: number;
   ownerGuild?: string;
   tokens: {
     discord: {
@@ -41,6 +39,11 @@ export interface AppEnv {
   mongo: {
     uri: string;
     db_name: string;
+  };
+  config: {
+    queueLimit: number;
+    youtubeCacheLimit: number;
+    guildCacheTTL: number;
   };
 }
 
