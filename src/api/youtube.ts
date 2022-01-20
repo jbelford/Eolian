@@ -7,7 +7,6 @@ import { MemoryCache } from 'data/@types';
 import { google, youtube_v3 } from 'googleapis';
 import { decode } from 'html-entities';
 import * as play from 'play-dl';
-import querystring from 'querystring';
 import { Readable } from 'stream';
 import {
   BingApi,
@@ -51,10 +50,10 @@ export class YouTubeApiImpl implements YouTubeApi {
           video: match.groups.video,
         };
       } else {
-        const parsed = querystring.parse(query);
+        const parsed = new URLSearchParams(query);
         return {
-          playlist: parsed.list as string,
-          video: parsed.v as string,
+          playlist: parsed.get('list') ?? undefined,
+          video: parsed.get('v') ?? undefined,
         };
       }
     }

@@ -1,8 +1,7 @@
 import { ProgressUpdater } from 'common/@types';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { httpRequest } from 'common/request';
-import querystring from 'querystring';
+import { httpRequest, querystringify } from 'common/request';
 import { Readable } from 'stream';
 import {
   SoundCloudApi,
@@ -177,7 +176,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
 
     options.progress?.update(items.length);
 
-    const extraParams = querystring.stringify({ ...params });
+    const extraParams = querystringify(params);
 
     let requests = 1;
     while (
@@ -252,7 +251,7 @@ class SoundCloudRequest {
     endpoint: string,
     params: { [key: string]: string | number | boolean } = {}
   ): Promise<T> {
-    return this.getUri<T>(`${SOUNDCLOUD_API}/${endpoint}?${querystring.stringify(params)}`);
+    return this.getUri<T>(`${SOUNDCLOUD_API}/${endpoint}?${querystringify(params)}`);
   }
 
   async getUri<T>(uri: string): Promise<T> {

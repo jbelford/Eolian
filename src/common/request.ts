@@ -1,5 +1,4 @@
 import { IncomingHttpHeaders } from 'http';
-import querystring from 'querystring';
 import { request } from 'undici';
 
 export const enum RequestErrorCodes {
@@ -8,10 +7,12 @@ export const enum RequestErrorCodes {
 
 export type RequestStreamError = Error & { code?: string };
 
+export type RequestParams = Record<string, string | number | boolean>;
+
 export type RequestOptions = {
   method?: 'GET' | 'POST';
-  params?: Record<string, string | number | boolean>;
-  form?: Record<string, string | number | boolean>;
+  params?: RequestParams;
+  form?: RequestParams;
   headers?: Record<string, string>;
   auth?: {
     bearer?: string;
@@ -23,9 +24,15 @@ export type RequestOptions = {
   json?: boolean;
 };
 
+export function querystringify(params: RequestParams): string {
+  const urlSearch = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => urlSearch.set(key, value.toString()));
+  return urlSearch.toString();
+}
+
 export async function httpRequest<T>(url: string, options?: RequestOptions): Promise<T> {
   if (options?.params) {
-    url = `${url}?${querystring.stringify(options.params)}`;
+    url = `${url}?${querystringify(options.params)}`;
   }
 
   const headers: IncomingHttpHeaders = options?.headers ?? {};
@@ -44,7 +51,7 @@ export async function httpRequest<T>(url: string, options?: RequestOptions): Pro
   const method = options?.method ?? 'GET';
   if (options?.form && method === 'POST') {
     headers['content-type'] = 'application/x-www-form-urlencoded';
-    body = querystring.stringify(options.form);
+    body = querystringify(options.form);
   }
 
   const res = await request(url, {
