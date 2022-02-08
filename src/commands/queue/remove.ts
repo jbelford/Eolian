@@ -7,13 +7,13 @@ import { EolianUserError } from 'common/errors';
 import { truthySum } from 'common/util';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
-  const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT);
+  const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT, options.NUMBER);
   if (sum === 0) {
     throw new EolianUserError(
-      'You must provide TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!'
+      'You must provide NUMBER, TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!'
     );
   } else if (sum > 1) {
-    throw new EolianUserError('You must provide only 1 of TOP, BOTTOM, or NEXT keywords!');
+    throw new EolianUserError('You must provide only 1 of NUMBER, TOP, BOTTOM, or NEXT keywords!');
   }
 
   const queueLength = await context.server!.queue.size();
@@ -26,6 +26,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (options.NEXT) {
     await context.server!.queue.pop();
     await context.interaction.send('Removed next song from the queue!', { ephemeral: false });
+    return;
+  } else if (options.NUMBER) {
+    const sorted = options.NUMBER.sort((a, b) => b - a).filter(i => i > 0);
+    for (const i of sorted) {
+      await context.server!.queue.remove(i - 1, 1);
+    }
+    const songs = sorted.length > 1 ? 'songs' : 'song';
+    await context.interaction.send(`Removed ${sorted.length} ${songs} from the queue!`);
     return;
   }
 
@@ -44,7 +52,7 @@ export const REMOVE_COMMAND: Command = {
   category: QUEUE_CATEGORY,
   permission: UserPermission.DJ,
   keywords: [KEYWORDS.NEXT],
-  patterns: [PATTERNS.TOP, PATTERNS.BOTTOM],
+  patterns: [PATTERNS.TOP, PATTERNS.BOTTOM, PATTERNS.NUMBER],
   usage: [
     {
       title: 'Remove the next song in the queue',
