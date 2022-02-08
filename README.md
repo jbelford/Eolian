@@ -13,7 +13,7 @@ Expect bugs and bot may suddenly restart without warning as updates are pushed.
 
 # 📩 Invite Link
 
-https://discord.com/api/oauth2/authorize?client_id=600199818387914752&scope=bot+applications.commands&permissions=3665216
+https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216
 
 # 🧪 Test Discord Server
 
