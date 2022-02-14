@@ -17,6 +17,7 @@ export interface AppEnv {
       clientId?: string;
       main: string;
       old?: string;
+      oldLeave?: boolean;
     };
     bing?: {
       key: string;

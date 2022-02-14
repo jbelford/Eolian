@@ -53,6 +53,7 @@ export const environment: AppEnv = {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),
       main: getEnv('DISCORD_TOKEN'),
       old: getEnvOpt('DISCORD_TOKEN_OLD'),
+      oldLeave: getEnvOpt('DISCORD_OLD_LEAVE') === 'true',
     },
     bing: getBing(),
     youtube: {

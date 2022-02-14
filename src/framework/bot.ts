@@ -299,9 +299,12 @@ export class DiscordEolianBot implements EolianBot {
 
     try {
       if (this.invite && (await this.isBotInvoked(message))) {
-        message.reply(
+        await message.reply(
           `This bot is being migrated to a new token! Invite the new bot \n${this.invite}`
         );
+        if (environment.tokens.discord.oldLeave) {
+          await message.guild?.leave();
+        }
       }
     } catch (e) {
       logger.warn(`Unhandled error occured during request: %s`, e);
