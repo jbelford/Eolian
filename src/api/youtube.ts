@@ -348,7 +348,7 @@ class YouTubeStreamSource implements StreamSource {
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s', this.url);
-    const result = await play.stream(this.url, { seek });
+    const result = await play.stream(this.url, { seek, discordPlayerCompatibility: true });
     return result.stream;
   }
 
