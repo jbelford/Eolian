@@ -128,3 +128,11 @@ export function cleanupOnExit(resources: Closable[]) {
     });
   });
 }
+
+export function clampLength(str: string, length: number) {
+  if (str.length > length) {
+    str = str.substring(0, length - 2);
+    str += '..';
+  }
+  return str;
+}

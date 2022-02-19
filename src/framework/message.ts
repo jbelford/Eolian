@@ -1,4 +1,5 @@
 import { logger } from 'common/logger';
+import { clampLength } from 'common/util';
 import {
   ButtonInteraction,
   Message,
@@ -152,14 +153,6 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
   }
 
   return { rows: buttonRows, mapping: buttonMap };
-}
-
-function clampLength(str: string, length: number) {
-  if (str.length > length) {
-    str = str.substring(0, length - 2);
-    str += '..';
-  }
-  return str;
 }
 
 function buttonStyleToDiscordStyle(style = ButtonStyle.SECONDARY) {

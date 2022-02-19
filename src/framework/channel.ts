@@ -1,6 +1,7 @@
 import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
+import { clampLength } from 'common/util';
 import {
   DMChannel,
   Message,
@@ -36,6 +37,8 @@ export interface DiscordMessageSender {
   send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message>;
 }
 
+const DISCORD_CONTENT_MAX = 2000;
+
 export class DiscordSender implements ContextSendable {
 
   private _sendable?: boolean;
@@ -70,7 +73,7 @@ export class DiscordSender implements ContextSendable {
   ): Promise<ContextMessage | undefined> {
     if (this.sendable || options?.force) {
       try {
-        const discordMessage = await this.sender.send({ content: message }, options?.ephemeral);
+        const discordMessage = await this.sender.send({ content: clampLength(message, DISCORD_CONTENT_MAX) }, options?.ephemeral);
         return new DiscordMessage(discordMessage);
       } catch (e) {
         logger.warn('Failed to send message: %s', e);
