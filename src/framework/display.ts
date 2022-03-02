@@ -272,8 +272,16 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   }
 
   private onEndHandler = async () => {
-    await this.safeDelete();
     this.track = null;
+    const msg = 'Goodbye 👋';
+    if (this.message) {
+      const temp = this.message;
+      this.message = null;
+      temp.releaseButtons();
+      await temp.edit(msg);
+    } else {
+      this.channel?.send(msg);
+    }
   };
 
   private onErrorHandler = async () => {
@@ -330,7 +338,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     if (await this.player.queue.unpop(2)) {
       await this.player.skip();
       if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
-        await this.onEndHandler();
+        await this.safeDelete();
       }
     }
     return false;
@@ -339,14 +347,14 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private skipHandler: MessageButtonOnClickHandler = this.lock(async () => {
     await this.player.skip();
     if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
-      await this.onEndHandler();
+      await this.safeDelete();
     }
     return false;
   });
 
   private stopHandler: MessageButtonOnClickHandler = this.lock(async () => {
     this.player.stop();
-    await this.onEndHandler();
+    await this.safeDelete();
     return false;
   });
 

@@ -101,9 +101,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.songStream?.close();
     this.audioResource = null;
     this.songStream = null;
+    if (this._isStreaming) {
+      this.emitDone();
+    }
     this._isStreaming = false;
     this._paused = false;
-    this.emitDone();
   };
 
   get isStreaming(): boolean {
