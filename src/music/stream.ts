@@ -51,7 +51,7 @@ export class SongStream extends EventEmitter implements Closable {
     this.output.setVolume(v);
   }
 
-  async setStreamTrack(track: Track, nightcore = false, retry = false, seek?: number) {
+  async setStreamTrack(track: Track, nightcore = false, retry = false, seek?: number): Promise<boolean> {
     let source: StreamSource | undefined;
     if (!this.source) {
       source = await getTrackStream(track);
@@ -60,7 +60,8 @@ export class SongStream extends EventEmitter implements Closable {
       source = retry ? this.source : await getTrackStream(track);
     }
     if (!source) {
-      throw new Error('Failed to get stream source!');
+      logger.warn('Failed to get stream source!');
+      return false;
     }
 
     let stream = await source.get(seek);
@@ -95,6 +96,8 @@ export class SongStream extends EventEmitter implements Closable {
     this.nightcore = nightcore;
     this.songStream = stream;
     this.pcmTransform = ffmpeg;
+
+    return true;
   }
 
   end() {
@@ -132,7 +135,10 @@ export class SongStream extends EventEmitter implements Closable {
     try {
       await this.sleepAlg.sleep();
       const seek = this.start && Math.max(0, Date.now() - this.start - 5000);
-      await this.setStreamTrack(this.track!, this.nightcore, true, seek);
+      const success = await this.setStreamTrack(this.track!, this.nightcore, true, seek);
+      if (!success) {
+        throw new Error('Failed to retry stream');
+      }
     } catch (e: any) {
       this.cleanup(e);
     }

@@ -250,12 +250,17 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.songStream.once('error', this.streamErrorHandler);
       this.songStream.on('retry', this.onRetryHandler);
     }
-    const nextTrack = await this.queue.peek();
-    if (nextTrack) {
-      this._paused = false;
-      await this.songStream.setStreamTrack(nextTrack, this.nightcore);
-      await this.popNext();
-      return this.songStream.stream;
+    let track = await this.queue.peek();
+    for (let i = 0; i < 5 && track; ++i) {
+      const success = await this.songStream.setStreamTrack(track, this.nightcore);
+      if (success) {
+        this._paused = false;
+        await this.popNext();
+        return this.songStream.stream;
+      } else {
+        await this.queue.pop();
+        track = await this.queue.peek();
+      }
     }
     return null;
   }
