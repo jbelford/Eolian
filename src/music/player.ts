@@ -8,6 +8,7 @@ import {
   StreamType,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
+import { Track } from 'api/@types';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
@@ -259,6 +260,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         await this.popNext();
         return this.songStream.stream;
       } else {
+        this.emitTrackFailure(track);
         await this.queue.pop();
         track = await this.queue.peek();
       }
@@ -308,6 +310,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   private emitError() {
     this.emit('error');
+  }
+
+  private emitTrackFailure(track: Track) {
+    this.emit('trackFailure', track);
   }
 
   private emitUpdate() {

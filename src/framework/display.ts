@@ -169,6 +169,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.on('done', this.onEndHandler);
     this.player.on('error', this.onErrorHandler);
     this.player.on('retry', this.onRetryHandler);
+    this.player.on('trackFailure', this.onTrackFailureHandler);
     this.player.queue.on('add', this.onQueueUpdateHandler);
     this.player.queue.on('remove', this.onQueueUpdateHandler);
   }
@@ -180,6 +181,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     this.player.removeListener('done', this.onEndHandler);
     this.player.removeListener('error', this.onErrorHandler);
     this.player.removeListener('retry', this.onRetryHandler);
+    this.player.removeListener('trackFailure', this.onTrackFailureHandler);
     this.player.queue.removeListener('add', this.onQueueUpdateHandler);
     this.player.queue.removeListener('remove', this.onQueueUpdateHandler);
     this.channel = null;
@@ -298,6 +300,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     if (this.track) {
       await this.channel?.send('Error occured while streaming. Retrying...');
     }
+  };
+
+  private onTrackFailureHandler = async (track: Track) => {
+    await this.channel?.send(`❌ I could not find stream for **${track.title}** by **${track.poster}**. Skipping.`);
   };
 
   // Tries to ensure that button presses during an operation will be ignored
