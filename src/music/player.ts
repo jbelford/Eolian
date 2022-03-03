@@ -21,6 +21,7 @@ import { SongStream } from './stream';
 
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 const PLAYER_RETRIES = 2;
+const NEXT_SONG_ATTEMPTS = 5;
 
 /**
  *
@@ -251,7 +252,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.songStream.on('retry', this.onRetryHandler);
     }
     let track = await this.queue.peek();
-    for (let i = 0; i < 5 && track; ++i) {
+    for (let i = 0; i < NEXT_SONG_ATTEMPTS && track; ++i) {
       const success = await this.songStream.setStreamTrack(track, this.nightcore);
       if (success) {
         this._paused = false;
