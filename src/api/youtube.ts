@@ -262,8 +262,11 @@ export class YouTubeApiImpl implements YouTubeApi {
         video.score
       );
       // Fallback on YouTube we get bad results
-      if (video.score! < SEARCH_MIN_SCORE) {
-        video = (await this.searchSongSorted(track)) ?? video;
+      if (video.score! <= SEARCH_MIN_SCORE) {
+        const ytVideo = await this.searchSongSorted(track);
+        if (ytVideo && video.score! < ytVideo.score) {
+          video = ytVideo;
+        }
       }
     } else {
       video = await this.searchSongSorted(track);
