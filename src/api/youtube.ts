@@ -248,7 +248,7 @@ export class YouTubeApiImpl implements YouTubeApi {
       try {
         tracks = await this.bing.searchYoutubeSong(track.title, track.poster, track.duration);
         if (tracks.length === 0) {
-          return undefined;
+          throw new Error(`No results from bing`);
         }
       } catch (e) {
         return await this.searchSongSorted(track);
