@@ -29,11 +29,7 @@ export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(
   environment.tokens.soundcloud.clientSecret,
   youtube
 );
-export const spotify: SpotifyApi = new SpotifyApiImpl(
-  environment.tokens.spotify.clientId,
-  environment.tokens.spotify.clientSecret,
-  youtube
-);
+export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
 
 export function getTrackStream(track: Track): Promise<StreamSource | undefined> {
   switch (track.src) {

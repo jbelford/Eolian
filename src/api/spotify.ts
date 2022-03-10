@@ -1,6 +1,5 @@
 import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { logger } from 'common/logger';
-import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
 import {
   RangeFactory,
@@ -21,23 +20,15 @@ import {
   TrackSource,
   YouTubeApi,
 } from './@types';
+import { SpotifyRequest } from './auth';
 
-const enum SPOTIFY_API_VERSIONS {
-  V1 = 'v1',
-}
-
-const SPOTIFY_API = 'https://api.spotify.com';
-const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
+const CLIENT_SPOTIFY_REQUEST = new SpotifyRequest();
 
 export class SpotifyApiImpl implements SpotifyApi {
 
-  private expiration = 0;
-  private accessToken?: string;
-
   constructor(
-    private readonly clientId: string,
-    private readonly clientSecret: string,
-    private readonly youtube: YouTubeApi
+    private readonly youtube: YouTubeApi,
+    private readonly req: SpotifyRequest = CLIENT_SPOTIFY_REQUEST
   ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
@@ -49,7 +40,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getUser(id: string): Promise<SpotifyUser> {
     try {
-      return await this.get<SpotifyUser>(`users/${id}`);
+      return await this.req.get<SpotifyUser>(`users/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify user: id: %s`, id);
       throw e;
@@ -58,7 +49,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getTrack(id: string): Promise<SpotifyTrack> {
     try {
-      return await this.get<SpotifyTrack>(`tracks/${id}`);
+      return await this.req.get<SpotifyTrack>(`tracks/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify track: id: %s`, id);
       throw e;
@@ -67,7 +58,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getPlaylist(id: string): Promise<SpotifyPlaylistTracks> {
     try {
-      return await this.get<SpotifyPlaylistTracks>(`playlists/${id}`);
+      return await this.req.get<SpotifyPlaylistTracks>(`playlists/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify playlist: id: %s`, id);
       throw e;
@@ -115,7 +106,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getAlbum(id: string): Promise<SpotifyAlbumFull> {
     try {
-      return await this.get<SpotifyAlbumFull>(`albums/${id}`);
+      return await this.req.get<SpotifyAlbumFull>(`albums/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify album: id: %s`, id);
       throw e;
@@ -137,7 +128,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getArtist(id: string): Promise<SpotifyArtist> {
     try {
-      return await this.get<SpotifyArtist>(`artists/${id}`);
+      return await this.req.get<SpotifyArtist>(`artists/${id}`);
     } catch (e) {
       logger.warn(`Failed to fetch Spotify artist: id: %s`, id);
       throw e;
@@ -146,7 +137,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getArtistTracks(id: string): Promise<SpotifyTrack[]> {
     try {
-      const response = await this.get<{ tracks: SpotifyTrack[] }>(`artists/${id}/top-tracks`, {
+      const response = await this.req.get<{ tracks: SpotifyTrack[] }>(`artists/${id}/top-tracks`, {
         country: 'US',
       });
       return response.tracks;
@@ -162,7 +153,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
 
     try {
-      const response = await this.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist> }>(
+      const response = await this.req.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist> }>(
         'search',
         { type: 'playlist', q: query, limit }
       );
@@ -175,7 +166,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async searchAlbums(query: string, limit = 5): Promise<SpotifyAlbum[]> {
     try {
-      const response = await this.get<{ albums: SpotifyPagingObject<SpotifyAlbum> }>('search', {
+      const response = await this.req.get<{ albums: SpotifyPagingObject<SpotifyAlbum> }>('search', {
         type: 'album',
         q: query,
         limit,
@@ -189,11 +180,14 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async searchArtists(query: string, limit = 5): Promise<SpotifyArtist[]> {
     try {
-      const response = await this.get<{ artists: SpotifyPagingObject<SpotifyArtist> }>('search', {
-        type: 'artist',
-        q: query,
-        limit,
-      });
+      const response = await this.req.get<{ artists: SpotifyPagingObject<SpotifyArtist> }>(
+        'search',
+        {
+          type: 'artist',
+          q: query,
+          limit,
+        }
+      );
       return response.artists.items;
     } catch (e) {
       logger.warn(`Failed to fetch Spotify artists: query: %s limit: %d`, query, limit);
@@ -244,51 +238,19 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  private async checkAndUpdateToken() {
-    if (Date.now() + 10000 >= this.expiration) {
-      const data = await this.getToken();
-      this.accessToken = data.access_token;
-      this.expiration = Date.now() + data.expires_in * 1000;
-    }
-  }
-
-  private async getToken(): Promise<{ access_token: string; expires_in: number }> {
-    logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
-    return await httpRequest(SPOTIFY_TOKEN, {
-      method: 'POST',
-      form: { grant_type: 'client_credentials' },
-      auth: { basic: { id: this.clientId, password: this.clientSecret } },
-      json: true,
-    });
-  }
-
-  private get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1): Promise<T> {
-    return this.getUrl(`${SPOTIFY_API}/${version}/${path}`, params);
-  }
-
-  private async getUrl<T>(url: string, params = {}): Promise<T> {
-    logger.info(`Spotify HTTP: %s - %s`, url, params);
-    await this.checkAndUpdateToken();
-    return (await httpRequest(url, {
-      params,
-      json: true,
-      auth: { bearer: this.accessToken },
-    })) as unknown as Promise<T>;
-  }
-
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {
     const limit = options?.limit ?? 50;
     const offset = options?.offset ?? 0;
     let data: SpotifyPagingObject<T> = options?.initial
       ? options.initial
-      : await this.get(path, { limit, offset });
+      : await this.req.get(path, { limit, offset });
     const total = options?.total ?? data.total;
 
     options?.progress?.init(total);
 
     let items = data.items;
     while (items.length < total) {
-      data = await this.get(path, { limit, offset: offset + items.length });
+      data = await this.req.get(path, { limit, offset: offset + items.length });
       items = items.concat(data.items);
       options?.progress?.update(items.length);
     }
