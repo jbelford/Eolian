@@ -48,6 +48,13 @@ export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<T>((_resolve, reject) => {
+    setTimeout(() => reject('timeout'), ms);
+  });
+  return Promise.race([promise, timeout]);
+}
+
 export function fuzzyMatch(
   query: string,
   list: string[]

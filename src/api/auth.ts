@@ -2,6 +2,7 @@ import { Closable } from 'common/@types';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { httpRequest, querystringify } from 'common/request';
+import { promiseTimeout } from 'common/util';
 import { randomUUID } from 'crypto';
 import { InMemoryCache } from 'data';
 import { EolianCache } from 'data/@types';
@@ -116,11 +117,11 @@ const SPOTIFY_SCOPES = [
 ].join(',');
 
 type SpotifyAuthCacheItem = {
-  resolve?: (resp: TokenResponseWithRefresh) => void;
-  reject?: (err?: any) => void;
+  resolve: (resp: TokenResponseWithRefresh) => void;
+  reject: (err?: any) => void;
 };
 
-const REDIRECT_URI = `http://${environment.baseUri}:${environment.port}/callback/spotify`;
+const REDIRECT_URI = `${environment.baseUri}:${environment.port}/callback/spotify`;
 
 export const enum SpotifyAuthErr {
   EXPIRED = 'expired',
@@ -128,15 +129,7 @@ export const enum SpotifyAuthErr {
 
 export class SpotifyAuth implements AuthService {
 
-  private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(
-    60,
-    false,
-    (key, value) => {
-      value.reject && value.reject(SpotifyAuthErr.EXPIRED);
-    },
-    undefined,
-    60
-  );
+  private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(60, false);
 
   authorize(): AuthResult {
     const state = randomUUID();
@@ -151,22 +144,20 @@ export class SpotifyAuth implements AuthService {
     const promise = new Promise<TokenResponseWithRefresh>((resolve, reject) => {
       this.cache.set(state, { resolve, reject });
     });
-    return { link, response: promise };
+    return { link, response: promiseTimeout(promise, 60000) };
   }
 
   async callback(data: AuthCallbackData): Promise<void> {
     const item = await this.cache.get(data.state);
     if (item) {
       if (data.err) {
-        item.reject && item.reject(data.err);
+        item.reject(data.err);
       } else if (data.code) {
         const resp = await this.getToken(data.code);
-        item.resolve && item.resolve(resp);
+        item.resolve(resp);
       } else {
-        item.reject && item.reject('Missing authorization code!');
+        item.reject('Missing authorization code!');
       }
-      item.reject = undefined;
-      item.resolve = undefined;
       await this.cache.del(data.state);
     }
   }
