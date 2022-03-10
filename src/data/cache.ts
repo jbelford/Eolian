@@ -9,11 +9,12 @@ export class InMemoryCache<V> implements EolianCache<V> {
     private readonly ttl: number,
     clone = true,
     private readonly onExpired?: (key: string, value: V) => void,
-    private readonly onClose?: (value: V) => Promise<void>
+    private readonly onClose?: (value: V) => Promise<void>,
+    checkPeriod = 300
   ) {
     this.cache = new NodeCache({
       stdTTL: this.ttl,
-      checkperiod: 300,
+      checkperiod: checkPeriod,
       useClones: clone,
       deleteOnExpire: true,
     });

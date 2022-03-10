@@ -162,7 +162,7 @@ export class SpotifyAuth implements AuthService, Closable {
 
   private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(60, false, (key, value) => {
     value.reject(SpotifyAuthErr.EXPIRED);
-  });
+  }, undefined, 60);
 
   authorize(): AuthResult {
     const state = randomUUID();
