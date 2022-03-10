@@ -1,19 +1,24 @@
-import { UserPermission } from 'common/constants';
+import { AuthorizationCodeProvider, AuthProviders } from 'api';
+import { AuthorizationProvider, TokenProvider } from 'api/@types';
+import { Color, UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
-import { ContextUser, ContextVoiceChannel, ServerDetails } from './@types';
+import { ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
+import { mapDiscordEmbed } from './message';
 import { DiscordVoiceChannel } from './voice';
 
 export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
   private _permission: UserPermission;
+  private spotifyAuthProvider?: TokenProvider;
 
   constructor(
     private readonly user: User,
     private readonly users: UsersDb,
     permission: UserPermission,
+    private readonly auth: AuthProviders,
     private readonly guildUser?: GuildMember
   ) {
     this._permission = permission;
@@ -76,6 +81,37 @@ export class DiscordUser implements ContextUser {
     return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
 
+  async getSpotifyAuth(): Promise<TokenProvider> {
+    if (!this.spotifyAuthProvider) {
+      const provider: AuthorizationProvider = {
+        authorize: async () => {
+          const result = this.auth.spotify.authorize();
+          const embedMessage: EmbedMessage = {
+            url: result.link,
+            title: 'Authorize Spotify',
+            description:
+              'Please click the link to authenticate with Spotify in order to complete your request',
+            color: Color.Spotify,
+            footer: {
+              text: 'This link will expire in 60 seconds.',
+            },
+          };
+          await this.user.send({ embeds: [mapDiscordEmbed(embedMessage)] });
+          const response = await result.response;
+
+          await this.setSpotifyToken(response.refresh_token);
+
+          return response;
+        },
+      };
+
+      const user = await this.get();
+
+      this.spotifyAuthProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
+    }
+    return this.spotifyAuthProvider;
+  }
+
   clearData(): Promise<boolean> {
     if (this.dto) {
       this.dto = undefined;
@@ -120,6 +156,17 @@ export class DiscordUser implements ContextUser {
     } else {
       await this.users.removeSoundCloud(this.id);
     }
+  }
+
+  private async setSpotifyToken(token: string): Promise<void> {
+    if (this.dto) {
+      if (this.dto.tokens) {
+        this.dto.tokens.spotify = token;
+      } else {
+        this.dto.tokens = { spotify: token };
+      }
+    }
+    await this.users.setSpotifyRefreshToken(this.id, token);
   }
 
 }

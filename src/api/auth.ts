@@ -5,38 +5,15 @@ import { httpRequest, querystringify } from 'common/request';
 import { randomUUID } from 'crypto';
 import { InMemoryCache } from 'data';
 import { EolianCache } from 'data/@types';
-
-export type TokenResponse = {
-  access_token: string;
-  scope: string;
-  expires_in: number;
-};
-
-export type TokenResponseWithRefresh = TokenResponse & {
-  refresh_token: string;
-};
-
-export type AuthResult = {
-  /**
-   * The link which the user should be directed to in order to provide authorization
-   */
-  link: string;
-  /**
-   * An awaitable callback which will return a token once the user has authorized
-   */
-  response: Promise<TokenResponseWithRefresh>;
-};
-
-export type AuthCallbackData = {
-  err?: string;
-  code?: string;
-  state: string;
-};
-
-export interface AuthService {
-  authorize(): AuthResult;
-  callback(data: AuthCallbackData): void;
-}
+import {
+  TokenResponse,
+  AuthorizationProvider,
+  TokenResponseWithRefresh,
+  AuthService,
+  AuthResult,
+  AuthCallbackData,
+  TokenProvider,
+} from './@types';
 
 const enum SPOTIFY_API_VERSIONS {
   V1 = 'v1',
@@ -44,10 +21,6 @@ const enum SPOTIFY_API_VERSIONS {
 const SPOTIFY_API = 'https://api.spotify.com';
 const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
 const SPOTIFY_AUTHORIZE = 'https://accounts.spotify.com/authorize';
-
-export interface TokenProvider {
-  getToken(): Promise<TokenResponse>;
-}
 
 export class ClientCredentialsProvider implements TokenProvider {
 
@@ -68,17 +41,12 @@ export class ClientCredentialsProvider implements TokenProvider {
 
 }
 
-/**
- * Needs to be implemented by user
- */
-export interface AuthorizationProvider {
-  authorize(): Promise<TokenResponseWithRefresh>;
-}
-
 export class AuthorizationCodeProvider implements TokenProvider {
 
-  constructor(private readonly authorization: AuthorizationProvider,
-    private refreshToken?: string) {}
+  constructor(
+    private readonly authorization: AuthorizationProvider,
+    private refreshToken?: string
+  ) {}
 
   async getToken(): Promise<TokenResponse> {
     if (!this.refreshToken) {
@@ -144,25 +112,31 @@ const SPOTIFY_SCOPES = [
   'user-top-read',
   'user-read-recently-played',
   'playlist-read-collaborative',
-  'playlist-read-private'
+  'playlist-read-private',
 ].join(',');
 
 type SpotifyAuthCacheItem = {
-  resolve: (resp: TokenResponseWithRefresh) => void;
-  reject: (err?: any) => void;
+  resolve?: (resp: TokenResponseWithRefresh) => void;
+  reject?: (err?: any) => void;
 };
 
-const REDIRECT_URI = `https://${environment.baseUri}:${environment.port}/callback/spotify`;
+const REDIRECT_URI = `http://${environment.baseUri}:${environment.port}/callback/spotify`;
 
 export const enum SpotifyAuthErr {
-  EXPIRED = 'expired'
+  EXPIRED = 'expired',
 }
 
-export class SpotifyAuth implements AuthService, Closable {
+export class SpotifyAuth implements AuthService {
 
-  private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(60, false, (key, value) => {
-    value.reject(SpotifyAuthErr.EXPIRED);
-  }, undefined, 60);
+  private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(
+    60,
+    false,
+    (key, value) => {
+      value.reject && value.reject(SpotifyAuthErr.EXPIRED);
+    },
+    undefined,
+    60
+  );
 
   authorize(): AuthResult {
     const state = randomUUID();
@@ -183,15 +157,17 @@ export class SpotifyAuth implements AuthService, Closable {
   async callback(data: AuthCallbackData): Promise<void> {
     const item = await this.cache.get(data.state);
     if (item) {
-      await this.cache.del(data.state);
       if (data.err) {
-        item.reject(data.err);
+        item.reject && item.reject(data.err);
       } else if (data.code) {
         const resp = await this.getToken(data.code);
-        item.resolve(resp);
+        item.resolve && item.resolve(resp);
       } else {
-        item.reject('Missing authorization code!');
+        item.reject && item.reject('Missing authorization code!');
       }
+      item.reject = undefined;
+      item.resolve = undefined;
+      await this.cache.del(data.state);
     }
   }
 
@@ -212,6 +188,16 @@ export class SpotifyAuth implements AuthService, Closable {
       },
       json: true,
     });
+  }
+
+}
+
+export class AuthProviders implements Closable {
+
+  readonly spotify: AuthService = new SpotifyAuth();
+
+  async close(): Promise<void> {
+    await Promise.allSettled([this.spotify.close()]);
   }
 
 }

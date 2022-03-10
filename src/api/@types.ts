@@ -1,4 +1,4 @@
-import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
+import { AbsRangeArgument, Closable, ProgressUpdater } from 'common/@types';
 import { Color } from 'common/constants';
 import { Readable } from 'stream';
 
@@ -282,4 +282,47 @@ export interface BingVideo {
   contentUrl: string;
   publisher: BingVideoPublisher[];
   creator: BingVideoPublisher;
+}
+
+export type TokenResponse = {
+  access_token: string;
+  scope: string;
+  expires_in: number;
+};
+
+export type TokenResponseWithRefresh = TokenResponse & {
+  refresh_token: string;
+};
+
+export interface TokenProvider {
+  getToken(): Promise<TokenResponse>;
+}
+
+export type AuthResult = {
+  /**
+   * The link which the user should be directed to in order to provide authorization
+   */
+  link: string;
+  /**
+   * An awaitable callback which will return a token once the user has authorized
+   */
+  response: Promise<TokenResponseWithRefresh>;
+};
+
+export type AuthCallbackData = {
+  err?: string;
+  code?: string;
+  state: string;
+};
+
+export interface AuthService extends Closable {
+  authorize(): AuthResult;
+  callback(data: AuthCallbackData): void;
+}
+
+/**
+ * Needs to be implemented by user
+ */
+export interface AuthorizationProvider {
+  authorize(): Promise<TokenResponseWithRefresh>;
 }

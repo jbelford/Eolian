@@ -1,4 +1,4 @@
-import { SpotifyAuth } from 'api/auth';
+import { AuthProviders } from 'api';
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { LOGGER_HEADER } from 'common/constants';
@@ -14,13 +14,13 @@ process.stdout.write(LOGGER_HEADER);
 
 (async () => {
   try {
-    const spotifyAuth = new SpotifyAuth();
+    const auth = new AuthProviders();
     const db: AppDatabase = await createDatabase();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
-    const bot: EolianBot = new DiscordEolianBot({ db, parser });
-    const server = new WebServer(environment.port, spotifyAuth);
+    const bot: EolianBot = new DiscordEolianBot({ db, parser, auth });
+    const server = new WebServer(environment.port, auth);
 
-    cleanupOnExit([spotifyAuth, db, bot, server]);
+    cleanupOnExit([auth, db, bot, server]);
 
     await bot.start();
     server.start();

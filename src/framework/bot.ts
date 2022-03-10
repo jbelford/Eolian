@@ -1,3 +1,4 @@
+import { AuthProviders } from 'api';
 import { CommandParsingStrategy } from 'commands/@types';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -68,6 +69,7 @@ const USER_COMMAND_LOCK_TIMEOUT = 60;
 export interface DiscordEolianBotArgs {
   db: AppDatabase;
   parser: CommandParsingStrategy;
+  auth: AuthProviders;
 }
 
 const DISCORD_CLIENT_OPTIONS: ClientOptions = {
@@ -85,11 +87,13 @@ export class DiscordEolianBot implements EolianBot {
   private invite?: string;
 
   private readonly db: AppDatabase;
+  private readonly auth: AuthProviders;
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
-  constructor({ parser, db }: DiscordEolianBotArgs) {
+  constructor({ parser, db, auth }: DiscordEolianBotArgs) {
     this.parser = parser;
     this.db = db;
+    this.auth = auth;
 
     this.client = new Client(DISCORD_CLIENT_OPTIONS);
 
@@ -204,7 +208,8 @@ export class DiscordEolianBot implements EolianBot {
       const contextInteraction = new DiscordButtonInteraction(
         interaction,
         this.registry,
-        this.db.users
+        this.db.users,
+        this.auth
       );
       if (!embedButton.userId || embedButton.userId === interaction.user.id) {
         let state: ServerState | undefined;
@@ -243,8 +248,13 @@ export class DiscordEolianBot implements EolianBot {
       try {
         await this.lockManager.lock(interaction.user.id);
         const contextInteraction = interaction.isCommand()
-          ? new DiscordCommandInteraction(interaction, this.registry, this.db.users)
-          : new DiscordMessageCommandInteraction(interaction, this.registry, this.db.users);
+          ? new DiscordCommandInteraction(interaction, this.registry, this.db.users, this.auth)
+          : new DiscordMessageCommandInteraction(
+              interaction,
+              this.registry,
+              this.db.users,
+              this.auth
+            );
 
         const noDefault = await this.onBotInvoked(
           contextInteraction,
@@ -277,7 +287,8 @@ export class DiscordEolianBot implements EolianBot {
               message,
               this.parser,
               this.registry,
-              this.db.users
+              this.db.users,
+              this.auth
             );
             await this.onBotInvoked(interaction, message.guild ?? undefined);
           } finally {

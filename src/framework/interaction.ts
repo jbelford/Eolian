@@ -1,3 +1,4 @@
+import { AuthProviders } from 'api';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
 import {
@@ -75,7 +76,8 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
   constructor(
     protected readonly interaction: T,
     protected readonly registry: ButtonRegistry,
-    private readonly users: UsersDb
+    private readonly users: UsersDb,
+    private readonly auth: AuthProviders
   ) {}
 
   get sendable(): boolean {
@@ -93,10 +95,11 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
           this.interaction.user,
           this.users,
           permission,
+          this.auth,
           this.interaction.member as GuildMember
         );
       } else {
-        this._user = new DiscordUser(this.interaction.user, this.users, permission);
+        this._user = new DiscordUser(this.interaction.user, this.users, permission, this.auth);
       }
     }
     return this._user;
@@ -159,8 +162,13 @@ export class DiscordButtonInteraction
 
   private _message?: ContextMessage;
 
-  constructor(interaction: ButtonInteraction, registry: ButtonRegistry, users: UsersDb) {
-    super(interaction, registry, users);
+  constructor(
+    interaction: ButtonInteraction,
+    registry: ButtonRegistry,
+    users: UsersDb,
+    auth: AuthProviders
+  ) {
+    super(interaction, registry, users, auth);
   }
 
   get message(): ContextMessage {
@@ -187,8 +195,13 @@ export class DiscordCommandInteraction
 
   readonly isSlash = true;
 
-  constructor(interaction: CommandInteraction, registry: ButtonRegistry, users: UsersDb) {
-    super(interaction, registry, users);
+  constructor(
+    interaction: CommandInteraction,
+    registry: ButtonRegistry,
+    users: UsersDb,
+    auth: AuthProviders
+  ) {
+    super(interaction, registry, users, auth);
   }
 
   get content(): string {
@@ -225,9 +238,10 @@ export class DiscordMessageCommandInteraction
   constructor(
     interaction: MessageContextMenuInteraction,
     registry: ButtonRegistry,
-    users: UsersDb
+    users: UsersDb,
+    auth: AuthProviders
   ) {
-    super(interaction, registry, users);
+    super(interaction, registry, users, auth);
   }
 
   private get message(): Message {
@@ -277,7 +291,8 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     private readonly discordMessage: Message,
     private readonly parser: CommandParsingStrategy,
     private readonly registry: ButtonRegistry,
-    private readonly users: UsersDb
+    private readonly users: UsersDb,
+    private readonly auth: AuthProviders
   ) {}
 
   get sendable(): boolean {
@@ -298,6 +313,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
         this.discordMessage.author,
         this.users,
         permission,
+        this.auth,
         this.discordMessage.member ?? undefined
       );
     }
