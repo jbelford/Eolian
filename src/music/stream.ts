@@ -51,7 +51,12 @@ export class SongStream extends EventEmitter implements Closable {
     this.output.setVolume(v);
   }
 
-  async setStreamTrack(track: Track, nightcore = false, retry = false, seek?: number): Promise<boolean> {
+  async setStreamTrack(
+    track: Track,
+    nightcore = false,
+    retry = false,
+    seek?: number
+  ): Promise<boolean> {
     let source: StreamSource | undefined;
     if (!this.source) {
       source = await getTrackStream(track);

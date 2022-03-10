@@ -73,7 +73,10 @@ export class DiscordSender implements ContextSendable {
   ): Promise<ContextMessage | undefined> {
     if (this.sendable || options?.force) {
       try {
-        const discordMessage = await this.sender.send({ content: clampLength(message, DISCORD_CONTENT_MAX) }, options?.ephemeral);
+        const discordMessage = await this.sender.send(
+          { content: clampLength(message, DISCORD_CONTENT_MAX) },
+          options?.ephemeral
+        );
         return new DiscordMessage(discordMessage);
       } catch (e) {
         logger.warn('Failed to send message: %s', e);

@@ -303,7 +303,9 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   };
 
   private onTrackFailureHandler = async (track: Track) => {
-    await this.channel?.send(`❌ I could not find stream for **${track.title}** by **${track.poster}**. Skipping.`);
+    await this.channel?.send(
+      `❌ I could not find stream for **${track.title}** by **${track.poster}**. Skipping.`
+    );
   };
 
   // Tries to ensure that button presses during an operation will be ignored
