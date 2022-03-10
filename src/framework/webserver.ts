@@ -1,25 +1,30 @@
 import { Closable } from 'common/@types';
-import { createServer, Server } from 'http';
+import express from 'express';
+import { logger } from 'common/logger';
+import { Server } from 'http';
+
+const PORT = 8080;
 
 export class WebServer implements Closable {
 
-  private readonly server: Server;
+  private readonly app = express();
+  private server: Server | undefined;
 
   constructor() {
-    this.server = createServer((req, res) => {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.write('Eolian Bot');
-      res.end();
+    this.app.get('/', (req, res) => {
+      res.send('Eolian Bot');
     });
   }
 
   start(): void {
-    this.server.listen(8080);
+    this.server = this.app.listen(PORT, () => {
+      logger.info('App listening on port %d', PORT);
+    });
   }
 
-  close(): Promise<void> {
+  async close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.server.listening) {
+      if (this.server?.listening) {
         this.server.close(err => (err ? reject(err) : resolve()));
       } else {
         resolve();
