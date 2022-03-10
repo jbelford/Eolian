@@ -1,6 +1,7 @@
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { LOGGER_HEADER } from 'common/constants';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { cleanupOnExit } from 'common/util';
 import { createDatabase } from 'data';
@@ -15,7 +16,7 @@ process.stdout.write(LOGGER_HEADER);
     const db: AppDatabase = await createDatabase();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
     const bot: EolianBot = new DiscordEolianBot({ db, parser });
-    const server = new WebServer();
+    const server = new WebServer(environment.port);
 
     cleanupOnExit([db, bot, server]);
 

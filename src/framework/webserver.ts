@@ -3,22 +3,20 @@ import express from 'express';
 import { logger } from 'common/logger';
 import { Server } from 'http';
 
-const PORT = 8080;
-
 export class WebServer implements Closable {
 
   private readonly app = express();
   private server: Server | undefined;
 
-  constructor() {
+  constructor(private readonly port: number) {
     this.app.get('/', (req, res) => {
       res.send('Eolian Bot');
     });
   }
 
   start(): void {
-    this.server = this.app.listen(PORT, () => {
-      logger.info('App listening on port %d', PORT);
+    this.server = this.app.listen(this.port, () => {
+      logger.info('App listening on port %d', this.port);
     });
   }
 

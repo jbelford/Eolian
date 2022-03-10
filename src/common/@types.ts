@@ -12,6 +12,7 @@ export interface AppEnv {
   cmdToken: string;
   owners: string[];
   ownerGuild?: string;
+  port: number;
   tokens: {
     discord: {
       clientId?: string;

@@ -48,6 +48,7 @@ export const environment: AppEnv = {
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
   ownerGuild: getEnvOpt('OWNER_GUILD'),
+  port: getNumberEnv('PORT', 8080) || 8080,
   tokens: {
     discord: {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),
