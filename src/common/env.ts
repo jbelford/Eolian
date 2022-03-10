@@ -49,6 +49,7 @@ export const environment: AppEnv = {
   owners: getArrayEnv('OWNERS'),
   ownerGuild: getEnvOpt('OWNER_GUILD'),
   port: getNumberEnv('PORT', 8080) || 8080,
+  baseUri: getEnv('BASE_URI', 'localhost'),
   tokens: {
     discord: {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),

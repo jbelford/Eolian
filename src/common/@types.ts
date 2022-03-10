@@ -13,6 +13,7 @@ export interface AppEnv {
   owners: string[];
   ownerGuild?: string;
   port: number;
+  baseUri: string;
   tokens: {
     discord: {
       clientId?: string;
