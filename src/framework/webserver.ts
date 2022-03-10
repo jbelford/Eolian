@@ -13,13 +13,17 @@ export class WebServer implements Closable {
     this.app.get('/', (req, res) => {
       res.send('Eolian Bot');
     });
-    this.app.get('/callback/spotify', (req, res) => {
-      this.authProviders.spotify.callback({
+    this.app.get('/callback/spotify', async (req, res) => {
+      const success = await this.authProviders.spotify.callback({
         state: req.query.state as string,
         code: req.query.code as string,
         err: req.query.error as string,
       });
-      res.send('Authenticated! You may close this window.');
+      if (success) {
+        res.send('Authenticated! You may close this window.');
+      } else {
+        res.send('You have authorized this app! However, this is an old authentication link. Try again with a new link.');
+      }
     });
   }
 

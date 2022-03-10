@@ -147,7 +147,8 @@ export class SpotifyAuth implements AuthService {
     return { link, response: promiseTimeout(promise, 60000) };
   }
 
-  async callback(data: AuthCallbackData): Promise<void> {
+  async callback(data: AuthCallbackData): Promise<boolean> {
+    let success = false;
     const item = await this.cache.get(data.state);
     if (item) {
       if (data.err) {
@@ -155,11 +156,13 @@ export class SpotifyAuth implements AuthService {
       } else if (data.code) {
         const resp = await this.getToken(data.code);
         item.resolve(resp);
+        success = true;
       } else {
         item.reject('Missing authorization code!');
       }
       await this.cache.del(data.state);
     }
+    return success;
   }
 
   async close(): Promise<void> {

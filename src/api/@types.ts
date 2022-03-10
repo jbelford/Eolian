@@ -317,7 +317,7 @@ export type AuthCallbackData = {
 
 export interface AuthService extends Closable {
   authorize(): AuthResult;
-  callback(data: AuthCallbackData): void;
+  callback(data: AuthCallbackData): Promise<boolean>;
 }
 
 /**
