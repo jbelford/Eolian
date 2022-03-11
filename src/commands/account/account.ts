@@ -1,8 +1,11 @@
-import { soundcloud, spotify } from 'api';
+import { soundcloud, spotify, youtube } from 'api';
+import { SpotifyUser } from 'api/@types';
+import { SpotifyApiImpl } from 'api/spotify';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { UserPermission } from 'common/constants';
+import { environment } from 'common/env';
 import { createUserDetailsEmbed } from 'embed';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -16,9 +19,17 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     const defer = context.interaction.defer();
 
     const user = await context.interaction.user.get();
-    const spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
-    const soundCloudAccount
-      = user && user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
+    let spotifyAccount: SpotifyUser | undefined;
+    if (environment.tokens.spotify.useOAuth) {
+      if (user.tokens?.spotify) {
+        const request = await context.interaction.user.getSpotifyRequest();
+        const client = new SpotifyApiImpl(youtube, request);
+        spotifyAccount = await client.getMe();
+      }
+    } else {
+      spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
+    }
+    const soundCloudAccount = user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
 
     const message = createUserDetailsEmbed(
       context.interaction.user,

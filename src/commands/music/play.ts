@@ -37,7 +37,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
       { ephemeral: false }
     );
 
-    fetcher = getSourceFetcher(identifier, options, context.interaction);
+    fetcher = await getSourceFetcher(identifier, context, options);
   } else if (options.SEARCH || options.URL) {
     await context.interaction.defer(false);
     const resource = await getSourceResolver(context, options).resolve();

@@ -1,6 +1,5 @@
-import { CommandOptions } from 'commands/@types';
-import { ResourceType } from 'data/@types';
-import { ContextSendable } from 'framework/@types';
+import { CommandContext, CommandOptions } from 'commands/@types';
+import { Identifier, ResourceType } from 'data/@types';
 import { SourceFetcher } from 'resolvers/@types';
 import { SoundCloudArtistFetcher } from './artist';
 import { SoundCloudFavoritesFetcher } from './likes';
@@ -14,17 +13,17 @@ export { SoundCloudSongResolver } from './song';
 export { SoundCloudUrlResolver } from './url';
 
 export function getSoundCloudSourceFetcher(
-  id: number,
-  type: ResourceType,
+  identifier: Identifier,
+  context: CommandContext,
   params: CommandOptions,
-  sendable: ContextSendable
 ): SourceFetcher {
-  switch (type) {
+  const id = +identifier.id;
+  switch (identifier.type) {
     case ResourceType.Tracks:
     case ResourceType.Artist:
       return new SoundCloudArtistFetcher(id);
     case ResourceType.Likes:
-      return new SoundCloudFavoritesFetcher(id, params, sendable);
+      return new SoundCloudFavoritesFetcher(id, params, context.interaction);
     case ResourceType.Playlist:
       return new SoundCloudPlaylistFetcher(id);
     case ResourceType.Song:

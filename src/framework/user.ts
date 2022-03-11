@@ -1,6 +1,6 @@
-import { AuthorizationCodeProvider, AuthProviders } from 'api';
-import { AuthorizationProvider, TokenProvider } from 'api/@types';
-import { Color, UserPermission } from 'common/constants';
+import { AuthorizationCodeProvider, AuthProviders, SOURCE_DETAILS, SpotifyRequest } from 'api';
+import { AuthorizationProvider, TrackSource } from 'api/@types';
+import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
@@ -12,7 +12,7 @@ export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
   private _permission: UserPermission;
-  private spotifyAuthProvider?: TokenProvider;
+  private spotifyRequest?: SpotifyRequest;
 
   constructor(
     private readonly user: User,
@@ -81,35 +81,29 @@ export class DiscordUser implements ContextUser {
     return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
 
-  async getSpotifyAuth(): Promise<TokenProvider> {
-    if (!this.spotifyAuthProvider) {
-      const provider: AuthorizationProvider = {
-        authorize: async () => {
-          const result = this.auth.spotify.authorize();
-          const embedMessage: EmbedMessage = {
-            url: result.link,
-            title: 'Authorize Spotify',
-            description:
-              'Please click the link to authenticate with Spotify in order to complete your request',
-            color: Color.Spotify,
-            footer: {
-              text: 'This link will expire in 60 seconds.',
-            },
-          };
-          await this.user.send({ embeds: [mapDiscordEmbed(embedMessage)] });
-          const response = await result.response;
-
-          await this.setSpotifyToken(response.refresh_token);
-
-          return response;
-        },
-      };
-
+  async getSpotifyRequest(): Promise<SpotifyRequest> {
+    if (!this.spotifyRequest) {
+      const provider = this.createSpotifyAuthProvider();
       const user = await this.get();
-
-      this.spotifyAuthProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
+      const tokenProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
+      this.spotifyRequest = new SpotifyRequest(tokenProvider);
     }
-    return this.spotifyAuthProvider;
+    return this.spotifyRequest;
+  }
+
+  private createSpotifyAuthProvider(): AuthorizationProvider {
+    return {
+      authorize: async () => {
+        const result = this.auth.spotify.authorize();
+        const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
+        await this.user.send({ embeds: [mapDiscordEmbed(embedMessage)] });
+        const response = await result.response;
+
+        await this.setSpotifyToken(response.refresh_token);
+
+        return response;
+      },
+    };
   }
 
   clearData(): Promise<boolean> {
@@ -169,6 +163,19 @@ export class DiscordUser implements ContextUser {
     await this.users.setSpotifyRefreshToken(this.id, token);
   }
 
+}
+
+function createSpotifyAuthEmbed(link: string): EmbedMessage {
+  return {
+    url: link,
+    title: 'Authorize Spotify',
+    description: 'Please click the link to authenticate with Spotify in order to complete your request',
+    color: SOURCE_DETAILS[TrackSource.Spotify].color,
+    thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
+    footer: {
+      text: 'This link will expire in 60 seconds.',
+    },
+  };
 }
 
 export function getPermissionLevel(

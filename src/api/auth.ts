@@ -89,8 +89,8 @@ export class SpotifyRequest {
   }
 
   private async getUrl<T>(url: string, params = {}): Promise<T> {
-    logger.info(`Spotify HTTP: %s - %s`, url, params);
     await this.checkAndUpdateToken();
+    logger.info(`Spotify HTTP: %s - %s`, url, params);
     return (await httpRequest(url, {
       params,
       json: true,

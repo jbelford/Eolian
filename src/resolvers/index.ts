@@ -2,7 +2,6 @@ import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { Identifier, ResourceType } from 'data/@types';
-import { ContextSendable } from 'framework/@types';
 import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
 import {
   getSoundCloudSourceFetcher,
@@ -132,18 +131,18 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
   return params.URL ? getBySource(context, params) : getByQuery(context, params);
 }
 
-export function getSourceFetcher(
+export async function getSourceFetcher(
   identifier: Identifier,
+  context: CommandContext,
   params: CommandOptions,
-  sendable: ContextSendable
-): SourceFetcher {
+): Promise<SourceFetcher> {
   switch (identifier.src) {
     case TrackSource.SoundCloud:
-      return getSoundCloudSourceFetcher(+identifier.id, identifier.type, params, sendable);
+      return getSoundCloudSourceFetcher(identifier, context, params);
     case TrackSource.YouTube:
-      return getYouTubeSourceFetcher(identifier.id, identifier.type, params, sendable);
+      return getYouTubeSourceFetcher(identifier, context, params);
     case TrackSource.Spotify:
-      return getSpotifySourceFetcher(identifier.id, identifier.type, params, sendable);
+      return getSpotifySourceFetcher(identifier, context, params);
     default:
       return UNKNOWN_FETCHER;
   }

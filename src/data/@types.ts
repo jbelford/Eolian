@@ -74,6 +74,7 @@ export interface Identifier {
   src: TrackSource;
   id: string;
   url: string;
+  auth?: boolean;
 }
 
 export const enum ResourceType {

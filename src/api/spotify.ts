@@ -38,6 +38,15 @@ export class SpotifyApiImpl implements SpotifyApi {
     return { type: regArr[2] as SpotifyResourceType, id: regArr[3] };
   }
 
+  async getMe(): Promise<SpotifyUser> {
+    try {
+      return await this.req.get<SpotifyUser>(`me`);
+    } catch (e) {
+      logger.warn(`Failed to fetch current Spotify user`);
+      throw e;
+    }
+  }
+
   async getUser(id: string): Promise<SpotifyUser> {
     try {
       return await this.req.get<SpotifyUser>(`users/${id}`);
@@ -149,7 +158,7 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async searchPlaylists(query: string, limit = 5, userId?: string): Promise<SpotifyPlaylist[]> {
     if (userId) {
-      return this.searchUserPlaylists(query, userId, limit);
+      return this.searchUserPlaylists(`users/${userId}`, query, limit);
     }
 
     try {
@@ -159,7 +168,29 @@ export class SpotifyApiImpl implements SpotifyApi {
       );
       return response.playlists.items;
     } catch (e) {
-      logger.warn(`Failed to search Spotify playlists: query: %s userId: %s`, query, userId);
+      logger.warn(`Failed to search Spotify playlists: query: %s`, query);
+      throw e;
+    }
+  }
+
+  searchMyPlaylists(query: string, limit = 5): Promise<SpotifyPlaylist[]> {
+    return this.searchUserPlaylists('me', query, limit);
+  }
+
+  private async searchUserPlaylists(
+    resource: string,
+    query: string,
+    limit = 5,
+  ): Promise<SpotifyPlaylist[]> {
+    try {
+      const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`${resource}/playlists`);
+      const results = await fuzzyMatch(
+        query,
+        playlists.map(playlist => playlist.name)
+      );
+      return results.slice(0, limit).map(result => playlists[result.key]);
+    } catch (e) {
+      logger.warn(`Failed to fetch Spotify user playlists: query: %s resource: %s`, query, resource);
       throw e;
     }
   }
@@ -218,24 +249,6 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
 
     return this.youtube.searchStream(trackCopy);
-  }
-
-  private async searchUserPlaylists(
-    query: string,
-    userId: string,
-    limit = 5
-  ): Promise<SpotifyPlaylist[]> {
-    try {
-      const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`users/${userId}/playlists`);
-      const results = await fuzzyMatch(
-        query,
-        playlists.map(playlist => playlist.name)
-      );
-      return results.slice(0, limit).map(result => playlists[result.key]);
-    } catch (e) {
-      logger.warn(`Failed to fetch Spotify user playlists: query: %s userId: %s`, query, userId);
-      throw e;
-    }
   }
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {

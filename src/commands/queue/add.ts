@@ -53,7 +53,7 @@ async function executeAdd(context: CommandContext, options: CommandOptions): Pro
       { ephemeral: false }
     );
 
-    fetcher = getSourceFetcher(identifier, options, context.interaction);
+    fetcher = await getSourceFetcher(identifier, context, options);
   } else {
     await context.interaction.defer(false);
     const resource = await getSourceResolver(context, options).resolve();

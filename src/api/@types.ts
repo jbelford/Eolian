@@ -70,6 +70,7 @@ export interface SoundCloudPaginatedResult<T> {
 
 export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined;
+  getMe(): Promise<SpotifyUser>;
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
@@ -83,6 +84,7 @@ export interface SpotifyApi extends StreamFetcher {
   getArtist(id: string): Promise<SpotifyArtist>;
   getArtistTracks(id: string): Promise<SpotifyTrack[]>;
   searchPlaylists(query: string, limit?: number, userId?: string): Promise<SpotifyPlaylist[]>;
+  searchMyPlaylists(query: string, limit?: number): Promise<SpotifyPlaylist[]>
   searchAlbums(query: string, limit?: number): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }

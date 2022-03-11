@@ -1,4 +1,5 @@
-import { TokenProvider, Track } from 'api/@types';
+import { SpotifyRequest } from 'api';
+import { Track } from 'api/@types';
 import { ParsedCommand, SyntaxType } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { UserPermission } from 'common/constants';
@@ -116,7 +117,7 @@ export interface ContextUser {
   send(message: string): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
-  getSpotifyAuth(): Promise<TokenProvider>;
+  getSpotifyRequest(): Promise<SpotifyRequest>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string): Promise<boolean>;

@@ -37,6 +37,7 @@ export interface AppEnv {
     spotify: {
       clientId: string;
       clientSecret: string;
+      useOAuth: boolean;
     };
   };
   mongo: {
