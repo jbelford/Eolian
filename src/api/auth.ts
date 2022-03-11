@@ -55,7 +55,6 @@ export class AuthorizationCodeProvider implements TokenProvider {
       this.refreshToken = resp.refresh_token;
       return resp;
     } else {
-      logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
       return await this.refresh(this.refreshToken);
     }
   }
