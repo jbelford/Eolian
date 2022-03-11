@@ -180,7 +180,7 @@ export class SpotifyApiImpl implements SpotifyApi {
   private async searchUserPlaylists(
     resource: string,
     query: string,
-    limit = 5,
+    limit = 5
   ): Promise<SpotifyPlaylist[]> {
     try {
       const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`${resource}/playlists`);
@@ -190,7 +190,11 @@ export class SpotifyApiImpl implements SpotifyApi {
       );
       return results.slice(0, limit).map(result => playlists[result.key]);
     } catch (e) {
-      logger.warn(`Failed to fetch Spotify user playlists: query: %s resource: %s`, query, resource);
+      logger.warn(
+        `Failed to fetch Spotify user playlists: query: %s resource: %s`,
+        query,
+        resource
+      );
       throw e;
     }
   }

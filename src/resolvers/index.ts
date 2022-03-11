@@ -134,7 +134,7 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
 export async function getSourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions,
+  params: CommandOptions
 ): Promise<SourceFetcher> {
   switch (identifier.src) {
     case TrackSource.SoundCloud:

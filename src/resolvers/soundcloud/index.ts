@@ -15,7 +15,7 @@ export { SoundCloudUrlResolver } from './url';
 export function getSoundCloudSourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions,
+  params: CommandOptions
 ): SourceFetcher {
   const id = +identifier.id;
   switch (identifier.type) {

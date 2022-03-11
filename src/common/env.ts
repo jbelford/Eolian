@@ -70,7 +70,7 @@ export const environment: AppEnv = {
     spotify: {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
-      useOAuth: getEnvOpt('SPOTIFY_OAUTH') === 'true'
+      useOAuth: getEnvOpt('SPOTIFY_OAUTH') === 'true',
     },
   },
   mongo: {

@@ -51,7 +51,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
         this.client,
         playlists[0],
         this.params,
-        this.context.interaction.channel,
+        this.context.interaction.channel
       );
     }
   }
@@ -103,7 +103,7 @@ export function createSpotifyPlaylist(
       src: TrackSource.Spotify,
       type: ResourceType.Playlist,
       url: playlist.external_urls.spotify,
-      auth: spotify !== client
+      auth: spotify !== client,
     },
     fetcher: new SpotifyPlaylistFetcher(playlist.id, params, sendable, client, playlist),
     selectionMessage: message,

@@ -169,7 +169,8 @@ function createSpotifyAuthEmbed(link: string): EmbedMessage {
   return {
     url: link,
     title: 'Authorize Spotify',
-    description: 'Please click the link to authenticate with Spotify in order to complete your request',
+    description:
+      'Please click the link to authenticate with Spotify in order to complete your request',
     color: SOURCE_DETAILS[TrackSource.Spotify].color,
     thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
     footer: {

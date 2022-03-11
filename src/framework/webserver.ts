@@ -22,7 +22,9 @@ export class WebServer implements Closable {
       if (success) {
         res.send('Authenticated! You may close this window.');
       } else {
-        res.send('You have authorized this app! However, this is an old authentication link. Try again with a new link.');
+        res.send(
+          'You have authorized this app! However, this is an old authentication link. Try again with a new link.'
+        );
       }
     });
   }

@@ -84,7 +84,7 @@ export interface SpotifyApi extends StreamFetcher {
   getArtist(id: string): Promise<SpotifyArtist>;
   getArtistTracks(id: string): Promise<SpotifyTrack[]>;
   searchPlaylists(query: string, limit?: number, userId?: string): Promise<SpotifyPlaylist[]>;
-  searchMyPlaylists(query: string, limit?: number): Promise<SpotifyPlaylist[]>
+  searchMyPlaylists(query: string, limit?: number): Promise<SpotifyPlaylist[]>;
   searchAlbums(query: string, limit?: number): Promise<SpotifyAlbum[]>;
   searchArtists(query: string, limit?: number): Promise<SpotifyArtist[]>;
 }
