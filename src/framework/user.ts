@@ -22,6 +22,9 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
     const result = this.spotifyAuth.authorize();
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
     const message = await this.user.sendEmbed(embedMessage);
+    if (!message) {
+      throw new EolianUserError('I failed to send Spotify authorization link to you via DM! Are you blocking me? 😢');
+    }
     try {
       const response = await result.response;
 
