@@ -1,14 +1,15 @@
-import { AuthorizationCodeProvider, AuthProviders, SOURCE_DETAILS, SpotifyRequest } from 'api';
+import { AuthorizationCodeProvider, AuthProviders, SpotifyRequest } from 'api';
 import {
   AuthorizationProvider,
   AuthService,
   TokenResponseWithRefresh,
-  TrackSource,
 } from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
+import { EolianUserError } from 'common/errors';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
+import { createSpotifyAuthEmbed, SPOTIFY_AUTH_COMPLETE_EMBED, SPOTIFY_AUTH_EXPIRED_EMBED, SPOTIFY_AUTH_ERROR_EMBED } from 'embed';
 import { ContextInteractionOptions, ContextMessage, ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
 import { DiscordSender } from './channel';
 import { DiscordVoiceChannel } from './voice';
@@ -21,14 +22,19 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
     const result = this.spotifyAuth.authorize();
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
     const message = await this.user.sendEmbed(embedMessage);
-    const response = await result.response;
+    try {
+      const response = await result.response;
 
-    await Promise.all([
-      this.user.setSpotifyToken(response.refresh_token),
-      message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED)
-    ]);
+      await Promise.allSettled([
+        this.user.setSpotifyToken(response.refresh_token),
+        message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED)
+      ]);
 
-    return response;
+      return response;
+    } catch (e) {
+      await message?.editEmbed(e === 'timeout' ? SPOTIFY_AUTH_EXPIRED_EMBED : SPOTIFY_AUTH_ERROR_EMBED);
+      throw new EolianUserError('Spotify authorization failed! Be sure to check your DMs and try again.');
+    }
   }
 
 }
@@ -186,28 +192,6 @@ export class DiscordUser implements ContextUser {
   }
 
 }
-
-function createSpotifyAuthEmbed(link: string): EmbedMessage {
-  return {
-    url: link,
-    title: 'Authorize Spotify',
-    description:
-      'Please click the link to authenticate with Spotify in order to complete your request',
-    color: SOURCE_DETAILS[TrackSource.Spotify].color,
-    thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
-    footer: {
-      text: 'This link will expire in 60 seconds.',
-    },
-  };
-}
-
-const SPOTIFY_AUTH_COMPLETE_EMBED: EmbedMessage = {
-  title: 'Authorize Spotify Complete',
-  description:
-    'You have authorized Eolian to read your Spotify information!\nYou can go back to the channel where you sent a command now :)',
-  color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon
-};
 
 export function getPermissionLevel(
   user: User,
