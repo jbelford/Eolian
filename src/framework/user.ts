@@ -15,7 +15,7 @@ import { DiscordVoiceChannel } from './voice';
 
 class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
-  constructor(private readonly user: DiscordUser, private readonly spotifyAuth: AuthService) {}
+  constructor(private readonly user: ContextUser, private readonly spotifyAuth: AuthService) {}
 
   async authorize(): Promise<TokenResponseWithRefresh> {
     const result = this.spotifyAuth.authorize();
