@@ -27,7 +27,7 @@ import {
   ServerDetails,
 } from './@types';
 import { ButtonRegistry } from './button';
-import { DiscordMessageSender, DiscordSender, DiscordTextChannel } from './channel';
+import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
 import { parseMessageCommand, parseSlashCommand } from './register_commands';
 import { DiscordUser, getPermissionLevel } from './user';
@@ -71,7 +71,7 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
 
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
-  private _sender?: DiscordSender;
+  private _sender?: DiscordChannelSender;
 
   constructor(
     protected readonly interaction: T,
@@ -119,9 +119,9 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
     return this.interaction.replied;
   }
 
-  private get sender(): DiscordSender {
+  private get sender(): DiscordChannelSender {
     if (!this._sender) {
-      this._sender = new DiscordSender(
+      this._sender = new DiscordChannelSender(
         new CommandInteractionSender(this.interaction),
         this.registry,
         <TextChannel | DMChannel>this.interaction.channel
@@ -285,7 +285,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
   private _hasReplied = false;
-  private _sender?: DiscordSender;
+  private _sender?: DiscordChannelSender;
 
   constructor(
     private readonly discordMessage: Message,
@@ -341,9 +341,9 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.channel.reactable;
   }
 
-  private get sender(): DiscordSender {
+  private get sender(): DiscordChannelSender {
     if (!this._sender) {
-      this._sender = new DiscordSender(
+      this._sender = new DiscordChannelSender(
         new MessageInteractionSender(this.discordMessage),
         this.registry,
         <TextChannel | DMChannel>this.discordMessage.channel

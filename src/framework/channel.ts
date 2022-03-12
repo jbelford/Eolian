@@ -39,15 +39,67 @@ export interface DiscordMessageSender {
 
 const DISCORD_CONTENT_MAX = 2000;
 
-export class DiscordSender implements ContextSendable {
-
-  private _sendable?: boolean;
+export class DiscordSender {
 
   constructor(
     private readonly sender: DiscordMessageSender,
+    private readonly registry?: ButtonRegistry) {
+  }
+
+  async send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    try {
+      const discordMessage = await this.sender.send(
+        { content: clampLength(message, DISCORD_CONTENT_MAX) },
+        options?.ephemeral
+      );
+      return new DiscordMessage(discordMessage);
+    } catch (e) {
+      logger.warn('Failed to send message: %s', e);
+    }
+    return undefined;
+  }
+
+  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    try {
+      const rich = mapDiscordEmbed(embed);
+
+      const messageOptions: MessageOptions = { embeds: [rich] };
+
+      let buttonMapping: DiscordButtonMapping | undefined;
+      if (embed.buttons && this.registry) {
+        buttonMapping = mapDiscordEmbedButtons(embed.buttons);
+        messageOptions.components = buttonMapping.rows;
+      }
+
+      const message = await this.sender.send(messageOptions, options?.ephemeral);
+
+      let msgButtons: DiscordMessageButtons | undefined;
+      if (buttonMapping && this.registry) {
+        this.registry.register(message.id, buttonMapping.mapping);
+        msgButtons = { registry: this.registry, components: buttonMapping.rows };
+      }
+
+      return new DiscordMessage(message, msgButtons);
+    } catch (e) {
+      logger.warn('Failed to send embed message: %s', e);
+    }
+    return undefined;
+  }
+
+}
+
+export class DiscordChannelSender implements ContextSendable  {
+
+  private readonly sender: DiscordSender;
+  private _sendable?: boolean;
+
+  constructor(
+    messageSender: DiscordMessageSender,
     private readonly registry: ButtonRegistry,
     private readonly channel: TextChannel | DMChannel
-  ) {}
+  ) {
+    this.sender = new DiscordSender(messageSender, this.registry);
+  }
 
   get sendable(): boolean {
     if (this._sendable === undefined) {
@@ -72,15 +124,17 @@ export class DiscordSender implements ContextSendable {
     options?: ContextInteractionOptions
   ): Promise<ContextMessage | undefined> {
     if (this.sendable || options?.force) {
-      try {
-        const discordMessage = await this.sender.send(
-          { content: clampLength(message, DISCORD_CONTENT_MAX) },
-          options?.ephemeral
-        );
-        return new DiscordMessage(discordMessage);
-      } catch (e) {
-        logger.warn('Failed to send message: %s', e);
-      }
+      return await this.sender.send(message, options);
+    }
+    return undefined;
+  }
+
+  async sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
+    if (this.sendable) {
+      return await this.sender.sendEmbed(embed, options);
     }
     return undefined;
   }
@@ -195,49 +249,17 @@ export class DiscordSender implements ContextSendable {
     return collector;
   }
 
-  async sendEmbed(
-    embed: EmbedMessage,
-    options?: ContextInteractionOptions
-  ): Promise<ContextMessage | undefined> {
-    if (this.sendable) {
-      try {
-        const rich = mapDiscordEmbed(embed);
-
-        const messageOptions: MessageOptions = { embeds: [rich] };
-
-        let buttonMapping: DiscordButtonMapping | undefined;
-        if (embed.buttons) {
-          buttonMapping = mapDiscordEmbedButtons(embed.buttons);
-          messageOptions.components = buttonMapping.rows;
-        }
-
-        const message = await this.sender.send(messageOptions, options?.ephemeral);
-
-        let msgButtons: DiscordMessageButtons | undefined;
-        if (buttonMapping) {
-          this.registry.register(message.id, buttonMapping.mapping);
-          msgButtons = { registry: this.registry, components: buttonMapping.rows };
-        }
-
-        return new DiscordMessage(message, msgButtons);
-      } catch (e) {
-        logger.warn('Failed to send embed message: %s', e);
-      }
-    }
-    return undefined;
-  }
-
 }
 
 export class DiscordTextChannel implements ContextTextChannel {
 
-  private readonly sender: DiscordSender;
+  private readonly sender: DiscordChannelSender;
 
   constructor(
     private readonly channel: TextChannel | DMChannel,
     private readonly registry: ButtonRegistry
   ) {
-    this.sender = new DiscordSender(channel, this.registry, this.channel);
+    this.sender = new DiscordChannelSender(channel, this.registry, this.channel);
   }
 
   get lastMessageId(): string | undefined {

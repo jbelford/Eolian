@@ -108,14 +108,12 @@ export interface ContextVoiceConnection extends Closable {
   awaitReconnect(): Promise<boolean>;
 }
 
-export interface ContextUser {
+export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'> {
   readonly id: string;
   readonly name: string;
   readonly avatar?: string;
   readonly permission: UserPermission;
   updatePermissions(details?: ServerDetails): Promise<void>;
-  send(message: string): Promise<void>;
-  sendEmbed(embed: EmbedMessage): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
   getSpotifyRequest(): Promise<SpotifyRequest>;

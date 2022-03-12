@@ -9,8 +9,8 @@ import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
-import { ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
-import { mapDiscordEmbed } from './message';
+import { ContextInteractionOptions, ContextMessage, ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
+import { DiscordSender } from './channel';
 import { DiscordVoiceChannel } from './voice';
 
 class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
@@ -35,6 +35,7 @@ export class DiscordUser implements ContextUser {
   private dto?: UserDTO;
   private _permission: UserPermission;
   private spotifyRequest?: SpotifyRequest;
+  private _sender?: DiscordSender;
 
   constructor(
     private readonly user: User,
@@ -62,6 +63,13 @@ export class DiscordUser implements ContextUser {
     return this._permission;
   }
 
+  private get sender(): DiscordSender {
+    if (!this._sender) {
+      this._sender = new DiscordSender(this.user);
+    }
+    return this._sender;
+  }
+
   async updatePermissions(details?: ServerDetails): Promise<void> {
     if (this.permission === UserPermission.User) {
       if (details) {
@@ -85,12 +93,12 @@ export class DiscordUser implements ContextUser {
     return !!this.guildUser?.roles.cache.has(id);
   }
 
-  async send(message: string): Promise<void> {
-    await this.user.send(message);
+  send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    return this.sender.send(message, options);
   }
 
-  async sendEmbed(embed: EmbedMessage): Promise<void> {
-    await this.user.send({ embeds: [mapDiscordEmbed(embed)] });
+  sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+    return this.sender.sendEmbed(embed, options);
   }
 
   getVoice(): ContextVoiceChannel | undefined {
