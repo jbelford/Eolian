@@ -20,10 +20,13 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
   async authorize(): Promise<TokenResponseWithRefresh> {
     const result = this.spotifyAuth.authorize();
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
-    await this.user.sendEmbed(embedMessage);
+    const message = await this.user.sendEmbed(embedMessage);
     const response = await result.response;
 
-    await this.user.setSpotifyToken(response.refresh_token);
+    await Promise.all([
+      this.user.setSpotifyToken(response.refresh_token),
+      message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED)
+    ]);
 
     return response;
   }
@@ -197,6 +200,14 @@ function createSpotifyAuthEmbed(link: string): EmbedMessage {
     },
   };
 }
+
+const SPOTIFY_AUTH_COMPLETE_EMBED: EmbedMessage = {
+  title: 'Authorize Spotify Complete',
+  description:
+    'You have authorized Eolian to read your Spotify information!\nYou can go back to the channel where you sent a command now :)',
+  color: SOURCE_DETAILS[TrackSource.Spotify].color,
+  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon
+};
 
 export function getPermissionLevel(
   user: User,
