@@ -115,6 +115,7 @@ export interface ContextUser {
   readonly permission: UserPermission;
   updatePermissions(details?: ServerDetails): Promise<void>;
   send(message: string): Promise<void>;
+  sendEmbed(embed: EmbedMessage): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
   getSpotifyRequest(): Promise<SpotifyRequest>;
@@ -123,6 +124,7 @@ export interface ContextUser {
   removeIdentifier(id: string): Promise<boolean>;
   setSpotify(id: string | null): Promise<void>;
   setSoundCloud(id: number | null): Promise<void>;
+  setSpotifyToken(token: string): Promise<void>;
 }
 
 export interface EmbedMessage {

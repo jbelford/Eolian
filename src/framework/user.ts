@@ -1,5 +1,10 @@
 import { AuthorizationCodeProvider, AuthProviders, SOURCE_DETAILS, SpotifyRequest } from 'api';
-import { AuthorizationProvider, TrackSource } from 'api/@types';
+import {
+  AuthorizationProvider,
+  AuthService,
+  TokenResponseWithRefresh,
+  TrackSource,
+} from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
@@ -7,6 +12,23 @@ import { GuildMember, Permissions, User } from 'discord.js';
 import { ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
 import { mapDiscordEmbed } from './message';
 import { DiscordVoiceChannel } from './voice';
+
+class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
+
+  constructor(private readonly user: DiscordUser, private readonly spotifyAuth: AuthService) {}
+
+  async authorize(): Promise<TokenResponseWithRefresh> {
+    const result = this.spotifyAuth.authorize();
+    const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
+    await this.user.sendEmbed(embedMessage);
+    const response = await result.response;
+
+    await this.user.setSpotifyToken(response.refresh_token);
+
+    return response;
+  }
+
+}
 
 export class DiscordUser implements ContextUser {
 
@@ -67,6 +89,10 @@ export class DiscordUser implements ContextUser {
     await this.user.send(message);
   }
 
+  async sendEmbed(embed: EmbedMessage): Promise<void> {
+    await this.user.send({ embeds: [mapDiscordEmbed(embed)] });
+  }
+
   getVoice(): ContextVoiceChannel | undefined {
     if (this.guildUser) {
       const voiceChannel = this.guildUser.voice.channel;
@@ -83,27 +109,12 @@ export class DiscordUser implements ContextUser {
 
   async getSpotifyRequest(): Promise<SpotifyRequest> {
     if (!this.spotifyRequest) {
-      const provider = this.createSpotifyAuthProvider();
       const user = await this.get();
+      const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify);
       const tokenProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
       this.spotifyRequest = new SpotifyRequest(tokenProvider);
     }
     return this.spotifyRequest;
-  }
-
-  private createSpotifyAuthProvider(): AuthorizationProvider {
-    return {
-      authorize: async () => {
-        const result = this.auth.spotify.authorize();
-        const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
-        await this.user.send({ embeds: [mapDiscordEmbed(embedMessage)] });
-        const response = await result.response;
-
-        await this.setSpotifyToken(response.refresh_token);
-
-        return response;
-      },
-    };
   }
 
   clearData(): Promise<boolean> {
@@ -152,7 +163,7 @@ export class DiscordUser implements ContextUser {
     }
   }
 
-  private async setSpotifyToken(token: string): Promise<void> {
+  async setSpotifyToken(token: string): Promise<void> {
     if (this.dto) {
       if (this.dto.tokens) {
         this.dto.tokens.spotify = token;
