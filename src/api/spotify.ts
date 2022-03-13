@@ -1,4 +1,4 @@
-import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
+import { ProgressUpdater } from 'common/@types';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import {
@@ -9,12 +9,12 @@ import {
   SpotifyArtist,
   SpotifyPagingObject,
   SpotifyPlaylist,
-  SpotifyPlaylistTrack,
   SpotifyPlaylistTracks,
   SpotifyResourceType,
   SpotifyTrack,
   SpotifyUrlDetails,
   SpotifyUser,
+  SpotifyUserTrack,
   StreamSource,
   Track,
   TrackSource,
@@ -43,6 +43,15 @@ export class SpotifyApiImpl implements SpotifyApi {
       return await this.req.get<SpotifyUser>(`me`);
     } catch (e) {
       logger.warn(`Failed to fetch current Spotify user`);
+      throw e;
+    }
+  }
+
+  async getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]> {
+    try {
+      return await this.getPaginatedItems('me/tracks', { progress, limit: 50, rangeFn });
+    } catch (e) {
+      logger.warn('Failed to fetch current Spotify user tracks');
       throw e;
     }
   }
@@ -81,30 +90,13 @@ export class SpotifyApiImpl implements SpotifyApi {
   ): Promise<SpotifyPlaylistTracks> {
     try {
       const playlist = await this.getPlaylist(id);
-      const options: GetAllItemsOptions<SpotifyPlaylistTrack> = { limit: 100 };
 
-      let range: AbsRangeArgument | undefined;
-      if (rangeFn) {
-        range = rangeFn(playlist.tracks.total);
-      }
-
-      if (range) {
-        options.offset = range.start;
-        options.total = range.stop - range.start;
-        playlist.tracks.items = playlist.tracks.items.slice(range.start, range.stop);
-        if (playlist.tracks.items.length) {
-          options.initial = playlist.tracks;
-        }
-      } else {
-        options.initial = playlist.tracks;
-        options.total = playlist.tracks.total;
-      }
-
-      if (options.total > 200) {
-        options.progress = progress;
-      }
-
-      playlist.tracks.items = await this.getPaginatedItems(`playlists/${id}/tracks`, options);
+      playlist.tracks.items = await this.getPaginatedItems(`playlists/${id}/tracks`, {
+        initial: playlist.tracks,
+        limit: 100,
+        progress,
+        rangeFn
+      });
 
       return playlist;
     } catch (e) {
@@ -257,15 +249,29 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {
     const limit = options?.limit ?? 50;
-    const offset = options?.offset ?? 0;
     let data: SpotifyPagingObject<T> = options?.initial
       ? options.initial
-      : await this.req.get(path, { limit, offset });
-    const total = options?.total ?? data.total;
+      : await this.req.get(path, { limit });
+
+    let offset = 0;
+    let total = data.total;
+    let items = data.items;
+
+    if (options?.rangeFn) {
+      const range = options.rangeFn(data.total);
+      if (range) {
+        offset = range.start;
+        total = range.stop - range.start;
+        items = items.slice(range.start, range.stop);
+      }
+    }
+
+    if (total < 200 && options?.progress) {
+      options.progress = undefined;
+    }
 
     options?.progress?.init(total);
 
-    let items = data.items;
     while (items.length < total) {
       data = await this.req.get(path, { limit, offset: offset + items.length });
       items = items.concat(data.items);
@@ -274,8 +280,8 @@ export class SpotifyApiImpl implements SpotifyApi {
 
     await options?.progress?.done();
 
-    if (options?.total && items.length > options.total) {
-      items = items.slice(0, options.total);
+    if (items.length > total) {
+      items = items.slice(0, total);
     }
 
     return items;
@@ -286,9 +292,8 @@ export class SpotifyApiImpl implements SpotifyApi {
 type GetAllItemsOptions<T> = {
   initial?: SpotifyPagingObject<T>;
   limit?: number;
-  offset?: number;
-  total?: number;
   progress?: ProgressUpdater;
+  rangeFn?: RangeFactory;
 };
 
 export function mapSpotifyTrack(

@@ -1,5 +1,6 @@
 import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { Identifier, ResourceType } from 'data/@types';
 import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
@@ -16,6 +17,7 @@ import {
   getSpotifySourceFetcher,
   SpotifyAlbumResolver,
   SpotifyArtistResolver,
+  SpotifyLikesResolver,
   SpotifyPlaylistResolver,
   SpotifyUrlResolver,
 } from './spotify';
@@ -59,7 +61,7 @@ function getByQuery(context: CommandContext, params: CommandOptions) {
   } else if (params.TRACKS) {
     return getTracksResolver(context, params);
   } else if (params.LIKES) {
-    return getFavoritesResolver(context, params);
+    return getLikesResolver(context, params);
   } else if (params.ARTIST) {
     return getArtistResolver(context, params);
   }
@@ -84,8 +86,15 @@ function getTracksResolver(context: CommandContext, params: CommandOptions) {
   return new SoundCloudTracksResolver(context, params);
 }
 
-function getFavoritesResolver(context: CommandContext, params: CommandOptions) {
-  if (params.SPOTIFY || params.YOUTUBE) {
+function getLikesResolver(context: CommandContext, params: CommandOptions) {
+  if (environment.tokens.spotify.useOAuth) {
+    if (params.SOUNDCLOUD) {
+      return new SoundCloudFavoritesResolver(context, params);
+    } else if (params.YOUTUBE) {
+      context.interaction.send('(Psst.. The LIKES keyword is not available for YouTube.)');
+    }
+    return new SpotifyLikesResolver(context, params);
+  } else if (params.SPOTIFY || params.YOUTUBE) {
     context.interaction.send('(Psst.. The LIKES keyword is only for SoundCloud.)');
   }
   return new SoundCloudFavoritesResolver(context, params);

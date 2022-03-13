@@ -71,6 +71,7 @@ export interface SoundCloudPaginatedResult<T> {
 export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined;
   getMe(): Promise<SpotifyUser>;
+  getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]>;
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
@@ -173,6 +174,11 @@ export interface SpotifyTrack {
   duration_ms: number;
   uri: string;
   external_urls: SpotifyExternalUrls;
+}
+
+export type SpotifyUserTrack = {
+  added_at: string;
+  track: SpotifyTrack;
 }
 
 export interface SpotifyArtist {
