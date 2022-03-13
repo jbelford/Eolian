@@ -120,11 +120,7 @@ type SpotifyAuthCacheItem = {
   reject: (err?: any) => void;
 };
 
-const REDIRECT_URI = `${environment.baseUri}:${environment.port}/callback/spotify`;
-
-export const enum SpotifyAuthErr {
-  EXPIRED = 'expired',
-}
+const SPOTIFY_REDIRECT_URI = `${environment.baseUri}:${environment.port}/callback/spotify`;
 
 export class SpotifyAuth implements AuthService {
 
@@ -136,7 +132,7 @@ export class SpotifyAuth implements AuthService {
       response_type: 'code',
       client_id: environment.tokens.spotify.clientId,
       scope: SPOTIFY_SCOPES,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: SPOTIFY_REDIRECT_URI,
       state,
     };
     const link = `${SPOTIFY_AUTHORIZE}?` + querystringify(params);
@@ -172,7 +168,7 @@ export class SpotifyAuth implements AuthService {
     logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
     return await httpRequest(SPOTIFY_TOKEN, {
       method: 'POST',
-      form: { grant_type: 'authorization_code', code, redirect_uri: REDIRECT_URI },
+      form: { grant_type: 'authorization_code', code, redirect_uri: SPOTIFY_REDIRECT_URI },
       auth: {
         basic: {
           id: environment.tokens.spotify.clientId,
