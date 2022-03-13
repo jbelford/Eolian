@@ -93,21 +93,29 @@ export class SpotifyRequest {
   }
 
   private async getUrl<T>(url: string, params = {}): Promise<T> {
-    await this.checkAndUpdateToken();
-    logger.info(`Spotify HTTP: %s - %s`, url, params);
-    return (await httpRequest(url, {
-      params,
-      json: true,
-      auth: { bearer: this.accessToken },
-    })) as unknown as Promise<T>;
+    if (Date.now() + 10000 >= this.expiration) {
+      await this.updateToken();
+    }
+    try {
+      return await this.getRequest<T>(url, params);
+    } catch (e) {
+      if (!(e instanceof HttpRequestError) || e.body.error !== 'invalid_grant') {
+        throw e;
+      }
+      await this.updateToken();
+      return await this.getRequest<T>(url, params);
+    }
   }
 
-  private async checkAndUpdateToken() {
-    if (Date.now() + 10000 >= this.expiration) {
-      const data = await this.tokenProvider.getToken();
-      this.accessToken = data.access_token;
-      this.expiration = Date.now() + data.expires_in * 1000;
-    }
+  private async getRequest<T>(url: string, params = {}) {
+    logger.info(`Spotify HTTP: %s - %s`, url, params);
+    return await httpRequest<T>(url, { params, json: true, auth: { bearer: this.accessToken } });
+  }
+
+  private async updateToken() {
+    const data = await this.tokenProvider.getToken();
+    this.accessToken = data.access_token;
+    this.expiration = Date.now() + data.expires_in * 1000;
   }
 
 }
