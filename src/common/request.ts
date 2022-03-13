@@ -30,6 +30,15 @@ export function querystringify(params: RequestParams): string {
   return urlSearch.toString();
 }
 
+export class HttpRequestError extends Error {
+
+  constructor(readonly statusCode: number,
+    readonly body: any) {
+    super(`HttpRequestError ${statusCode}: ${JSON.stringify(body)}`);
+  }
+
+}
+
 export async function httpRequest<T>(url: string, options?: RequestOptions): Promise<T> {
   if (options?.params) {
     url = `${url}?${querystringify(options.params)}`;
@@ -62,8 +71,13 @@ export async function httpRequest<T>(url: string, options?: RequestOptions): Pro
   });
 
   if (res.statusCode >= 400) {
-    const error = await res.body.text();
-    throw new Error(`HttpRequestError: ${error}`);
+    if (res.headers['content-type'] === 'application/json') {
+      const json = await res.body.json();
+      throw new HttpRequestError(res.statusCode, json);
+    } else {
+      const error = await res.body.text();
+      throw new HttpRequestError(res.statusCode, error);
+    }
   }
 
   return options?.json ? await res.body.json() : res.body;

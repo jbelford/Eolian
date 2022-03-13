@@ -1,7 +1,7 @@
 import { Closable } from 'common/@types';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
-import { httpRequest, querystringify } from 'common/request';
+import { httpRequest, HttpRequestError, querystringify } from 'common/request';
 import { promiseTimeout } from 'common/util';
 import { randomUUID } from 'crypto';
 import { InMemoryCache } from 'data';
@@ -50,13 +50,18 @@ export class AuthorizationCodeProvider implements TokenProvider {
   ) {}
 
   async getToken(): Promise<TokenResponse> {
-    if (!this.refreshToken) {
-      const resp = await this.authorization.authorize();
-      this.refreshToken = resp.refresh_token;
-      return resp;
-    } else {
-      return await this.refresh(this.refreshToken);
+    if (this.refreshToken) {
+      try {
+        return await this.refresh(this.refreshToken);
+      } catch (e: any) {
+        if (!(e instanceof HttpRequestError) || e.body.error !== 'invalid_grant') {
+          throw e;
+        }
+      }
     }
+    const resp = await this.authorization.authorize();
+    this.refreshToken = resp.refresh_token;
+    return resp;
   }
 
   private async refresh(token: string): Promise<TokenResponse> {
