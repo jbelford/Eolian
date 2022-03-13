@@ -14,6 +14,10 @@ export class WebServer implements Closable {
       res.send('Eolian Bot');
     });
     this.app.get('/callback/spotify', async (req, res) => {
+      if (!req.query.state) {
+        res.status(400).send('Missing state query param!');
+        return;
+      }
       const success = await this.authProviders.spotify.callback({
         state: req.query.state as string,
         code: req.query.code as string,
@@ -23,7 +27,7 @@ export class WebServer implements Closable {
         res.send('Authenticated! You may close this window.');
       } else {
         res.send(
-          'You have authorized this app! However, this is an old authentication link. Try again with a new link.'
+          'Failed to authorize! Try again with a new link.'
         );
       }
     });
