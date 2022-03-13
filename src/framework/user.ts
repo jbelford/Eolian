@@ -192,15 +192,19 @@ export class DiscordUser implements ContextUser {
     }
   }
 
-  async setSpotifyToken(token: string): Promise<void> {
+  async setSpotifyToken(token: string | null): Promise<void> {
     if (this.dto) {
       if (this.dto.tokens) {
-        this.dto.tokens.spotify = token;
+        this.dto.tokens.spotify = token ?? undefined;
       } else {
-        this.dto.tokens = { spotify: token };
+        this.dto.tokens = { spotify: token ?? undefined };
       }
     }
-    await this.users.setSpotifyRefreshToken(this.id, token);
+    if (token) {
+      await this.users.setSpotifyRefreshToken(this.id, token);
+    } else {
+      await this.users.removeSpotifyRefreshToken(this.id);
+    }
   }
 
 }

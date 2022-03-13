@@ -2,6 +2,7 @@ import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { UserPermission } from 'common/constants';
+import { environment } from 'common/env';
 
 async function execute(
   { interaction }: CommandContext,
@@ -19,7 +20,11 @@ async function execute(
   }
 
   if (SPOTIFY) {
-    await interaction.user.setSpotify(null);
+    if (environment.tokens.spotify.useOAuth) {
+      await interaction.user.setSpotifyToken(null);
+    } else {
+      await interaction.user.setSpotify(null);
+    }
     if (response) {
       response += ' and I also unlinked your Spotify account if you had one';
     } else {

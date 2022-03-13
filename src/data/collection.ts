@@ -70,6 +70,10 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
     await this.unsetProperty(id, 'spotify');
   }
 
+  async removeSpotifyRefreshToken(id: string): Promise<void> {
+    await this.unsetProperty(id, 'tokens.spotify');
+  }
+
   async setIdentifier(id: string, key: string, identifier: Identifier): Promise<void> {
     await this.setProperty(id, `identifiers.${key}`, identifier);
   }

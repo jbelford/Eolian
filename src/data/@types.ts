@@ -31,6 +31,7 @@ export interface UsersDb extends CollectionDb<UserDTO> {
   setSpotifyRefreshToken(id: string, token: string): Promise<void>;
   setSpotify(id: string, spotify: string): Promise<void>;
   removeSpotify(id: string): Promise<void>;
+  removeSpotifyRefreshToken(id: string): Promise<void>;
   setIdentifier(id: string, key: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string, key: string): Promise<boolean>;
 }

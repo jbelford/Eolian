@@ -1,10 +1,12 @@
-import { soundcloud, spotify } from 'api';
-import { SoundCloudUser, SpotifyResourceType, TrackSource } from 'api/@types';
+import { soundcloud, spotify, youtube } from 'api';
+import { SoundCloudUser, SpotifyResourceType, SpotifyUser, TrackSource } from 'api/@types';
+import { SpotifyApiImpl } from 'api/spotify';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
 import { UserPermission } from 'common/constants';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -16,7 +18,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     );
   }
 
-  if (options.URL) {
+  if (environment.tokens.spotify.useOAuth && options.SPOTIFY) {
+    await context.interaction.defer();
+    const request = await context.interaction.user.getSpotifyRequest();
+    const client = new SpotifyApiImpl(youtube, request);
+    const user = await client.getMe();
+    await context.interaction.send(getSpotifyMessage(user));
+  } else if (options.URL) {
     await context.interaction.defer();
     await handleUrl(options.URL, context);
   } else if (options.SEARCH) {
@@ -49,6 +57,10 @@ async function handleUrl(url: UrlArgument, context: CommandContext) {
 }
 
 async function handleSpotifyUrl(url: string, context: CommandContext) {
+  if (environment.tokens.spotify.useOAuth) {
+    throw new EolianUserError(`You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`);
+  }
+
   const resource = spotify.resolve(url);
   if (!resource || resource.type !== SpotifyResourceType.USER) {
     throw new EolianUserError('Spotify resource is not a user!');
@@ -56,11 +68,13 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 
   const spotifyUser = await spotify.getUser(resource.id);
   await context.interaction.user.setSpotify(spotifyUser.id);
-  await context.interaction.send(
-    `I have set your Spotify account to \`${spotifyUser.display_name}\`!`
-      + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
-      + ` keyword to search your playlists.`
-  );
+  await context.interaction.send(getSpotifyMessage(spotifyUser));
+}
+
+function getSpotifyMessage(user: SpotifyUser): string {
+  return `I have set your Spotify account to \`${user.display_name}\`!`
+    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
+    + ` keyword to search your playlists.`;
 }
 
 async function handleSoundCloudUrl(url: string, context: CommandContext) {
@@ -125,6 +139,10 @@ export const LINK_COMMAND: Command = {
       title: 'Provide URL to Spotify user to link',
       example: [PATTERNS.URL.ex('https://open.spotify.com/user/1111111111?si=1111111111111')],
     },
+    {
+      title: 'Authenticate with Spotify (Requires Exclusive Permission)',
+      example: [KEYWORDS.SPOTIFY]
+    }
   ],
   execute,
 };
