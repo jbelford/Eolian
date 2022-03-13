@@ -1,17 +1,25 @@
 import { AuthorizationCodeProvider, AuthProviders, SpotifyRequest } from 'api';
-import {
-  AuthorizationProvider,
-  AuthService,
-  TokenResponseWithRefresh,
-} from 'api/@types';
+import { AuthorizationProvider, AuthService, TokenResponseWithRefresh } from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
-import { createSpotifyAuthEmbed, SPOTIFY_AUTH_COMPLETE_EMBED, SPOTIFY_AUTH_EXPIRED_EMBED, SPOTIFY_AUTH_ERROR_EMBED } from 'embed';
-import { ContextInteractionOptions, ContextMessage, ContextUser, ContextVoiceChannel, EmbedMessage, ServerDetails } from './@types';
+import {
+  createSpotifyAuthEmbed,
+  SPOTIFY_AUTH_COMPLETE_EMBED,
+  SPOTIFY_AUTH_EXPIRED_EMBED,
+  SPOTIFY_AUTH_ERROR_EMBED,
+} from 'embed';
+import {
+  ContextInteractionOptions,
+  ContextMessage,
+  ContextUser,
+  ContextVoiceChannel,
+  EmbedMessage,
+  ServerDetails,
+} from './@types';
 import { DiscordSender } from './channel';
 import { DiscordVoiceChannel } from './voice';
 
@@ -26,14 +34,16 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
     const message = await this.user.sendEmbed(embedMessage);
     if (!message) {
-      throw new EolianUserError('I failed to send Spotify authorization link to you via DM! Are you blocking me? 😢');
+      throw new EolianUserError(
+        'I failed to send Spotify authorization link to you via DM! Are you blocking me? 😢'
+      );
     }
     try {
       const response = await result.response;
 
       await Promise.allSettled([
         this.user.setSpotifyToken(response.refresh_token),
-        message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED)
+        message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED),
       ]);
 
       return response;
@@ -45,7 +55,9 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
         logger.warn(`[%s] Spotify failed to authorize: %s`, this.user.id, e);
         await message.editEmbed(SPOTIFY_AUTH_ERROR_EMBED);
       }
-      throw new EolianUserError('Spotify authorization failed! Be sure to check your DMs and try again.');
+      throw new EolianUserError(
+        'Spotify authorization failed! Be sure to check your DMs and try again.'
+      );
     }
   }
 
@@ -118,7 +130,10 @@ export class DiscordUser implements ContextUser {
     return this.sender.send(message, options);
   }
 
-  sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed, options);
   }
 

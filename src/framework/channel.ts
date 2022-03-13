@@ -43,10 +43,13 @@ export class DiscordSender {
 
   constructor(
     private readonly sender: DiscordMessageSender,
-    private readonly registry?: ButtonRegistry) {
-  }
+    private readonly registry?: ButtonRegistry
+  ) {}
 
-  async send(message: string, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  async send(
+    message: string,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     try {
       const discordMessage = await this.sender.send(
         { content: clampLength(message, DISCORD_CONTENT_MAX) },
@@ -59,7 +62,10 @@ export class DiscordSender {
     return undefined;
   }
 
-  async sendEmbed(embed: EmbedMessage, options?: ContextInteractionOptions): Promise<ContextMessage | undefined> {
+  async sendEmbed(
+    embed: EmbedMessage,
+    options?: ContextInteractionOptions
+  ): Promise<ContextMessage | undefined> {
     try {
       const rich = mapDiscordEmbed(embed);
 
@@ -88,7 +94,7 @@ export class DiscordSender {
 
 }
 
-export class DiscordChannelSender implements ContextSendable  {
+export class DiscordChannelSender implements ContextSendable {
 
   private readonly sender: DiscordSender;
   private _sendable?: boolean;

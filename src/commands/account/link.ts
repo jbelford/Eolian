@@ -58,7 +58,9 @@ async function handleUrl(url: UrlArgument, context: CommandContext) {
 
 async function handleSpotifyUrl(url: string, context: CommandContext) {
   if (environment.tokens.spotify.useOAuth) {
-    throw new EolianUserError(`You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`);
+    throw new EolianUserError(
+      `You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`
+    );
   }
 
   const resource = spotify.resolve(url);
@@ -72,9 +74,11 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 }
 
 function getSpotifyMessage(user: SpotifyUser): string {
-  return `I have set your Spotify account to \`${user.display_name}\`!`
+  return (
+    `I have set your Spotify account to \`${user.display_name}\`!`
     + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
-    + ` keyword to search your playlists.`;
+    + ` keyword to search your playlists.`
+  );
 }
 
 async function handleSoundCloudUrl(url: string, context: CommandContext) {
@@ -141,8 +145,8 @@ export const LINK_COMMAND: Command = {
     },
     {
       title: 'Authenticate with Spotify (Requires Exclusive Permission)',
-      example: [KEYWORDS.SPOTIFY]
-    }
+      example: [KEYWORDS.SPOTIFY],
+    },
   ],
   execute,
 };

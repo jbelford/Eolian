@@ -32,8 +32,7 @@ export function querystringify(params: RequestParams): string {
 
 export class HttpRequestError extends Error {
 
-  constructor(readonly statusCode: number,
-    readonly body: any) {
+  constructor(readonly statusCode: number, readonly body: any) {
     super(`HttpRequestError ${statusCode}: ${JSON.stringify(body)}`);
   }
 

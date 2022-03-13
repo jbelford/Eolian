@@ -21,21 +21,19 @@ export const SPOTIFY_AUTH_COMPLETE_EMBED: EmbedMessage = {
   description:
     'You have authorized Eolian to read your Spotify information!\nYou can go back to the channel where you sent a command now :)',
   color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon
+  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
 };
 
 export const SPOTIFY_AUTH_EXPIRED_EMBED: EmbedMessage = {
   title: 'Authorize Spotify Expired',
-  description:
-    'This request expired!\nClick this link faster next time',
+  description: 'This request expired!\nClick this link faster next time',
   color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon
+  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
 };
 
 export const SPOTIFY_AUTH_ERROR_EMBED: EmbedMessage = {
   title: 'Authorize Spotify Failed',
-  description:
-    'This request failed! Try again',
+  description: 'This request failed! Try again',
   color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon
+  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
 };
