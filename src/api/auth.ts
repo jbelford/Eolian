@@ -194,11 +194,13 @@ export class SpotifyAuth implements AuthService {
 
 }
 
+const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 60 * 1;
+
 export class AuthProviders implements Closable {
 
   readonly spotify: AuthService = new SpotifyAuth();
 
-  private readonly spotifyCache: EolianCache<SpotifyRequest> = new InMemoryCache(3600, false);
+  private readonly spotifyCache: EolianCache<SpotifyRequest> = new InMemoryCache(AUTH_PROVIDER_CACHE_TTL, false);
 
   getSpotifyRequest(userId: string): Promise<SpotifyRequest | undefined> {
     return this.spotifyCache.get(userId);
