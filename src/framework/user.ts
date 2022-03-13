@@ -67,7 +67,6 @@ export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
   private _permission: UserPermission;
-  private spotifyRequest?: SpotifyRequest;
   private _sender?: DiscordSender;
 
   constructor(
@@ -152,13 +151,15 @@ export class DiscordUser implements ContextUser {
   }
 
   async getSpotifyRequest(): Promise<SpotifyRequest> {
-    if (!this.spotifyRequest) {
+    let request = await this.auth.getSpotifyRequest(this.id);
+    if (!request) {
       const user = await this.get();
       const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify);
       const tokenProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
-      this.spotifyRequest = new SpotifyRequest(tokenProvider);
+      request = new SpotifyRequest(tokenProvider);
+      await this.auth.setSpotifyRequest(this.id, request);
     }
-    return this.spotifyRequest;
+    return request;
   }
 
   clearData(): Promise<boolean> {
