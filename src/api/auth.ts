@@ -133,7 +133,7 @@ type SpotifyAuthCacheItem = {
   reject: (err?: any) => void;
 };
 
-const SPOTIFY_REDIRECT_URI = `${environment.baseUri}:${environment.port}/callback/spotify`;
+const SPOTIFY_REDIRECT_URI = `${environment.baseUri}/callback/spotify`;
 
 export class SpotifyAuth implements AuthService {
 
