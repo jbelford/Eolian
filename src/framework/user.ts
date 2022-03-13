@@ -7,6 +7,7 @@ import {
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
+import { logger } from 'common/logger';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
 import { createSpotifyAuthEmbed, SPOTIFY_AUTH_COMPLETE_EMBED, SPOTIFY_AUTH_EXPIRED_EMBED, SPOTIFY_AUTH_ERROR_EMBED } from 'embed';
@@ -35,7 +36,12 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
       return response;
     } catch (e) {
-      await message?.editEmbed(e === 'timeout' ? SPOTIFY_AUTH_EXPIRED_EMBED : SPOTIFY_AUTH_ERROR_EMBED);
+      if (e === 'timeout') {
+        await message.editEmbed(SPOTIFY_AUTH_EXPIRED_EMBED);
+      } else {
+        logger.warn(`Spotify failed to authorize: %s`, e);
+        await message.editEmbed(SPOTIFY_AUTH_ERROR_EMBED);
+      }
       throw new EolianUserError('Spotify authorization failed! Be sure to check your DMs and try again.');
     }
   }
