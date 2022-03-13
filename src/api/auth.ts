@@ -210,6 +210,10 @@ export class AuthProviders implements Closable {
     await this.spotifyCache.set(userId, request);
   }
 
+  async removeSpotifyRequest(userId: string): Promise<void> {
+    await this.spotifyCache.del(userId);
+  }
+
   async close(): Promise<void> {
     await Promise.allSettled([this.spotify.close()]);
   }

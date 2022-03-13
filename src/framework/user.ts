@@ -219,6 +219,7 @@ export class DiscordUser implements ContextUser {
     if (token) {
       await this.users.setSpotifyRefreshToken(this.id, token);
     } else {
+      await this.auth.removeSpotifyRequest(this.id);
       await this.users.removeSpotifyRefreshToken(this.id);
     }
   }
