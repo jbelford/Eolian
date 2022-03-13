@@ -20,6 +20,8 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
   constructor(private readonly user: ContextUser, private readonly spotifyAuth: AuthService) {}
 
   async authorize(): Promise<TokenResponseWithRefresh> {
+    logger.info('[%s] Authorizing Spotify', this.user.id);
+
     const result = this.spotifyAuth.authorize();
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
     const message = await this.user.sendEmbed(embedMessage);
@@ -37,9 +39,10 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
       return response;
     } catch (e) {
       if (e === 'timeout') {
+        logger.info('[%s] Spotify authorization timed out', this.user.id);
         await message.editEmbed(SPOTIFY_AUTH_EXPIRED_EMBED);
       } else {
-        logger.warn(`Spotify failed to authorize: %s`, e);
+        logger.warn(`[%s] Spotify failed to authorize: %s`, this.user.id, e);
         await message.editEmbed(SPOTIFY_AUTH_ERROR_EMBED);
       }
       throw new EolianUserError('Spotify authorization failed! Be sure to check your DMs and try again.');
