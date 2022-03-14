@@ -51,7 +51,7 @@ export interface AppEnv {
   flags: {
     spotifyUserAuth: boolean;
     discordOldLeave: boolean;
-  }
+  };
 }
 
 export interface RangeArgument {

@@ -87,5 +87,5 @@ export const environment: AppEnv = {
   flags: {
     spotifyUserAuth: getEnvFlag('SPOTIFY_OAUTH'),
     discordOldLeave: getEnvFlag('DISCORD_OLD_LEAVE'),
-  }
+  },
 };
