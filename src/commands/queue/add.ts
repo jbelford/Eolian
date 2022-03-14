@@ -166,6 +166,16 @@ export const ADD_COMMAND: Command = {
       title: `Get likes from your linked SoundCloud account, shuffle them, and add to queue`,
       example: [KEYWORDS.MY, KEYWORDS.SOUNDCLOUD, KEYWORDS.LIKES, KEYWORDS.SHUFFLE],
     },
+    {
+      title: 'Add likes from your Spotify account',
+      example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.LIKES],
+      hide: !environment.tokens.spotify.useOAuth
+    },
+    {
+      title: 'Add your top tracks from Spotify',
+      example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.TRACKS],
+      hide: !environment.tokens.spotify.useOAuth
+    }
   ],
   execute: executeAdd,
 };

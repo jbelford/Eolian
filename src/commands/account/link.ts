@@ -142,10 +142,12 @@ export const LINK_COMMAND: Command = {
     {
       title: 'Provide URL to Spotify user to link',
       example: [PATTERNS.URL.ex('https://open.spotify.com/user/1111111111?si=1111111111111')],
+      hide: environment.tokens.spotify.useOAuth
     },
     {
-      title: 'Authenticate with Spotify (Requires Exclusive Permission)',
+      title: 'Authenticate with Spotify',
       example: [KEYWORDS.SPOTIFY],
+      hide: !environment.tokens.spotify.useOAuth
     },
   ],
   execute,

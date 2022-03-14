@@ -52,6 +52,7 @@ export type MessageCommand = BaseCommand;
 export interface CommandUsage {
   title?: string;
   example: ArgumentExample[] | string;
+  hide?: boolean;
 }
 
 export interface CommandCategory {
