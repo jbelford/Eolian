@@ -3,6 +3,7 @@ import express from 'express';
 import { logger } from 'common/logger';
 import { Server } from 'http';
 import { AuthProviders } from 'api';
+import { GITHUB_PAGE } from 'common/constants';
 
 export class WebServer implements Closable {
 
@@ -11,22 +12,22 @@ export class WebServer implements Closable {
 
   constructor(private readonly port: number, private readonly authProviders: AuthProviders) {
     this.app.get('/', (req, res) => {
-      res.send('Eolian Bot');
+      res.redirect(GITHUB_PAGE);
     });
     this.app.get('/callback/spotify', async (req, res) => {
       if (!req.query.state) {
         res.status(400).send('Missing state query param!');
-        return;
-      }
-      const success = await this.authProviders.spotify.callback({
-        state: req.query.state as string,
-        code: req.query.code as string,
-        err: req.query.error as string,
-      });
-      if (success) {
-        res.send('Authenticated! You may close this window.');
       } else {
-        res.send('Failed to authorize! Try again with a new link.');
+        const success = await this.authProviders.spotify.callback({
+          state: req.query.state as string,
+          code: req.query.code as string,
+          err: req.query.error as string,
+        });
+        if (success) {
+          res.send('Authenticated! You may close this window.');
+        } else {
+          res.status(400).send('Failed to authorize! Try again with a new link.');
+        }
       }
     });
   }
