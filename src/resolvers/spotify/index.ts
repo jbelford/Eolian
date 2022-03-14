@@ -9,6 +9,7 @@ import { SpotifyAlbumFetcher } from './album';
 import { SpotifyArtistFetcher } from './artist';
 import { SpotifyLikesFetcher } from './likes';
 import { SpotifyPlaylistFetcher } from './playlist';
+import { SpotifyTracksFetcher } from './tracks';
 import { SpotifySongFetcher } from './url';
 
 export { SpotifyAlbumResolver } from './album';
@@ -16,6 +17,7 @@ export { SpotifyArtistResolver } from './artist';
 export { SpotifyPlaylistResolver } from './playlist';
 export { SpotifyUrlResolver } from './url';
 export { SpotifyLikesResolver } from './likes';
+export { SpotifyTracksResolver } from './tracks';
 
 export async function getSpotifySourceFetcher(
   identifier: Identifier,
@@ -37,6 +39,11 @@ export async function getSpotifySourceFetcher(
       if (environment.tokens.spotify.useOAuth) {
         const client = await getClient(identifier, context);
         return new SpotifyLikesFetcher(client, params, context.interaction);
+      }
+    case ResourceType.Tracks:
+      if (environment.tokens.spotify.useOAuth) {
+        const client = await getClient(identifier, context);
+        return new SpotifyTracksFetcher(client);
       }
     default:
       throw new Error('Invalid type for Spotify fetcher');

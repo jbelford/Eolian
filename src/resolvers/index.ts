@@ -19,6 +19,7 @@ import {
   SpotifyArtistResolver,
   SpotifyLikesResolver,
   SpotifyPlaylistResolver,
+  SpotifyTracksResolver,
   SpotifyUrlResolver,
 } from './spotify';
 import {
@@ -80,7 +81,14 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
 }
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
-  if (params.SPOTIFY || params.YOUTUBE) {
+  if (environment.tokens.spotify.useOAuth) {
+    if (params.SOUNDCLOUD) {
+      return new SoundCloudTracksResolver(context, params);
+    } else if (params.YOUTUBE) {
+      context.interaction.send('(Psst.. The TRACKS keyword is not available for YouTube.)');
+    }
+    return new SpotifyTracksResolver(context);
+  } else if (params.SPOTIFY || params.YOUTUBE) {
     context.interaction.send('(Psst.. The TRACKS keyword is only for SoundCloud.)');
   }
   return new SoundCloudTracksResolver(context, params);

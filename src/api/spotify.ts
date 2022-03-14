@@ -56,6 +56,15 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
+  async getMyTopTracks(): Promise<SpotifyTrack[]> {
+    try {
+      return await this.getPaginatedItems('me/top/tracks', { limit: 50, params: { time_range: 'short_term' } });
+    } catch (e) {
+      logger.warn('Failed to fetch current Spotify user tracks');
+      throw e;
+    }
+  }
+
   async getUser(id: string): Promise<SpotifyUser> {
     try {
       return await this.req.get<SpotifyUser>(`users/${id}`);
@@ -249,9 +258,10 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {
     const limit = options?.limit ?? 50;
+    const params = options?.params ?? {};
     let data: SpotifyPagingObject<T> = options?.initial
       ? options.initial
-      : await this.req.get(path, { limit });
+      : await this.req.get(path, { limit, ...params });
 
     let offset = 0;
     let total = data.total;
@@ -273,7 +283,7 @@ export class SpotifyApiImpl implements SpotifyApi {
     options?.progress?.init(total);
 
     while (items.length < total) {
-      data = await this.req.get(path, { limit, offset: offset + items.length });
+      data = await this.req.get(path, { limit, offset: offset + items.length, ...params });
       items = items.concat(data.items);
       options?.progress?.update(items.length);
     }
@@ -294,6 +304,7 @@ type GetAllItemsOptions<T> = {
   limit?: number;
   progress?: ProgressUpdater;
   rangeFn?: RangeFactory;
+  params?: Record<string, string>;
 };
 
 export function mapSpotifyTrack(

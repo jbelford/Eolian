@@ -72,6 +72,7 @@ export interface SpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined;
   getMe(): Promise<SpotifyUser>;
   getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]>;
+  getMyTopTracks(): Promise<SpotifyTrack[]>;
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
