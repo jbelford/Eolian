@@ -18,10 +18,7 @@ export class SpotifyTracksResolver implements SourceResolver {
 
 }
 
-export function createSpotifyTracks(
-  user: SpotifyUser,
-  client: SpotifyApi,
-): ResolvedResource {
+export function createSpotifyTracks(user: SpotifyUser, client: SpotifyApi): ResolvedResource {
   return {
     name: 'Top Tracks',
     authors: [user.display_name ?? '<unknown>'],
@@ -30,16 +27,15 @@ export function createSpotifyTracks(
       src: TrackSource.Spotify,
       type: ResourceType.Tracks,
       url: user.external_urls.spotify,
-      auth: true
+      auth: true,
     },
-    fetcher: new SpotifyTracksFetcher(client)
+    fetcher: new SpotifyTracksFetcher(client),
   };
 }
 
 export class SpotifyTracksFetcher implements SourceFetcher {
 
-  constructor(private readonly client: SpotifyApi) {
-  }
+  constructor(private readonly client: SpotifyApi) {}
 
   async fetch(): Promise<FetchResult> {
     const spotifyTracks = await this.client.getMyTopTracks();

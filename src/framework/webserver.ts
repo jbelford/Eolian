@@ -26,9 +26,7 @@ export class WebServer implements Closable {
       if (success) {
         res.send('Authenticated! You may close this window.');
       } else {
-        res.send(
-          'Failed to authorize! Try again with a new link.'
-        );
+        res.send('Failed to authorize! Try again with a new link.');
       }
     });
   }

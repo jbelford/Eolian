@@ -47,7 +47,10 @@ export class SpotifyApiImpl implements SpotifyApi {
     }
   }
 
-  async getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]> {
+  async getMyTracks(
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory
+  ): Promise<SpotifyUserTrack[]> {
     try {
       return await this.getPaginatedItems('me/tracks', { progress, limit: 50, rangeFn });
     } catch (e) {
@@ -58,7 +61,10 @@ export class SpotifyApiImpl implements SpotifyApi {
 
   async getMyTopTracks(): Promise<SpotifyTrack[]> {
     try {
-      return await this.getPaginatedItems('me/top/tracks', { limit: 50, params: { time_range: 'short_term' } });
+      return await this.getPaginatedItems('me/top/tracks', {
+        limit: 50,
+        params: { time_range: 'short_term' },
+      });
     } catch (e) {
       logger.warn('Failed to fetch current Spotify user tracks');
       throw e;
@@ -104,7 +110,7 @@ export class SpotifyApiImpl implements SpotifyApi {
         initial: playlist.tracks,
         limit: 100,
         progress,
-        rangeFn
+        rangeFn,
       });
 
       return playlist;

@@ -35,18 +35,19 @@ export function createSpotifyLikes(
       src: TrackSource.Spotify,
       type: ResourceType.Likes,
       url: user.external_urls.spotify,
-      auth: true
+      auth: true,
     },
-    fetcher: new SpotifyLikesFetcher(client, params, sendable)
+    fetcher: new SpotifyLikesFetcher(client, params, sendable),
   };
 }
 
 export class SpotifyLikesFetcher implements SourceFetcher {
 
-  constructor(private readonly client: SpotifyApi,
+  constructor(
+    private readonly client: SpotifyApi,
     private readonly params: CommandOptions,
-    private readonly sendable: ContextSendable) {
-  }
+    private readonly sendable: ContextSendable
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const rangeFn: RangeFactory = total => getRangeOption(this.params, total);

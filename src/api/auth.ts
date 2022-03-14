@@ -200,7 +200,10 @@ export class AuthProviders implements Closable {
 
   readonly spotify: AuthService = new SpotifyAuth();
 
-  private readonly spotifyCache: EolianCache<SpotifyRequest> = new InMemoryCache(AUTH_PROVIDER_CACHE_TTL, false);
+  private readonly spotifyCache: EolianCache<SpotifyRequest> = new InMemoryCache(
+    AUTH_PROVIDER_CACHE_TTL,
+    false
+  );
 
   getSpotifyRequest(userId: string): Promise<SpotifyRequest | undefined> {
     return this.spotifyCache.get(userId);

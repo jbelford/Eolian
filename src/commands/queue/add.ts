@@ -169,13 +169,13 @@ export const ADD_COMMAND: Command = {
     {
       title: 'Add likes from your Spotify account',
       example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.LIKES],
-      hide: !environment.tokens.spotify.useOAuth
+      hide: !environment.tokens.spotify.useOAuth,
     },
     {
       title: 'Add your top tracks from Spotify',
       example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.TRACKS],
-      hide: !environment.tokens.spotify.useOAuth
-    }
+      hide: !environment.tokens.spotify.useOAuth,
+    },
   ],
   execute: executeAdd,
 };

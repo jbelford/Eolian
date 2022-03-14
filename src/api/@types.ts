@@ -180,7 +180,7 @@ export interface SpotifyTrack {
 export type SpotifyUserTrack = {
   added_at: string;
   track: SpotifyTrack;
-}
+};
 
 export interface SpotifyArtist {
   href: string;
