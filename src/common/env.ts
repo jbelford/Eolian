@@ -85,7 +85,7 @@ export const environment: AppEnv = {
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
   flags: {
-    spotifyUserAuth: getEnvFlag('SPOTIFY_OAUTH'),
-    discordOldLeave: getEnvFlag('DISCORD_OLD_LEAVE'),
+    spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
+    discordOldLeave: getEnvFlag('FLAG_DISCORD_OLD_LEAVE'),
   },
 };
