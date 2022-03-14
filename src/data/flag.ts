@@ -6,7 +6,7 @@ const flagsLocal: Record<FeatureFlag, boolean> = {
   [FeatureFlag.DISCORD_OLD_LEAVE]: environment.flags.discordOldLeave,
 };
 
-class FeatureFlagServiceImpl implements FeatureFlagService {
+class SimpleFeatureFlagService implements FeatureFlagService {
 
   enabled(flag: FeatureFlag): boolean {
     return flagsLocal[flag];
@@ -14,4 +14,4 @@ class FeatureFlagServiceImpl implements FeatureFlagService {
 
 }
 
-export const feature: FeatureFlagService = new FeatureFlagServiceImpl();
+export const feature: FeatureFlagService = new SimpleFeatureFlagService();
