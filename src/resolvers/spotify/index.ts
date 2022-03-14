@@ -2,7 +2,8 @@ import { spotify, youtube } from 'api';
 import { SpotifyApi } from 'api/@types';
 import { SpotifyApiImpl } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { environment } from 'common/env';
+import { FeatureFlag } from 'common/@types';
+import { feature } from 'common/env';
 import { Identifier, ResourceType } from 'data/@types';
 import { SourceFetcher } from 'resolvers/@types';
 import { SpotifyAlbumFetcher } from './album';
@@ -30,29 +31,33 @@ export async function getSpotifySourceFetcher(
     case ResourceType.Artist:
       return new SpotifyArtistFetcher(identifier.id);
     case ResourceType.Playlist: {
-      const client = await getClient(identifier, context);
+      const client = feature.enabled(FeatureFlag.SPOTIFY_AUTH)
+        ? await getClient(identifier, context)
+        : spotify;
       return new SpotifyPlaylistFetcher(identifier.id, params, context.interaction, client);
     }
     case ResourceType.Song:
       return new SpotifySongFetcher(identifier.id);
     case ResourceType.Likes:
-      if (environment.tokens.spotify.useOAuth) {
+      if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const client = await getClient(identifier, context);
         return new SpotifyLikesFetcher(client, params, context.interaction);
       }
+      break;
     case ResourceType.Tracks:
-      if (environment.tokens.spotify.useOAuth) {
+      if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const client = await getClient(identifier, context);
         return new SpotifyTracksFetcher(client);
       }
+      break;
     default:
-      throw new Error('Invalid type for Spotify fetcher');
   }
+  throw new Error('Invalid type for Spotify fetcher');
 }
 
 async function getClient(identifier: Identifier, context: CommandContext): Promise<SpotifyApi> {
   let client: SpotifyApi = spotify;
-  if (identifier.auth && environment.tokens.spotify.useOAuth) {
+  if (identifier.auth) {
     const request = await context.interaction.user.getSpotifyRequest();
     client = new SpotifyApiImpl(youtube, request);
   }

@@ -1,6 +1,7 @@
 import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { environment } from 'common/env';
+import { FeatureFlag } from 'common/@types';
+import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { Identifier, ResourceType } from 'data/@types';
 import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
@@ -81,7 +82,7 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
 }
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
-  if (environment.tokens.spotify.useOAuth) {
+  if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
     if (params.SOUNDCLOUD) {
       return new SoundCloudTracksResolver(context, params);
     } else if (params.YOUTUBE) {
@@ -95,7 +96,7 @@ function getTracksResolver(context: CommandContext, params: CommandOptions) {
 }
 
 function getLikesResolver(context: CommandContext, params: CommandOptions) {
-  if (environment.tokens.spotify.useOAuth) {
+  if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
     if (params.SOUNDCLOUD) {
       return new SoundCloudFavoritesResolver(context, params);
     } else if (params.YOUTUBE) {

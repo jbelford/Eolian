@@ -5,8 +5,9 @@ import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
+import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
+import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { SelectionOption } from 'embed/@types';
@@ -18,7 +19,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     );
   }
 
-  if (environment.tokens.spotify.useOAuth && options.SPOTIFY) {
+  if (feature.enabled(FeatureFlag.SPOTIFY_AUTH) && options.SPOTIFY) {
     await context.interaction.defer();
     const request = await context.interaction.user.getSpotifyRequest();
     const client = new SpotifyApiImpl(youtube, request);
@@ -57,7 +58,7 @@ async function handleUrl(url: UrlArgument, context: CommandContext) {
 }
 
 async function handleSpotifyUrl(url: string, context: CommandContext) {
-  if (environment.tokens.spotify.useOAuth) {
+  if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
     throw new EolianUserError(
       `You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`
     );
@@ -142,12 +143,12 @@ export const LINK_COMMAND: Command = {
     {
       title: 'Provide URL to Spotify user to link',
       example: [PATTERNS.URL.ex('https://open.spotify.com/user/1111111111?si=1111111111111')],
-      hide: environment.tokens.spotify.useOAuth,
+      hide: feature.enabled(FeatureFlag.SPOTIFY_AUTH),
     },
     {
       title: 'Authenticate with Spotify',
       example: [KEYWORDS.SPOTIFY],
-      hide: !environment.tokens.spotify.useOAuth,
+      hide: !feature.enabled(FeatureFlag.SPOTIFY_AUTH),
     },
   ],
   execute,

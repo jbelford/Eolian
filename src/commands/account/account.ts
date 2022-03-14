@@ -4,8 +4,9 @@ import { SpotifyApiImpl } from 'api/spotify';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
+import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
+import { feature } from 'common/env';
 import { createUserDetailsEmbed } from 'embed';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
@@ -20,7 +21,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
     const user = await context.interaction.user.get();
     let spotifyAccount: SpotifyUser | undefined;
-    if (environment.tokens.spotify.useOAuth) {
+    if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
       if (user.tokens?.spotify) {
         const request = await context.interaction.user.getSpotifyRequest();
         const client = new SpotifyApiImpl(youtube, request);

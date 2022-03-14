@@ -1,8 +1,9 @@
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
+import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
+import { feature } from 'common/env';
 
 async function execute(
   { interaction }: CommandContext,
@@ -20,7 +21,7 @@ async function execute(
   }
 
   if (SPOTIFY) {
-    if (environment.tokens.spotify.useOAuth) {
+    if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
       await interaction.user.setSpotifyToken(null);
     } else {
       await interaction.user.setSpotify(null);

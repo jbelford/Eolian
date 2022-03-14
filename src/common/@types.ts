@@ -72,3 +72,15 @@ export interface RetrySleepAlgorithm {
   reset(): void;
   sleep(): Promise<void>;
 }
+
+export const enum FeatureFlag {
+  /**
+   * Feature flag enables user authentication with Spotify.
+   * Certain features such as liked and top tracks can only be used with this.
+   */
+  SPOTIFY_AUTH = 0,
+}
+
+export interface FeatureFlagService {
+  enabled(flag: FeatureFlag): boolean;
+}

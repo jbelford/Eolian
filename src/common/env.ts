@@ -1,4 +1,4 @@
-import { AppEnv } from './@types';
+import { AppEnv, FeatureFlag, FeatureFlagService } from './@types';
 
 function getEnvOpt(name: string, defaultValue?: string): string | undefined {
   if (name in process.env) {
@@ -83,3 +83,17 @@ export const environment: AppEnv = {
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
 };
+
+const flagsLocal: Record<FeatureFlag, boolean> = {
+  [FeatureFlag.SPOTIFY_AUTH]: environment.tokens.spotify.useOAuth,
+};
+
+class FeatureFlagServiceImpl implements FeatureFlagService {
+
+  enabled(flag: FeatureFlag): boolean {
+    return flagsLocal[flag];
+  }
+
+}
+
+export const feature: FeatureFlagService = new FeatureFlagServiceImpl();

@@ -9,7 +9,8 @@ import {
 import { mapSpotifyTrack, SpotifyApiImpl } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
-import { environment } from 'common/env';
+import { FeatureFlag } from 'common/@types';
+import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
@@ -65,7 +66,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     const limit = this.params.FAST ? 1 : 5;
     if (this.params.MY) {
-      if (environment.tokens.spotify.useOAuth) {
+      if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const request = await this.context.interaction.user.getSpotifyRequest();
         this.client = new SpotifyApiImpl(youtube, request);
 

@@ -3,8 +3,9 @@ import { Command, CommandContext, CommandOptions, MessageCommand } from 'command
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
+import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
+import { environment, feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { shuffleList, truthySum } from 'common/util';
 import { Identifier, ResourceType } from 'data/@types';
@@ -169,12 +170,12 @@ export const ADD_COMMAND: Command = {
     {
       title: 'Add likes from your Spotify account',
       example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.LIKES],
-      hide: !environment.tokens.spotify.useOAuth,
+      hide: !feature.enabled(FeatureFlag.SPOTIFY_AUTH),
     },
     {
       title: 'Add your top tracks from Spotify',
       example: [KEYWORDS.MY, KEYWORDS.SPOTIFY, KEYWORDS.TRACKS],
-      hide: !environment.tokens.spotify.useOAuth,
+      hide: !feature.enabled(FeatureFlag.SPOTIFY_AUTH),
     },
   ],
   execute: executeAdd,
