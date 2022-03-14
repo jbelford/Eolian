@@ -36,11 +36,12 @@ You can add any type of resource to the queue. Here is the list of each type of 
 | Playlists    | ✅      | ✅         | ✅      |
 | Artists      | ✅      | ✅         | ❌      |
 | Likes        | ✅\*\*  | ✅         | N/A     |
+| Top Tracks   | ✅\*\*  | N/A        | N/A     |
 | Live Streams | N/A     | N/A        | ✅      |
 
 <sub>
 * Songs searched from Spotify will default to YouTube<br>
-** Spotify likes are not public. Supported when SPOTIFY_OAUTH is configured.
+** Spotify likes and top tracks are not public. Supported when SPOTIFY_OAUTH is configured.
 </sub>
 
 ## 🎮 Easy To Use Buttons
