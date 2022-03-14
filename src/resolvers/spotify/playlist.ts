@@ -9,10 +9,9 @@ import {
 import { mapSpotifyTrack, SpotifyApiImpl } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
-import { FeatureFlag } from 'common/@types';
-import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
+import { feature } from 'data';
+import { FeatureFlag, ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
 import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';

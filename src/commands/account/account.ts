@@ -4,9 +4,9 @@ import { SpotifyApiImpl } from 'api/spotify';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
-import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { feature } from 'common/env';
+import { feature } from 'data';
+import { FeatureFlag } from 'data/@types';
 import { createUserDetailsEmbed } from 'embed';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {

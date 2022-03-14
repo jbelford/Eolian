@@ -3,12 +3,12 @@ import { Command, CommandContext, CommandOptions, MessageCommand } from 'command
 import { QUEUE_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { environment, feature } from 'common/env';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { shuffleList, truthySum } from 'common/util';
-import { Identifier, ResourceType } from 'data/@types';
+import { feature } from 'data';
+import { FeatureFlag, Identifier, ResourceType } from 'data/@types';
 import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
 import { SourceFetcher } from 'resolvers/@types';
 

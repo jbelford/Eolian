@@ -1,11 +1,10 @@
 import { AuthProviders } from 'api';
 import { CommandParsingStrategy } from 'commands/@types';
-import { FeatureFlag } from 'common/@types';
-import { environment, feature } from 'common/env';
+import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { LockManager } from 'data';
-import { AppDatabase } from 'data/@types';
+import { feature, LockManager } from 'data';
+import { AppDatabase, FeatureFlag } from 'data/@types';
 import {
   ButtonInteraction,
   Client,

@@ -5,11 +5,11 @@ import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
 import { PATTERNS } from 'commands/patterns';
-import { FeatureFlag } from 'common/@types';
 import { UserPermission } from 'common/constants';
-import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
+import { feature } from 'data';
+import { FeatureFlag } from 'data/@types';
 import { SelectionOption } from 'embed/@types';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {

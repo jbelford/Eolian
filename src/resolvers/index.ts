@@ -1,9 +1,8 @@
 import { TrackSource } from 'api/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
-import { FeatureFlag } from 'common/@types';
-import { feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
-import { Identifier, ResourceType } from 'data/@types';
+import { feature } from 'data';
+import { FeatureFlag, Identifier, ResourceType } from 'data/@types';
 import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
 import {
   getSoundCloudSourceFetcher,

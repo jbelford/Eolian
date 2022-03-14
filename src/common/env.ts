@@ -1,4 +1,4 @@
-import { AppEnv, FeatureFlag, FeatureFlagService } from './@types';
+import { AppEnv } from './@types';
 
 function getEnvOpt(name: string, defaultValue?: string): string | undefined {
   if (name in process.env) {
@@ -89,18 +89,3 @@ export const environment: AppEnv = {
     discordOldLeave: getEnvFlag('DISCORD_OLD_LEAVE'),
   }
 };
-
-const flagsLocal: Record<FeatureFlag, boolean> = {
-  [FeatureFlag.SPOTIFY_AUTH]: environment.flags.spotifyUserAuth,
-  [FeatureFlag.DISCORD_OLD_LEAVE]: environment.flags.discordOldLeave
-};
-
-class FeatureFlagServiceImpl implements FeatureFlagService {
-
-  enabled(flag: FeatureFlag): boolean {
-    return flagsLocal[flag];
-  }
-
-}
-
-export const feature: FeatureFlagService = new FeatureFlagServiceImpl();
