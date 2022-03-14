@@ -37,7 +37,6 @@ export interface AppEnv {
     spotify: {
       clientId: string;
       clientSecret: string;
-      useOAuth: boolean;
     };
   };
   mongo: {
@@ -49,6 +48,10 @@ export interface AppEnv {
     youtubeCacheLimit: number;
     guildCacheTTL: number;
   };
+  flags: {
+    spotifyUserAuth: boolean;
+    discordOldLeave: boolean;
+  }
 }
 
 export interface RangeArgument {
@@ -79,6 +82,10 @@ export const enum FeatureFlag {
    * Certain features such as liked and top tracks can only be used with this.
    */
   SPOTIFY_AUTH = 0,
+  /**
+   * Leave old servers when migrating token
+   */
+  DISCORD_OLD_LEAVE,
 }
 
 export interface FeatureFlagService {

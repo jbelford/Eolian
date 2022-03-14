@@ -42,9 +42,13 @@ function getBing() {
   return { key, configId };
 }
 
+function getEnvFlag(name: string): boolean {
+  return getEnvOpt(name) === 'true';
+}
+
 export const environment: AppEnv = {
   prod: getEnv('NODE_ENV') === 'production',
-  debug: getEnv('DEBUG_ENABLED') === 'true',
+  debug: getEnvFlag('DEBUG_ENABLED'),
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
   ownerGuild: getEnvOpt('OWNER_GUILD'),
@@ -55,7 +59,6 @@ export const environment: AppEnv = {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),
       main: getEnv('DISCORD_TOKEN'),
       old: getEnvOpt('DISCORD_TOKEN_OLD'),
-      oldLeave: getEnvOpt('DISCORD_OLD_LEAVE') === 'true',
     },
     bing: getBing(),
     youtube: {
@@ -70,7 +73,6 @@ export const environment: AppEnv = {
     spotify: {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
-      useOAuth: getEnvOpt('SPOTIFY_OAUTH') === 'true',
     },
   },
   mongo: {
@@ -82,10 +84,15 @@ export const environment: AppEnv = {
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
+  flags: {
+    spotifyUserAuth: getEnvFlag('SPOTIFY_OAUTH'),
+    discordOldLeave: getEnvFlag('DISCORD_OLD_LEAVE'),
+  }
 };
 
 const flagsLocal: Record<FeatureFlag, boolean> = {
-  [FeatureFlag.SPOTIFY_AUTH]: environment.tokens.spotify.useOAuth,
+  [FeatureFlag.SPOTIFY_AUTH]: environment.flags.spotifyUserAuth,
+  [FeatureFlag.DISCORD_OLD_LEAVE]: environment.flags.discordOldLeave
 };
 
 class FeatureFlagServiceImpl implements FeatureFlagService {

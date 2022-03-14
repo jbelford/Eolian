@@ -1,6 +1,7 @@
 import { AuthProviders } from 'api';
 import { CommandParsingStrategy } from 'commands/@types';
-import { environment } from 'common/env';
+import { FeatureFlag } from 'common/@types';
+import { environment, feature } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { LockManager } from 'data';
@@ -313,7 +314,7 @@ export class DiscordEolianBot implements EolianBot {
         await message.reply(
           `This bot is being migrated to a new token! Invite the new bot \n${this.invite}`
         );
-        if (environment.tokens.discord.oldLeave) {
+        if (feature.enabled(FeatureFlag.DISCORD_OLD_LEAVE)) {
           await message.guild?.leave();
         }
       }
