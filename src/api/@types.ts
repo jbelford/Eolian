@@ -341,6 +341,6 @@ export interface AuthorizationProvider {
 export interface OAuthRequest<T extends TokenProvider = TokenProvider> {
   readonly tokenProvider: T;
   get<T>(path: string, params?: RequestParams): Promise<T>;
-  getUrl<T>(uri: string): Promise<T>;
+  getUri<T>(uri: string): Promise<T>;
   getStream(uri: string): Promise<Readable>;
 }

@@ -91,11 +91,11 @@ export class OAuthRequestImpl<T extends TokenProvider> implements OAuthRequest<T
   constructor(readonly baseApiUrl: string, readonly tokenProvider: T) {}
 
   get<T>(path: string, params = {}): Promise<T> {
-    return this.getUrl(`${this.baseApiUrl}/${path}`, params);
+    return this.checkGetRequest(`${this.baseApiUrl}/${path}`, params);
   }
 
-  getUrl<T>(url: string, params = {}): Promise<T> {
-    return this.checkGetRequest(url, params);
+  getUri<T>(uri: string): Promise<T> {
+    return this.checkGetRequest(uri);
   }
 
   getStream(uri: string): Promise<Readable> {
@@ -139,9 +139,10 @@ export type AuthCacheItem = {
   reject: (err?: any) => void;
 };
 
-export type AuthServiceParams = Record<string, string> & {
+export type AuthorizeParams = {
   client_id: string;
   redirect_uri: string;
+  scope?: string;
 };
 
 export class AuthServiceImpl implements AuthService {
@@ -152,20 +153,20 @@ export class AuthServiceImpl implements AuthService {
     private readonly name: string,
     private readonly authorizeUrl: string,
     private readonly tokenUrl: string,
-    private readonly params: AuthServiceParams,
+    private readonly authorizeParams: AuthorizeParams,
     authenticationOptions: RequestOptions,
     private readonly cache: EolianCache<AuthCacheItem>
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
     this.options.form = Object.assign(this.options.form ?? {}, {
       grant_type: 'authorization_code',
-      redirect_uri: this.params.redirect_uri,
+      redirect_uri: this.authorizeParams.redirect_uri,
     });
   }
 
   authorize(): AuthResult {
     const state = randomUUID();
-    const params = { ...this.params, response_type: 'code', state };
+    const params = { ...this.authorizeParams, response_type: 'code', state };
     const link = `${this.authorizeUrl}?${querystringify(params)}`;
     const promise = new Promise<TokenResponseWithRefresh>((resolve, reject) => {
       this.cache.set(state, { resolve, reject });
@@ -209,36 +210,39 @@ export const enum ApiAuth {
 
 export class AuthProviders implements Closable {
 
-  constructor(private readonly cache: EolianCache<AuthCacheItem>, readonly spotify: AuthService) {}
+  constructor(
+    private readonly authCallbackCache: EolianCache<AuthCacheItem>,
+    readonly spotify: AuthService
+  ) {}
 
-  private readonly spotifyCache: EolianCache<UserRequest> = new InMemoryCache(
+  private readonly requestCache: EolianCache<UserRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
     false
   );
 
   async getUserRequest(userId: string, api: ApiAuth): Promise<UserRequest | undefined> {
     const key = `${api}_${userId}`;
-    const req = await this.spotifyCache.get(key);
-    await this.spotifyCache.refreshTTL(key);
+    const req = await this.requestCache.get(key);
+    await this.requestCache.refreshTTL(key);
     return req;
   }
 
   async setUserRequest(userId: string, request: UserRequest, api: ApiAuth): Promise<void> {
     const key = `${api}_${userId}`;
-    await this.spotifyCache.set(key, request);
+    await this.requestCache.set(key, request);
   }
 
   async removeUserRequest(userId: string, api?: ApiAuth): Promise<void> {
     if (api !== undefined) {
       const key = `${api}_${userId}`;
-      await this.spotifyCache.del(key);
+      await this.requestCache.del(key);
     } else {
       await this.removeUserRequest(userId, ApiAuth.Spotify);
     }
   }
 
   async close(): Promise<void> {
-    await this.cache.close();
+    await Promise.allSettled([this.authCallbackCache.close(), this.requestCache.close()]);
   }
 
 }

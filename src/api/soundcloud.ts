@@ -202,7 +202,7 @@ export class SoundCloudApiImpl implements SoundCloudApi {
       && (!options.total || items.length < options.total)
       && (!options.requestLimit || requests < options.requestLimit)
     ) {
-      result = await this.req.getUrl<SoundCloudPaginatedResult<T>>(
+      result = await this.req.getUri<SoundCloudPaginatedResult<T>>(
         `${result.next_href}&${extraParams}`
       );
       items = items.concat(result.collection);
