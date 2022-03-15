@@ -67,8 +67,10 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
 class DiscordAuthenticationMessager implements Closable {
 
-  constructor(private readonly sendable: ContextSendable,
-      private readonly tokenProvider: AuthorizationCodeProvider) {
+  constructor(
+    private readonly sendable: ContextSendable,
+    private readonly tokenProvider: AuthorizationCodeProvider
+  ) {
     logger.debug('Spotify authorization handler added');
     this.tokenProvider.on('authorize', this.onAuthorizeHandler);
   }
@@ -185,7 +187,10 @@ export class DiscordUser implements ContextUser {
       request = new SpotifyRequest(tokenProvider);
       await this.auth.setSpotifyRequest(this.id, request);
     }
-    this.authenticationMessager = new DiscordAuthenticationMessager(sendable, request.tokenProvider);
+    this.authenticationMessager = new DiscordAuthenticationMessager(
+      sendable,
+      request.tokenProvider
+    );
     return request;
   }
 
