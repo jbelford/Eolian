@@ -198,7 +198,7 @@ export class SpotifyAuth implements AuthService {
 
 }
 
-const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 60 * 1;
+const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
 
 type UserSpotifyRequest = SpotifyRequest<AuthorizationCodeProvider>;
 
@@ -211,8 +211,10 @@ export class AuthProviders implements Closable {
     false
   );
 
-  getSpotifyRequest(userId: string): Promise<UserSpotifyRequest | undefined> {
-    return this.spotifyCache.get(userId);
+  async getSpotifyRequest(userId: string): Promise<UserSpotifyRequest | undefined> {
+    const req = await this.spotifyCache.get(userId);
+    await this.spotifyCache.refreshTTL(userId);
+    return req;
   }
 
   async setSpotifyRequest(userId: string, request: UserSpotifyRequest): Promise<void> {
