@@ -1,6 +1,5 @@
-import { soundcloud, spotify, youtube } from 'api';
+import { createSpotifyClient, soundcloud, spotify } from 'api';
 import { SpotifyUser } from 'api/@types';
-import { SpotifyApiImpl } from 'api/spotify';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
@@ -24,7 +23,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
       if (user.tokens?.spotify) {
         const request = await context.interaction.user.getSpotifyRequest();
-        const client = new SpotifyApiImpl(youtube, request);
+        const client = createSpotifyClient(request);
         spotifyAccount = await client.getMe();
       }
     } else {

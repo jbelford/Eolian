@@ -10,6 +10,7 @@ import {
   TrackSourceDetails,
   YouTubeApi,
 } from './@types';
+import { SpotifyRequest } from './auth';
 import { BingApiImpl } from './bing';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SpotifyApiImpl } from './spotify';
@@ -32,6 +33,10 @@ export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(
 export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
 
 export * from './auth';
+
+export function createSpotifyClient(request: SpotifyRequest): SpotifyApi {
+  return new SpotifyApiImpl(youtube, request);
+}
 
 export function getTrackStream(track: Track): Promise<StreamSource | undefined> {
   switch (track.src) {

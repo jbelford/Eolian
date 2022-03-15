@@ -1,6 +1,5 @@
-import { spotify, youtube } from 'api';
+import { createSpotifyClient, spotify } from 'api';
 import { SpotifyApi } from 'api/@types';
-import { SpotifyApiImpl } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { feature } from 'data';
 import { Identifier, ResourceType, FeatureFlag } from 'data/@types';
@@ -58,7 +57,7 @@ async function getClient(identifier: Identifier, context: CommandContext): Promi
   let client: SpotifyApi = spotify;
   if (identifier.auth) {
     const request = await context.interaction.user.getSpotifyRequest();
-    client = new SpotifyApiImpl(youtube, request);
+    client = createSpotifyClient(request);
   }
   return client;
 }

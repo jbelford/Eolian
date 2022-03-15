@@ -1,6 +1,6 @@
-import { youtube } from 'api';
+import { createSpotifyClient } from 'api';
 import { RangeFactory, SpotifyApi, SpotifyUser, TrackSource } from 'api/@types';
-import { mapSpotifyTrack, SpotifyApiImpl } from 'api/spotify';
+import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { ResourceType } from 'data/@types';
@@ -14,7 +14,7 @@ export class SpotifyLikesResolver implements SourceResolver {
 
   async resolve(): Promise<ResolvedResource> {
     const request = await this.context.interaction.user.getSpotifyRequest();
-    const client = new SpotifyApiImpl(youtube, request);
+    const client = createSpotifyClient(request);
     const user = await client.getMe();
     return createSpotifyLikes(user, client, this.context.interaction, this.params);
   }
