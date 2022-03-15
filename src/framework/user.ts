@@ -1,6 +1,5 @@
 import { AuthorizationCodeProvider, AuthProviders, SpotifyRequest } from 'api';
 import { AuthorizationProvider, AuthService, TokenResponseWithRefresh } from 'api/@types';
-import { Closable } from 'common/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -27,10 +26,14 @@ import { DiscordVoiceChannel } from './voice';
 
 class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
-  constructor(private readonly user: ContextUser, private readonly spotifyAuth: AuthService) {}
+  constructor(private readonly user: ContextUser,
+    private readonly spotifyAuth: AuthService,
+    public sendable: ContextSendable) {}
 
   async authorize(): Promise<TokenResponseWithRefresh> {
     logger.info('[%s] Authorizing Spotify', this.user.id);
+
+    await this.sendable.send('Spotify authorization required! Check your DMs');
 
     const result = this.spotifyAuth.authorize();
     const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
@@ -65,33 +68,11 @@ class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
 }
 
-class DiscordAuthenticationMessager implements Closable {
-
-  constructor(
-    private readonly sendable: ContextSendable,
-    private readonly tokenProvider: AuthorizationCodeProvider
-  ) {
-    logger.debug('Spotify authorization handler added');
-    this.tokenProvider.on('authorize', this.onAuthorizeHandler);
-  }
-
-  async close(): Promise<void> {
-    logger.debug('Spotify authorization handler removed');
-    this.tokenProvider.removeListener('authorize', this.onAuthorizeHandler);
-  }
-
-  private readonly onAuthorizeHandler = async () => {
-    await this.sendable.send('Spotify authorization required! Check your DMs');
-  };
-
-}
-
 export class DiscordUser implements ContextUser {
 
   private dto?: UserDTO;
   private _permission: UserPermission;
   private _sender?: DiscordSender;
-  private authenticationMessager?: DiscordAuthenticationMessager;
 
   constructor(
     private readonly user: User,
@@ -101,10 +82,6 @@ export class DiscordUser implements ContextUser {
     private readonly guildUser?: GuildMember
   ) {
     this._permission = permission;
-  }
-
-  async close(): Promise<void> {
-    await this.authenticationMessager?.close();
   }
 
   get id(): string {
@@ -182,15 +159,13 @@ export class DiscordUser implements ContextUser {
     let request = await this.auth.getSpotifyRequest(this.id);
     if (!request) {
       const user = await this.get();
-      const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify);
+      const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify, sendable);
       const tokenProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
       request = new SpotifyRequest(tokenProvider);
       await this.auth.setSpotifyRequest(this.id, request);
+    } else {
+      (request.tokenProvider.authorization as DiscordSpotifyAuthorizationProvider).sendable = sendable;
     }
-    this.authenticationMessager = new DiscordAuthenticationMessager(
-      sendable,
-      request.tokenProvider
-    );
     return request;
   }
 

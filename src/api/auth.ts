@@ -46,7 +46,7 @@ export class ClientCredentialsProvider implements TokenProvider {
 export class AuthorizationCodeProvider extends EventEmitter implements TokenProvider {
 
   constructor(
-    private readonly authorization: AuthorizationProvider,
+    readonly authorization: AuthorizationProvider,
     private refreshToken?: string
   ) {
     super();

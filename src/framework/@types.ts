@@ -75,7 +75,7 @@ export type ContextInteractionOptions = {
   force?: boolean;
 };
 
-export interface ContextInteraction extends ContextSendable, Closable {
+export interface ContextInteraction extends ContextSendable {
   readonly user: ContextUser;
   readonly channel: ContextTextChannel;
   readonly hasReplied: boolean;
@@ -108,7 +108,7 @@ export interface ContextVoiceConnection extends Closable {
   awaitReconnect(): Promise<boolean>;
 }
 
-export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>, Closable {
+export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'> {
   readonly id: string;
   readonly name: string;
   readonly avatar?: string;
