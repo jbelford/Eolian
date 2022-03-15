@@ -108,12 +108,8 @@ export class DiscordUser implements ContextUser {
     let request = await this.auth.getUserRequest(this.id, api);
     if (!request) {
       const token = await this.getToken(api);
-      const provider = new DiscordAuthorizationProvider(
-        this,
-        this.auth.getService(api),
-        api,
-        sendable
-      );
+      const authService = this.auth.getService(api);
+      const provider = new DiscordAuthorizationProvider(this, authService, api, sendable);
       request = createAuthCodeRequest(provider, api, token);
       await this.auth.setUserRequest(this.id, request, api);
     } else {
