@@ -4,6 +4,7 @@ import { logger } from 'common/logger';
 import { Server } from 'http';
 import { AuthProviders } from 'api';
 import { GITHUB_PAGE } from 'common/constants';
+import { TrackSource } from 'api/@types';
 
 export class WebServer implements Closable {
 
@@ -18,7 +19,7 @@ export class WebServer implements Closable {
       if (!req.query.state) {
         res.status(400).send('Missing state query param!');
       } else {
-        const success = await this.authProviders.spotify.callback({
+        const success = await this.authProviders.getService(TrackSource.Spotify).callback({
           state: req.query.state as string,
           code: req.query.code as string,
           err: req.query.error as string,

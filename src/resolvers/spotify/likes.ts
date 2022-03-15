@@ -13,7 +13,10 @@ export class SpotifyLikesResolver implements SourceResolver {
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
-    const request = await this.context.interaction.user.getSpotifyRequest(this.context.interaction);
+    const request = await this.context.interaction.user.getRequest(
+      this.context.interaction,
+      TrackSource.Spotify
+    );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
     return createSpotifyLikes(user, client, this.context.interaction, this.params);

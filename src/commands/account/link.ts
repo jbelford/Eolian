@@ -22,7 +22,10 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (feature.enabled(FeatureFlag.SPOTIFY_AUTH) && options.SPOTIFY) {
     await context.interaction.defer();
-    const request = await context.interaction.user.getSpotifyRequest(context.interaction);
+    const request = await context.interaction.user.getRequest(
+      context.interaction,
+      TrackSource.Spotify
+    );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
     await context.interaction.send(getSpotifyMessage(user));

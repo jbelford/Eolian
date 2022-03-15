@@ -1,13 +1,25 @@
 import { Color } from 'common/constants';
 import { environment } from 'common/env';
 import { InMemoryCache } from 'data';
-import { OAuthRequest, StreamSource, Track, TrackSource, TrackSourceDetails } from './@types';
-import { AuthCacheItem, AuthProviders } from './auth';
+import {
+  AuthorizationProvider,
+  OAuthRequest,
+  StreamSource,
+  Track,
+  TrackSource,
+  TrackSourceDetails,
+} from './@types';
+import { AuthCacheItem, AuthorizationCodeProvider, AuthProviders } from './auth';
 import { BingApiImpl } from './bing';
 import { BingApi } from './bing/@types';
 import { SoundCloudApiImpl } from './soundcloud';
 import { SoundCloudApi } from './soundcloud/@types';
-import { createSpotifyAuthService, SpotifyApiImpl } from './spotify';
+import {
+  createSpotifyAuthorizationCodeProvider,
+  createSpotifyAuthService,
+  createSpotifyRequest,
+  SpotifyApiImpl,
+} from './spotify';
 import { SpotifyApi } from './spotify/@types';
 import { YouTubeApiImpl } from './youtube';
 import { YouTubeApi } from './youtube/@types';
@@ -25,11 +37,7 @@ export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
 
 export * from './auth';
-export {
-  createSpotifyAuthorizationCodeProvider,
-  createSpotifyRequest,
-  mapSpotifyTrack,
-} from './spotify';
+export { mapSpotifyTrack } from './spotify';
 
 export function createAuthProviders(): AuthProviders {
   const cache = new InMemoryCache<AuthCacheItem>(60, false);
@@ -39,6 +47,21 @@ export function createAuthProviders(): AuthProviders {
 
 export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
   return new SpotifyApiImpl(youtube, request);
+}
+
+export function createAuthCodeRequest(
+  provider: AuthorizationProvider,
+  api: TrackSource,
+  refreshToken?: string
+): OAuthRequest<AuthorizationCodeProvider> {
+  switch (api) {
+    case TrackSource.Spotify: {
+      const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, refreshToken);
+      return createSpotifyRequest(tokenProvider);
+    }
+    default:
+      throw new Error(`Auth Code not supported for ${api}`);
+  }
 }
 
 export function getTrackStream(track: Track): Promise<StreamSource | undefined> {

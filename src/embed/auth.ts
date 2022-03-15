@@ -2,38 +2,46 @@ import { SOURCE_DETAILS } from 'api';
 import { TrackSource } from 'api/@types';
 import { EmbedMessage } from 'framework/@types';
 
-export function createSpotifyAuthEmbed(link: string): EmbedMessage {
+export function createAuthEmbed(link: string, type: TrackSource): EmbedMessage {
+  const details = SOURCE_DETAILS[type];
   return {
     url: link,
-    title: 'Authorize Spotify',
-    description:
-      'Please click the link to authenticate with Spotify in order to complete your request',
-    color: SOURCE_DETAILS[TrackSource.Spotify].color,
-    thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
+    title: `Authorize ${details.name}`,
+    description: `Please click the link to authenticate with ${details.name} in order to complete your request`,
+    color: details.color,
+    thumbnail: details.icon,
     footer: {
       text: 'This link will expire in 60 seconds.',
     },
   };
 }
 
-export const SPOTIFY_AUTH_COMPLETE_EMBED: EmbedMessage = {
-  title: 'Authorize Spotify Complete',
-  description:
-    'You have authorized Eolian to read your Spotify information!\nYou can go back to the channel where you sent a command now :)',
-  color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
-};
+export function createAuthCompleteEmbed(type: TrackSource): EmbedMessage {
+  const details = SOURCE_DETAILS[type];
+  return {
+    title: `Authorize ${details.name} Complete`,
+    description: `You have authorized Eolian to read your ${details.name} information!\nYou can go back to the channel where you sent a command now :)`,
+    color: details.color,
+    thumbnail: details.icon,
+  };
+}
 
-export const SPOTIFY_AUTH_EXPIRED_EMBED: EmbedMessage = {
-  title: 'Authorize Spotify Expired',
-  description: 'This request expired!\nClick this link faster next time',
-  color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
-};
+export function createAuthExpiredEmbed(type: TrackSource): EmbedMessage {
+  const details = SOURCE_DETAILS[type];
+  return {
+    title: `Authorize ${details.name} Expired`,
+    description: 'This request expired!\nClick this link faster next time',
+    color: details.color,
+    thumbnail: details.icon,
+  };
+}
 
-export const SPOTIFY_AUTH_ERROR_EMBED: EmbedMessage = {
-  title: 'Authorize Spotify Failed',
-  description: 'This request failed! Try again',
-  color: SOURCE_DETAILS[TrackSource.Spotify].color,
-  thumbnail: SOURCE_DETAILS[TrackSource.Spotify].icon,
-};
+export function createAuthErrorEmbed(type: TrackSource): EmbedMessage {
+  const details = SOURCE_DETAILS[type];
+  return {
+    title: `Authorize ${details.name} Failed`,
+    description: 'This request failed! Try again',
+    color: details.color,
+    thumbnail: details.icon,
+  };
+}

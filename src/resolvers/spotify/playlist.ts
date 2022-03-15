@@ -60,8 +60,9 @@ export class SpotifyPlaylistResolver implements SourceResolver {
     const limit = this.params.FAST ? 1 : 5;
     if (this.params.MY) {
       if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
-        const request = await this.context.interaction.user.getSpotifyRequest(
-          this.context.interaction
+        const request = await this.context.interaction.user.getRequest(
+          this.context.interaction,
+          TrackSource.Spotify
         );
         this.client = createSpotifyClient(request);
 

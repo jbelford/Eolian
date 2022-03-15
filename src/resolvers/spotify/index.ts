@@ -1,4 +1,5 @@
 import { createSpotifyClient, spotify } from 'api';
+import { TrackSource } from 'api/@types';
 import { SpotifyApi } from 'api/spotify/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { feature } from 'data';
@@ -56,7 +57,10 @@ export async function getSpotifySourceFetcher(
 async function getClient(identifier: Identifier, context: CommandContext): Promise<SpotifyApi> {
   let client: SpotifyApi = spotify;
   if (identifier.auth) {
-    const request = await context.interaction.user.getSpotifyRequest(context.interaction);
+    const request = await context.interaction.user.getRequest(
+      context.interaction,
+      TrackSource.Spotify
+    );
     client = createSpotifyClient(request);
   }
   return client;

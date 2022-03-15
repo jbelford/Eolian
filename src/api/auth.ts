@@ -21,6 +21,7 @@ import {
   AuthCallbackData,
   TokenProvider,
   OAuthRequest,
+  TrackSource,
 } from './@types';
 
 export class ClientCredentialsProvider implements TokenProvider {
@@ -222,40 +223,45 @@ const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
 
 type UserRequest = OAuthRequest<AuthorizationCodeProvider>;
 
-export const enum ApiAuth {
-  Spotify,
-}
-
 export class AuthProviders implements Closable {
-
-  constructor(
-    private readonly authCallbackCache: EolianCache<AuthCacheItem>,
-    readonly spotify: AuthService
-  ) {}
 
   private readonly requestCache: EolianCache<UserRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
     false
   );
 
-  async getUserRequest(userId: string, api: ApiAuth): Promise<UserRequest | undefined> {
+  constructor(
+    private readonly authCallbackCache: EolianCache<AuthCacheItem>,
+    private readonly spotify: AuthService
+  ) {}
+
+  getService(api: TrackSource): AuthService {
+    switch (api) {
+      case TrackSource.Spotify:
+        return this.spotify;
+      default:
+        throw new Error(`Auth service not supported for: ${api}`);
+    }
+  }
+
+  async getUserRequest(userId: string, api: TrackSource): Promise<UserRequest | undefined> {
     const key = `${api}_${userId}`;
     const req = await this.requestCache.get(key);
     await this.requestCache.refreshTTL(key);
     return req;
   }
 
-  async setUserRequest(userId: string, request: UserRequest, api: ApiAuth): Promise<void> {
+  async setUserRequest(userId: string, request: UserRequest, api: TrackSource): Promise<void> {
     const key = `${api}_${userId}`;
     await this.requestCache.set(key, request);
   }
 
-  async removeUserRequest(userId: string, api?: ApiAuth): Promise<void> {
+  async removeUserRequest(userId: string, api?: TrackSource): Promise<void> {
     if (api !== undefined) {
       const key = `${api}_${userId}`;
       await this.requestCache.del(key);
     } else {
-      await this.removeUserRequest(userId, ApiAuth.Spotify);
+      await this.removeUserRequest(userId, TrackSource.Spotify);
     }
   }
 

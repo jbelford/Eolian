@@ -1,3 +1,4 @@
+import { TrackSource } from 'api/@types';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';
@@ -22,7 +23,7 @@ async function execute(
 
   if (SPOTIFY) {
     if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
-      await interaction.user.setSpotifyToken(null);
+      await interaction.user.setToken(null, TrackSource.Spotify);
     } else {
       await interaction.user.setSpotify(null);
     }

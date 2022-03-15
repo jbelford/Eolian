@@ -1,27 +1,9 @@
-import {
-  ApiAuth,
-  AuthProviders,
-  createSpotifyAuthorizationCodeProvider,
-  createSpotifyRequest,
-} from 'api';
-import {
-  AuthorizationProvider,
-  AuthService,
-  OAuthRequest,
-  TokenResponseWithRefresh,
-} from 'api/@types';
+import { AuthProviders, createAuthCodeRequest } from 'api';
+import { OAuthRequest, TrackSource } from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
 import { GuildMember, Permissions, User } from 'discord.js';
-import {
-  createSpotifyAuthEmbed,
-  SPOTIFY_AUTH_COMPLETE_EMBED,
-  SPOTIFY_AUTH_EXPIRED_EMBED,
-  SPOTIFY_AUTH_ERROR_EMBED,
-} from 'embed';
 import {
   ContextInteractionOptions,
   ContextMessage,
@@ -31,54 +13,9 @@ import {
   EmbedMessage,
   ServerDetails,
 } from './@types';
+import { DiscordAuthorizationProvider } from './auth';
 import { DiscordSender } from './channel';
 import { DiscordVoiceChannel } from './voice';
-
-class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
-
-  constructor(
-    private readonly user: ContextUser,
-    private readonly spotifyAuth: AuthService,
-    public sendable: ContextSendable
-  ) {}
-
-  async authorize(): Promise<TokenResponseWithRefresh> {
-    logger.info('[%s] Authorizing Spotify', this.user.id);
-
-    await this.sendable.send('Spotify authorization required! Check your DMs');
-
-    const result = this.spotifyAuth.authorize();
-    const embedMessage: EmbedMessage = createSpotifyAuthEmbed(result.link);
-    const message = await this.user.sendEmbed(embedMessage);
-    if (!message) {
-      throw new EolianUserError(
-        'I failed to send Spotify authorization link to you via DM! Are you blocking me? 😢'
-      );
-    }
-    try {
-      const response = await result.response;
-
-      await Promise.allSettled([
-        this.user.setSpotifyToken(response.refresh_token),
-        message?.editEmbed(SPOTIFY_AUTH_COMPLETE_EMBED),
-      ]);
-
-      return response;
-    } catch (e) {
-      if (e === 'timeout') {
-        logger.info('[%s] Spotify authorization timed out', this.user.id);
-        await message.editEmbed(SPOTIFY_AUTH_EXPIRED_EMBED);
-      } else {
-        logger.warn(`[%s] Spotify failed to authorize: %s`, this.user.id, e);
-        await message.editEmbed(SPOTIFY_AUTH_ERROR_EMBED);
-      }
-      throw new EolianUserError(
-        'Spotify authorization failed! Be sure to check your DMs and try again.'
-      );
-    }
-  }
-
-}
 
 export class DiscordUser implements ContextUser {
 
@@ -167,26 +104,48 @@ export class DiscordUser implements ContextUser {
     return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
 
-  async getSpotifyRequest(sendable: ContextSendable): Promise<OAuthRequest> {
-    let request = await this.auth.getUserRequest(this.id, ApiAuth.Spotify);
+  async getRequest(sendable: ContextSendable, api: TrackSource): Promise<OAuthRequest> {
+    let request = await this.auth.getUserRequest(this.id, api);
     if (!request) {
-      const user = await this.get();
-      const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify, sendable);
-      const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, user.tokens?.spotify);
-      request = createSpotifyRequest(tokenProvider);
-      await this.auth.setUserRequest(this.id, request, ApiAuth.Spotify);
+      const token = await this.getToken(api);
+      const provider = new DiscordAuthorizationProvider(
+        this,
+        this.auth.getService(api),
+        api,
+        sendable
+      );
+      request = createAuthCodeRequest(provider, api, token);
+      await this.auth.setUserRequest(this.id, request, api);
     } else {
-      (request.tokenProvider.authorization as DiscordSpotifyAuthorizationProvider).sendable
-        = sendable;
+      (request.tokenProvider.authorization as DiscordAuthorizationProvider).sendable = sendable;
     }
     return request;
+  }
+
+  private async getToken(api: TrackSource): Promise<string | undefined> {
+    const user = await this.get();
+    switch (api) {
+      case TrackSource.Spotify:
+        return user.tokens?.spotify;
+      default:
+        throw new Error(`User does not have token for ${api}`);
+    }
+  }
+
+  setToken(token: string | null, api: TrackSource): Promise<void> {
+    switch (api) {
+      case TrackSource.Spotify:
+        return this.setSpotifyToken(token);
+      default:
+        throw new Error(`Token is not supported for ${api}`);
+    }
   }
 
   async clearData(): Promise<boolean> {
     if (this.dto) {
       this.dto = undefined;
     }
-    await this.auth.removeUserRequest(this.id, ApiAuth.Spotify);
+    await this.auth.removeUserRequest(this.id);
     return this.users.delete(this.id);
   }
 
@@ -229,7 +188,7 @@ export class DiscordUser implements ContextUser {
     }
   }
 
-  async setSpotifyToken(token: string | null): Promise<void> {
+  private async setSpotifyToken(token: string | null): Promise<void> {
     if (this.dto) {
       if (this.dto.tokens) {
         this.dto.tokens.spotify = token ?? undefined;
@@ -240,7 +199,7 @@ export class DiscordUser implements ContextUser {
     if (token) {
       await this.users.setSpotifyRefreshToken(this.id, token);
     } else {
-      await this.auth.removeUserRequest(this.id);
+      await this.auth.removeUserRequest(this.id, TrackSource.Spotify);
       await this.users.removeSpotifyRefreshToken(this.id);
     }
   }
