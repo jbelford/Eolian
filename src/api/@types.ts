@@ -298,11 +298,10 @@ export type TokenResponse = {
   access_token: string;
   scope: string;
   expires_in: number;
+  refresh_token?: string;
 };
 
-export type TokenResponseWithRefresh = TokenResponse & {
-  refresh_token: string;
-};
+export type TokenResponseWithRefresh = Required<TokenResponse>;
 
 export interface TokenProvider {
   name: string;

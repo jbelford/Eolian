@@ -26,6 +26,7 @@ import {
 export class ClientCredentialsProvider implements TokenProvider {
 
   private readonly options: RequestOptions;
+  private refreshToken?: string;
 
   constructor(
     readonly name: string,
@@ -33,14 +34,31 @@ export class ClientCredentialsProvider implements TokenProvider {
     authenticationOptions: RequestOptions
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
-    this.options.form = Object.assign(this.options.form ?? {}, {
-      grant_type: 'client_credentials',
-    });
   }
 
   async getToken(): Promise<TokenResponse> {
+    if (this.refreshToken) {
+      try {
+        return await this.refresh(this.refreshToken);
+      } catch (e: any) {
+        if (!(e instanceof HttpRequestError) || e.body.error !== 'invalid_grant') {
+          throw e;
+        }
+      }
+    }
+
     logger.info('%s HTTP: %s', this.name, this.tokenEndpoint);
-    return await httpRequest(this.tokenEndpoint, this.options);
+    const form = { ...this.options.form, grant_type: 'client_credentials' };
+    const result = await httpRequest<TokenResponse>(this.tokenEndpoint, { ...this.options, form });
+    this.refreshToken = result.refresh_token;
+    return result;
+  }
+
+  private async refresh(token: string): Promise<TokenResponse> {
+    logger.info(`%s HTTP: %s`, this.name, this.tokenEndpoint);
+    this.options.form!.refresh_token = token;
+    const form = { ...this.options.form, grant_type: 'refresh_token', refresh_token: token };
+    return await httpRequest(this.tokenEndpoint, { ...this.options, form });
   }
 
 }
@@ -57,7 +75,7 @@ export class AuthorizationCodeProvider implements TokenProvider {
     private refreshToken?: string
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
-    this.options.form = Object.assign(this.options.form ?? {}, { grant_type: 'refresh_token' });
+    this.options.form = { ...this.options.form, grant_type: 'refresh_token' };
   }
 
   async getToken(): Promise<TokenResponse> {
@@ -158,10 +176,11 @@ export class AuthServiceImpl implements AuthService {
     private readonly cache: EolianCache<AuthCacheItem>
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
-    this.options.form = Object.assign(this.options.form ?? {}, {
+    this.options.form = {
+      ...this.options.form,
       grant_type: 'authorization_code',
       redirect_uri: this.authorizeParams.redirect_uri,
-    });
+    };
   }
 
   authorize(): AuthResult {
