@@ -56,7 +56,6 @@ export class ClientCredentialsProvider implements TokenProvider {
 
   private async refresh(token: string): Promise<TokenResponse> {
     logger.info(`%s HTTP: %s`, this.name, this.tokenEndpoint);
-    this.options.form!.refresh_token = token;
     const form = { ...this.options.form, grant_type: 'refresh_token', refresh_token: token };
     return await httpRequest(this.tokenEndpoint, { ...this.options, form });
   }
