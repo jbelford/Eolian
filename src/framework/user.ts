@@ -1,11 +1,15 @@
-import { ApiAuth, AuthProviders } from 'api';
+import {
+  ApiAuth,
+  AuthProviders,
+  createSpotifyAuthorizationCodeProvider,
+  createSpotifyRequest,
+} from 'api';
 import {
   AuthorizationProvider,
   AuthService,
   OAuthRequest,
   TokenResponseWithRefresh,
 } from 'api/@types';
-import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest } from 'api/spotify';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';

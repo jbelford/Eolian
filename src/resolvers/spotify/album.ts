@@ -1,6 +1,5 @@
-import { spotify } from 'api';
+import { mapSpotifyTrack, spotify } from 'api';
 import { SpotifyAlbum, SpotifyAlbumFull, TrackSource } from 'api/@types';
-import { mapSpotifyTrack } from 'api/spotify';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';

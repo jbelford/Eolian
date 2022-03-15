@@ -31,6 +31,11 @@ export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
 
 export * from './auth';
+export {
+  createSpotifyAuthorizationCodeProvider,
+  createSpotifyRequest,
+  mapSpotifyTrack,
+} from './spotify';
 
 export function createAuthProviders(): AuthProviders {
   const cache = new InMemoryCache<AuthCacheItem>(60, false);
