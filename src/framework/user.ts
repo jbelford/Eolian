@@ -189,10 +189,11 @@ export class DiscordUser implements ContextUser {
     return request;
   }
 
-  clearData(): Promise<boolean> {
+  async clearData(): Promise<boolean> {
     if (this.dto) {
       this.dto = undefined;
     }
+    await this.auth.removeSpotifyRequest(this.id);
     return this.users.delete(this.id);
   }
 
