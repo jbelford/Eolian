@@ -1,4 +1,4 @@
-import { AuthProviders } from 'api';
+import { ApiAuth, AuthProviders } from 'api';
 import {
   AuthorizationProvider,
   AuthService,
@@ -164,13 +164,13 @@ export class DiscordUser implements ContextUser {
   }
 
   async getSpotifyRequest(sendable: ContextSendable): Promise<OAuthRequest> {
-    let request = await this.auth.getSpotifyRequest(this.id);
+    let request = await this.auth.getUserRequest(this.id, ApiAuth.Spotify);
     if (!request) {
       const user = await this.get();
       const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify, sendable);
       const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, user.tokens?.spotify);
       request = createSpotifyRequest(tokenProvider);
-      await this.auth.setSpotifyRequest(this.id, request);
+      await this.auth.setUserRequest(this.id, request, ApiAuth.Spotify);
     } else {
       (request.tokenProvider.authorization as DiscordSpotifyAuthorizationProvider).sendable
         = sendable;
@@ -182,7 +182,7 @@ export class DiscordUser implements ContextUser {
     if (this.dto) {
       this.dto = undefined;
     }
-    await this.auth.removeSpotifyRequest(this.id);
+    await this.auth.removeUserRequest(this.id, ApiAuth.Spotify);
     return this.users.delete(this.id);
   }
 
@@ -236,7 +236,7 @@ export class DiscordUser implements ContextUser {
     if (token) {
       await this.users.setSpotifyRefreshToken(this.id, token);
     } else {
-      await this.auth.removeSpotifyRequest(this.id);
+      await this.auth.removeUserRequest(this.id);
       await this.users.removeSpotifyRefreshToken(this.id);
     }
   }

@@ -201,29 +201,40 @@ export class AuthServiceImpl implements AuthService {
 
 const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
 
-type UserSpotifyRequest = OAuthRequest<AuthorizationCodeProvider>;
+type UserRequest = OAuthRequest<AuthorizationCodeProvider>;
+
+export const enum ApiAuth {
+  Spotify,
+}
 
 export class AuthProviders implements Closable {
 
   constructor(private readonly cache: EolianCache<AuthCacheItem>, readonly spotify: AuthService) {}
 
-  private readonly spotifyCache: EolianCache<UserSpotifyRequest> = new InMemoryCache(
+  private readonly spotifyCache: EolianCache<UserRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
     false
   );
 
-  async getSpotifyRequest(userId: string): Promise<UserSpotifyRequest | undefined> {
-    const req = await this.spotifyCache.get(userId);
-    await this.spotifyCache.refreshTTL(userId);
+  async getUserRequest(userId: string, api: ApiAuth): Promise<UserRequest | undefined> {
+    const key = `${api}_${userId}`;
+    const req = await this.spotifyCache.get(key);
+    await this.spotifyCache.refreshTTL(key);
     return req;
   }
 
-  async setSpotifyRequest(userId: string, request: UserSpotifyRequest): Promise<void> {
-    await this.spotifyCache.set(userId, request);
+  async setUserRequest(userId: string, request: UserRequest, api: ApiAuth): Promise<void> {
+    const key = `${api}_${userId}`;
+    await this.spotifyCache.set(key, request);
   }
 
-  async removeSpotifyRequest(userId: string): Promise<void> {
-    await this.spotifyCache.del(userId);
+  async removeUserRequest(userId: string, api?: ApiAuth): Promise<void> {
+    if (api !== undefined) {
+      const key = `${api}_${userId}`;
+      await this.spotifyCache.del(key);
+    } else {
+      await this.removeUserRequest(userId, ApiAuth.Spotify);
+    }
   }
 
   async close(): Promise<void> {
