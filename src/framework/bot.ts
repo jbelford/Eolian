@@ -211,23 +211,27 @@ export class DiscordEolianBot implements EolianBot {
         this.db.users,
         this.auth
       );
-      if (!embedButton.userId || embedButton.userId === interaction.user.id) {
-        let state: ServerState | undefined;
-        if (interaction.guild) {
-          state = await this.guildStore.getState(interaction.guild);
-        }
-        await contextInteraction.user.updatePermissions(state?.details);
-
-        if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
-          await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
-        } else {
-          const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
-          if (destroy) {
-            contextInteraction.message.releaseButtons();
+      try {
+        if (!embedButton.userId || embedButton.userId === interaction.user.id) {
+          let state: ServerState | undefined;
+          if (interaction.guild) {
+            state = await this.guildStore.getState(interaction.guild);
           }
+          await contextInteraction.user.updatePermissions(state?.details);
+
+          if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
+            await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
+          } else {
+            const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+            if (destroy) {
+              contextInteraction.message.releaseButtons();
+            }
+          }
+        } else {
+          await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
         }
-      } else {
-        await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
+      } finally {
+        await contextInteraction.close();
       }
     } else {
       logger.warn(
@@ -255,14 +259,17 @@ export class DiscordEolianBot implements EolianBot {
               this.db.users,
               this.auth
             );
+        try {
+          const noDefault = await this.onBotInvoked(
+            contextInteraction,
+            interaction.guild ?? undefined
+          );
 
-        const noDefault = await this.onBotInvoked(
-          contextInteraction,
-          interaction.guild ?? undefined
-        );
-
-        if (!contextInteraction.hasReplied && !noDefault) {
-          await contextInteraction.send('👌', { ephemeral: true });
+          if (!contextInteraction.hasReplied && !noDefault) {
+            await contextInteraction.send('👌', { ephemeral: true });
+          }
+        } finally {
+          await contextInteraction.close();
         }
       } finally {
         await this.lockManager.unlock(interaction.user.id);
@@ -290,7 +297,11 @@ export class DiscordEolianBot implements EolianBot {
               this.db.users,
               this.auth
             );
-            await this.onBotInvoked(interaction, message.guild ?? undefined);
+            try {
+              await this.onBotInvoked(interaction, message.guild ?? undefined);
+            } finally {
+              await interaction.close();
+            }
           } finally {
             await this.lockManager.unlock(message.author.id);
           }

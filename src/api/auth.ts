@@ -6,6 +6,7 @@ import { promiseTimeout } from 'common/util';
 import { randomUUID } from 'crypto';
 import { InMemoryCache } from 'data';
 import { EolianCache } from 'data/@types';
+import { EventEmitter } from 'stream';
 import {
   TokenResponse,
   AuthorizationProvider,
@@ -42,12 +43,14 @@ export class ClientCredentialsProvider implements TokenProvider {
 
 }
 
-export class AuthorizationCodeProvider implements TokenProvider {
+export class AuthorizationCodeProvider extends EventEmitter implements TokenProvider {
 
   constructor(
     private readonly authorization: AuthorizationProvider,
     private refreshToken?: string
-  ) {}
+  ) {
+    super();
+  }
 
   async getToken(): Promise<TokenResponse> {
     if (this.refreshToken) {
@@ -59,6 +62,7 @@ export class AuthorizationCodeProvider implements TokenProvider {
         }
       }
     }
+    this.emit('authorize');
     const resp = await this.authorization.authorize();
     this.refreshToken = resp.refresh_token;
     return resp;
@@ -81,12 +85,12 @@ export class AuthorizationCodeProvider implements TokenProvider {
 
 }
 
-export class SpotifyRequest {
+export class SpotifyRequest<T extends TokenProvider = TokenProvider> {
 
   private expiration = 0;
   private accessToken?: string;
 
-  constructor(private readonly tokenProvider: TokenProvider = new ClientCredentialsProvider()) {}
+  constructor(readonly tokenProvider: T) {}
 
   get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1): Promise<T> {
     return this.getUrl(`${SPOTIFY_API}/${version}/${path}`, params);
@@ -196,20 +200,22 @@ export class SpotifyAuth implements AuthService {
 
 const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 60 * 1;
 
+type UserSpotifyRequest = SpotifyRequest<AuthorizationCodeProvider>;
+
 export class AuthProviders implements Closable {
 
   readonly spotify: AuthService = new SpotifyAuth();
 
-  private readonly spotifyCache: EolianCache<SpotifyRequest> = new InMemoryCache(
+  private readonly spotifyCache: EolianCache<UserSpotifyRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
     false
   );
 
-  getSpotifyRequest(userId: string): Promise<SpotifyRequest | undefined> {
+  getSpotifyRequest(userId: string): Promise<UserSpotifyRequest | undefined> {
     return this.spotifyCache.get(userId);
   }
 
-  async setSpotifyRequest(userId: string, request: SpotifyRequest): Promise<void> {
+  async setSpotifyRequest(userId: string, request: UserSpotifyRequest): Promise<void> {
     await this.spotifyCache.set(userId, request);
   }
 

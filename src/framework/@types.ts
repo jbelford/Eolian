@@ -75,7 +75,7 @@ export type ContextInteractionOptions = {
   force?: boolean;
 };
 
-export interface ContextInteraction extends ContextSendable {
+export interface ContextInteraction extends ContextSendable, Closable {
   readonly user: ContextUser;
   readonly channel: ContextTextChannel;
   readonly hasReplied: boolean;
@@ -108,7 +108,7 @@ export interface ContextVoiceConnection extends Closable {
   awaitReconnect(): Promise<boolean>;
 }
 
-export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'> {
+export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>, Closable {
   readonly id: string;
   readonly name: string;
   readonly avatar?: string;
@@ -116,7 +116,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   updatePermissions(details?: ServerDetails): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
-  getSpotifyRequest(): Promise<SpotifyRequest>;
+  getSpotifyRequest(sendable: ContextSendable): Promise<SpotifyRequest>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string): Promise<boolean>;

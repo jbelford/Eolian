@@ -10,7 +10,7 @@ export class SpotifyTracksResolver implements SourceResolver {
   constructor(private readonly context: CommandContext) {}
 
   async resolve(): Promise<ResolvedResource> {
-    const request = await this.context.interaction.user.getSpotifyRequest();
+    const request = await this.context.interaction.user.getSpotifyRequest(this.context.interaction);
     const client = createSpotifyClient(request);
     const user = await client.getMe();
     return createSpotifyTracks(user, client);

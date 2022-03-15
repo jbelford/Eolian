@@ -20,9 +20,9 @@ import {
   TrackSource,
   YouTubeApi,
 } from './@types';
-import { SpotifyRequest } from './auth';
+import { ClientCredentialsProvider, SpotifyRequest } from './auth';
 
-const CLIENT_SPOTIFY_REQUEST = new SpotifyRequest();
+const CLIENT_SPOTIFY_REQUEST = new SpotifyRequest(new ClientCredentialsProvider());
 
 export class SpotifyApiImpl implements SpotifyApi {
 

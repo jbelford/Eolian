@@ -130,6 +130,10 @@ class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
     return this._sender;
   }
 
+  async close(): Promise<void> {
+    await this.user.close();
+  }
+
   async defer(ephemeral = true): Promise<void> {
     await this.interaction.deferReply({ ephemeral });
   }
@@ -350,6 +354,10 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
       );
     }
     return this._sender;
+  }
+
+  async close(): Promise<void> {
+    await this.user.close();
   }
 
   react(emoji: string): Promise<void> {

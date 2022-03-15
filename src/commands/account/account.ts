@@ -22,7 +22,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     let spotifyAccount: SpotifyUser | undefined;
     if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
       if (user.tokens?.spotify) {
-        const request = await context.interaction.user.getSpotifyRequest();
+        const request = await context.interaction.user.getSpotifyRequest(context.interaction);
         const client = createSpotifyClient(request);
         spotifyAccount = await client.getMe();
       }

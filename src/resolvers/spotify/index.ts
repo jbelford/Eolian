@@ -56,7 +56,7 @@ export async function getSpotifySourceFetcher(
 async function getClient(identifier: Identifier, context: CommandContext): Promise<SpotifyApi> {
   let client: SpotifyApi = spotify;
   if (identifier.auth) {
-    const request = await context.interaction.user.getSpotifyRequest();
+    const request = await context.interaction.user.getSpotifyRequest(context.interaction);
     client = createSpotifyClient(request);
   }
   return client;
