@@ -1,6 +1,7 @@
 import { youtube } from 'api';
-import { TrackSource, YoutubeVideo } from 'api/@types';
+import { TrackSource } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
+import { YoutubeVideo } from 'api/youtube/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';

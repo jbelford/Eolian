@@ -1,8 +1,9 @@
+import { Track, TrackSource } from 'api/@types';
 import { logger } from 'common/logger';
 import { httpRequest } from 'common/request';
 import { fuzzyMatch } from 'common/util';
-import { parse, toSeconds } from 'iso8601-duration';
-import { BingApi, BingVideo, Track, TrackSource } from './@types';
+import { toSeconds, parse } from 'iso8601-duration';
+import { BingApi, BingVideo } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 

@@ -1,22 +1,16 @@
 import { Color } from 'common/constants';
 import { environment } from 'common/env';
 import { InMemoryCache } from 'data';
-import {
-  BingApi,
-  OAuthRequest,
-  SoundCloudApi,
-  SpotifyApi,
-  StreamSource,
-  Track,
-  TrackSource,
-  TrackSourceDetails,
-  YouTubeApi,
-} from './@types';
+import { OAuthRequest, StreamSource, Track, TrackSource, TrackSourceDetails } from './@types';
 import { AuthCacheItem, AuthProviders } from './auth';
 import { BingApiImpl } from './bing';
+import { BingApi } from './bing/@types';
 import { SoundCloudApiImpl } from './soundcloud';
+import { SoundCloudApi } from './soundcloud/@types';
 import { createSpotifyAuthService, SpotifyApiImpl } from './spotify';
+import { SpotifyApi } from './spotify/@types';
 import { YouTubeApiImpl } from './youtube';
+import { YouTubeApi } from './youtube/@types';
 
 let bing: BingApi | undefined;
 if (environment.tokens.bing) {

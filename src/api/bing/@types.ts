@@ -1,0 +1,23 @@
+import { Track } from 'api/@types';
+
+export interface BingApi {
+  searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;
+  searchYoutubeSong(
+    name: string,
+    artist: string,
+    duration?: number
+  ): Promise<(Track & { score: number })[]>;
+}
+
+export interface BingVideoPublisher {
+  name: string;
+}
+
+export interface BingVideo {
+  id: string;
+  name: string;
+  duration: string;
+  contentUrl: string;
+  publisher: BingVideoPublisher[];
+  creator: BingVideoPublisher;
+}

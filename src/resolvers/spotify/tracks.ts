@@ -1,5 +1,6 @@
 import { createSpotifyClient, mapSpotifyTrack } from 'api';
-import { SpotifyUser, SpotifyApi, TrackSource } from 'api/@types';
+import { TrackSource } from 'api/@types';
+import { SpotifyApi, SpotifyUser } from 'api/spotify/@types';
 import { CommandContext } from 'commands/@types';
 import { ResourceType } from 'data/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from 'resolvers/@types';

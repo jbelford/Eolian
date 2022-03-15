@@ -1,44 +1,23 @@
+import { OAuthRequest, Track, StreamSource, TrackSource } from 'api/@types';
+import { YouTubeApi } from 'api/youtube/@types';
 import { ProgressUpdater } from 'common/@types';
-import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { querystringify, RequestOptions } from 'common/request';
+import { querystringify } from 'common/request';
 import { Readable } from 'stream';
 import {
-  OAuthRequest,
   SoundCloudApi,
-  SoundCloudPaginatedResult,
-  SoundCloudPlaylist,
-  SoundCloudResource,
-  SoundCloudTrack,
   SoundCloudUser,
-  StreamSource,
-  Track,
-  TrackSource,
-  YouTubeApi,
+  SoundCloudResource,
+  SoundCloudPaginatedResult,
+  SoundCloudTrack,
+  SoundCloudPlaylist,
 } from './@types';
-import { ClientCredentialsProvider, OAuthRequestImpl } from './auth';
+import { CLIENT_SOUNDCLOUD_REQUEST } from './request';
 
-const SOUNDCLOUD_API = 'https://api.soundcloud.com';
-const SOUNDCLOUD_TOKEN = `${SOUNDCLOUD_API}/oauth2/token`;
 const TRACKS_PARAMS = {
   access: 'playable,blocked,preview',
 };
-
-const SOUNDCLOUD_AUTH_OPTIONS: RequestOptions = {
-  form: {
-    client_id: environment.tokens.soundcloud.clientId,
-    client_secret: environment.tokens.soundcloud.clientSecret,
-  },
-};
-
-const clientCredentials = new ClientCredentialsProvider(
-  'SoundCloud',
-  SOUNDCLOUD_TOKEN,
-  SOUNDCLOUD_AUTH_OPTIONS
-);
-
-export const CLIENT_SOUNDCLOUD_REQUEST = new OAuthRequestImpl(SOUNDCLOUD_API, clientCredentials);
 
 export class SoundCloudApiImpl implements SoundCloudApi {
 
@@ -242,19 +221,6 @@ type GetPaginatedItemsOptions = {
   requestLimit?: number;
   progress?: ProgressUpdater;
 };
-
-export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
-  return {
-    id: track.id.toString(),
-    poster: track.user.username,
-    src: TrackSource.SoundCloud,
-    url: track.permalink_url,
-    stream: track.streamable && track.access === 'playable' ? track.stream_url : undefined,
-    title: track.title,
-    artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
-    duration: track.duration,
-  };
-}
 
 class SoundCloudStreamSource implements StreamSource {
 

@@ -1,6 +1,7 @@
 import { soundcloud } from 'api';
-import { SoundCloudUser, TrackSource } from 'api/@types';
+import { TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
+import { SoundCloudUser } from 'api/soundcloud/@types';
 import { CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { ProgressUpdater } from 'common/@types';

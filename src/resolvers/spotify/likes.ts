@@ -1,5 +1,6 @@
 import { createSpotifyClient, mapSpotifyTrack } from 'api';
-import { RangeFactory, SpotifyApi, SpotifyUser, TrackSource } from 'api/@types';
+import { RangeFactory, TrackSource } from 'api/@types';
+import { SpotifyApi, SpotifyUser } from 'api/spotify/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { ResourceType } from 'data/@types';

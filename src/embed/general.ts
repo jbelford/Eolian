@@ -1,4 +1,5 @@
-import { SoundCloudUser, SpotifyUser } from 'api/@types';
+import { SoundCloudUser } from 'api/soundcloud/@types';
+import { SpotifyUser } from 'api/spotify/@types';
 import { SyntaxType } from 'commands/@types';
 import { Color, DEFAULT_VOLUME } from 'common/constants';
 import { environment } from 'common/env';

@@ -1,5 +1,5 @@
 import { createSpotifyClient, spotify } from 'api';
-import { SpotifyApi } from 'api/@types';
+import { SpotifyApi } from 'api/spotify/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { feature } from 'data';
 import { Identifier, ResourceType, FeatureFlag } from 'data/@types';

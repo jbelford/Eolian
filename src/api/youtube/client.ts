@@ -1,27 +1,16 @@
+import { RangeFactory, Track, StreamSource, TrackSource } from 'api/@types';
 import { ProgressUpdater } from 'common/@types';
 import { environment } from 'common/env';
 import { logger } from 'common/logger';
 import { fuzzyMatch } from 'common/util';
 import { InMemoryLRUCache } from 'data';
 import { MemoryCache } from 'data/@types';
-import { google, youtube_v3 } from 'googleapis';
+import { youtube_v3, google } from 'googleapis';
 import { decode } from 'html-entities';
-import * as play from 'play-dl';
 import { Readable } from 'stream';
-import {
-  BingApi,
-  RangeFactory,
-  StreamSource,
-  Track,
-  TrackSource,
-  YouTubeApi,
-  YoutubePlaylist,
-  YouTubeUrlDetails,
-  YoutubeVideo,
-} from './@types';
-
-// const MUSIC_CATEGORY_ID = 10;
-// const MUSIC_TOPIC = '/m/04rlf';
+import { YouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
+import * as play from 'play-dl';
+import { BingApi } from 'api/bing/@types';
 
 const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/;

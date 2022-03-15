@@ -4,7 +4,7 @@ import {
   SoundCloudResourceType,
   SoundCloudTrack,
   SoundCloudUser,
-} from 'api/@types';
+} from 'api/soundcloud/@types';
 import { EolianUserError } from 'common/errors';
 import { ResolvedResource, SourceResolver } from '../@types';
 import { createSoundCloudUser } from './artist';

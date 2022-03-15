@@ -1,5 +1,7 @@
 import { createSpotifyClient, soundcloud, spotify } from 'api';
-import { SoundCloudUser, SpotifyResourceType, SpotifyUser, TrackSource } from 'api/@types';
+import { TrackSource } from 'api/@types';
+import { SoundCloudUser } from 'api/soundcloud/@types';
+import { SpotifyResourceType, SpotifyUser } from 'api/spotify/@types';
 import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
 import { KEYWORDS } from 'commands/keywords';

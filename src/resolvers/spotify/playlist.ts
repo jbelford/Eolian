@@ -1,11 +1,6 @@
 import { createSpotifyClient, mapSpotifyTrack, spotify } from 'api';
-import {
-  RangeFactory,
-  SpotifyApi,
-  SpotifyPlaylist,
-  SpotifyPlaylistTracks,
-  TrackSource,
-} from 'api/@types';
+import { RangeFactory, TrackSource } from 'api/@types';
+import { SpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from 'api/spotify/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { EolianUserError } from 'common/errors';

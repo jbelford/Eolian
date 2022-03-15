@@ -1,6 +1,7 @@
 import { soundcloud } from 'api';
-import { SoundCloudPlaylist, SoundCloudTrack, TrackSource } from 'api/@types';
+import { TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
+import { SoundCloudPlaylist, SoundCloudTrack } from 'api/soundcloud/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
 import { ResourceType } from 'data/@types';

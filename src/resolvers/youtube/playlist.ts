@@ -1,6 +1,7 @@
 import { youtube } from 'api';
-import { RangeFactory, TrackSource, YoutubePlaylist } from 'api/@types';
+import { RangeFactory, TrackSource } from 'api/@types';
 import { mapYouTubeVideo } from 'api/youtube';
+import { YoutubePlaylist } from 'api/youtube/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { EolianUserError } from 'common/errors';
