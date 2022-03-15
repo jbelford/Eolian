@@ -1,4 +1,4 @@
-import { AuthProviders } from 'api';
+import { createAuthProviders } from 'api';
 import { createCommandParsingStrategy } from 'commands';
 import { CommandParsingStrategy } from 'commands/@types';
 import { LOGGER_HEADER } from 'common/constants';
@@ -14,7 +14,7 @@ process.stdout.write(LOGGER_HEADER);
 
 (async () => {
   try {
-    const auth = new AuthProviders();
+    const auth = createAuthProviders();
     const db: AppDatabase = await createDatabase();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
     const bot: EolianBot = new DiscordEolianBot({ db, parser, auth });

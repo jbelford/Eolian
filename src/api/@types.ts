@@ -1,5 +1,6 @@
-import { AbsRangeArgument, Closable, ProgressUpdater } from 'common/@types';
+import { AbsRangeArgument, ProgressUpdater } from 'common/@types';
 import { Color } from 'common/constants';
+import { RequestParams } from 'common/request';
 import { Readable } from 'stream';
 
 interface StreamFetcher {
@@ -304,6 +305,7 @@ export type TokenResponseWithRefresh = TokenResponse & {
 };
 
 export interface TokenProvider {
+  name: string;
   getToken(): Promise<TokenResponse>;
 }
 
@@ -324,7 +326,7 @@ export type AuthCallbackData = {
   state: string;
 };
 
-export interface AuthService extends Closable {
+export interface AuthService {
   authorize(): AuthResult;
   callback(data: AuthCallbackData): Promise<boolean>;
 }
@@ -334,4 +336,11 @@ export interface AuthService extends Closable {
  */
 export interface AuthorizationProvider {
   authorize(): Promise<TokenResponseWithRefresh>;
+}
+
+export interface OAuthRequest<T extends TokenProvider = TokenProvider> {
+  readonly tokenProvider: T;
+  get<T>(path: string, params?: RequestParams): Promise<T>;
+  getUrl<T>(uri: string): Promise<T>;
+  getStream(uri: string): Promise<Readable>;
 }

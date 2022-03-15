@@ -1,12 +1,17 @@
 import { Closable } from 'common/@types';
-import { environment } from 'common/env';
 import { logger } from 'common/logger';
-import { httpRequest, HttpRequestError, querystringify } from 'common/request';
+import {
+  httpRequest,
+  HttpRequestError,
+  querystringify,
+  RequestOptions,
+  RequestParams,
+} from 'common/request';
 import { promiseTimeout } from 'common/util';
 import { randomUUID } from 'crypto';
 import { InMemoryCache } from 'data';
 import { EolianCache } from 'data/@types';
-import { EventEmitter } from 'stream';
+import { Readable } from 'stream';
 import {
   TokenResponse,
   AuthorizationProvider,
@@ -15,41 +20,44 @@ import {
   AuthResult,
   AuthCallbackData,
   TokenProvider,
+  OAuthRequest,
 } from './@types';
-
-const enum SPOTIFY_API_VERSIONS {
-  V1 = 'v1',
-}
-const SPOTIFY_API = 'https://api.spotify.com';
-const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
-const SPOTIFY_AUTHORIZE = 'https://accounts.spotify.com/authorize';
 
 export class ClientCredentialsProvider implements TokenProvider {
 
-  async getToken(): Promise<TokenResponse> {
-    logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
-    return await httpRequest(SPOTIFY_TOKEN, {
-      method: 'POST',
-      form: { grant_type: 'client_credentials' },
-      auth: {
-        basic: {
-          id: environment.tokens.spotify.clientId,
-          password: environment.tokens.spotify.clientSecret,
-        },
-      },
-      json: true,
+  private readonly options: RequestOptions;
+
+  constructor(
+    readonly name: string,
+    private readonly tokenEndpoint: string,
+    authenticationOptions: RequestOptions
+  ) {
+    this.options = { ...authenticationOptions, method: 'POST', json: true };
+    this.options.form = Object.assign(this.options.form ?? {}, {
+      grant_type: 'client_credentials',
     });
+  }
+
+  async getToken(): Promise<TokenResponse> {
+    logger.info('%s HTTP: %s', this.name, this.tokenEndpoint);
+    return await httpRequest(this.tokenEndpoint, this.options);
   }
 
 }
 
-export class AuthorizationCodeProvider extends EventEmitter implements TokenProvider {
+export class AuthorizationCodeProvider implements TokenProvider {
+
+  private readonly options: RequestOptions;
 
   constructor(
+    readonly name: string,
+    private readonly tokenEndpoint: string,
+    authenticationOptions: RequestOptions,
     readonly authorization: AuthorizationProvider,
     private refreshToken?: string
   ) {
-    super();
+    this.options = { ...authenticationOptions, method: 'POST', json: true };
+    this.options.form = Object.assign(this.options.form ?? {}, { grant_type: 'refresh_token' });
   }
 
   async getToken(): Promise<TokenResponse> {
@@ -62,58 +70,60 @@ export class AuthorizationCodeProvider extends EventEmitter implements TokenProv
         }
       }
     }
-    this.emit('authorize');
     const resp = await this.authorization.authorize();
     this.refreshToken = resp.refresh_token;
     return resp;
   }
 
   private async refresh(token: string): Promise<TokenResponse> {
-    logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
-    return await httpRequest(SPOTIFY_TOKEN, {
-      method: 'POST',
-      form: { grant_type: 'refresh_token', refresh_token: token },
-      auth: {
-        basic: {
-          id: environment.tokens.spotify.clientId,
-          password: environment.tokens.spotify.clientSecret,
-        },
-      },
-      json: true,
-    });
+    logger.info(`%s HTTP: %s`, this.name, this.tokenEndpoint);
+    this.options.form!.refresh_token = token;
+    return await httpRequest(this.tokenEndpoint, this.options);
   }
 
 }
 
-export class SpotifyRequest<T extends TokenProvider = TokenProvider> {
+export class OAuthRequestImpl<T extends TokenProvider> implements OAuthRequest<T> {
 
   private expiration = 0;
   private accessToken?: string;
 
-  constructor(readonly tokenProvider: T) {}
+  constructor(readonly baseApiUrl: string, readonly tokenProvider: T) {}
 
-  get<T>(path: string, params = {}, version = SPOTIFY_API_VERSIONS.V1): Promise<T> {
-    return this.getUrl(`${SPOTIFY_API}/${version}/${path}`, params);
+  get<T>(path: string, params = {}): Promise<T> {
+    return this.getUrl(`${this.baseApiUrl}/${path}`, params);
   }
 
-  private async getUrl<T>(url: string, params = {}): Promise<T> {
+  getUrl<T>(url: string, params = {}): Promise<T> {
+    return this.checkGetRequest(url, params);
+  }
+
+  getStream(uri: string): Promise<Readable> {
+    return this.checkGetRequest<Readable>(uri, undefined, true);
+  }
+
+  private async checkGetRequest<T>(
+    url: string,
+    params?: RequestParams,
+    stream = false
+  ): Promise<T> {
     if (Date.now() + 10000 >= this.expiration) {
       await this.updateToken();
     }
     try {
-      return await this.getRequest<T>(url, params);
+      return await this.getRequest<T>(url, params, stream);
     } catch (e) {
       if (!(e instanceof HttpRequestError) || e.body.error !== 'invalid_grant') {
         throw e;
       }
       await this.updateToken();
-      return await this.getRequest<T>(url, params);
+      return await this.getRequest<T>(url, params, stream);
     }
   }
 
-  private async getRequest<T>(url: string, params = {}) {
-    logger.info(`Spotify HTTP: %s - %s`, url, params);
-    return await httpRequest<T>(url, { params, json: true, auth: { bearer: this.accessToken } });
+  private async getRequest<T>(url: string, params?: RequestParams, stream = false) {
+    logger.info(`%s HTTP: %s - %s`, this.tokenProvider.name, url, params);
+    return await httpRequest<T>(url, { params, json: !stream, auth: { bearer: this.accessToken } });
   }
 
   private async updateToken() {
@@ -124,35 +134,39 @@ export class SpotifyRequest<T extends TokenProvider = TokenProvider> {
 
 }
 
-const SPOTIFY_SCOPES = [
-  'user-library-read',
-  'user-top-read',
-  'user-read-recently-played',
-  'playlist-read-collaborative',
-  'playlist-read-private',
-].join(',');
-
-type SpotifyAuthCacheItem = {
+export type AuthCacheItem = {
   resolve: (resp: TokenResponseWithRefresh) => void;
   reject: (err?: any) => void;
 };
 
-const SPOTIFY_REDIRECT_URI = `${environment.baseUri}/callback/spotify`;
+export type AuthServiceParams = Record<string, string> & {
+  client_id: string;
+  redirect_uri: string;
+};
 
-export class SpotifyAuth implements AuthService {
+export class AuthServiceImpl implements AuthService {
 
-  private cache: EolianCache<SpotifyAuthCacheItem> = new InMemoryCache(60, false);
+  private options: RequestOptions;
+
+  constructor(
+    private readonly name: string,
+    private readonly authorizeUrl: string,
+    private readonly tokenUrl: string,
+    private readonly params: AuthServiceParams,
+    authenticationOptions: RequestOptions,
+    private readonly cache: EolianCache<AuthCacheItem>
+  ) {
+    this.options = { ...authenticationOptions, method: 'POST', json: true };
+    this.options.form = Object.assign(this.options.form ?? {}, {
+      grant_type: 'authorization_code',
+      redirect_uri: this.params.redirect_uri,
+    });
+  }
 
   authorize(): AuthResult {
     const state = randomUUID();
-    const params = {
-      response_type: 'code',
-      client_id: environment.tokens.spotify.clientId,
-      scope: SPOTIFY_SCOPES,
-      redirect_uri: SPOTIFY_REDIRECT_URI,
-      state,
-    };
-    const link = `${SPOTIFY_AUTHORIZE}?` + querystringify(params);
+    const params = { ...this.params, response_type: 'code', state };
+    const link = `${this.authorizeUrl}?${querystringify(params)}`;
     const promise = new Promise<TokenResponseWithRefresh>((resolve, reject) => {
       this.cache.set(state, { resolve, reject });
     });
@@ -177,34 +191,21 @@ export class SpotifyAuth implements AuthService {
     return success;
   }
 
-  async close(): Promise<void> {
-    await this.cache.close();
-  }
-
   private async getToken(code: string): Promise<TokenResponseWithRefresh> {
-    logger.info(`Spotify HTTP: %s`, SPOTIFY_TOKEN);
-    return await httpRequest(SPOTIFY_TOKEN, {
-      method: 'POST',
-      form: { grant_type: 'authorization_code', code, redirect_uri: SPOTIFY_REDIRECT_URI },
-      auth: {
-        basic: {
-          id: environment.tokens.spotify.clientId,
-          password: environment.tokens.spotify.clientSecret,
-        },
-      },
-      json: true,
-    });
+    logger.info(`%s HTTP: %s`, this.name, this.tokenUrl);
+    this.options.form!.code = code;
+    return await httpRequest(this.tokenUrl, this.options);
   }
 
 }
 
 const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
 
-type UserSpotifyRequest = SpotifyRequest<AuthorizationCodeProvider>;
+type UserSpotifyRequest = OAuthRequest<AuthorizationCodeProvider>;
 
 export class AuthProviders implements Closable {
 
-  readonly spotify: AuthService = new SpotifyAuth();
+  constructor(private readonly cache: EolianCache<AuthCacheItem>, readonly spotify: AuthService) {}
 
   private readonly spotifyCache: EolianCache<UserSpotifyRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
@@ -226,7 +227,7 @@ export class AuthProviders implements Closable {
   }
 
   async close(): Promise<void> {
-    await Promise.allSettled([this.spotify.close()]);
+    await this.cache.close();
   }
 
 }

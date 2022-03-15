@@ -219,10 +219,7 @@ export class DiscordEolianBot implements EolianBot {
         }
         await contextInteraction.user.updatePermissions(state?.details);
 
-        if (
-          embedButton.permission
-          && contextInteraction.user.permission < embedButton.permission
-        ) {
+        if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
           await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
         } else {
           const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);

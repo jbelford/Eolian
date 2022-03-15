@@ -1,5 +1,4 @@
-import { SpotifyRequest } from 'api';
-import { Track } from 'api/@types';
+import { OAuthRequest, Track } from 'api/@types';
 import { ParsedCommand, SyntaxType } from 'commands/@types';
 import { Closable } from 'common/@types';
 import { UserPermission } from 'common/constants';
@@ -116,7 +115,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   updatePermissions(details?: ServerDetails): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
-  getSpotifyRequest(sendable: ContextSendable): Promise<SpotifyRequest>;
+  getSpotifyRequest(sendable: ContextSendable): Promise<OAuthRequest>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string): Promise<boolean>;

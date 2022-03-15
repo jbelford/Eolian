@@ -1,7 +1,13 @@
 import { ProgressUpdater } from 'common/@types';
+import { environment } from 'common/env';
 import { logger } from 'common/logger';
+import { RequestOptions } from 'common/request';
 import { fuzzyMatch } from 'common/util';
+import { EolianCache } from 'data/@types';
 import {
+  AuthorizationProvider,
+  AuthService,
+  OAuthRequest,
   RangeFactory,
   SpotifyAlbum,
   SpotifyAlbumFull,
@@ -16,19 +22,84 @@ import {
   SpotifyUser,
   SpotifyUserTrack,
   StreamSource,
+  TokenProvider,
   Track,
   TrackSource,
   YouTubeApi,
 } from './@types';
-import { ClientCredentialsProvider, SpotifyRequest } from './auth';
+import {
+  AuthCacheItem,
+  AuthorizationCodeProvider,
+  AuthServiceImpl,
+  ClientCredentialsProvider,
+  OAuthRequestImpl,
+} from './auth';
 
-const CLIENT_SPOTIFY_REQUEST = new SpotifyRequest(new ClientCredentialsProvider());
+const SPOTIFY_API = 'https://api.spotify.com/v1';
+const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
+const SPOTIFY_AUTHORIZE = 'https://accounts.spotify.com/authorize';
+const SPOTIFY_REDIRECT_URI = `${environment.baseUri}/callback/spotify`;
+
+const SPOTIFY_AUTH_OPTIONS: RequestOptions = {
+  auth: {
+    basic: {
+      id: environment.tokens.spotify.clientId,
+      password: environment.tokens.spotify.clientSecret,
+    },
+  },
+};
+
+const CLIENT_SPOTIFY_REQUEST = createSpotifyRequest(
+  new ClientCredentialsProvider('Spotify', SPOTIFY_TOKEN, SPOTIFY_AUTH_OPTIONS)
+);
+
+export function createSpotifyAuthorizationCodeProvider(
+  provider: AuthorizationProvider,
+  refreshToken?: string
+): AuthorizationCodeProvider {
+  return new AuthorizationCodeProvider(
+    'Spotify',
+    SPOTIFY_TOKEN,
+    SPOTIFY_AUTH_OPTIONS,
+    provider,
+    refreshToken
+  );
+}
+
+export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): OAuthRequest<T> {
+  return new OAuthRequestImpl<T>(SPOTIFY_API, tokenProvider);
+}
+
+export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): AuthService {
+  const scope = [
+    'user-library-read',
+    'user-top-read',
+    'user-read-recently-played',
+    'playlist-read-collaborative',
+    'playlist-read-private',
+  ].join(',');
+
+  const authParams = {
+    client_id: environment.tokens.spotify.clientId,
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+    scope,
+  };
+
+  return new AuthServiceImpl(
+    'Spotify',
+    SPOTIFY_AUTHORIZE,
+    SPOTIFY_TOKEN,
+    authParams,
+    SPOTIFY_AUTH_OPTIONS,
+    cache
+  );
+}
 
 export class SpotifyApiImpl implements SpotifyApi {
 
   constructor(
     private readonly youtube: YouTubeApi,
-    private readonly req: SpotifyRequest = CLIENT_SPOTIFY_REQUEST
+    private readonly req: OAuthRequest = CLIENT_SPOTIFY_REQUEST
   ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {

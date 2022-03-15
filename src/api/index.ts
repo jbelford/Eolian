@@ -1,7 +1,9 @@
 import { Color } from 'common/constants';
 import { environment } from 'common/env';
+import { InMemoryCache } from 'data';
 import {
   BingApi,
+  OAuthRequest,
   SoundCloudApi,
   SpotifyApi,
   StreamSource,
@@ -10,10 +12,10 @@ import {
   TrackSourceDetails,
   YouTubeApi,
 } from './@types';
-import { SpotifyRequest } from './auth';
+import { AuthCacheItem, AuthProviders } from './auth';
 import { BingApiImpl } from './bing';
 import { SoundCloudApiImpl } from './soundcloud';
-import { SpotifyApiImpl } from './spotify';
+import { createSpotifyAuthService, SpotifyApiImpl } from './spotify';
 import { YouTubeApiImpl } from './youtube';
 
 let bing: BingApi | undefined;
@@ -25,16 +27,18 @@ export const youtube: YouTubeApi = new YouTubeApiImpl(
   environment.config.youtubeCacheLimit,
   bing
 );
-export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(
-  environment.tokens.soundcloud.clientId,
-  environment.tokens.soundcloud.clientSecret,
-  youtube
-);
+export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
 export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
 
 export * from './auth';
 
-export function createSpotifyClient(request: SpotifyRequest): SpotifyApi {
+export function createAuthProviders(): AuthProviders {
+  const cache = new InMemoryCache<AuthCacheItem>(60, false);
+  const spotifyAuthService = createSpotifyAuthService(cache);
+  return new AuthProviders(cache, spotifyAuthService);
+}
+
+export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
   return new SpotifyApiImpl(youtube, request);
 }
 

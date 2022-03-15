@@ -1,5 +1,11 @@
-import { AuthorizationCodeProvider, AuthProviders, SpotifyRequest } from 'api';
-import { AuthorizationProvider, AuthService, TokenResponseWithRefresh } from 'api/@types';
+import { AuthProviders } from 'api';
+import {
+  AuthorizationProvider,
+  AuthService,
+  OAuthRequest,
+  TokenResponseWithRefresh,
+} from 'api/@types';
+import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest } from 'api/spotify';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
@@ -26,9 +32,11 @@ import { DiscordVoiceChannel } from './voice';
 
 class DiscordSpotifyAuthorizationProvider implements AuthorizationProvider {
 
-  constructor(private readonly user: ContextUser,
+  constructor(
+    private readonly user: ContextUser,
     private readonly spotifyAuth: AuthService,
-    public sendable: ContextSendable) {}
+    public sendable: ContextSendable
+  ) {}
 
   async authorize(): Promise<TokenResponseWithRefresh> {
     logger.info('[%s] Authorizing Spotify', this.user.id);
@@ -155,16 +163,17 @@ export class DiscordUser implements ContextUser {
     return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
 
-  async getSpotifyRequest(sendable: ContextSendable): Promise<SpotifyRequest> {
+  async getSpotifyRequest(sendable: ContextSendable): Promise<OAuthRequest> {
     let request = await this.auth.getSpotifyRequest(this.id);
     if (!request) {
       const user = await this.get();
       const provider = new DiscordSpotifyAuthorizationProvider(this, this.auth.spotify, sendable);
-      const tokenProvider = new AuthorizationCodeProvider(provider, user.tokens?.spotify);
-      request = new SpotifyRequest(tokenProvider);
+      const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, user.tokens?.spotify);
+      request = createSpotifyRequest(tokenProvider);
       await this.auth.setSpotifyRequest(this.id, request);
     } else {
-      (request.tokenProvider.authorization as DiscordSpotifyAuthorizationProvider).sendable = sendable;
+      (request.tokenProvider.authorization as DiscordSpotifyAuthorizationProvider).sendable
+        = sendable;
     }
     return request;
   }
