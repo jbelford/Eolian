@@ -241,13 +241,16 @@ export class AuthProviders implements Closable {
 
   constructor(
     private readonly authCallbackCache: EolianCache<AuthCacheItem>,
-    private readonly spotify: AuthService
+    private readonly spotify: AuthService,
+    private readonly soundcloud: AuthService,
   ) {}
 
   getService(api: TrackSource): AuthService {
     switch (api) {
       case TrackSource.Spotify:
         return this.spotify;
+      case TrackSource.SoundCloud:
+        return this.soundcloud;
       default:
         throw new Error(`Auth service not supported for: ${api}`);
     }

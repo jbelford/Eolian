@@ -14,6 +14,7 @@ import { BingApiImpl } from './bing';
 import { BingApi } from './bing/@types';
 import {
   createSoundCloudAuthorizationCodeProvider,
+  createSoundCloudAuthService,
   createSoundCloudRequest,
   SoundCloudApiImpl,
 } from './soundcloud';
@@ -46,7 +47,8 @@ export { mapSpotifyTrack } from './spotify';
 export function createAuthProviders(): AuthProviders {
   const cache = new InMemoryCache<AuthCacheItem>(60, false);
   const spotifyAuthService = createSpotifyAuthService(cache);
-  return new AuthProviders(cache, spotifyAuthService);
+  const soundcloudAuthService = createSoundCloudAuthService(cache);
+  return new AuthProviders(cache, spotifyAuthService, soundcloudAuthService);
 }
 
 export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
