@@ -1,14 +1,17 @@
-import { soundcloud } from 'api';
+import { createSoundCloudClient, soundcloud } from 'api';
 import { TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
-import { SoundCloudPlaylist, SoundCloudTrack } from 'api/soundcloud/@types';
+import { SoundCloudApi, SoundCloudPlaylist, SoundCloudTrack } from 'api/soundcloud/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
+import { feature } from 'data';
+import { FeatureFlag, ResourceType } from 'data/@types';
 import { ContextMessage } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
 
 export class SoundCloudPlaylistResolver implements SourceResolver {
+
+  private client: SoundCloudApi = soundcloud;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
@@ -29,9 +32,9 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
         this.context.interaction.user
       );
 
-      return createSoundCloudPlaylist(playlists[result.selected], result.message);
+      return createSoundCloudPlaylist(playlists[result.selected], this.client, result.message);
     } else {
-      return createSoundCloudPlaylist(playlists[0]);
+      return createSoundCloudPlaylist(playlists[0], this.client);
     }
   }
 
@@ -44,13 +47,22 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
     const limit = this.params.FAST ? 1 : 5;
     if (this.params.MY) {
-      const user = await this.context.interaction.user.get();
-      if (!user.soundcloud) {
-        throw new EolianUserError(
-          `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`
+      if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
+        const request = await this.context.interaction.user.getRequest(
+          this.context.interaction,
+          TrackSource.SoundCloud
         );
+        this.client = createSoundCloudClient(request);
+        playlists = await this.client.searchMyPlaylists(this.params.SEARCH, limit);
+      } else {
+        const user = await this.context.interaction.user.get();
+        if (!user.soundcloud) {
+          throw new EolianUserError(
+            `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`
+          );
+        }
+        playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit, user.soundcloud);
       }
-      playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit, user.soundcloud);
     } else {
       playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit);
     }
@@ -62,6 +74,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
 export function createSoundCloudPlaylist(
   playlist: SoundCloudPlaylist,
+  client: SoundCloudApi,
   message?: ContextMessage
 ): ResolvedResource {
   return {
@@ -72,22 +85,27 @@ export function createSoundCloudPlaylist(
       src: TrackSource.SoundCloud,
       type: ResourceType.Playlist,
       url: playlist.permalink_url,
+      auth: soundcloud !== client,
     },
-    fetcher: new SoundCloudPlaylistFetcher(playlist.id, playlist),
+    fetcher: new SoundCloudPlaylistFetcher(playlist.id, client, playlist),
     selectionMessage: message,
   };
 }
 
 export class SoundCloudPlaylistFetcher implements SourceFetcher {
 
-  constructor(private readonly id: number, private readonly playlist?: SoundCloudPlaylist) {}
+  constructor(
+    private readonly id: number,
+    private readonly client: SoundCloudApi,
+    private readonly playlist?: SoundCloudPlaylist
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     let tracks: SoundCloudTrack[];
     if (this.playlist && this.playlist.tracks.length === this.playlist.track_count) {
       tracks = this.playlist.tracks;
     } else {
-      const playlist = await soundcloud.getPlaylist(this.id);
+      const playlist = await this.client.getPlaylist(this.id);
       tracks = playlist.tracks;
     }
     return { tracks: tracks.map(mapSoundCloudTrack) };

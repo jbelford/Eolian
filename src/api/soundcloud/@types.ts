@@ -3,6 +3,9 @@ import { ProgressUpdater } from 'common/@types';
 
 export interface SoundCloudApi extends StreamFetcher {
   getMe(): Promise<SoundCloudUser>;
+  getMyTracks(): Promise<SoundCloudTrack[]>;
+  getMyFavorites(max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]>;
+  searchMyPlaylists(query: string, limit?: number): Promise<SoundCloudPlaylist[]>;
   searchSongs(query: string, limit?: number): Promise<SoundCloudTrack[]>;
   searchUser(query: string, limit?: number): Promise<SoundCloudUser[]>;
   searchPlaylists(query: string, limit?: number, userId?: number): Promise<SoundCloudPlaylist[]>;

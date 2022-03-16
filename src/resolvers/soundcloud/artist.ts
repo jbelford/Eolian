@@ -1,10 +1,11 @@
-import { soundcloud } from 'api';
+import { createSoundCloudClient, soundcloud } from 'api';
 import { TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
-import { SoundCloudUser } from 'api/soundcloud/@types';
+import { SoundCloudApi, SoundCloudUser } from 'api/soundcloud/@types';
 import { CommandContext, CommandOptions } from 'commands/@types';
 import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
+import { feature } from 'data';
+import { FeatureFlag, ResourceType } from 'data/@types';
 import {
   FetchResult,
   MessageBundledResult,
@@ -13,7 +14,8 @@ import {
   SourceResolver,
 } from 'resolvers/@types';
 
-type UserResult = MessageBundledResult<SoundCloudUser>;
+type UserResultValue = { user: SoundCloudUser; client?: SoundCloudApi };
+export type UserResult = MessageBundledResult<UserResultValue>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
 
@@ -41,7 +43,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
     if (users.length === 0) {
       throw new EolianUserError('No SoundCloud users were found.');
     } else if (users.length === 1) {
-      return { value: users[0] };
+      return { value: { user: users[0] } };
     } else {
       const result = await this.context.interaction.sendSelection(
         'Choose a SoundCloud user',
@@ -49,16 +51,25 @@ export class SoundCloudArtistResolver implements SourceResolver {
         this.context.interaction.user
       );
 
-      return { value: users[result.selected], message: result.message };
+      return { value: { user: users[result.selected] }, message: result.message };
     }
   }
 
-  private async resolveUser(): Promise<SoundCloudUser> {
-    const user = await this.context.interaction.user.get();
-    if (!user.soundcloud) {
-      throw new EolianUserError('You have not set your SoundCloud account yet!');
+  private async resolveUser(): Promise<UserResultValue> {
+    if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
+      const request = await this.context.interaction.user.getRequest(
+        this.context.interaction,
+        TrackSource.SoundCloud
+      );
+      const client = createSoundCloudClient(request);
+      return { user: await client.getMe(), client };
+    } else {
+      const user = await this.context.interaction.user.get();
+      if (!user.soundcloud) {
+        throw new EolianUserError('You have not set your SoundCloud account yet!');
+      }
+      return { user: await soundcloud.getUser(user.soundcloud) };
     }
-    return await soundcloud.getUser(user.soundcloud);
   }
 
 }
@@ -76,27 +87,31 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
 
 }
 
-export function createSoundCloudUser({ value: user, message }: UserResult): ResolvedResource {
+export function createSoundCloudUser({ value, message }: UserResult): ResolvedResource {
   return {
-    name: user.username,
-    authors: [user.username],
+    name: value.user.username,
+    authors: [value.user.username],
     identifier: {
-      id: user.id.toString(),
+      id: value.user.id.toString(),
       src: TrackSource.SoundCloud,
       type: ResourceType.Artist,
-      url: user.permalink_url,
+      url: value.user.permalink_url,
+      auth: !!value.client,
     },
-    fetcher: new SoundCloudArtistFetcher(user.id),
+    fetcher: new SoundCloudArtistFetcher(value.client ?? value.user.id),
     selectionMessage: message,
   };
 }
 
 export class SoundCloudArtistFetcher implements SourceFetcher {
 
-  constructor(private readonly id: number) {}
+  constructor(private readonly idOrClient: number | SoundCloudApi) {}
 
   async fetch(): Promise<FetchResult> {
-    const tracks = await soundcloud.getUserTracks(this.id);
+    const tracks
+      = typeof this.idOrClient === 'number'
+        ? await soundcloud.getUserTracks(this.idOrClient)
+        : await this.idOrClient.getMyTracks();
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
 

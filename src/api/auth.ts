@@ -242,7 +242,7 @@ export class AuthProviders implements Closable {
   constructor(
     private readonly authCallbackCache: EolianCache<AuthCacheItem>,
     private readonly spotify: AuthService,
-    private readonly soundcloud: AuthService,
+    private readonly soundcloud: AuthService
   ) {}
 
   getService(api: TrackSource): AuthService {

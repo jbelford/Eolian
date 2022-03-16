@@ -35,6 +35,45 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     }
   }
 
+  async getMyTracks(): Promise<SoundCloudTrack[]> {
+    try {
+      const user = await this.getMe();
+      return await this.getPaginatedItems<SoundCloudTrack>(`me/tracks`, {
+        total: user.track_count,
+        params: TRACKS_PARAMS,
+      });
+    } catch (e) {
+      logger.warn(`Failed to fetch current SoundCloud user's track`);
+      throw e;
+    }
+  }
+
+  async getMyFavorites(max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]> {
+    try {
+      return await this.getPaginatedItems<SoundCloudTrack>(`me/likes/tracks`, {
+        total: max,
+        progress,
+        params: TRACKS_PARAMS,
+      });
+    } catch (e) {
+      logger.warn(`Failed to fetch current SoundCloud user's liked tracks`);
+      throw e;
+    }
+  }
+
+  async searchMyPlaylists(query: string, limit?: number): Promise<SoundCloudPlaylist[]> {
+    try {
+      return await this.getPaginatedItems<SoundCloudPlaylist>('me/playlists', {
+        params: { ...TRACKS_PARAMS, q: query },
+        total: limit,
+        requestLimit: 1,
+      });
+    } catch (e) {
+      logger.warn('Failed to search current SoundCloud playlists: query: %s', query);
+      throw e;
+    }
+  }
+
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
       return await this.getPaginatedItems<SoundCloudTrack>('tracks', {

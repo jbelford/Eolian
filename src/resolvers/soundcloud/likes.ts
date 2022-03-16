@@ -1,7 +1,7 @@
 import { soundcloud } from 'api';
 import { TrackSource } from 'api/@types';
 import { mapSoundCloudTrack } from 'api/soundcloud';
-import { SoundCloudUser } from 'api/soundcloud/@types';
+import { SoundCloudApi, SoundCloudUser } from 'api/soundcloud/@types';
 import { CommandOptions } from 'commands/@types';
 import { getRangeOption } from 'commands/patterns';
 import { ProgressUpdater } from 'common/@types';
@@ -9,14 +9,14 @@ import { ResourceType } from 'data/@types';
 import { DownloaderDisplay } from 'framework';
 import { ContextMessage, ContextSendable } from 'framework/@types';
 import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
-import { SoundCloudArtistResolver } from './artist';
+import { SoundCloudArtistResolver, UserResult } from './artist';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
 
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
     return createSoundCloudLikes(
-      result.value,
+      result,
       this.params,
       this.context.interaction.channel,
       result.message
@@ -26,21 +26,27 @@ export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
 }
 
 export function createSoundCloudLikes(
-  user: SoundCloudUser,
+  result: UserResult,
   params: CommandOptions,
   sendable: ContextSendable,
   message?: ContextMessage
 ): ResolvedResource {
   return {
     name: 'Liked Tracks',
-    authors: [user.username],
+    authors: [result.value.user.username],
     identifier: {
-      id: user.id.toString(),
+      id: result.value.user.id.toString(),
       src: TrackSource.SoundCloud,
       type: ResourceType.Likes,
-      url: `${user.permalink_url}/likes`,
+      url: `${result.value.user.permalink_url}/likes`,
+      auth: !!result.value.client,
     },
-    fetcher: new SoundCloudFavoritesFetcher(user.id, params, sendable, user),
+    fetcher: new SoundCloudFavoritesFetcher(
+      result.value.client ?? result.value.user.id,
+      params,
+      sendable,
+      result.value.user
+    ),
     selectionMessage: message,
   };
 }
@@ -48,16 +54,26 @@ export function createSoundCloudLikes(
 export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
   constructor(
-    private readonly id: number,
+    private readonly idOrClient: number | SoundCloudApi,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
     private readonly user?: SoundCloudUser
   ) {}
 
   async fetch(): Promise<FetchResult> {
-    const user = this.user ? this.user : await soundcloud.getUser(this.id);
+    const user
+      = this.user
+      ?? (typeof this.idOrClient === 'number'
+        ? await soundcloud.getUser(this.idOrClient)
+        : await this.idOrClient.getMe());
+
     const { max, downloader } = this.getListOptions('Fetching likes', user.public_favorites_count);
-    const tracks = await soundcloud.getUserFavorites(this.id, max, downloader);
+
+    const tracks
+      = typeof this.idOrClient === 'number'
+        ? await soundcloud.getUserFavorites(this.idOrClient, max, downloader)
+        : await this.idOrClient.getMyFavorites(max, downloader);
+
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
 
