@@ -40,7 +40,12 @@ export class ClientCredentialsProvider implements TokenProvider {
   async getToken(): Promise<TokenResponse> {
     if (this.refreshToken) {
       try {
-        return await this.refresh(this.refreshToken);
+        const form: RequestOptions['form'] = {
+          ...this.options.form,
+          grant_type: 'refresh_token',
+          refresh_token: this.refreshToken,
+        };
+        return await this.request({ ...this.options, form });
       } catch (e: any) {
         if (!(e instanceof HttpRequestError) || e.body.error !== 'invalid_grant') {
           throw e;
@@ -48,17 +53,17 @@ export class ClientCredentialsProvider implements TokenProvider {
       }
     }
 
-    logger.info('%s HTTP: %s', this.name, this.tokenEndpoint);
-    const form = { ...this.options.form, grant_type: 'client_credentials' };
-    const result = await httpRequest<TokenResponse>(this.tokenEndpoint, { ...this.options, form });
-    this.refreshToken = result.refresh_token;
-    return result;
+    const form: RequestOptions['form'] = { ...this.options.form, grant_type: 'client_credentials' };
+    return await this.request({ ...this.options, form });
   }
 
-  private async refresh(token: string): Promise<TokenResponse> {
+  private async request(options: RequestOptions): Promise<TokenResponse> {
     logger.info(`%s HTTP: %s`, this.name, this.tokenEndpoint);
-    const form = { ...this.options.form, grant_type: 'refresh_token', refresh_token: token };
-    return await httpRequest(this.tokenEndpoint, { ...this.options, form });
+    const result: TokenResponse = await httpRequest(this.tokenEndpoint, options);
+    if (result.refresh_token) {
+      this.refreshToken = result.refresh_token;
+    }
+    return result;
   }
 
 }
@@ -96,7 +101,11 @@ export class AuthorizationCodeProvider implements TokenProvider {
   private async refresh(token: string): Promise<TokenResponse> {
     logger.info(`%s HTTP: %s`, this.name, this.tokenEndpoint);
     this.options.form!.refresh_token = token;
-    return await httpRequest(this.tokenEndpoint, this.options);
+    const result: TokenResponse = await httpRequest(this.tokenEndpoint, this.options);
+    if (result.refresh_token) {
+      this.refreshToken = result.refresh_token;
+    }
+    return result;
   }
 
 }
