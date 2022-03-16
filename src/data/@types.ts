@@ -28,6 +28,8 @@ export interface CollectionDb<T> {
 export interface UsersDb extends CollectionDb<UserDTO> {
   setSoundCloud(id: string, soundcloud: number): Promise<void>;
   removeSoundCloud(id: string): Promise<void>;
+  setSoundCloudRefreshToken(id: string, token: string): Promise<void>;
+  removeSoundCloudRefreshToken(id: string): Promise<void>;
   setSpotifyRefreshToken(id: string, token: string): Promise<void>;
   setSpotify(id: string, spotify: string): Promise<void>;
   removeSpotify(id: string): Promise<void>;
@@ -66,6 +68,7 @@ export interface UserDTO extends DocDTO {
   spotify?: string;
   tokens?: {
     spotify?: string;
+    soundcloud?: string;
   };
   identifiers?: { [key: string]: Identifier };
 }

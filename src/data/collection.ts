@@ -58,6 +58,14 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
     await this.unsetProperty(id, 'soundcloud');
   }
 
+  async setSoundCloudRefreshToken(id: string, token: string): Promise<void> {
+    await this.setProperty(id, 'tokens.soundcloud', token);
+  }
+
+  async removeSoundCloudRefreshToken(id: string): Promise<void> {
+    await this.unsetProperty(id, 'tokens.soundcloud');
+  }
+
   async setSpotify(id: string, spotify: string): Promise<void> {
     await this.setProperty(id, 'spotify', spotify);
   }

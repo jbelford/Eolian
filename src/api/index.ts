@@ -12,7 +12,11 @@ import {
 import { AuthCacheItem, AuthorizationCodeProvider, AuthProviders } from './auth';
 import { BingApiImpl } from './bing';
 import { BingApi } from './bing/@types';
-import { SoundCloudApiImpl } from './soundcloud';
+import {
+  createSoundCloudAuthorizationCodeProvider,
+  createSoundCloudRequest,
+  SoundCloudApiImpl,
+} from './soundcloud';
 import { SoundCloudApi } from './soundcloud/@types';
 import {
   createSpotifyAuthorizationCodeProvider,
@@ -49,6 +53,10 @@ export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
   return new SpotifyApiImpl(youtube, request);
 }
 
+export function createSoundCloudClient(request: OAuthRequest): SoundCloudApi {
+  return new SoundCloudApiImpl(youtube, request);
+}
+
 export function createAuthCodeRequest(
   provider: AuthorizationProvider,
   api: TrackSource,
@@ -58,6 +66,10 @@ export function createAuthCodeRequest(
     case TrackSource.Spotify: {
       const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, refreshToken);
       return createSpotifyRequest(tokenProvider);
+    }
+    case TrackSource.SoundCloud: {
+      const tokenProvider = createSoundCloudAuthorizationCodeProvider(provider, refreshToken);
+      return createSoundCloudRequest(tokenProvider);
     }
     default:
       throw new Error(`Auth Code not supported for ${api}`);

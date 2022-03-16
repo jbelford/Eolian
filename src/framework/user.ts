@@ -123,6 +123,8 @@ export class DiscordUser implements ContextUser {
     switch (api) {
       case TrackSource.Spotify:
         return user.tokens?.spotify;
+      case TrackSource.SoundCloud:
+        return user.tokens?.soundcloud;
       default:
         throw new Error(`User does not have token for ${api}`);
     }
@@ -132,6 +134,8 @@ export class DiscordUser implements ContextUser {
     switch (api) {
       case TrackSource.Spotify:
         return this.setSpotifyToken(token);
+      case TrackSource.SoundCloud:
+        return this.setSoundCloudToken(token);
       default:
         throw new Error(`Token is not supported for ${api}`);
     }
@@ -197,6 +201,22 @@ export class DiscordUser implements ContextUser {
     } else {
       await this.auth.removeUserRequest(this.id, TrackSource.Spotify);
       await this.users.removeSpotifyRefreshToken(this.id);
+    }
+  }
+
+  private async setSoundCloudToken(token: string | null): Promise<void> {
+    if (this.dto) {
+      if (this.dto.tokens) {
+        this.dto.tokens.soundcloud = token ?? undefined;
+      } else {
+        this.dto.tokens = { soundcloud: token ?? undefined };
+      }
+    }
+    if (token) {
+      await this.users.setSoundCloudRefreshToken(this.id, token);
+    } else {
+      await this.auth.removeUserRequest(this.id, TrackSource.SoundCloud);
+      await this.users.removeSoundCloudRefreshToken(this.id);
     }
   }
 
