@@ -1,5 +1,6 @@
-import { createSpotifyClient, soundcloud, spotify } from 'api';
+import { createSoundCloudClient, createSpotifyClient, soundcloud, spotify } from 'api';
 import { TrackSource } from 'api/@types';
+import { SoundCloudUser } from 'api/soundcloud/@types';
 import { SpotifyUser } from 'api/spotify/@types';
 import { Command, CommandContext, CommandOptions } from 'commands/@types';
 import { ACCOUNT_CATEGORY } from 'commands/category';
@@ -33,14 +34,25 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     } else {
       spotifyAccount = user && user.spotify ? await spotify.getUser(user.spotify) : undefined;
     }
-    const soundCloudAccount = user.soundcloud
-      ? await soundcloud.getUser(user.soundcloud)
-      : undefined;
+
+    let soundcloudAccount: SoundCloudUser | undefined;
+    if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
+      if (user.tokens?.soundcloud) {
+        const request = await context.interaction.user.getRequest(
+          context.interaction,
+          TrackSource.SoundCloud
+        );
+        const client = createSoundCloudClient(request);
+        soundcloudAccount = await client.getMe();
+      }
+    } else {
+      soundcloudAccount = user.soundcloud ? await soundcloud.getUser(user.soundcloud) : undefined;
+    }
 
     const message = createUserDetailsEmbed(
       context.interaction.user,
       spotifyAccount,
-      soundCloudAccount,
+      soundcloudAccount,
       user && user.identifiers
     );
 

@@ -50,6 +50,7 @@ export interface AppEnv {
   };
   flags: {
     spotifyUserAuth: boolean;
+    soundcloudUserAuth: boolean;
     discordOldLeave: boolean;
   };
 }

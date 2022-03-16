@@ -1,4 +1,4 @@
-import { createSpotifyClient, soundcloud, spotify } from 'api';
+import { createSoundCloudClient, createSpotifyClient, soundcloud, spotify } from 'api';
 import { TrackSource } from 'api/@types';
 import { SoundCloudUser } from 'api/soundcloud/@types';
 import { SpotifyResourceType, SpotifyUser } from 'api/spotify/@types';
@@ -29,6 +29,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     const client = createSpotifyClient(request);
     const user = await client.getMe();
     await context.interaction.send(getSpotifyMessage(user));
+  } else if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH) && options.SOUNDCLOUD) {
+    await context.interaction.defer();
+    const request = await context.interaction.user.getRequest(
+      context.interaction,
+      TrackSource.SoundCloud
+    );
+    const client = createSoundCloudClient(request);
+    const user = await client.getMe();
+    await context.interaction.send(getSoundCloudMessage(user));
   } else if (options.URL) {
     await context.interaction.defer();
     await handleUrl(options.URL, context);
@@ -119,8 +128,12 @@ async function handleSoundCloud(
   soundCloudUser: SoundCloudUser
 ): Promise<string> {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
+  return getSoundCloudMessage(soundCloudUser);
+}
+
+function getSoundCloudMessage(user: SoundCloudUser): string {
   return (
-    `I have set your SoundCloud account to \`${soundCloudUser.username}\`!`
+    `I have set your SoundCloud account to \`${user.username}\`!`
     + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
     + ` to use your playlists, likes, and tracks.`
   );

@@ -3,6 +3,7 @@ import { FeatureFlag, FeatureFlagService } from './@types';
 
 const flagsLocal: Record<FeatureFlag, boolean> = {
   [FeatureFlag.SPOTIFY_AUTH]: environment.flags.spotifyUserAuth,
+  [FeatureFlag.SOUNDCLOUD_AUTH]: environment.flags.soundcloudUserAuth,
   [FeatureFlag.DISCORD_OLD_LEAVE]: environment.flags.discordOldLeave,
 };
 

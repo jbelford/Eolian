@@ -26,6 +26,15 @@ export class SoundCloudApiImpl implements SoundCloudApi {
     private readonly req: OAuthRequest = CLIENT_SOUNDCLOUD_REQUEST
   ) {}
 
+  async getMe(): Promise<SoundCloudUser> {
+    try {
+      return await this.req.get('me');
+    } catch (e) {
+      logger.warn('Failed to get current SoundCloud user');
+      throw e;
+    }
+  }
+
   async searchSongs(query: string, limit = 5): Promise<SoundCloudTrack[]> {
     try {
       return await this.getPaginatedItems<SoundCloudTrack>('tracks', {

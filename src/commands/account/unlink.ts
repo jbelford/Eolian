@@ -17,7 +17,11 @@ async function execute(
   }
 
   if (SOUNDCLOUD) {
-    await interaction.user.setSoundCloud(null);
+    if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
+      await interaction.user.setToken(null, TrackSource.SoundCloud);
+    } else {
+      await interaction.user.setSoundCloud(null);
+    }
     response = 'I have unlinked any SoundCloud account if you had one';
   }
 

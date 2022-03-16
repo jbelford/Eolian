@@ -147,6 +147,7 @@ export const enum FeatureFlag {
    * Certain features such as liked and top tracks can only be used with this.
    */
   SPOTIFY_AUTH = 0,
+  SOUNDCLOUD_AUTH,
   /**
    * Leave old servers when migrating token
    */
