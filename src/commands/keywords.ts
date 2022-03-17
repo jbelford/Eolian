@@ -126,13 +126,13 @@ export const KEYWORDS: Readonly<
   ),
   LIKES: new KeywordDetails(
     'LIKES',
-    'Indicates to fetch liked tracks (Only SoundCloud supported).\nFetching using TOP likes will execute much faster.',
+    'Indicates to fetch liked tracks.\nFetching using TOP likes will execute much faster.',
     UserPermission.User,
     KeywordGroup.Type
   ),
   TRACKS: new KeywordDetails(
     'TRACKS',
-    'Indicates to fetch SoundCloud tracks.',
+    'Indicates to fetch SoundCloud tracks or Spotify top tracks.',
     UserPermission.User,
     KeywordGroup.Type
   ),
