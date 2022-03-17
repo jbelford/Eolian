@@ -26,7 +26,7 @@ class KeywordDetails implements Keyword {
     readonly details: string,
     readonly permission: UserPermission,
     readonly group?: KeywordGroup,
-    readonly shortName?: string,
+    readonly shortName?: string
   ) {}
 
   text(type: SyntaxType, short?: boolean): string {
@@ -54,14 +54,14 @@ export const KEYWORDS: Readonly<
     'Indicates to enable a particular feature.',
     UserPermission.User,
     KeywordGroup.Switch,
-    'on',
+    'on'
   ),
   DISABLE: new KeywordDetails(
     'DISABLE',
     'Indicates to disable a particular feature.',
     UserPermission.User,
     KeywordGroup.Switch,
-    'off',
+    'off'
   ),
   CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data.', UserPermission.User),
   MORE: new KeywordDetails(
@@ -88,14 +88,14 @@ export const KEYWORDS: Readonly<
     'Indicates to fetch a resource from SoundCloud if applicable.',
     UserPermission.User,
     KeywordGroup.Source,
-    'sc',
+    'sc'
   ),
   SPOTIFY: new KeywordDetails(
     'SPOTIFY',
     'Indicates to fetch a resource from Spotify if applicable.',
     UserPermission.User,
     KeywordGroup.Source,
-    'sp',
+    'sp'
   ),
   YOUTUBE: new KeywordDetails(
     'YOUTUBE',
@@ -109,14 +109,14 @@ export const KEYWORDS: Readonly<
     'Indicates to fetch songs from a playlist given a query.',
     UserPermission.User,
     KeywordGroup.Type,
-    'pl',
+    'pl'
   ),
   ALBUM: new KeywordDetails(
     'ALBUM',
     'Indicates to fetch songs from an album given a query.',
     UserPermission.User,
     KeywordGroup.Type,
-    'alb',
+    'alb'
   ),
   ARTIST: new KeywordDetails(
     'ARTIST',
@@ -130,7 +130,7 @@ export const KEYWORDS: Readonly<
     'Indicates to apply operation to the top of queue.',
     UserPermission.DJ,
     undefined,
-    'n',
+    'n'
   ),
   SHUFFLE: new KeywordDetails(
     'SHUFFLE',
@@ -143,13 +143,13 @@ export const KEYWORDS: Readonly<
     'LIKES',
     'Indicates to fetch liked tracks.\nFetching using TOP likes will execute much faster.',
     UserPermission.User,
-    KeywordGroup.Type,
+    KeywordGroup.Type
   ),
   TRACKS: new KeywordDetails(
     'TRACKS',
     'Indicates to fetch SoundCloud tracks or Spotify top tracks.',
     UserPermission.User,
-    KeywordGroup.Type,
+    KeywordGroup.Type
   ),
   FAST: new KeywordDetails(
     'FAST',

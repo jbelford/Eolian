@@ -114,7 +114,8 @@ export function createCommandDetailsEmbed(
   embed.fields = command.usage
     .filter(item => !item.hide)
     .map(({ title, example }, idx) => {
-      const mapped = typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ');
+      const mapped
+        = typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ');
       return {
         name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`,
         value: `\`\`\`\n${slash}${command.name} ${mapped}\n\`\`\``,
