@@ -29,7 +29,7 @@ import {
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
-import { parseMessageCommand, parseSlashCommand } from './register_commands';
+import { parseMessageCommand, parseSlashCommand } from './slash';
 import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {

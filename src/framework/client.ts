@@ -2,7 +2,7 @@ import { getVoiceConnection } from '@discordjs/voice';
 import { ServerDTO, ServersDb } from 'data/@types';
 import { Client, Guild, InviteScope, PermissionResolvable } from 'discord.js';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
-import { registerGlobalSlashCommands } from './register_commands';
+import { registerGlobalSlashCommands } from './slash';
 import { DiscordGuildStore } from './state';
 import { DiscordVoiceConnection } from './voice';
 

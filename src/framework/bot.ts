@@ -30,7 +30,7 @@ import {
   DiscordMessageCommandInteraction,
   DiscordMessageInteraction,
 } from './interaction';
-import { registerGuildSlashCommands } from './register_commands';
+import { registerGuildSlashCommands } from './slash';
 import { DiscordGuildStore } from './state';
 
 const enum DiscordEvents {
