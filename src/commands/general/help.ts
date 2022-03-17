@@ -129,6 +129,7 @@ const args: CommandArgs = {
 
 export const HELP_COMMAND: Command = {
   name: 'help',
+  shortName: 'h',
   details: 'Shows list of all available categories, commands, keywords, and their details.',
   permission: UserPermission.User,
   category: GENERAL_CATEGORY,

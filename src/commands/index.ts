@@ -12,14 +12,20 @@ export const COMMANDS: Command[] = GENERAL_COMMANDS.concat(ACCOUNT_COMMANDS)
 
 export const COMMAND_MAP = COMMANDS.reduce((obj, command) => {
   obj[command.name] = command;
+  if (command.shortName) {
+    if (obj[command.shortName]) {
+      throw new Error(`Duplicate command short name ${command.shortName}!`);
+    }
+    obj[command.shortName] = command;
+  }
   return obj;
-}, {} as { [key: string]: Command | undefined });
+}, {} as Record<string, Command | undefined>);
 
 export const MESSAGE_COMMANDS: MessageCommand[] = [PLAY_MESSAGE_COMMAND, ADD_MESSAGE_COMMAND];
 
 export const MESSAGE_COMMAND_MAP = MESSAGE_COMMANDS.reduce((obj, command) => {
   obj[command.name] = command;
   return obj;
-}, {} as { [key: string]: MessageCommand | undefined });
+}, {} as Record<string, MessageCommand | undefined>);
 
 export * from './parsing';

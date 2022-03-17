@@ -56,6 +56,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const IDENTIFY_COMMAND: Command = {
   name: 'identify',
+  shortName: 'id',
   category: ACCOUNT_CATEGORY,
   shortDetails: 'Set a shortcut identifier for any song, playlist, album or artist.',
   details:

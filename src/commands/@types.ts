@@ -36,6 +36,7 @@ export type CommandArgs = {
 
 export interface Command extends BaseCommand {
   shortDetails?: string;
+  shortName?: string;
   details: string;
   category: CommandCategory;
   keywords?: Keyword[];

@@ -51,6 +51,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const LIST_COMMAND: Command = {
   name: 'list',
+  shortName: 'q',
   details: 'Show or clear the queue.',
   category: QUEUE_CATEGORY,
   permission: UserPermission.DJLimited,

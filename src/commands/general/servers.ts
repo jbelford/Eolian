@@ -58,6 +58,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const SERVERS_COMMAND: Command = {
   name: 'servers',
+  shortName: 'sv',
   details: 'Show all servers this bot is joined to.',
   permission: UserPermission.Owner,
   category: GENERAL_CATEGORY,

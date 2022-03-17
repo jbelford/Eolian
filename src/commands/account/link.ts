@@ -141,6 +141,7 @@ function getSoundCloudMessage(user: SoundCloudUser): string {
 
 export const LINK_COMMAND: Command = {
   name: 'link',
+  shortName: 'ln',
   category: ACCOUNT_CATEGORY,
   details:
     'Link your Spotify or SoundCloud account.\n If a SEARCH query is provided, will search SoundCloud.',

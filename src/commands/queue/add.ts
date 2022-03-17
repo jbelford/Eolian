@@ -110,6 +110,7 @@ async function executeAdd(context: CommandContext, options: CommandOptions): Pro
 
 export const ADD_COMMAND: Command = {
   name: 'add',
+  shortName: 'a',
   details: 'Add songs to the queue.',
   category: QUEUE_CATEGORY,
   permission: UserPermission.DJLimited,

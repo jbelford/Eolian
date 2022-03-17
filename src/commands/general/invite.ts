@@ -11,6 +11,7 @@ async function execute(context: CommandContext): Promise<void> {
 
 export const INVITE_COMMAND: Command = {
   name: 'invite',
+  shortName: 'inv',
   category: GENERAL_CATEGORY,
   details: 'Create a link to invite the bot to another server.',
   keywords: [],

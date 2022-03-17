@@ -84,6 +84,12 @@ export function createCommandDetailsEmbed(
     },
   };
 
+  embed.description += `**Usage**\n\`\`\`\n${command.name}\n`;
+  if (command.shortName) {
+    embed.description += `${command.shortName}\n`;
+  }
+  embed.description += '```\n';
+
   if (command.keywords?.length) {
     embed.description
       += '**Accepted Keywords**\n```\n'
@@ -107,12 +113,13 @@ export function createCommandDetailsEmbed(
   const slash = type === SyntaxType.SLASH ? '/' : '';
   embed.fields = command.usage
     .filter(item => !item.hide)
-    .map(({ title, example }, idx) => ({
-      name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`,
-      value: `\`\`\`\n${slash}${command.name} ${
-        typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ')
-      }\n\`\`\``,
-    }));
+    .map(({ title, example }, idx) => {
+      const mapped = typeof example === 'string' ? example : example.map(ex => ex.text(type)).join(' ');
+      return {
+        name: `Ex. ${idx + 1}${title ? `\t${title}` : ''}`,
+        value: `\`\`\`\n${slash}${command.name} ${mapped}\n\`\`\``,
+      };
+    });
 
   return embed;
 }

@@ -43,6 +43,7 @@ async function execute(
 
 export const UNLINK_COMMAND: Command = {
   name: 'unlink',
+  shortName: 'ul',
   category: ACCOUNT_CATEGORY,
   details: 'Remove a Spotify or SoundCloud account you are linked to.',
   permission: UserPermission.User,

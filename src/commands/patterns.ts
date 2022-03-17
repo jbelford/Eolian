@@ -284,7 +284,7 @@ class IdentifierExample implements ArgumentExample {
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
-    return type === SyntaxType.SLASH ? `${IdentifierExample.NAME}:${this._text}` : `[${this.text}]`;
+    return type === SyntaxType.SLASH ? `${IdentifierExample.NAME}:${this._text}` : `[${this._text}]`;
   }
 
 }

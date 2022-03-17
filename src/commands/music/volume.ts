@@ -34,6 +34,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const VOLUME_COMMAND: Command = {
   name: 'volume',
+  shortName: 'v',
   details: `Get the current volume or set the volume.`,
   category: MUSIC_CATEGORY,
   permission: UserPermission.DJ,

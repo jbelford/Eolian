@@ -181,6 +181,7 @@ const args: CommandArgs = {
 
 export const CONFIG_COMMAND: Command = {
   name: 'config',
+  shortName: 'cfg',
   details: 'Show configuration or change configurations for server.',
   category: SETTINGS_CATEGORY,
   permission: UserPermission.Admin,

@@ -100,6 +100,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
 
 export const PLAY_COMMAND: Command = {
   name: 'play',
+  shortName: 'p',
   shortDetails: `Join the current channel. Starts playing first song in the queue if not already.`,
   details: `Join the current channel. Starts playing first song in the queue if not already.
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,

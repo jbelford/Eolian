@@ -34,6 +34,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
 export const LOOP_COMMAND: Command = {
   name: 'loop',
+  shortName: 'lp',
   details:
     'Enable or disable loop mode.\nLoop mode adds played tracks back to the end of the queue.',
   category: QUEUE_CATEGORY,
