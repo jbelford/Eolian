@@ -139,8 +139,11 @@ export function createKeywordDetailsEmbed(
       text: `Requires DJ Role? ${getRequiresDjState(keyword.permission)}`,
     },
   };
-  embed.description += '**Example Usage:**\n```\n' + keyword.text(type) + '```';
-  embed.description += `\n\n${helpFooter}`;
+  embed.description += '**Example Usage:**\n```\n' + keyword.text(type);
+  if (keyword.shortName && type === SyntaxType.TRADITIONAL) {
+    embed.description += `\n${keyword.text(type, true)}`;
+  }
+  embed.description += `\`\`\`\n${helpFooter}`;
   return embed;
 }
 

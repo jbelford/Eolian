@@ -25,15 +25,16 @@ class KeywordDetails implements Keyword {
     readonly name: KeywordName,
     readonly details: string,
     readonly permission: UserPermission,
-    readonly group?: KeywordGroup
+    readonly group?: KeywordGroup,
+    readonly shortName?: string,
   ) {}
 
-  text(type: SyntaxType): string {
+  text(type: SyntaxType, short?: boolean): string {
     switch (type) {
       case SyntaxType.KEYWORD:
-        return this.name.toLowerCase();
+        return short ? this.shortName!.toLowerCase() : this.name.toLowerCase();
       case SyntaxType.TRADITIONAL:
-        return '-' + this.name.toLowerCase();
+        return '-' + (short ? this.shortName!.toLowerCase() : this.name.toLowerCase());
       case SyntaxType.SLASH:
         return this.group
           ? `${this.group}:${this.name.toLowerCase()}`
@@ -52,26 +53,30 @@ export const KEYWORDS: Readonly<
     'ENABLE',
     'Indicates to enable a particular feature.',
     UserPermission.User,
-    KeywordGroup.Switch
+    KeywordGroup.Switch,
+    'on',
   ),
   DISABLE: new KeywordDetails(
     'DISABLE',
     'Indicates to disable a particular feature.',
     UserPermission.User,
-    KeywordGroup.Switch
+    KeywordGroup.Switch,
+    'off',
   ),
   CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data.', UserPermission.User),
   MORE: new KeywordDetails(
     'MORE',
     'Indicates to increase a value.',
     UserPermission.User,
-    KeywordGroup.Increment
+    KeywordGroup.Increment,
+    'inc'
   ),
   LESS: new KeywordDetails(
     'LESS',
     'Indicates to decrease a value.',
     UserPermission.User,
-    KeywordGroup.Increment
+    KeywordGroup.Increment,
+    'dec'
   ),
   MY: new KeywordDetails(
     'MY',
@@ -82,63 +87,85 @@ export const KEYWORDS: Readonly<
     'SOUNDCLOUD',
     'Indicates to fetch a resource from SoundCloud if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
+    'sc',
   ),
   SPOTIFY: new KeywordDetails(
     'SPOTIFY',
     'Indicates to fetch a resource from Spotify if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
+    'sp',
   ),
   YOUTUBE: new KeywordDetails(
     'YOUTUBE',
     'Indicates to fetch a resource from YouTube if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
+    'yt'
   ),
   PLAYLIST: new KeywordDetails(
     'PLAYLIST',
     'Indicates to fetch songs from a playlist given a query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
+    'pl',
   ),
   ALBUM: new KeywordDetails(
     'ALBUM',
     'Indicates to fetch songs from an album given a query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
+    'alb',
   ),
   ARTIST: new KeywordDetails(
     'ARTIST',
     'Indicates to fetch songs for an artist given the query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
+    'art'
   ),
   NEXT: new KeywordDetails(
     'NEXT',
     'Indicates to apply operation to the top of queue.',
-    UserPermission.DJ
+    UserPermission.DJ,
+    undefined,
+    'n',
   ),
   SHUFFLE: new KeywordDetails(
     'SHUFFLE',
     'Indicates to shuffle the fetched tracks.',
-    UserPermission.User
+    UserPermission.User,
+    undefined,
+    'shfl'
   ),
   LIKES: new KeywordDetails(
     'LIKES',
     'Indicates to fetch liked tracks.\nFetching using TOP likes will execute much faster.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   TRACKS: new KeywordDetails(
     'TRACKS',
     'Indicates to fetch SoundCloud tracks or Spotify top tracks.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   FAST: new KeywordDetails(
     'FAST',
     'Select the first result if multiple options',
-    UserPermission.User
+    UserPermission.User,
+    undefined,
+    'f'
   ),
 };
+
+export const KEYWORDS_MAPPED = Object.values(KEYWORDS)
+  .filter(keyword => keyword)
+  .reduce<Record<string, Keyword>>((obj, keyword) => {
+    obj[keyword!.name] = keyword!;
+    if (keyword!.shortName) {
+      obj[keyword!.shortName.toUpperCase()] = keyword!;
+    }
+    return obj;
+  }, {});

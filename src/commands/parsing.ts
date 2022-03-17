@@ -15,7 +15,7 @@ import {
   PatternValues,
   SyntaxType,
 } from './@types';
-import { KEYWORDS } from './keywords';
+import { KEYWORDS, KEYWORDS_MAPPED } from './keywords';
 import { PATTERNS, PATTERNS_SORTED } from './patterns';
 
 export function simpleOptionsStrategy(text: string): CommandOptions {
@@ -73,7 +73,7 @@ function traditionalOptionsStrategy(
   for (const match of text.matchAll(reg)) {
     if (match.groups) {
       const name = match.groups.keyword.toUpperCase();
-      const keyword = KEYWORDS[name];
+      const keyword = KEYWORDS_MAPPED[name];
       if (keyword) {
         checkSetKeyword(keyword, permission, options, keywordSet.has(keyword.name));
       } else {

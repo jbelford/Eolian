@@ -118,7 +118,9 @@ export interface Keyword extends ArgumentExample {
   readonly name: KeywordName;
   readonly details: string;
   readonly permission: UserPermission;
+  readonly shortName?: string;
   readonly group?: KeywordGroup;
+  text(type: SyntaxType, short?: boolean): string;
 }
 
 export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
