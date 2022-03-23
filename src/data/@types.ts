@@ -70,7 +70,7 @@ export interface UserDTO extends DocDTO {
     spotify?: string;
     soundcloud?: string;
   };
-  identifiers?: { [key: string]: Identifier };
+  identifiers?: Record<string, Identifier>;
 }
 
 export interface Identifier {

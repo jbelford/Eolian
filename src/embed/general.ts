@@ -58,7 +58,7 @@ export function createUserDetailsEmbed(
   contextUser: ContextUser,
   spotify?: SpotifyUser,
   soundcloud?: SoundCloudUser,
-  identifiers?: { [key: string]: Identifier }
+  identifiers?: Record<string, Identifier>
 ): EmbedMessage {
   let description
     = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`
