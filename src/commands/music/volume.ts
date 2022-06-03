@@ -19,16 +19,17 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     volume = options.NUMBER[0] / 100;
   }
 
+  const emoji = context.server!.player.volume <= volume ? '🔊' : '🔉';
   if (context.server!.player.volume !== volume) {
     context.server!.player.setVolume(volume);
   }
 
   if (!context.server!.player.isStreaming) {
-    await context.interaction.send(`🔊  **${Math.floor(volume * 100)}%**  🔊`);
+    await context.interaction.send(`${emoji}  **${Math.floor(volume * 100)}%**  ${emoji}`);
   } else if (context.interaction.reactable) {
-    await context.interaction.react('🔊');
+    await context.interaction.react(emoji);
   } else {
-    await context.interaction.send('🔊', { ephemeral: false });
+    await context.interaction.send(emoji, { ephemeral: false });
   }
 }
 
