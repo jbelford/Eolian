@@ -1789,7 +1789,7 @@ __metadata:
     sodium: ^3.0.2
     ts-loader: ^9.2.6
     typescript: ^4.5.5
-    undici: ^4.14.1
+    undici: ^5.4.0
     utf-8-validate: ^5.0.8
     webpack: ^5.69.0
     webpack-cli: ^4.9.2
@@ -4910,10 +4910,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^4.14.1":
-  version: 4.14.1
-  resolution: "undici@npm:4.14.1"
-  checksum: d64a7fa0e388a43819bb7860268f9f2c917bc14a3e6ab7956bdc73492016bfc58c8d5055eca8f5c3d402f275a1c87a92c2467d77ec34dbaca2c4a6e35e760e5a
+"undici@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "undici@npm:5.4.0"
+  checksum: 2852397ee1dbb2b3ad58166520ec30f4f0143895f6e7b157dbedfac4e43b522a710a3927be61a67b2ae791190973f206d30785564ece7675e08133427cebaaa1
   languageName: node
   linkType: hard
 
