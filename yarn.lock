@@ -1783,7 +1783,7 @@ __metadata:
     mongodb: ^4.3.1
     node-cache: ^5.1.2
     node-gyp: ^8.4.1
-    play-dl: ^1.8.9
+    play-dl: ^1.9.5
     prettier: 2.5.1
     prism-media: ^1.3.2
     sodium: ^3.0.2
@@ -3892,12 +3892,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"play-dl@npm:^1.8.9":
-  version: 1.8.9
-  resolution: "play-dl@npm:1.8.9"
+"play-dl@npm:^1.9.5":
+  version: 1.9.5
+  resolution: "play-dl@npm:1.9.5"
   dependencies:
     play-audio: ^0.5.2
-  checksum: 583eb8e7679e731553d4c687d015c1347c5b66a9e967aaa248030d20ce5f738cf035332c486d146d9030041dc027f7417649f56d914018d2f5cd110e1f337563
+  checksum: 70a74a9b491fceee7f057d0bef0ee05076aeeaa482563e74871c980f2d828d70df622bee0aaf0d15f9e82960ae9c4567d7524569f23a85c2ff00b864bedc3b77
   languageName: node
   linkType: hard
 
