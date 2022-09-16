@@ -26,7 +26,7 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   ): Promise<void> {
     await this.collection.updateOne(
       { _id: id } as unknown as Filter<T>,
-      { $set: { [key]: value }, $setOnInsert: { _id: id } } as UpdateFilter<T>,
+      { $set: { [key]: value }, $setOnInsert: { _id: id } } as unknown as UpdateFilter<T>,
       { upsert: true }
     );
   }
