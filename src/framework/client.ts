@@ -18,7 +18,7 @@ function mapGuildToServerInfo(guild: Guild): ServerInfo {
   };
 }
 
-export const INVITE_SCOPES: OAuth2Scopes[] = [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands, OAuth2Scopes.ApplicationCommandsPermissionsUpdate];
+export const INVITE_SCOPES: OAuth2Scopes[] = [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands];
 
 export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
   PermissionFlagsBits.AddReactions,
