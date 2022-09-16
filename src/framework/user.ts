@@ -3,7 +3,13 @@ import { OAuthRequest, TrackSource } from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
-import { ChannelType, GuildMember, PermissionFlagsBits, PermissionsBitField, User } from 'discord.js';
+import {
+  ChannelType,
+  GuildMember,
+  PermissionFlagsBits,
+  PermissionsBitField,
+  User,
+} from 'discord.js';
 import {
   ContextInteractionOptions,
   ContextMessage,

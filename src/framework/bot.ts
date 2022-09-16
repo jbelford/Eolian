@@ -65,7 +65,7 @@ const DISCORD_ENABLED_INTENTS: GatewayIntentBits[] = [
   GatewayIntentBits.DirectMessages,
   GatewayIntentBits.DirectMessageReactions,
   GatewayIntentBits.MessageContent,
-  GatewayIntentBits.GuildVoiceStates
+  GatewayIntentBits.GuildVoiceStates,
 ];
 
 const USER_COMMAND_LOCK_TIMEOUT = 60;

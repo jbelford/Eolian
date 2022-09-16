@@ -15,7 +15,9 @@ import {
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
 
-export type MessageActionRow = APIActionRowComponent<APIMessageActionRowComponent> | ActionRow<MessageActionRowComponent>;
+export type MessageActionRow =
+  | APIActionRowComponent<APIMessageActionRowComponent>
+  | ActionRow<MessageActionRowComponent>;
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;
@@ -150,7 +152,9 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
   });
 
   for (let i = 0; i < buttons.length; i += 5) {
-    const row = new ActionRowBuilder<ButtonBuilder>().setComponents(...messageButtons.slice(i, i + 5));
+    const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      ...messageButtons.slice(i, i + 5)
+    );
     buttonRows.push(row.toJSON());
   }
 

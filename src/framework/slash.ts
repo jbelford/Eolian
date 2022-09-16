@@ -59,7 +59,9 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
     const rest = new REST({ version: '10' }).setToken(environment.tokens.discord.main);
 
     await rest.put(route, {
-      body: COMMANDS.filter(command => command.permission < UserPermission.Owner).map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
+      body: COMMANDS.filter(command => command.permission < UserPermission.Owner)
+        .map(createSlashCommand)
+        .concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
     });
     logger.info('Successfully refreshed slash commands.');
 
@@ -202,11 +204,9 @@ function addPatternOption(
 
 function createContextMenuCommand(command: MessageCommand) {
   try {
-    return (
-      new ContextMenuCommandBuilder()
-        .setName(command.name)
-        .setType(ApplicationCommandType.Message)
-    );
+    return new ContextMenuCommandBuilder()
+      .setName(command.name)
+      .setType(ApplicationCommandType.Message);
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;
@@ -247,7 +247,10 @@ export function parseSlashCommand(
   return { command, options };
 }
 
-function parseCommandArgs(commandArgs: CommandArgs, interaction: ChatInputCommandInteraction): string[] {
+function parseCommandArgs(
+  commandArgs: CommandArgs,
+  interaction: ChatInputCommandInteraction
+): string[] {
   const args = [];
   for (const group of commandArgs.groups) {
     let selectedName: string | undefined;
