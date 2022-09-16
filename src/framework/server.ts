@@ -27,7 +27,7 @@ export class DiscordGuild implements ServerDetails {
   }
 
   get avatar(): string | undefined {
-    return this.guild.iconURL({ dynamic: true }) ?? undefined;
+    return this.guild.iconURL() ?? undefined;
   }
 
   get owner(): string {

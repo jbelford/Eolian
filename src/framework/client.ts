@@ -1,6 +1,6 @@
 import { getVoiceConnection } from '@discordjs/voice';
 import { ServerDTO, ServersDb } from 'data/@types';
-import { Client, Guild, InviteScope, PermissionResolvable } from 'discord.js';
+import { Client, Guild, OAuth2Scopes, PermissionFlagsBits, PermissionResolvable } from 'discord.js';
 import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
 import { registerGlobalSlashCommands } from './slash';
 import { DiscordGuildStore } from './state';
@@ -18,21 +18,21 @@ function mapGuildToServerInfo(guild: Guild): ServerInfo {
   };
 }
 
-export const INVITE_SCOPES: InviteScope[] = ['bot', 'applications.commands'];
+export const INVITE_SCOPES: OAuth2Scopes[] = [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands, OAuth2Scopes.ApplicationCommandsPermissionsUpdate];
 
 export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
-  'ADD_REACTIONS',
-  'ATTACH_FILES',
-  'CONNECT',
-  'EMBED_LINKS',
-  'MANAGE_MESSAGES',
-  'MENTION_EVERYONE',
-  'PRIORITY_SPEAKER',
-  'READ_MESSAGE_HISTORY',
-  'SEND_MESSAGES',
-  'SPEAK',
-  'USE_EXTERNAL_EMOJIS',
-  'VIEW_CHANNEL',
+  PermissionFlagsBits.AddReactions,
+  PermissionFlagsBits.AttachFiles,
+  PermissionFlagsBits.Connect,
+  PermissionFlagsBits.EmbedLinks,
+  PermissionFlagsBits.ManageMessages,
+  PermissionFlagsBits.MentionEveryone,
+  PermissionFlagsBits.PrioritySpeaker,
+  PermissionFlagsBits.ReadMessageHistory,
+  PermissionFlagsBits.SendMessages,
+  PermissionFlagsBits.Speak,
+  PermissionFlagsBits.UseExternalEmojis,
+  PermissionFlagsBits.ViewChannel,
 ];
 
 export class DiscordClient implements ContextClient {
@@ -48,7 +48,7 @@ export class DiscordClient implements ContextClient {
   }
 
   get pic(): string | undefined {
-    return this.client.user!.avatarURL({ dynamic: true }) || undefined;
+    return this.client.user!.avatarURL() || undefined;
   }
 
   getVoice(): ContextVoiceConnection | undefined {

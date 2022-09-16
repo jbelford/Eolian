@@ -3,11 +3,12 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { clampLength } from 'common/util';
 import {
+  ChannelType,
   DMChannel,
   Message,
   MessageCollector,
   MessageOptions,
-  Permissions,
+  PermissionFlagsBits,
   TextChannel,
 } from 'discord.js';
 import { createSelectionEmbed } from 'embed';
@@ -109,16 +110,16 @@ export class DiscordChannelSender implements ContextSendable {
 
   get sendable(): boolean {
     if (this._sendable === undefined) {
-      this._sendable = !this.channel.deleted;
-      if (this.channel.type === 'GUILD_TEXT') {
+      this._sendable = true;
+      if (this.channel.type === ChannelType.GuildText) {
         const permissions = (this.channel as TextChannel).permissionsFor(
-          (this.channel as TextChannel).guild.me!
+          (this.channel as TextChannel).guild.members.me!
         );
         this._sendable &&= !!permissions?.has(
-          Permissions.FLAGS.VIEW_CHANNEL
-            | Permissions.FLAGS.SEND_MESSAGES
-            | Permissions.FLAGS.EMBED_LINKS
-            | Permissions.FLAGS.READ_MESSAGE_HISTORY
+          PermissionFlagsBits.ViewChannel
+            | PermissionFlagsBits.SendMessages
+            | PermissionFlagsBits.EmbedLinks
+            | PermissionFlagsBits.ReadMessageHistory
         );
       }
     }
@@ -273,15 +274,15 @@ export class DiscordTextChannel implements ContextTextChannel {
   }
 
   get isDm(): boolean {
-    return this.channel.type === 'DM';
+    return this.channel.type === ChannelType.DM;
   }
 
   get visible(): boolean {
     if (!this.isDm) {
       const permissions = (this.channel as TextChannel).permissionsFor(
-        (this.channel as TextChannel).guild.me!
+        (this.channel as TextChannel).guild.members.me!
       );
-      return permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
+      return permissions.has(PermissionFlagsBits.ViewChannel);
     }
     return true;
   }
@@ -293,9 +294,9 @@ export class DiscordTextChannel implements ContextTextChannel {
   get reactable(): boolean {
     if (!this.isDm) {
       const permissions = (this.channel as TextChannel).permissionsFor(
-        (this.channel as TextChannel).guild.me!
+        (this.channel as TextChannel).guild.members.me!
       );
-      return permissions.has(Permissions.FLAGS.ADD_REACTIONS);
+      return permissions.has(PermissionFlagsBits.AddReactions);
     }
     return true;
   }

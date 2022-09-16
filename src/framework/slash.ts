@@ -30,14 +30,7 @@ import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import {
-  ApplicationCommandPermissionType,
-  ApplicationCommandType,
-  RESTPutAPIApplicationCommandsResult,
-  RESTPutAPIGuildApplicationCommandsPermissionsJSONBody,
-  Routes,
-} from 'discord-api-types/v9';
-import { CommandInteraction } from 'discord.js';
+import { ApplicationCommandType, ChatInputCommandInteraction, Routes } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
   if (!environment.tokens.discord.clientId) {
@@ -63,39 +56,11 @@ export async function registerGuildSlashCommands(guildId: string): Promise<boole
 
 async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   try {
-    const rest = new REST({ version: '9' }).setToken(environment.tokens.discord.main);
+    const rest = new REST({ version: '10' }).setToken(environment.tokens.discord.main);
 
-    const result = (await rest.put(route, {
-      body: COMMANDS.map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
-    })) as RESTPutAPIApplicationCommandsResult;
-
-    if (environment.owners) {
-      const overrides: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
-      for (const command of result) {
-        if (command.default_permission === false) {
-          const permissions: typeof overrides[number] = {
-            id: command.id,
-            permissions: environment.owners.map(owner => ({
-              id: owner,
-              type: ApplicationCommandPermissionType.User,
-              permission: true,
-            })),
-          };
-          overrides.push(permissions);
-        }
-      }
-
-      if (overrides.length && environment.ownerGuild) {
-        await rest.put(
-          Routes.guildApplicationCommandsPermissions(
-            environment.tokens.discord.clientId!,
-            environment.ownerGuild
-          ),
-          { body: overrides }
-        );
-      }
-    }
-
+    await rest.put(route, {
+      body: COMMANDS.filter(command => command.permission < UserPermission.Owner).map(createSlashCommand).concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
+    });
     logger.info('Successfully refreshed slash commands.');
 
     return true;
@@ -115,8 +80,9 @@ function createSlashCommand(command: Command) {
 
     const builder = new SlashCommandBuilder().setName(command.name).setDescription(description);
 
-    if (command.permission >= UserPermission.Owner) {
-      builder.setDefaultPermission(false);
+    builder.setDMPermission(command.dmAllowed);
+    if (command.permission >= UserPermission.Admin) {
+      builder.setDefaultMemberPermissions('0');
     }
 
     if (command.keywords || command.patterns) {
@@ -157,7 +123,10 @@ function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
             logger.warn('Too many choices for %s option. Not adding choices.', option.name);
           } else {
             for (const choice of choices) {
-              optionBuilder.addChoice(choice, choice);
+              optionBuilder.addChoices({
+                name: choice,
+                value: choice,
+              });
             }
           }
         }
@@ -172,17 +141,18 @@ function addKeywordOption(
   keyword: Keyword,
   groupOption: Map<KeywordGroup, SlashCommandStringOption>
 ) {
+  const name = keyword.name.toLowerCase();
   if (keyword.group) {
     const option = groupOption.get(keyword.group);
     if (option) {
-      option.addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
+      option.addChoices({ name, value: name });
     } else {
       const group = KEYWORD_GROUPS[keyword.group];
       builder.addStringOption(option => {
         option
           .setName(keyword.group!)
           .setDescription(group.details)
-          .addChoice(keyword.name.toLowerCase(), keyword.name.toLowerCase());
+          .addChoices({ name, value: name });
         groupOption.set(keyword.group!, option);
         return option;
       });
@@ -195,7 +165,7 @@ function addKeywordOption(
     }
 
     builder.addBooleanOption(option =>
-      option.setName(keyword.name.toLowerCase()).setDescription(details).setRequired(false)
+      option.setName(name).setDescription(details).setRequired(false)
     );
   }
 }
@@ -235,7 +205,6 @@ function createContextMenuCommand(command: MessageCommand) {
     return (
       new ContextMenuCommandBuilder()
         .setName(command.name)
-        // @ts-ignore Discord.js doesn't play nice with types for some reason
         .setType(ApplicationCommandType.Message)
     );
   } catch (e) {
@@ -245,7 +214,7 @@ function createContextMenuCommand(command: MessageCommand) {
 }
 
 export function parseSlashCommand(
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   permission: UserPermission
 ): ParsedCommand {
   const command = getCommand(interaction.commandName, permission);
@@ -278,7 +247,7 @@ export function parseSlashCommand(
   return { command, options };
 }
 
-function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteraction): string[] {
+function parseCommandArgs(commandArgs: CommandArgs, interaction: ChatInputCommandInteraction): string[] {
   const args = [];
   for (const group of commandArgs.groups) {
     let selectedName: string | undefined;
@@ -307,7 +276,7 @@ function parseCommandArgs(commandArgs: CommandArgs, interaction: CommandInteract
 function parseSlashKeyword(
   keyword: Keyword,
   permission: UserPermission,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   options: CommandOptions,
   groupSet: Set<string>
 ) {
@@ -329,7 +298,7 @@ function parseSlashKeyword(
 function parseSlashPattern(
   pattern: Pattern,
   permission: UserPermission,
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
   options: CommandOptions,
   patternSet: Set<string>,
   groupSet: Set<string>,

@@ -1,15 +1,21 @@
 import { logger } from 'common/logger';
 import { clampLength } from 'common/util';
 import {
+  ActionRow,
+  ActionRowBuilder,
+  APIActionRowComponent,
+  APIMessageActionRowComponent,
+  ButtonBuilder,
   ButtonInteraction,
+  EmbedBuilder,
   Message,
-  MessageActionRow,
-  MessageButton,
+  MessageActionRowComponent,
   MessageEditOptions,
-  MessageEmbed,
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';
+
+export type MessageActionRow = APIActionRowComponent<APIMessageActionRowComponent> | ActionRow<MessageActionRowComponent>;
 
 export interface DiscordMessageButtons {
   registry: ButtonRegistry;
@@ -37,12 +43,10 @@ export class DiscordMessage implements ContextMessage {
   }
 
   async react(emoji: string): Promise<void> {
-    if (!this.message.deleted) {
-      try {
-        await this.message.react(emoji);
-      } catch (e) {
-        logger.warn('Failed to react to message: %s', e);
-      }
+    try {
+      await this.message.react(emoji);
+    } catch (e) {
+      logger.warn('Failed to react to message: %s', e);
     }
   }
 
@@ -60,7 +64,7 @@ export class DiscordMessage implements ContextMessage {
     await this.editMessage(rich);
   }
 
-  private async editMessage(message: string | MessageEmbed): Promise<void> {
+  private async editMessage(message: string | EmbedBuilder): Promise<void> {
     if (this.editable) {
       try {
         const options: MessageEditOptions = {};
@@ -92,23 +96,21 @@ export class DiscordMessage implements ContextMessage {
 
   async delete(): Promise<void> {
     this.releaseButtons();
-    if (!this.message.deleted) {
-      if (this.message.deletable) {
-        try {
-          await this.message.delete();
-        } catch (e) {
-          logger.warn('Failed to delete message: %s', e);
-        }
-      } else if (this.message.author.id === this.message.client.user?.id) {
-        logger.warn(`Failed to delete message created by ourself`);
+    if (this.message.deletable) {
+      try {
+        await this.message.delete();
+      } catch (e) {
+        logger.warn('Failed to delete message: %s', e);
       }
+    } else if (this.message.author.id === this.message.client.user?.id) {
+      logger.warn(`Failed to delete message created by ourself`);
     }
   }
 
 }
 
-export function mapDiscordEmbed(embed: EmbedMessage): MessageEmbed {
-  const rich = new MessageEmbed();
+export function mapDiscordEmbed(embed: EmbedMessage): EmbedBuilder {
+  const rich = new EmbedBuilder();
 
   if (embed.color) rich.setColor(embed.color);
   if (embed.header) rich.setAuthor({ name: embed.header.text, iconURL: embed.header.icon });
@@ -140,7 +142,7 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
   const messageButtons = buttons.map((button, idx) => {
     const id = `button_${idx}`;
     buttonMap.set(id, button);
-    return new MessageButton()
+    return new ButtonBuilder()
       .setEmoji(button.emoji)
       .setDisabled(!!button.disabled)
       .setStyle(buttonStyleToDiscordStyle(button.style))
@@ -148,8 +150,8 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
   });
 
   for (let i = 0; i < buttons.length; i += 5) {
-    const row = new MessageActionRow().addComponents(...messageButtons.slice(i, i + 5));
-    buttonRows.push(row);
+    const row = new ActionRowBuilder<ButtonBuilder>().setComponents(...messageButtons.slice(i, i + 5));
+    buttonRows.push(row.toJSON());
   }
 
   return { rows: buttonRows, mapping: buttonMap };

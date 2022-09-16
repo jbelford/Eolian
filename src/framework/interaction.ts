@@ -2,14 +2,14 @@ import { AuthProviders } from 'api';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
 import {
-  BaseCommandInteraction,
   ButtonInteraction,
+  ChatInputCommandInteraction,
   CommandInteraction,
   DMChannel,
   GuildMember,
   Message,
-  MessageActionRow,
-  MessageContextMenuInteraction,
+  MessageComponentInteraction,
+  MessageContextMenuCommandInteraction,
   MessageOptions,
   TextChannel,
 } from 'discord.js';
@@ -34,9 +34,9 @@ import { DiscordUser, getPermissionLevel } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
 
-  constructor(private readonly interaction: ButtonInteraction | BaseCommandInteraction) {}
+  constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
 
-  async send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message> {
+  async send(options: Omit<MessageOptions, 'flags'>, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;
     const ephemeral = hasButtons ? false : forceEphemeral ?? true;
     let reply: Message;
@@ -65,7 +65,7 @@ class CommandInteractionSender implements DiscordMessageSender {
 
 }
 
-class DiscordInteraction<T extends ButtonInteraction | BaseCommandInteraction>
+class DiscordInteraction<T extends MessageComponentInteraction | CommandInteraction>
   implements ContextInteraction
 {
 
@@ -175,7 +175,7 @@ export class DiscordButtonInteraction
     if (!this._message) {
       this._message = new DiscordMessage(this.interaction.message as Message, {
         registry: this.registry,
-        components: (this.interaction.message.components as MessageActionRow[]) ?? [],
+        components: this.interaction.message.components,
         interaction: this.interaction,
       });
     }
@@ -189,14 +189,14 @@ export class DiscordButtonInteraction
 }
 
 export class DiscordCommandInteraction
-  extends DiscordInteraction<CommandInteraction>
+  extends DiscordInteraction<ChatInputCommandInteraction>
   implements ContextCommandInteraction
 {
 
   readonly isSlash = true;
 
   constructor(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
     auth: AuthProviders
@@ -227,7 +227,7 @@ export class DiscordCommandInteraction
 }
 
 export class DiscordMessageCommandInteraction
-  extends DiscordInteraction<MessageContextMenuInteraction>
+  extends DiscordInteraction<MessageContextMenuCommandInteraction>
   implements ContextCommandInteraction
 {
 
@@ -236,7 +236,7 @@ export class DiscordMessageCommandInteraction
   private _message?: Message;
 
   constructor(
-    interaction: MessageContextMenuInteraction,
+    interaction: MessageContextMenuCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
     auth: AuthProviders

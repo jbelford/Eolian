@@ -3,7 +3,7 @@ import { OAuthRequest, TrackSource } from 'api/@types';
 import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { Identifier, UserDTO, UsersDb } from 'data/@types';
-import { GuildMember, Permissions, User } from 'discord.js';
+import { ChannelType, GuildMember, PermissionFlagsBits, PermissionsBitField, User } from 'discord.js';
 import {
   ContextInteractionOptions,
   ContextMessage,
@@ -42,7 +42,7 @@ export class DiscordUser implements ContextUser {
   }
 
   get avatar(): string | undefined {
-    return this.user.avatarURL({ dynamic: true }) || undefined;
+    return this.user.avatarURL() || undefined;
   }
 
   get permission(): UserPermission {
@@ -93,7 +93,7 @@ export class DiscordUser implements ContextUser {
   getVoice(): ContextVoiceChannel | undefined {
     if (this.guildUser) {
       const voiceChannel = this.guildUser.voice.channel;
-      if (voiceChannel?.type === 'GUILD_VOICE') {
+      if (voiceChannel?.type === ChannelType.GuildVoice) {
         return new DiscordVoiceChannel(voiceChannel);
       }
     }
@@ -224,11 +224,11 @@ export class DiscordUser implements ContextUser {
 
 export function getPermissionLevel(
   user: User,
-  memberPermissions?: Readonly<Permissions> | null
+  memberPermissions?: Readonly<PermissionsBitField> | null
 ): UserPermission {
   if (environment.owners.includes(user.id)) {
     return UserPermission.Owner;
-  } else if (memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
+  } else if (memberPermissions?.has(PermissionFlagsBits.Administrator)) {
     return UserPermission.Admin;
   }
   return UserPermission.User;

@@ -7,7 +7,7 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { logger } from 'common/logger';
-import { Client, VoiceChannel } from 'discord.js';
+import { ChannelType, Client, VoiceChannel } from 'discord.js';
 import { ContextVoiceChannel, ContextVoiceConnection } from './@types';
 
 export class DiscordVoiceChannel implements ContextVoiceChannel {
@@ -47,7 +47,7 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
 
   getChannel(): ContextVoiceChannel {
     const channel = this.client.channels.cache.get(this.channelId);
-    if (channel?.type !== 'GUILD_VOICE') {
+    if (channel?.type !== ChannelType.GuildVoice) {
       logger.warn(
         'Guild channel received is not voice. Type: %s Id: %s',
         channel?.type,

@@ -6,15 +6,18 @@ import { logger } from 'common/logger';
 import { feature, LockManager } from 'data';
 import { AppDatabase, FeatureFlag } from 'data/@types';
 import {
+  ActivityType,
   ButtonInteraction,
+  ChannelType,
+  ChatInputCommandInteraction,
   Client,
   ClientOptions,
-  CommandInteraction,
+  GatewayIntentBits,
   Guild,
-  Intents,
   Interaction,
   Message,
-  MessageContextMenuInteraction,
+  MessageContextMenuCommandInteraction,
+  Partials,
 } from 'discord.js';
 import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
 import { ButtonRegistry } from './button';
@@ -46,23 +49,24 @@ const enum DiscordEvents {
 }
 
 // https://discord.com/developers/docs/topics/gateway#list-of-intents
-const DISCORD_ENABLED_INTENTS = new Intents();
-DISCORD_ENABLED_INTENTS.add(
-  'GUILDS',
+const DISCORD_ENABLED_INTENTS: GatewayIntentBits[] = [
+  GatewayIntentBits.Guilds,
   // 'GUILD_MEMBERS',
   // 'GUILD_EMOJIS',
   // 'GUILD_INTEGRATIONS',
   // 'GUILD_WEBHOOKS',
-  'GUILD_INVITES',
-  'GUILD_VOICE_STATES',
+  GatewayIntentBits.GuildInvites,
+  GatewayIntentBits.GuildVoiceStates,
   // 'GUILD_PRESENCES',
-  'GUILD_MESSAGES',
-  'GUILD_MESSAGE_REACTIONS',
+  GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.GuildMessageReactions,
   // 'GUILD_MESSAGE_TYPING',
   // 'DIRECT_MESSAGE_TYPING',
-  'DIRECT_MESSAGES',
-  'DIRECT_MESSAGE_REACTIONS'
-);
+  GatewayIntentBits.DirectMessages,
+  GatewayIntentBits.DirectMessageReactions,
+  GatewayIntentBits.MessageContent,
+  GatewayIntentBits.GuildVoiceStates
+];
 
 const USER_COMMAND_LOCK_TIMEOUT = 60;
 
@@ -74,7 +78,7 @@ export interface DiscordEolianBotArgs {
 
 const DISCORD_CLIENT_OPTIONS: ClientOptions = {
   intents: DISCORD_ENABLED_INTENTS,
-  partials: ['CHANNEL'],
+  partials: [Partials.Channel],
 };
 
 export class DiscordEolianBot implements EolianBot {
@@ -171,7 +175,7 @@ export class DiscordEolianBot implements EolianBot {
         activities: [
           {
             name: `${environment.cmdToken}help or /help`,
-            type: 'LISTENING',
+            type: ActivityType.Listening,
           },
         ],
       });
@@ -192,7 +196,7 @@ export class DiscordEolianBot implements EolianBot {
       }
       if (interaction.isButton()) {
         await this.onButtonClickHandler(interaction);
-      } else if (interaction.isCommand() || interaction.isMessageContextMenu()) {
+      } else if (interaction.isChatInputCommand() || interaction.isMessageContextMenuCommand()) {
         await this.onCommandHandler(interaction);
       } else {
         logger.warn('Received unknown interaction type: %s', interaction.type);
@@ -242,13 +246,13 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onCommandHandler = async (
-    interaction: CommandInteraction | MessageContextMenuInteraction
+    interaction: ChatInputCommandInteraction | MessageContextMenuCommandInteraction
   ) => {
     const locked = await this.lockManager.isLocked(interaction.user.id);
     if (!locked) {
       try {
         await this.lockManager.lock(interaction.user.id);
-        const contextInteraction = interaction.isCommand()
+        const contextInteraction = interaction.isChatInputCommand()
           ? new DiscordCommandInteraction(interaction, this.registry, this.db.users, this.auth)
           : new DiscordMessageCommandInteraction(
               interaction,
@@ -419,8 +423,8 @@ export class DiscordEolianBot implements EolianBot {
 
   private isTextOrDm(message: Message): boolean {
     switch (message.channel.type) {
-      case 'DM':
-      case 'GUILD_TEXT':
+      case ChannelType.DM:
+      case ChannelType.GuildText:
         return true;
       default:
         return false;
