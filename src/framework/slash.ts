@@ -82,7 +82,7 @@ function createSlashCommand(command: Command) {
 
     const builder = new SlashCommandBuilder().setName(command.name).setDescription(description);
 
-    builder.setDMPermission(command.dmAllowed);
+    builder.setDMPermission(!!command.dmAllowed);
     if (command.permission >= UserPermission.Admin) {
       builder.setDefaultMemberPermissions('0');
     }
