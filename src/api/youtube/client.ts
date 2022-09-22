@@ -13,7 +13,7 @@ import * as play from 'play-dl';
 import { BingApi } from 'api/bing/@types';
 
 const SEARCH_MIN_SCORE = 79;
-const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu\.be\/(?<video>[^/]+)\s*$/;
+const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
 
