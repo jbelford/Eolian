@@ -1,6 +1,23 @@
 import { ProgressUpdater } from 'common/@types';
 import { ContextMessage, ContextSendable } from './@types';
 
+const PROGRESS_BAR_SIZE = 15;
+
+function renderProgressBar(name: string, value: number) {
+  const loaded = Math.round(PROGRESS_BAR_SIZE * value / 100);
+  let bar = '';
+
+  for (let i = 0; i < loaded; ++i) {
+    bar += '▰';
+  }
+
+  for (let i = loaded; i < PROGRESS_BAR_SIZE; ++i) {
+    bar += '▱';
+  }
+
+  return `${name}: ${value}%\n${bar}`;
+}
+
 export class DownloaderDisplay implements ProgressUpdater {
 
   private lastSent = 0;
@@ -39,7 +56,7 @@ export class DownloaderDisplay implements ProgressUpdater {
   private _update = async () => {
     if (Date.now() - this.lastSent >= this.refreshInterval) {
       this.lastSent = Date.now();
-      const text = `${this.name}: ${this.value}%`;
+      const text = renderProgressBar(this.name, this.value);
       if (this.message) {
         await this.message.edit(text);
       } else {
