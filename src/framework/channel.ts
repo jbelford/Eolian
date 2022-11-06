@@ -3,11 +3,11 @@ import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
 import { clampLength } from 'common/util';
 import {
+  BaseMessageOptions,
   ChannelType,
   DMChannel,
   Message,
   MessageCollector,
-  MessageOptions,
   PermissionFlagsBits,
   TextChannel,
 } from 'discord.js';
@@ -35,7 +35,7 @@ import {
 export const STOP_EMOJI = '🚫';
 
 export interface DiscordMessageSender {
-  send(options: MessageOptions, forceEphemeral?: boolean): Promise<Message>;
+  send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message>;
 }
 
 const DISCORD_CONTENT_MAX = 2000;
@@ -70,7 +70,7 @@ export class DiscordSender {
     try {
       const rich = mapDiscordEmbed(embed);
 
-      const messageOptions: MessageOptions = { embeds: [rich] };
+      const messageOptions: BaseMessageOptions = { embeds: [rich] };
 
       let buttonMapping: DiscordButtonMapping | undefined;
       if (embed.buttons && this.registry) {

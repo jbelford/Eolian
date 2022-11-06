@@ -30,7 +30,7 @@ import { UserPermission } from 'common/constants';
 import { environment } from 'common/env';
 import { EolianUserError } from 'common/errors';
 import { logger } from 'common/logger';
-import { ApplicationCommandType, ChatInputCommandInteraction, Routes } from 'discord.js';
+import { ApplicationCommandType, ChatInputCommandInteraction, RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
   if (!environment.tokens.discord.clientId) {
@@ -72,7 +72,7 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
   return false;
 }
 
-function createSlashCommand(command: Command) {
+function createSlashCommand(command: Command): RESTPostAPIApplicationCommandsJSONBody {
   try {
     let description = command.shortDetails ?? command.details;
     if (description.length > 100) {
@@ -202,11 +202,12 @@ function addPatternOption(
   }
 }
 
-function createContextMenuCommand(command: MessageCommand) {
+function createContextMenuCommand(command: MessageCommand): RESTPostAPIApplicationCommandsJSONBody {
   try {
     return new ContextMenuCommandBuilder()
       .setName(command.name)
-      .setType(ApplicationCommandType.Message);
+      .setType(ApplicationCommandType.Message)
+      .toJSON();
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;

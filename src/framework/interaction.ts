@@ -2,6 +2,7 @@ import { AuthProviders } from 'api';
 import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
 import { UsersDb } from 'data/@types';
 import {
+  BaseMessageOptions,
   ButtonInteraction,
   ChatInputCommandInteraction,
   CommandInteraction,
@@ -10,7 +11,6 @@ import {
   Message,
   MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
-  MessageOptions,
   TextChannel,
 } from 'discord.js';
 import { SelectionOption } from 'embed/@types';
@@ -36,7 +36,7 @@ class CommandInteractionSender implements DiscordMessageSender {
 
   constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
 
-  async send(options: Omit<MessageOptions, 'flags'>, forceEphemeral?: boolean): Promise<Message> {
+  async send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;
     const ephemeral = hasButtons ? false : forceEphemeral ?? true;
     let reply: Message;
@@ -273,7 +273,7 @@ class MessageInteractionSender implements DiscordMessageSender {
 
   constructor(private readonly message: Message) {}
 
-  async send(options: MessageOptions): Promise<Message<boolean>> {
+  async send(options: BaseMessageOptions): Promise<Message<boolean>> {
     return this.message.reply(options);
   }
 
