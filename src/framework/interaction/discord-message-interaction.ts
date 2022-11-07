@@ -13,9 +13,11 @@ import {
   ContextServer,
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
-import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from '../discord-channel';
+import { DiscordTextChannel } from '../discord-channel';
+import { DiscordChannelSender } from "../discord-channel-sender";
 import { DiscordMessage } from '../discord-message';
 import { getPermissionLevel, DiscordUser } from '../discord-user';
+import { DiscordMessageSender } from '../discord-sender';
 
 class MessageInteractionSender implements DiscordMessageSender {
 

@@ -3,8 +3,6 @@ import { SelectionOption } from '@eolian/embed/@types';
 import {
   MessageComponentInteraction,
   CommandInteraction,
-  BaseMessageOptions,
-  Message,
   GuildMember,
   TextChannel,
   DMChannel,
@@ -20,41 +18,10 @@ import {
   IAuthServiceProvider,
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
-import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from '../discord-channel';
+import { DiscordTextChannel } from '../discord-channel';
+import { DiscordChannelSender } from "../discord-channel-sender";
 import { getPermissionLevel, DiscordUser } from '../discord-user';
-
-class CommandInteractionSender implements DiscordMessageSender {
-
-  constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
-
-  async send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message> {
-    const hasButtons = !!options.components?.length;
-    const ephemeral = hasButtons ? false : forceEphemeral ?? true;
-    let reply: Message;
-    if (!this.interaction.replied) {
-      if (!this.interaction.deferred) {
-        reply = (await this.interaction.reply({
-          ...options,
-          ephemeral,
-          fetchReply: true,
-        })) as Message;
-      } else {
-        if (this.interaction.ephemeral && hasButtons) {
-          throw new Error('Buttons on ephemeral message are not allowed');
-        }
-        reply = (await this.interaction.editReply(options)) as Message;
-      }
-    } else {
-      reply = (await this.interaction.followUp({
-        ...options,
-        ephemeral,
-        fetchReply: true,
-      })) as Message;
-    }
-    return reply;
-  }
-
-}
+import { DiscordInteractionSender } from './discord-interaction-sender';
 
 export class DiscordInteraction<T extends MessageComponentInteraction | CommandInteraction>
   implements ContextInteraction
@@ -113,7 +80,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
   private get sender(): DiscordChannelSender {
     if (!this._sender) {
       this._sender = new DiscordChannelSender(
-        new CommandInteractionSender(this.interaction),
+        new DiscordInteractionSender(this.interaction),
         this.registry,
         <TextChannel | DMChannel>this.interaction.channel
       );

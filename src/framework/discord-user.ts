@@ -22,7 +22,7 @@ import {
   IAuthServiceProvider,
 } from './@types';
 import { DiscordAuthorizationProvider } from './discord-authorization-provider';
-import { DiscordSender } from './discord-channel';
+import { DiscordSender } from "./discord-sender";
 import { DiscordVoiceChannel } from './discord-voice';
 
 export class DiscordUser implements ContextUser {
