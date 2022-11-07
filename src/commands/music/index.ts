@@ -7,7 +7,7 @@ import { RESUME_COMMAND } from './resume-command';
 import { SHOW_COMMAND } from './show-command';
 import { SKIP_COMMAND } from './skip-command';
 import { STOP_COMMAND } from './stop-command';
-import { VOLUME_COMMAND } from './volume';
+import { VOLUME_COMMAND } from './volume-command';
 
 export const MUSIC_COMMANDS: Command[] = [
   PLAY_COMMAND,
