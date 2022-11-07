@@ -8,7 +8,7 @@ import { ResourceType } from '@eolian/data/@types';
 import { DownloaderDisplay } from '@eolian/framework';
 import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
 import { ResolvedResource, SourceFetcher, FetchResult } from '../@types';
-import { SoundCloudArtistResolver, UserResult } from './artist';
+import { SoundCloudArtistResolver, UserResult } from './soundcloud-artist-resolver';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
 

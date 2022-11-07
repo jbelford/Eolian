@@ -4,16 +4,16 @@ import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { feature } from '@eolian/data';
 import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';
-import { SoundCloudArtistFetcher } from './artist';
-import { SoundCloudFavoritesFetcher } from './likes';
-import { SoundCloudPlaylistFetcher } from './playlist';
-import { SoundCloudSongFetcher } from './song';
+import { SoundCloudArtistFetcher } from './soundcloud-artist-resolver';
+import { SoundCloudFavoritesFetcher } from './soundcloud-likes-resolver';
+import { SoundCloudPlaylistFetcher } from './soundcloud-playlist-resolver';
+import { SoundCloudSongFetcher } from './soundcloud-song-resolver';
 
-export { SoundCloudArtistResolver, SoundCloudTracksResolver } from './artist';
-export { SoundCloudFavoritesResolver } from './likes';
-export { SoundCloudPlaylistResolver } from './playlist';
-export { SoundCloudSongResolver } from './song';
-export { SoundCloudUrlResolver } from './url';
+export { SoundCloudArtistResolver, SoundCloudTracksResolver } from './soundcloud-artist-resolver';
+export { SoundCloudFavoritesResolver } from './soundcloud-likes-resolver';
+export { SoundCloudPlaylistResolver } from './soundcloud-playlist-resolver';
+export { SoundCloudSongResolver } from './soundcloud-song-resolver';
+export { SoundCloudUrlResolver } from './soundcloud-url-resolver';
 
 export async function getSoundCloudSourceFetcher(
   identifier: Identifier,

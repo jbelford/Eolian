@@ -5,19 +5,19 @@ import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { feature } from '@eolian/data';
 import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';
-import { SpotifyAlbumFetcher } from './album';
-import { SpotifyArtistFetcher } from './artist';
-import { SpotifyLikesFetcher } from './likes';
-import { SpotifyPlaylistFetcher } from './playlist';
-import { SpotifyTracksFetcher } from './tracks';
-import { SpotifySongFetcher } from './url';
+import { SpotifyAlbumFetcher } from './spotify-album-resolver';
+import { SpotifyArtistFetcher } from './spotify-artist-resolver';
+import { SpotifyLikesFetcher } from './spotify-likes-resolver';
+import { SpotifyPlaylistFetcher } from './spotify-playlist-resolver';
+import { SpotifyTracksFetcher } from './spotify-tracks-resolver';
+import { SpotifySongFetcher } from './spotify-url-resolver';
 
-export { SpotifyAlbumResolver } from './album';
-export { SpotifyArtistResolver } from './artist';
-export { SpotifyPlaylistResolver } from './playlist';
-export { SpotifyUrlResolver } from './url';
-export { SpotifyLikesResolver } from './likes';
-export { SpotifyTracksResolver } from './tracks';
+export { SpotifyAlbumResolver } from './spotify-album-resolver';
+export { SpotifyArtistResolver } from './spotify-artist-resolver';
+export { SpotifyPlaylistResolver } from './spotify-playlist-resolver';
+export { SpotifyUrlResolver } from './spotify-url-resolver';
+export { SpotifyLikesResolver } from './spotify-likes-resolver';
+export { SpotifyTracksResolver } from './spotify-tracks-resolver';
 
 export async function getSpotifySourceFetcher(
   identifier: Identifier,

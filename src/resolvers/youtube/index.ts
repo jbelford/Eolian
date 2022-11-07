@@ -1,12 +1,12 @@
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { Identifier, ResourceType } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';
-import { YouTubePlaylistFetcher } from './playlist';
-import { YouTubeVideoFetcher } from './video';
+import { YouTubePlaylistFetcher } from './youtube-playlist-resolver';
+import { YouTubeVideoFetcher } from './youtube-video-resolver';
 
-export { YouTubePlaylistResolver } from './playlist';
-export { YouTubeUrlResolver } from './url';
-export { YouTubeVideoResolver } from './video';
+export { YouTubePlaylistResolver } from './youtube-playlist-resolver';
+export { YouTubeUrlResolver } from './youtube-url-resolver';
+export { YouTubeVideoResolver } from './youtube-video-resolver';
 
 export function getYouTubeSourceFetcher(
   identifier: Identifier,

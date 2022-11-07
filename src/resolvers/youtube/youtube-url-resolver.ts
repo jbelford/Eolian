@@ -3,8 +3,8 @@ import { CommandOptions, CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource } from '../@types';
-import { createYouTubePlaylist } from './playlist';
-import { createYouTubeVideo } from './video';
+import { createYouTubePlaylist } from './youtube-playlist-resolver';
+import { createYouTubeVideo } from './youtube-video-resolver';
 
 const MY_MIX_PLAYLIST_ID = 'RDMM';
 const LIKED_MUSIC_ID = 'LM';

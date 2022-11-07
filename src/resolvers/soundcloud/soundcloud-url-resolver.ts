@@ -7,9 +7,9 @@ import {
 } from '@eolian/api/soundcloud/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { SourceResolver, ResolvedResource } from '../@types';
-import { createSoundCloudUser } from './artist';
-import { createSoundCloudPlaylist } from './playlist';
-import { createSoundCloudSong } from './song';
+import { createSoundCloudUser } from './soundcloud-artist-resolver';
+import { createSoundCloudPlaylist } from './soundcloud-playlist-resolver';
+import { createSoundCloudSong } from './soundcloud-song-resolver';
 
 export class SoundCloudUrlResolver implements SourceResolver {
 

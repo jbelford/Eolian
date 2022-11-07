@@ -6,9 +6,9 @@ import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
 import { ContextSendable } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
-import { createSpotifyAlbum } from './album';
-import { createSpotifyArtist } from './artist';
-import { createSpotifyPlaylist } from './playlist';
+import { createSpotifyAlbum } from './spotify-album-resolver';
+import { createSpotifyArtist } from './spotify-artist-resolver';
+import { createSpotifyPlaylist } from './spotify-playlist-resolver';
 
 export class SpotifyUrlResolver implements SourceResolver {
 
