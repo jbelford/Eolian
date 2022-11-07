@@ -5,7 +5,7 @@ import { UserPermission } from '@eolian/common/constants';
 import { ServerDTO, UserDTO, Identifier, ServerQueue } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { AuthorizationCodeProvider } from '@eolian/http';
-import { AuthService, OAuthRequest } from '@eolian/http/@types';
+import { IAuthService, IOAuthRequest } from '@eolian/http/@types';
 import { Player } from '@eolian/music/@types';
 
 export interface EolianBot extends Closable {
@@ -117,7 +117,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   updatePermissions(details?: ServerDetails): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
-  getRequest(sendable: ContextSendable, api: TrackSource): Promise<OAuthRequest>;
+  getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthRequest>;
   setToken(token: string | null, api: TrackSource): Promise<void>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
@@ -219,10 +219,10 @@ export interface ServerDetails extends ServerInfo {
   updateUsage(): Promise<void>;
 }
 
-export type UserRequest = OAuthRequest<AuthorizationCodeProvider>;
+export type UserRequest = IOAuthRequest<AuthorizationCodeProvider>;
 
 export interface IAuthServiceProvider extends Closable {
-  getService(api: TrackSource): AuthService;
+  getService(api: TrackSource): IAuthService;
   getUserRequest(userId: string, api: TrackSource): Promise<UserRequest | undefined>;
   setUserRequest(userId: string, request: UserRequest, api: TrackSource): Promise<void>;
   removeUserRequest(userId: string, api?: TrackSource): Promise<void>;

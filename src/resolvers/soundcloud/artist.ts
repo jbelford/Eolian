@@ -1,6 +1,6 @@
 import { createSoundCloudClient, mapSoundCloudTrack, soundcloud } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
-import { SoundCloudUser, SoundCloudApi } from '@eolian/api/soundcloud/@types';
+import { SoundCloudUser, ISoundCloudApi } from '@eolian/api/soundcloud/@types';
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { feature } from '@eolian/data';
@@ -13,7 +13,7 @@ import {
   FetchResult,
 } from '../@types';
 
-type UserResultValue = { user: SoundCloudUser; client?: SoundCloudApi };
+type UserResultValue = { user: SoundCloudUser; client?: ISoundCloudApi };
 export type UserResult = MessageBundledResult<UserResultValue>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
@@ -104,7 +104,7 @@ export function createSoundCloudUser({ value, message }: UserResult): ResolvedRe
 
 export class SoundCloudArtistFetcher implements SourceFetcher {
 
-  constructor(private readonly idOrClient: number | SoundCloudApi) {}
+  constructor(private readonly idOrClient: number | ISoundCloudApi) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks

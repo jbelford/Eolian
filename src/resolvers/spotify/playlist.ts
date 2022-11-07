@@ -1,6 +1,6 @@
 import { createSpotifyClient, mapSpotifyTrack, spotify } from '@eolian/api';
 import { TrackSource, RangeFactory } from '@eolian/api/@types';
-import { SpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from '@eolian/api/spotify/@types';
+import { ISpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from '@eolian/api/spotify/@types';
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { getRangeOption } from '@eolian/commands/patterns';
 import { EolianUserError } from '@eolian/common/errors';
@@ -12,7 +12,7 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 
 export class SpotifyPlaylistResolver implements SourceResolver {
 
-  private client: SpotifyApi = spotify;
+  private client: ISpotifyApi = spotify;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
@@ -86,7 +86,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 }
 
 export function createSpotifyPlaylist(
-  client: SpotifyApi,
+  client: ISpotifyApi,
   playlist: SpotifyPlaylist,
   params: CommandOptions,
   sendable: ContextSendable,
@@ -113,7 +113,7 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
     private readonly id: string,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
-    private readonly client: SpotifyApi,
+    private readonly client: ISpotifyApi,
     private readonly playlist?: SpotifyPlaylist
   ) {}
 

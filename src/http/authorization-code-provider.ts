@@ -1,5 +1,5 @@
 import { logger } from '@eolian/common/logger';
-import { TokenProvider, HttpRequestOptions, AuthorizationProvider, TokenResponse } from './@types';
+import { TokenProvider, HttpRequestOptions, IAuthorizationProvider, TokenResponse } from './@types';
 import { httpRequest, HttpRequestError } from './request';
 
 export class AuthorizationCodeProvider implements TokenProvider {
@@ -10,7 +10,7 @@ export class AuthorizationCodeProvider implements TokenProvider {
     readonly name: string,
     private readonly tokenEndpoint: string,
     authenticationOptions: HttpRequestOptions,
-    readonly authorization: AuthorizationProvider,
+    readonly authorization: IAuthorizationProvider,
     private refreshToken?: string
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };

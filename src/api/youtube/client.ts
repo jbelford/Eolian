@@ -8,8 +8,8 @@ import { youtube_v3, google } from 'googleapis';
 import { decode } from 'html-entities';
 import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
 import { bing } from '../bing';
-import { BingApi } from '../bing/@types';
-import { YouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
+import { IBingApi } from '../bing/@types';
+import { IYouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
 import * as play from 'play-dl';
 import { Readable } from 'stream';
 
@@ -21,12 +21,12 @@ const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+vi
 
 play.setToken({ youtube: { cookie: environment.tokens.youtube.cookie } });
 
-export class YouTubeApiImpl implements YouTubeApi {
+class YouTubeApi implements IYouTubeApi {
 
   private readonly cache: MemoryCache<{ url: string; live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, cacheSize: number, private readonly bing?: BingApi) {
+  constructor(token: string, cacheSize: number, private readonly bing?: IBingApi) {
     this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
@@ -348,7 +348,7 @@ class YouTubeStreamSource implements StreamSource {
 
 }
 
-export const youtube: YouTubeApi = new YouTubeApiImpl(
+export const youtube: IYouTubeApi = new YouTubeApi(
   environment.tokens.youtube.token,
   environment.config.youtubeCacheLimit,
   bing

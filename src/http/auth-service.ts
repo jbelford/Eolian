@@ -4,7 +4,7 @@ import { EolianCache } from '@eolian/data/@types';
 import { randomUUID } from 'crypto';
 import {
   TokenResponseWithRefresh,
-  AuthService,
+  IAuthService,
   HttpRequestOptions,
   AuthResult,
   AuthCallbackData,
@@ -13,7 +13,7 @@ import {
 } from './@types';
 import { httpRequest, querystringify } from './request';
 
-export class AuthServiceImpl implements AuthService {
+export class AuthService implements IAuthService {
 
   private options: HttpRequestOptions;
 

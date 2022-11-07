@@ -109,7 +109,7 @@ export const enum SpotifyResourceType {
   ALBUM = 'album',
 }
 
-export interface SpotifyApi extends StreamFetcher {
+export interface ISpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined;
   getMe(): Promise<SpotifyUser>;
   getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]>;

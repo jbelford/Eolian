@@ -1,6 +1,6 @@
 import { createSoundCloudClient, mapSoundCloudTrack, soundcloud } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
-import { SoundCloudApi, SoundCloudPlaylist, SoundCloudTrack } from '@eolian/api/soundcloud/@types';
+import { ISoundCloudApi, SoundCloudPlaylist, SoundCloudTrack } from '@eolian/api/soundcloud/@types';
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { feature } from '@eolian/data';
@@ -10,7 +10,7 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 
 export class SoundCloudPlaylistResolver implements SourceResolver {
 
-  private client: SoundCloudApi = soundcloud;
+  private client: ISoundCloudApi = soundcloud;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
@@ -73,7 +73,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
 export function createSoundCloudPlaylist(
   playlist: SoundCloudPlaylist,
-  client: SoundCloudApi,
+  client: ISoundCloudApi,
   message?: ContextMessage
 ): ResolvedResource {
   return {
@@ -95,7 +95,7 @@ export class SoundCloudPlaylistFetcher implements SourceFetcher {
 
   constructor(
     private readonly id: number,
-    private readonly client: SoundCloudApi,
+    private readonly client: ISoundCloudApi,
     private readonly playlist?: SoundCloudPlaylist
   ) {}
 

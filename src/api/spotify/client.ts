@@ -1,12 +1,12 @@
 import { ProgressUpdater } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
 import { fuzzyMatch } from '@eolian/common/util';
-import { OAuthRequest } from '@eolian/http/@types';
+import { IOAuthRequest } from '@eolian/http/@types';
 import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
 import { youtube } from '../youtube';
-import { YouTubeApi } from '../youtube/@types';
+import { IYouTubeApi } from '../youtube/@types';
 import {
-  SpotifyApi,
+  ISpotifyApi,
   SpotifyUrlDetails,
   SpotifyResourceType,
   SpotifyUser,
@@ -21,11 +21,11 @@ import {
 } from './@types';
 import { CLIENT_SPOTIFY_REQUEST } from './request';
 
-export class SpotifyApiImpl implements SpotifyApi {
+class SpotifyApi implements ISpotifyApi {
 
   constructor(
-    private readonly youtube: YouTubeApi,
-    private readonly req: OAuthRequest = CLIENT_SPOTIFY_REQUEST
+    private readonly youtube: IYouTubeApi,
+    private readonly req: IOAuthRequest = CLIENT_SPOTIFY_REQUEST
   ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
@@ -310,8 +310,8 @@ type GetAllItemsOptions<T> = {
   params?: Record<string, string>;
 };
 
-export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
+export const spotify: ISpotifyApi = new SpotifyApi(youtube);
 
-export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
-  return new SpotifyApiImpl(youtube, request);
+export function createSpotifyClient(request: IOAuthRequest): ISpotifyApi {
+  return new SpotifyApi(youtube, request);
 }

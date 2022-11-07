@@ -8,16 +8,16 @@ import {
   createAuthExpiredEmbed,
   createAuthErrorEmbed,
 } from '@eolian/embed';
-import { AuthorizationProvider, AuthService, TokenResponseWithRefresh } from '@eolian/http/@types';
+import { IAuthorizationProvider, IAuthService, TokenResponseWithRefresh } from '@eolian/http/@types';
 import { ContextUser, ContextSendable, EmbedMessage } from './@types';
 
-export class DiscordAuthorizationProvider implements AuthorizationProvider {
+export class DiscordAuthorizationProvider implements IAuthorizationProvider {
 
   private readonly name: string;
 
   constructor(
     private readonly user: ContextUser,
-    private readonly service: AuthService,
+    private readonly service: IAuthService,
     private readonly type: TrackSource,
     public sendable: ContextSendable
   ) {

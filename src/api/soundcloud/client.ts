@@ -2,13 +2,13 @@ import { ProgressUpdater } from '@eolian/common/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { logger } from '@eolian/common/logger';
 import { querystringify } from '@eolian/http';
-import { OAuthRequest } from '@eolian/http/@types';
+import { IOAuthRequest } from '@eolian/http/@types';
 import { Readable } from 'stream';
 import { Track, StreamSource, TrackSource } from '../@types';
 import { youtube } from '../youtube';
-import { YouTubeApi } from '../youtube/@types';
+import { IYouTubeApi } from '../youtube/@types';
 import {
-  SoundCloudApi,
+  ISoundCloudApi,
   SoundCloudUser,
   SoundCloudResource,
   SoundCloudPaginatedResult,
@@ -21,11 +21,11 @@ const TRACKS_PARAMS = {
   access: 'playable,blocked,preview',
 };
 
-export class SoundCloudApiImpl implements SoundCloudApi {
+class SoundCloudApi implements ISoundCloudApi {
 
   constructor(
-    private readonly youtube: YouTubeApi,
-    private readonly req: OAuthRequest = CLIENT_SOUNDCLOUD_REQUEST
+    private readonly youtube: IYouTubeApi,
+    private readonly req: IOAuthRequest = CLIENT_SOUNDCLOUD_REQUEST
   ) {}
 
   async getMe(): Promise<SoundCloudUser> {
@@ -275,7 +275,7 @@ type GetPaginatedItemsOptions = {
 class SoundCloudStreamSource implements StreamSource {
 
   constructor(
-    private readonly req: OAuthRequest,
+    private readonly req: IOAuthRequest,
     private readonly url: string,
     private readonly stream: string
   ) {}
@@ -287,8 +287,8 @@ class SoundCloudStreamSource implements StreamSource {
 
 }
 
-export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
+export const soundcloud: ISoundCloudApi = new SoundCloudApi(youtube);
 
-export function createSoundCloudClient(request: OAuthRequest): SoundCloudApi {
-  return new SoundCloudApiImpl(youtube, request);
+export function createSoundCloudClient(request: IOAuthRequest): ISoundCloudApi {
+  return new SoundCloudApi(youtube, request);
 }

@@ -4,13 +4,13 @@ import {
   ClientCredentialsProvider,
   OAuthRequestImpl,
   AuthorizationCodeProvider,
-  AuthServiceImpl,
+  AuthService,
 } from '@eolian/http';
 import {
   TokenProvider,
-  OAuthRequest,
-  AuthorizationProvider,
-  AuthService,
+  IOAuthRequest,
+  IAuthorizationProvider,
+  IAuthService,
   HttpRequestOptions,
   AuthCacheItem,
   AuthorizeParams,
@@ -38,12 +38,12 @@ export const CLIENT_SOUNDCLOUD_REQUEST = new OAuthRequestImpl(SOUNDCLOUD_API, cl
 
 export function createSoundCloudRequest<T extends TokenProvider>(
   tokenProvider: T
-): OAuthRequest<T> {
+): IOAuthRequest<T> {
   return new OAuthRequestImpl<T>(SOUNDCLOUD_API, tokenProvider);
 }
 
 export function createSoundCloudAuthorizationCodeProvider(
-  provider: AuthorizationProvider,
+  provider: IAuthorizationProvider,
   refreshToken?: string
 ): AuthorizationCodeProvider {
   return new AuthorizationCodeProvider(
@@ -55,13 +55,13 @@ export function createSoundCloudAuthorizationCodeProvider(
   );
 }
 
-export function createSoundCloudAuthService(cache: EolianCache<AuthCacheItem>): AuthService {
+export function createSoundCloudAuthService(cache: EolianCache<AuthCacheItem>): IAuthService {
   const authParams: AuthorizeParams = {
     client_id: environment.tokens.soundcloud.clientId,
     redirect_uri: SOUNDCLOUD_REDIRECT_URI,
   };
 
-  return new AuthServiceImpl(
+  return new AuthService(
     'SoundCloud',
     SOUNDCLOUD_AUTHORIZE,
     SOUNDCLOUD_TOKEN,

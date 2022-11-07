@@ -4,13 +4,13 @@ import {
   ClientCredentialsProvider,
   AuthorizationCodeProvider,
   OAuthRequestImpl,
-  AuthServiceImpl,
+  AuthService,
 } from '@eolian/http';
 import {
-  AuthorizationProvider,
+  IAuthorizationProvider,
   TokenProvider,
-  OAuthRequest,
-  AuthService,
+  IOAuthRequest,
+  IAuthService,
   HttpRequestOptions,
   AuthCacheItem,
   AuthorizeParams,
@@ -35,7 +35,7 @@ export const CLIENT_SPOTIFY_REQUEST = createSpotifyRequest(
 );
 
 export function createSpotifyAuthorizationCodeProvider(
-  provider: AuthorizationProvider,
+  provider: IAuthorizationProvider,
   refreshToken?: string
 ): AuthorizationCodeProvider {
   return new AuthorizationCodeProvider(
@@ -47,11 +47,11 @@ export function createSpotifyAuthorizationCodeProvider(
   );
 }
 
-export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): OAuthRequest<T> {
+export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): IOAuthRequest<T> {
   return new OAuthRequestImpl<T>(SPOTIFY_API, tokenProvider);
 }
 
-export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): AuthService {
+export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): IAuthService {
   const scope = [
     'user-library-read',
     'user-top-read',
@@ -66,7 +66,7 @@ export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): Aut
     scope,
   };
 
-  return new AuthServiceImpl(
+  return new AuthService(
     'Spotify',
     SPOTIFY_AUTHORIZE,
     SPOTIFY_TOKEN,

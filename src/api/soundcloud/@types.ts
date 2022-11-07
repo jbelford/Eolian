@@ -1,7 +1,7 @@
 import { ProgressUpdater } from '@eolian/common/@types';
 import { StreamFetcher } from '../@types';
 
-export interface SoundCloudApi extends StreamFetcher {
+export interface ISoundCloudApi extends StreamFetcher {
   getMe(): Promise<SoundCloudUser>;
   getMyTracks(): Promise<SoundCloudTrack[]>;
   getMyFavorites(max?: number, progress?: ProgressUpdater): Promise<SoundCloudTrack[]>;

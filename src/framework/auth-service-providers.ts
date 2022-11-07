@@ -3,7 +3,7 @@ import { createSoundCloudAuthService } from '@eolian/api/soundcloud';
 import { createSpotifyAuthService } from '@eolian/api/spotify';
 import { InMemoryCache } from '@eolian/data';
 import { EolianCache } from '@eolian/data/@types';
-import { AuthCacheItem, AuthService } from '@eolian/http/@types';
+import { AuthCacheItem, IAuthService } from '@eolian/http/@types';
 import { IAuthServiceProvider, UserRequest } from './@types';
 
 const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
@@ -17,11 +17,11 @@ class AuthServiceProvider implements IAuthServiceProvider {
 
   constructor(
     private readonly authCallbackCache: EolianCache<AuthCacheItem>,
-    private readonly spotify: AuthService,
-    private readonly soundcloud: AuthService
+    private readonly spotify: IAuthService,
+    private readonly soundcloud: IAuthService
   ) {}
 
-  getService(api: TrackSource): AuthService {
+  getService(api: TrackSource): IAuthService {
     switch (api) {
       case TrackSource.Spotify:
         return this.spotify;

@@ -1,6 +1,6 @@
 import { createSpotifyClient, mapSpotifyTrack } from '@eolian/api';
 import { TrackSource, RangeFactory } from '@eolian/api/@types';
-import { SpotifyUser, SpotifyApi } from '@eolian/api/spotify/@types';
+import { SpotifyUser, ISpotifyApi } from '@eolian/api/spotify/@types';
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { getRangeOption } from '@eolian/commands/patterns';
 import { ResourceType } from '@eolian/data/@types';
@@ -26,7 +26,7 @@ export class SpotifyLikesResolver implements SourceResolver {
 
 export function createSpotifyLikes(
   user: SpotifyUser,
-  client: SpotifyApi,
+  client: ISpotifyApi,
   sendable: ContextSendable,
   params: CommandOptions
 ): ResolvedResource {
@@ -47,7 +47,7 @@ export function createSpotifyLikes(
 export class SpotifyLikesFetcher implements SourceFetcher {
 
   constructor(
-    private readonly client: SpotifyApi,
+    private readonly client: ISpotifyApi,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable
   ) {}

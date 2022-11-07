@@ -1,6 +1,6 @@
 import { createSpotifyClient, spotify } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
-import { SpotifyApi } from '@eolian/api/spotify/@types';
+import { ISpotifyApi } from '@eolian/api/spotify/@types';
 import { CommandContext, CommandOptions } from '@eolian/commands/@types';
 import { feature } from '@eolian/data';
 import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
@@ -54,8 +54,8 @@ export async function getSpotifySourceFetcher(
   throw new Error('Invalid type for Spotify fetcher');
 }
 
-async function getClient(identifier: Identifier, context: CommandContext): Promise<SpotifyApi> {
-  let client: SpotifyApi = spotify;
+async function getClient(identifier: Identifier, context: CommandContext): Promise<ISpotifyApi> {
+  let client: ISpotifyApi = spotify;
   if (identifier.auth) {
     const request = await context.interaction.user.getRequest(
       context.interaction,

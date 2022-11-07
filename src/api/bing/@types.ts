@@ -1,6 +1,6 @@
 import { Track } from '../@types';
 
-export interface BingApi {
+export interface IBingApi {
   searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;
   searchYoutubeSong(
     name: string,

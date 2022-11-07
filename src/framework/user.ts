@@ -3,7 +3,7 @@ import { TrackSource } from '@eolian/api/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { UserDTO, UsersDb, Identifier } from '@eolian/data/@types';
-import { OAuthRequest } from '@eolian/http/@types';
+import { IOAuthRequest } from '@eolian/http/@types';
 import {
   User,
   GuildMember,
@@ -112,7 +112,7 @@ export class DiscordUser implements ContextUser {
     return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
   }
 
-  async getRequest(sendable: ContextSendable, api: TrackSource): Promise<OAuthRequest> {
+  async getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthRequest> {
     let request = await this.auth.getUserRequest(this.id, api);
     if (!request) {
       const token = await this.getToken(api);

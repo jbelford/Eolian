@@ -1,9 +1,9 @@
 import { logger } from '@eolian/common/logger';
 import { HttpRequestError, httpRequest } from './request';
-import { TokenProvider, OAuthRequest, HttpRequestParams } from './@types';
+import { TokenProvider, IOAuthRequest, HttpRequestParams } from './@types';
 import { Readable } from 'stream';
 
-export class OAuthRequestImpl<T extends TokenProvider> implements OAuthRequest<T> {
+export class OAuthRequestImpl<T extends TokenProvider> implements IOAuthRequest<T> {
 
   private expiration = 0;
   private accessToken?: string;

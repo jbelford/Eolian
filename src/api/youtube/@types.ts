@@ -1,7 +1,7 @@
 import { ProgressUpdater } from '@eolian/common/@types';
 import { StreamFetcher, RangeFactory, Track, StreamSource } from '../@types';
 
-export interface YouTubeApi extends StreamFetcher {
+export interface IYouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;
   getVideo(id: string): Promise<YoutubeVideo | undefined>;
   getPlaylist(id: string): Promise<YoutubePlaylist | undefined>;

@@ -61,7 +61,7 @@ export type AuthCallbackData = {
   state: string;
 };
 
-export interface AuthService {
+export interface IAuthService {
   authorize(): AuthResult;
   callback(data: AuthCallbackData): Promise<boolean>;
 }
@@ -69,11 +69,11 @@ export interface AuthService {
 /**
  * Needs to be implemented by user
  */
-export interface AuthorizationProvider {
+export interface IAuthorizationProvider {
   authorize(): Promise<TokenResponseWithRefresh>;
 }
 
-export interface OAuthRequest<T extends TokenProvider = TokenProvider> {
+export interface IOAuthRequest<T extends TokenProvider = TokenProvider> {
   readonly tokenProvider: T;
   get<T>(path: string, params?: HttpRequestParams): Promise<T>;
   getUri<T>(uri: string): Promise<T>;

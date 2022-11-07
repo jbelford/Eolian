@@ -5,11 +5,11 @@ import { httpRequest } from '@eolian/http';
 import { parse } from 'dotenv';
 import { toSeconds } from 'iso8601-duration';
 import { Track, TrackSource } from '../@types';
-import { BingApi, BingVideo } from './@types';
+import { IBingApi, BingVideo } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
-export class BingApiImpl implements BingApi {
+class BingApi implements IBingApi {
 
   constructor(private readonly key: string, private readonly configId: string) {}
 
@@ -98,5 +98,5 @@ interface BingVideos {
 }
 
 export const bing = environment.tokens.bing
-  ? new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId)
+  ? new BingApi(environment.tokens.bing.key, environment.tokens.bing.configId)
   : undefined;

@@ -1,6 +1,6 @@
 import { mapSoundCloudTrack, soundcloud } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
-import { SoundCloudApi, SoundCloudUser } from '@eolian/api/soundcloud/@types';
+import { ISoundCloudApi, SoundCloudUser } from '@eolian/api/soundcloud/@types';
 import { CommandOptions } from '@eolian/commands/@types';
 import { getRangeOption } from '@eolian/commands/patterns';
 import { ProgressUpdater } from '@eolian/common/@types';
@@ -53,7 +53,7 @@ export function createSoundCloudLikes(
 export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
   constructor(
-    private readonly idOrClient: number | SoundCloudApi,
+    private readonly idOrClient: number | ISoundCloudApi,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
     private readonly user?: SoundCloudUser
