@@ -19,7 +19,7 @@ import {
   SpotifyPlaylist,
   SpotifyAlbum,
 } from './@types';
-import { CLIENT_SPOTIFY_REQUEST } from './request';
+import { CLIENT_SPOTIFY_REQUEST } from './spotify-request';
 
 class SpotifyApi implements ISpotifyApi {
 

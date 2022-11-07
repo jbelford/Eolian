@@ -1,8 +1,8 @@
 import { Track, TrackSource } from '../@types';
 import { SoundCloudTrack } from './@types';
 
-export * from './request';
-export * from './client';
+export * from './soundcloud-request';
+export * from './soundcloud-client';
 
 export function mapSoundCloudTrack(track: SoundCloudTrack): Track {
   return {

@@ -1,8 +1,8 @@
 import { Track, TrackSource } from '../@types';
 import { SpotifyTrack } from './@types';
 
-export * from './client';
-export * from './request';
+export * from './spotify-client';
+export * from './spotify-request';
 
 export function mapSpotifyTrack(
   track: SpotifyTrack,

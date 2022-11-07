@@ -15,7 +15,7 @@ import {
   SoundCloudTrack,
   SoundCloudPlaylist,
 } from './@types';
-import { CLIENT_SOUNDCLOUD_REQUEST } from './request';
+import { CLIENT_SOUNDCLOUD_REQUEST } from './soundcloud-request';
 
 const TRACKS_PARAMS = {
   access: 'playable,blocked,preview',
