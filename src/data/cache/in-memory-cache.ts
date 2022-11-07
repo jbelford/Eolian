@@ -58,25 +58,3 @@ export class InMemoryCache<V> implements EolianCache<V> {
   }
 
 }
-
-export class CacheNode<T> {
-
-  prev?: CacheNode<T>;
-  next?: CacheNode<T>;
-
-  constructor(private _id: string, private _value: T) {}
-
-  get id(): string {
-    return this._id;
-  }
-
-  get value(): T {
-    return this._value;
-  }
-
-  reset(id: string, value: T) {
-    this._id = id;
-    this._value = value;
-  }
-
-}
