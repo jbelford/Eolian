@@ -1,10 +1,11 @@
+import { Track } from '@eolian/api/@types';
 import { Closable } from '@eolian/common/@types';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
-import { InMemoryCache, InMemoryQueues } from '@eolian/data';
+import { InMemoryCache, InMemoryQueueCache } from '@eolian/data';
 import {
   EolianCache,
-  MusicQueueCache,
+  QueueCache,
   ServersDb,
 } from '@eolian/data/@types';
 import { Client, Guild } from 'discord.js';
@@ -71,7 +72,7 @@ const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 export class DiscordGuildStore implements Closable {
 
   private readonly guildMap = new Map<string, ContextServer>();
-  private readonly queues: MusicQueueCache = new InMemoryQueues(QUEUE_CACHE_TIMEOUT);
+  private readonly queues: QueueCache<Track> = new InMemoryQueueCache(QUEUE_CACHE_TIMEOUT);
   private readonly stateStore: ServerStateStore = new InMemoryServerStateStore(
     environment.config.guildCacheTTL
   );

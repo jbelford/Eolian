@@ -1,5 +1,5 @@
 import { EolianCache } from './@types';
-import { InMemoryCache } from './cache';
+import { InMemoryCache } from './cache/in-memory-cache';
 
 export class LockManager {
 

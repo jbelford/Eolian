@@ -1,6 +1,7 @@
+import { Track } from '@eolian/api/@types';
 import { Closable } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
-import { ServerDTO, MusicQueueCache } from '@eolian/data/@types';
+import { QueueCache, ServerDTO } from '@eolian/data/@types';
 import { DiscordPlayer } from '@eolian/music';
 import { Player } from '@eolian/music/@types';
 import { QueueDisplay, PlayerDisplay, ContextClient, ContextServer, ContextMusicQueue } from '../@types';
@@ -51,7 +52,7 @@ export class DiscordGuildState implements ServerState {
     private readonly client: ContextClient,
     readonly details: ContextServer,
     private readonly config: ServerDTO,
-    private readonly queues: MusicQueueCache
+    private readonly queues: QueueCache<Track>
   ) {}
 
   get player(): Player {

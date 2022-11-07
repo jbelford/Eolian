@@ -1,4 +1,4 @@
-import { TrackSource, Track } from '@eolian/api/@types';
+import { TrackSource } from '@eolian/api/@types';
 import { SyntaxType } from '@eolian/commands/@types';
 import { Closable } from '@eolian/common/@types';
 
@@ -89,10 +89,6 @@ export const enum ResourceType {
   Tracks,
 }
 
-export interface MemoryStore extends Closable {
-  readonly queue: MusicQueueCache;
-}
-
 export interface ListCache<V> extends Closable {
   size(key: string): Promise<number>;
   lpop(key: string, count?: number): Promise<V[]>;
@@ -108,20 +104,20 @@ export interface ListCache<V> extends Closable {
   remove(key: string, offset: number, count: number): Promise<number>;
 }
 
-export interface MusicQueueCache {
-  size(guildId: string, loop?: boolean): Promise<number>;
-  pop(guildId: string, loop?: boolean): Promise<Track | undefined>;
-  unpop(guildId: string, count: number): Promise<boolean>;
-  get(guildId: string, index: number, count: number): Promise<Track[]>;
-  getLoop(guildId: string, count: number): Promise<Track[]>;
-  remove(guildId: string, index: number, count: number): Promise<number>;
-  move(guildId: string, to: number, from: number, count: number): Promise<void>;
-  add(guildId: string, tracks: Track[], head?: boolean): Promise<void>;
-  shuffle(guildId: string): Promise<boolean>;
-  clear(guildId: string): Promise<boolean>;
-  clearPrev(guildId: string): Promise<void>;
-  peek(guildId: string, loop?: boolean): Promise<Track | undefined>;
-  peekReverse(guildId: string, idx: number): Promise<Track | undefined>;
+export interface QueueCache<T> {
+  size(key: string, loop?: boolean): Promise<number>;
+  pop(key: string, loop?: boolean): Promise<T | undefined>;
+  unpop(key: string, count: number): Promise<boolean>;
+  get(key: string, index: number, count: number): Promise<T[]>;
+  getLoop(key: string, count: number): Promise<T[]>;
+  remove(key: string, index: number, count: number): Promise<number>;
+  move(key: string, to: number, from: number, count: number): Promise<void>;
+  add(key: string, items: T[], head?: boolean): Promise<void>;
+  shuffle(key: string): Promise<boolean>;
+  clear(key: string): Promise<boolean>;
+  clearPrev(key: string): Promise<void>;
+  peek(key: string, loop?: boolean): Promise<T | undefined>;
+  peekReverse(key: string, idx: number): Promise<T | undefined>;
 }
 
 export const enum FeatureFlag {
