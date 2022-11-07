@@ -1,5 +1,6 @@
 import { youtube } from '@eolian/api';
-import { CommandOptions, CommandContext } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource } from '../@types';

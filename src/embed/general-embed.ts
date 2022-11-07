@@ -1,6 +1,6 @@
 import { SoundCloudUser } from '@eolian/api/soundcloud/@types';
 import { SpotifyUser } from '@eolian/api/spotify/@types';
-import { SyntaxType } from '@eolian/commands/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { Color, DEFAULT_VOLUME } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { Identifier, ServerDTO } from '@eolian/data/@types';

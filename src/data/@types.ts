@@ -1,5 +1,5 @@
 import { TrackSource } from '@eolian/api/@types';
-import { SyntaxType } from '@eolian/commands/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { Closable } from '@eolian/common/@types';
 
 export interface EolianCache<V> extends Closable {

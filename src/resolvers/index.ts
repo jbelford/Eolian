@@ -1,5 +1,6 @@
 import { TrackSource } from '@eolian/api/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { feature } from '@eolian/data';
 import { FeatureFlag, Identifier, ResourceType } from '@eolian/data/@types';

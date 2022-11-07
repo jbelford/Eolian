@@ -1,4 +1,4 @@
-import { SyntaxType } from '@eolian/commands/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { DEFAULT_VOLUME } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';

@@ -1,3 +1,5 @@
+import { PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { Closable } from '@eolian/common/@types';
 import { NUMBER_TO_EMOJI, EMOJI_TO_NUMBER, UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
@@ -10,9 +12,8 @@ import {
   ContextUser,
   MessageButtonOnClickHandler,
 } from '@eolian/framework/@types';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { CommandContext, Command } from '../@types';
 import { GENERAL_CATEGORY } from '../category';
-import { PATTERNS } from '../patterns';
 
 class PollMessage implements Closable {
 

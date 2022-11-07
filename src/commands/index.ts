@@ -28,4 +28,4 @@ export const MESSAGE_COMMAND_MAP = MESSAGE_COMMANDS.reduce((obj, command) => {
   return obj;
 }, {} as Record<string, MessageCommand | undefined>);
 
-export * from './parsing';
+export * from './command-parsing-strategy';

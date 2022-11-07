@@ -1,10 +1,10 @@
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
 import { truthySum } from '@eolian/common/util';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { getRangeOption, KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
 import { QUEUE_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { getRangeOption, PATTERNS } from '../patterns';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT, options.NUMBER);

@@ -1,5 +1,6 @@
 import { TrackSource, Track } from '@eolian/api/@types';
-import { ParsedCommand, SyntaxType } from '@eolian/commands/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
+import { ParsedCommand } from '@eolian/commands/@types';
 import { Closable, Idleable } from '@eolian/common/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { ServerDTO, UserDTO, Identifier } from '@eolian/data/@types';

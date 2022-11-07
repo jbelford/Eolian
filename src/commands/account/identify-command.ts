@@ -1,10 +1,10 @@
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
+import { KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { getSourceResolver } from '@eolian/resolvers';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { CommandContext, Command } from '../@types';
 import { ACCOUNT_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { PATTERNS } from '../patterns';
 
 const IDENTIFIER_MAX_KEY_LENGTH = 32;
 

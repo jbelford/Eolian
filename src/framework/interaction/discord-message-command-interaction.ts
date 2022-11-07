@@ -1,5 +1,7 @@
-import { getMessageCommand, matchPatterns } from '@eolian/commands';
-import { CommandOptions, ParsedCommand } from '@eolian/commands/@types';
+import { matchPatterns } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { getMessageCommand } from '@eolian/commands';
+import { ParsedCommand } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { UsersDb } from '@eolian/data/@types';
 import { MessageContextMenuCommandInteraction, Message } from 'discord.js';

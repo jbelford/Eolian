@@ -1,7 +1,7 @@
 import { mapSpotifyTrack, spotify } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { SpotifyResourceType, SpotifyTrack } from '@eolian/api/spotify/@types';
-import { CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
 import { ContextSendable } from '@eolian/framework/@types';

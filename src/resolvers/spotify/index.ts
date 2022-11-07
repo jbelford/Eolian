@@ -1,7 +1,8 @@
 import { createSpotifyClient, spotify } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { ISpotifyApi } from '@eolian/api/spotify/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { feature } from '@eolian/data';
 import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';

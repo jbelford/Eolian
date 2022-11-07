@@ -1,10 +1,5 @@
 import { SelectionOption } from '@eolian/embed/@types';
-import {
-  TextChannel,
-  DMChannel,
-  ChannelType,
-  PermissionFlagsBits,
-} from 'discord.js';
+import { TextChannel, DMChannel, ChannelType, PermissionFlagsBits } from 'discord.js';
 import {
   ContextMessage,
   EmbedMessage,

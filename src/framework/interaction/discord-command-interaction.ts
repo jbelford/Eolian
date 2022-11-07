@@ -1,23 +1,17 @@
-import {
-  checkSetKeyword,
-  getCommand,
-  matchPatterns,
-  patternMatch,
-  simpleOptionsStrategy,
-} from '@eolian/commands';
-import {
-  CommandArgs,
-  CommandOptions,
-  Keyword,
-  ParsedCommand,
-  Pattern,
-  SyntaxType,
-} from '@eolian/commands/@types';
-import { KEYWORDS } from '@eolian/commands/keywords';
-import { PATTERNS } from '@eolian/commands/patterns';
+import { getCommand } from '@eolian/commands';
+import { ParsedCommand, CommandArgs } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
 import { UsersDb } from '@eolian/data/@types';
+import {
+  checkSetKeyword,
+  KEYWORDS,
+  matchPatterns,
+  patternMatch,
+  PATTERNS,
+  SimpleParsingStrategy,
+} from '@eolian/command-options';
+import { CommandOptions, Keyword, Pattern, SyntaxType } from '@eolian/command-options/@types';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { ContextCommandInteraction, IAuthServiceProvider } from '../@types';
 import { ButtonRegistry } from '../button-registry';
@@ -89,7 +83,10 @@ export function parseSlashCommand(
   } else if (command.args) {
     options.ARG = parseCommandArgs(command.args, interaction);
   } else {
-    options = simpleOptionsStrategy(interaction.options.getString('args', false) ?? '');
+    options = SimpleParsingStrategy.resolve(
+      interaction.options.getString('args', false) ?? '',
+      permission
+    );
   }
 
   return { command, options };

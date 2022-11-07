@@ -1,17 +1,10 @@
 import { COMMANDS, MESSAGE_COMMANDS } from '@eolian/commands';
-import {
-  Command,
-  KeywordGroup,
-  CommandArgs,
-  Keyword,
-  Pattern,
-  MessageCommand,
-} from '@eolian/commands/@types';
-import { KEYWORD_GROUPS } from '@eolian/commands/keywords';
-import { PATTERNS } from '@eolian/commands/patterns';
+import { Command, CommandArgs, MessageCommand } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
+import { KEYWORD_GROUPS, PATTERNS } from '@eolian/command-options';
+import { KeywordGroup, Keyword, Pattern } from '@eolian/command-options/@types';
 import {
   Routes,
   REST,

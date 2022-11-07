@@ -1,18 +1,14 @@
 import { logger } from '@eolian/common/logger';
 import { clampLength } from '@eolian/common/util';
 import { BaseMessageOptions, Message } from 'discord.js';
-import {
-  ContextInteractionOptions,
-  ContextMessage,
-  EmbedMessage
-} from './@types';
+import { ContextInteractionOptions, ContextMessage, EmbedMessage } from './@types';
 import { ButtonRegistry } from './button-registry';
 import {
   DiscordMessage,
   mapDiscordEmbed,
   DiscordButtonMapping,
   mapDiscordEmbedButtons,
-  DiscordMessageButtons
+  DiscordMessageButtons,
 } from './discord-message';
 
 export interface DiscordMessageSender {
@@ -26,7 +22,7 @@ export class DiscordSender {
   constructor(
     private readonly sender: DiscordMessageSender,
     private readonly registry?: ButtonRegistry
-  ) { }
+  ) {}
 
   async send(
     message: string,

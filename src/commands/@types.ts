@@ -1,8 +1,13 @@
-import { TrackSource } from '@eolian/api/@types';
-import { RangeArgument } from '@eolian/common/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { ContextClient, ContextCommandInteraction } from '@eolian/framework/@types';
 import { ServerState } from '@eolian/framework/state/@types';
+import {
+  Pattern,
+  CommandOptions,
+  Keyword,
+  ArgumentExample,
+  SyntaxType,
+} from '@eolian/command-options/@types';
 
 export interface BaseCommand {
   name: string;
@@ -68,13 +73,6 @@ export interface CommandParsingStrategy {
   parseCommand(message: string, permission: UserPermission, type?: SyntaxType): ParsedCommand;
 }
 
-export type CommandOptionsParsingStrategy = (
-  text: string,
-  permission: UserPermission,
-  keywords?: string[],
-  patterns?: string[]
-) => CommandOptions;
-
 export interface ParsedCommand {
   command: BaseCommand;
   options: CommandOptions;
@@ -84,98 +82,4 @@ export interface CommandContext {
   client: ContextClient;
   interaction: ContextCommandInteraction;
   server?: ServerState;
-}
-
-export type CommandOptions = Partial<Record<KeywordName, boolean> & PatternValues>;
-
-export interface UrlArgument {
-  value: string;
-  source: TrackSource;
-}
-
-export interface PatternMatchResult<T> {
-  matches: boolean;
-  newText: string;
-  args?: T;
-}
-
-export const enum KeywordGroup {
-  Source = 'source',
-  Type = 'type',
-  Switch = 'switch',
-  Increment = 'increment',
-  Search = 'search',
-}
-
-export interface KeywordGroupProperties {
-  details: string;
-}
-
-export interface ArgumentExample {
-  text(type: SyntaxType): string;
-}
-
-export interface Keyword extends ArgumentExample {
-  readonly name: KeywordName;
-  readonly details: string;
-  readonly permission: UserPermission;
-  readonly shortName?: string;
-  readonly group?: KeywordGroup;
-  text(type: SyntaxType, short?: boolean): string;
-}
-
-export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
-  readonly name: T;
-  readonly details: string;
-  readonly permission: UserPermission;
-  // Higher priority means that this keyword should be parsed and removed from the text before others.
-  readonly priority: number;
-  readonly usage: (string | string[])[];
-  readonly group?: KeywordGroup;
-
-  ex(...text: string[]): ArgumentExample;
-
-  /**
-   * Check that the given text contains the keyword.
-   * Removes the pattern information from the text and returns a new string.
-   *
-   * @param text
-   */
-  matchText(text: string, type: SyntaxType): PatternMatchResult<PatternValues[T]>;
-}
-
-export type KeywordName = Uppercase<
-  | 'enable'
-  | 'disable'
-  | 'clear'
-  | 'more'
-  | 'less'
-  | 'my'
-  | 'soundcloud'
-  | 'spotify'
-  | 'youtube'
-  | 'playlist'
-  | 'album'
-  | 'artist'
-  | 'next'
-  | 'shuffle'
-  | 'likes'
-  | 'tracks'
-  | 'fast'
->;
-
-export type PatternValues = {
-  TOP: RangeArgument;
-  BOTTOM: RangeArgument;
-  SEARCH: string;
-  IDENTIFIER: string;
-  URL: UrlArgument;
-  NUMBER: number[];
-  ARG: string[];
-};
-
-export const enum SyntaxType {
-  KEYWORD = 0,
-  TRADITIONAL = 1,
-  SLASH = 2,
 }

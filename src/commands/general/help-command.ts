@@ -7,11 +7,12 @@ import {
   createKeywordDetailsEmbed,
   createPatternDetailsEmbed,
 } from '@eolian/embed';
+import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from '@eolian/command-options';
+import { CommandOptions, SyntaxType } from '@eolian/command-options/@types';
 import { COMMAND_MAP, COMMANDS } from '..';
-import { CommandContext, CommandOptions, SyntaxType, CommandArgs, Command } from '../@types';
+import { CommandContext, CommandArgs, Command } from '../@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { PATTERNS, PATTERNS_SORTED, SimpleExample } from '../patterns';
+import { SimpleExample } from '../simple-argument-example';
 
 async function execute(
   { interaction, server }: CommandContext,

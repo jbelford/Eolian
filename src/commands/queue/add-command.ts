@@ -5,12 +5,12 @@ import { EolianUserError } from '@eolian/common/errors';
 import { truthySum, shuffleList } from '@eolian/common/util';
 import { feature } from '@eolian/data';
 import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
+import { getRangeOption, KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { RESOURCE_TYPE_DETAILS, getSourceFetcher, getSourceResolver } from '@eolian/resolvers';
 import { SourceFetcher } from '@eolian/resolvers/@types';
-import { CommandContext, CommandOptions, Command, MessageCommand } from '../@types';
+import { CommandContext, Command, MessageCommand } from '../@types';
 import { QUEUE_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { getRangeOption, PATTERNS } from '../patterns';
 
 export function createSelectedMessage(
   name: string,

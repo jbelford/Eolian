@@ -8,10 +8,10 @@ import { logger } from '@eolian/common/logger';
 import { feature } from '@eolian/data';
 import { FeatureFlag } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
-import { CommandContext, CommandOptions, UrlArgument, Command } from '../@types';
+import { KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions, UrlArgument } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
 import { ACCOUNT_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { PATTERNS } from '../patterns';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.SEARCH && options.URL) {

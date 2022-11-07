@@ -1,8 +1,8 @@
 import { mapSoundCloudTrack, soundcloud } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { ISoundCloudApi, SoundCloudUser } from '@eolian/api/soundcloud/@types';
-import { CommandOptions } from '@eolian/commands/@types';
-import { getRangeOption } from '@eolian/commands/patterns';
+import { getRangeOption } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { ProgressUpdater } from '@eolian/common/@types';
 import { ResourceType } from '@eolian/data/@types';
 import { DownloaderDisplay } from '@eolian/framework';

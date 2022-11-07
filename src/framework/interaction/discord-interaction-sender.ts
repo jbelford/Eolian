@@ -2,13 +2,13 @@ import {
   MessageComponentInteraction,
   CommandInteraction,
   BaseMessageOptions,
-  Message
+  Message,
 } from 'discord.js';
 import { DiscordMessageSender } from '../discord-sender';
 
 export class DiscordInteractionSender implements DiscordMessageSender {
 
-  constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) { }
+  constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
 
   async send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;

@@ -1,7 +1,8 @@
 import { createSoundCloudClient, mapSoundCloudTrack, soundcloud } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { ISoundCloudApi, SoundCloudPlaylist, SoundCloudTrack } from '@eolian/api/soundcloud/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { feature } from '@eolian/data';
 import { FeatureFlag, ResourceType } from '@eolian/data/@types';

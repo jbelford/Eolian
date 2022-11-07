@@ -1,4 +1,4 @@
-import { SyntaxType } from '@eolian/commands/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { ServerDTO, ServersDb } from '../@types';
 import { MongoCollection } from './mongo-collection';
 

@@ -1,9 +1,10 @@
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
-import { CommandContext, CommandOptions, Command } from '../@types';
 import { GENERAL_CATEGORY } from '../category';
 import { OWNER_COMMANDS } from '../owner';
-import { PATTERNS } from '../patterns';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
+import { PATTERNS } from '@eolian/command-options';
 
 const PAGE_LENGTH = 10;
 

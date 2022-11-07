@@ -6,9 +6,10 @@ import { UserPermission } from '@eolian/common/constants';
 import { feature } from '@eolian/data';
 import { FeatureFlag } from '@eolian/data/@types';
 import { createUserDetailsEmbed } from '@eolian/embed';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { KEYWORDS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
 import { ACCOUNT_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.CLEAR) {

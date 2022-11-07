@@ -1,4 +1,5 @@
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { Identifier, ResourceType } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';
 import { YouTubePlaylistFetcher } from './youtube-playlist-resolver';

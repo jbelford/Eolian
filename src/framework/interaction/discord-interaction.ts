@@ -19,7 +19,7 @@ import {
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordTextChannel } from '../discord-channel';
-import { DiscordChannelSender } from "../discord-channel-sender";
+import { DiscordChannelSender } from '../discord-channel-sender';
 import { getPermissionLevel, DiscordUser } from '../discord-user';
 import { DiscordInteractionSender } from './discord-interaction-sender';
 

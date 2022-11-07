@@ -1,7 +1,8 @@
 import { mapYouTubeVideo, youtube } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { YoutubeVideo } from '@eolian/api/youtube/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
 import { ContextMessage } from '@eolian/framework/@types';

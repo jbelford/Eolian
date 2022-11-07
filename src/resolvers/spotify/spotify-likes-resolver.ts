@@ -1,8 +1,9 @@
 import { createSpotifyClient, mapSpotifyTrack } from '@eolian/api';
 import { TrackSource, RangeFactory } from '@eolian/api/@types';
 import { SpotifyUser, ISpotifyApi } from '@eolian/api/spotify/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
-import { getRangeOption } from '@eolian/commands/patterns';
+import { getRangeOption } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { ResourceType } from '@eolian/data/@types';
 import { DownloaderDisplay } from '@eolian/framework';
 import { ContextSendable } from '@eolian/framework/@types';

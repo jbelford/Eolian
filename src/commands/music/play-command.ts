@@ -3,12 +3,12 @@ import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
+import { KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { RESOURCE_TYPE_DETAILS, getSourceFetcher, getSourceResolver } from '@eolian/resolvers';
 import { SourceFetcher } from '@eolian/resolvers/@types';
-import { CommandContext, CommandOptions, Command, MessageCommand } from '../@types';
+import { CommandContext, Command, MessageCommand } from '../@types';
 import { MUSIC_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { PATTERNS } from '../patterns';
 import { createSelectedMessage } from '../queue/add-command';
 
 async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {

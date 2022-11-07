@@ -1,4 +1,4 @@
-import { CommandParsingStrategy, ParsedCommand, SyntaxType } from '@eolian/commands/@types';
+import { CommandParsingStrategy, ParsedCommand } from '@eolian/commands/@types';
 import { UsersDb } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { Message, BaseMessageOptions, TextChannel, DMChannel } from 'discord.js';
@@ -14,10 +14,11 @@ import {
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordTextChannel } from '../discord-channel';
-import { DiscordChannelSender } from "../discord-channel-sender";
+import { DiscordChannelSender } from '../discord-channel-sender';
 import { DiscordMessage } from '../discord-message';
 import { getPermissionLevel, DiscordUser } from '../discord-user';
 import { DiscordMessageSender } from '../discord-sender';
+import { SyntaxType } from '@eolian/command-options/@types';
 
 class MessageInteractionSender implements DiscordMessageSender {
 

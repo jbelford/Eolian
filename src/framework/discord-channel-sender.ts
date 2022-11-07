@@ -9,7 +9,7 @@ import {
   DMChannel,
   ChannelType,
   PermissionFlagsBits,
-  MessageCollector
+  MessageCollector,
 } from 'discord.js';
 import {
   ContextInteractionOptions,
@@ -18,7 +18,7 @@ import {
   ContextSendable,
   ContextUser,
   SelectionResult,
-  MessageButtonOnClickHandler
+  MessageButtonOnClickHandler,
 } from './@types';
 import { ButtonRegistry } from './button-registry';
 import { DiscordMessageSender, DiscordSender } from './discord-sender';
@@ -47,9 +47,9 @@ export class DiscordChannelSender implements ContextSendable {
         );
         this._sendable &&= !!permissions?.has(
           PermissionFlagsBits.ViewChannel
-          | PermissionFlagsBits.SendMessages
-          | PermissionFlagsBits.EmbedLinks
-          | PermissionFlagsBits.ReadMessageHistory
+            | PermissionFlagsBits.SendMessages
+            | PermissionFlagsBits.EmbedLinks
+            | PermissionFlagsBits.ReadMessageHistory
         );
       }
     }
@@ -102,7 +102,7 @@ export class DiscordChannelSender implements ContextSendable {
     return new Promise((resolve, reject) => {
       let resolved = false;
 
-      const collector = this.awaitUserSelection(user.id, options.length, async (msg) => {
+      const collector = this.awaitUserSelection(user.id, options.length, async msg => {
         if (!resolved) {
           try {
             resolved = true;

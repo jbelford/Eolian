@@ -1,5 +1,6 @@
+import { SyntaxType, Keyword, Pattern } from '@eolian/command-options/@types';
 import { COMMANDS } from '@eolian/commands';
-import { CommandCategory, Command, SyntaxType, Keyword, Pattern } from '@eolian/commands/@types';
+import { CommandCategory, Command } from '@eolian/commands/@types';
 import { GITHUB_PAGE_WIKI, Color, UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { EmbedMessage } from '@eolian/framework/@types';

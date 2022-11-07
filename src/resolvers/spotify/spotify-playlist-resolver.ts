@@ -1,8 +1,9 @@
 import { createSpotifyClient, mapSpotifyTrack, spotify } from '@eolian/api';
 import { TrackSource, RangeFactory } from '@eolian/api/@types';
 import { ISpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from '@eolian/api/spotify/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
-import { getRangeOption } from '@eolian/commands/patterns';
+import { getRangeOption } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { feature } from '@eolian/data';
 import { FeatureFlag, ResourceType } from '@eolian/data/@types';

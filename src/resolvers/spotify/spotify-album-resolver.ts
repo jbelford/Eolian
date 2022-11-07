@@ -1,7 +1,8 @@
 import { mapSpotifyTrack, spotify } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
 import { SpotifyAlbum, SpotifyAlbumFull } from '@eolian/api/spotify/@types';
-import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';

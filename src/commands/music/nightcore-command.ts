@@ -1,8 +1,9 @@
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { KEYWORDS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
 import { MUSIC_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
 
 async function executeNightcore(context: CommandContext, options: CommandOptions): Promise<void> {
   const info = 'Settings will take effect on the next track!';

@@ -1,9 +1,9 @@
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
-import { CommandContext, CommandOptions, Command } from '../@types';
+import { getRangeOption, KEYWORDS, PATTERNS } from '@eolian/command-options';
+import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandContext, Command } from '../@types';
 import { QUEUE_CATEGORY } from '../category';
-import { KEYWORDS } from '../keywords';
-import { getRangeOption, PATTERNS } from '../patterns';
 
 function sanitizeNum(num: number, size: number): number {
   if (!Number.isInteger(num)) {
