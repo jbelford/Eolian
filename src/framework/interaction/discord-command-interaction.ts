@@ -1,5 +1,18 @@
-import { checkSetKeyword, getCommand, matchPatterns, patternMatch, simpleOptionsStrategy } from '@eolian/commands';
-import { CommandArgs, CommandOptions, Keyword, ParsedCommand, Pattern, SyntaxType } from '@eolian/commands/@types';
+import {
+  checkSetKeyword,
+  getCommand,
+  matchPatterns,
+  patternMatch,
+  simpleOptionsStrategy,
+} from '@eolian/commands';
+import {
+  CommandArgs,
+  CommandOptions,
+  Keyword,
+  ParsedCommand,
+  Pattern,
+  SyntaxType,
+} from '@eolian/commands/@types';
 import { KEYWORDS } from '@eolian/commands/keywords';
 import { PATTERNS } from '@eolian/commands/patterns';
 import { UserPermission } from '@eolian/common/constants';
@@ -10,7 +23,10 @@ import { ContextCommandInteraction, IAuthServiceProvider } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordInteraction } from './discord-interaction';
 
-export class DiscordCommandInteraction extends DiscordInteraction<ChatInputCommandInteraction> implements ContextCommandInteraction {
+export class DiscordCommandInteraction
+  extends DiscordInteraction<ChatInputCommandInteraction>
+  implements ContextCommandInteraction
+{
 
   readonly isSlash = true;
 

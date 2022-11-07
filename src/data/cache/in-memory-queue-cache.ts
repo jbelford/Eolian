@@ -1,6 +1,6 @@
 import { shuffleList } from '@eolian/common/util';
 import { ListCache, QueueCache } from '../@types';
-import { InMemoryListCache } from "./in-memory-list-cache";
+import { InMemoryListCache } from './in-memory-list-cache';
 
 const MAX_PREV = 10;
 

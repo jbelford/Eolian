@@ -5,7 +5,10 @@ import { ButtonRegistry } from '../button-registry';
 import { DiscordInteraction } from './discord-interaction';
 import { DiscordMessage } from '../discord-message';
 
-export class DiscordButtonInteraction extends DiscordInteraction<ButtonInteraction> implements ContextButtonInteraction {
+export class DiscordButtonInteraction
+  extends DiscordInteraction<ButtonInteraction>
+  implements ContextButtonInteraction
+{
 
   private _message?: ContextMessage;
 

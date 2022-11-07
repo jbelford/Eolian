@@ -1,7 +1,4 @@
-import {
-  COMMANDS,
-  MESSAGE_COMMANDS,
-} from '@eolian/commands';
+import { COMMANDS, MESSAGE_COMMANDS } from '@eolian/commands';
 import {
   Command,
   KeywordGroup,

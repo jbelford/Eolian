@@ -4,7 +4,13 @@ import { logger } from '@eolian/common/logger';
 import { QueueCache, ServerDTO } from '@eolian/data/@types';
 import { DiscordPlayer } from '@eolian/music';
 import { Player } from '@eolian/music/@types';
-import { QueueDisplay, PlayerDisplay, ContextClient, ContextServer, ContextMusicQueue } from '../@types';
+import {
+  QueueDisplay,
+  PlayerDisplay,
+  ContextClient,
+  ContextServer,
+  ContextMusicQueue,
+} from '../@types';
 import { DiscordPlayerDisplay } from '../discord-player-display';
 import { DiscordQueueDisplay } from '../discord-queue-display';
 import { ServerMusicQueue } from '../server-music-queue';

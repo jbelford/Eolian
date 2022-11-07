@@ -3,11 +3,7 @@ import { Closable } from '@eolian/common/@types';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
 import { InMemoryCache, InMemoryQueueCache } from '@eolian/data';
-import {
-  EolianCache,
-  QueueCache,
-  ServersDb,
-} from '@eolian/data/@types';
+import { EolianCache, QueueCache, ServersDb } from '@eolian/data/@types';
 import { Client, Guild } from 'discord.js';
 import { ContextServer } from '../@types';
 import { DiscordGuildClient } from '../discord-client';

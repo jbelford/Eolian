@@ -1,7 +1,14 @@
 import { Track } from '@eolian/api/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { createBasicEmbed, createQueueEmbed } from '@eolian/embed';
-import { QueueDisplay, ContextMessage, ContextTextChannel, ContextSendable, MessageButtonOnClickHandler, ContextMusicQueue } from './@types';
+import {
+  QueueDisplay,
+  ContextMessage,
+  ContextTextChannel,
+  ContextSendable,
+  MessageButtonOnClickHandler,
+  ContextMusicQueue,
+} from './@types';
 
 export const QUEUE_PAGE_LENGTH = 15;
 

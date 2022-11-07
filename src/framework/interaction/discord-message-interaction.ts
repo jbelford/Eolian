@@ -2,7 +2,16 @@ import { CommandParsingStrategy, ParsedCommand, SyntaxType } from '@eolian/comma
 import { UsersDb } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { Message, BaseMessageOptions, TextChannel, DMChannel } from 'discord.js';
-import { ContextCommandInteraction, ContextUser, ContextTextChannel, ContextMessage, IAuthServiceProvider, SelectionResult, EmbedMessage, ContextServer } from '../@types';
+import {
+  ContextCommandInteraction,
+  ContextUser,
+  ContextTextChannel,
+  ContextMessage,
+  IAuthServiceProvider,
+  SelectionResult,
+  EmbedMessage,
+  ContextServer,
+} from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from '../discord-channel';
 import { DiscordMessage } from '../discord-message';

@@ -7,7 +7,7 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
   private head?: CacheNode<T>;
   private tail?: CacheNode<T>;
 
-  constructor(private readonly size: number) { }
+  constructor(private readonly size: number) {}
 
   get(id: string): T | undefined {
     let val: T | undefined;

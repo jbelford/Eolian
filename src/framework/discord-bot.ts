@@ -31,7 +31,12 @@ import {
   DiscordGuildClient,
   DiscordClient,
 } from './discord-client';
-import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageCommandInteraction, DiscordMessageInteraction } from './interaction';
+import {
+  DiscordButtonInteraction,
+  DiscordCommandInteraction,
+  DiscordMessageCommandInteraction,
+  DiscordMessageInteraction,
+} from './interaction';
 import { registerGuildSlashCommands } from './discord-slash-commands';
 import { DiscordGuildStore } from './state/discord-guild-store';
 import { ServerState } from './state/@types';
