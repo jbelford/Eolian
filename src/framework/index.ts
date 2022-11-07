@@ -11,3 +11,4 @@ export * from './state';
 export * from './user';
 export * from './voice';
 export * from './webserver';
+export * from './auth-service-providers';

@@ -1,16 +1,16 @@
-import { logger } from 'common/logger';
-import { clampLength } from 'common/util';
+import { logger } from '@eolian/common/logger';
+import { clampLength } from '@eolian/common/util';
 import {
-  ActionRow,
-  ActionRowBuilder,
   APIActionRowComponent,
   APIMessageActionRowComponent,
-  ButtonBuilder,
-  ButtonInteraction,
-  EmbedBuilder,
-  Message,
+  ActionRow,
   MessageActionRowComponent,
+  ButtonInteraction,
+  Message,
+  EmbedBuilder,
   MessageEditOptions,
+  ButtonBuilder,
+  ActionRowBuilder,
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button';

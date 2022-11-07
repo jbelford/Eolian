@@ -1,8 +1,8 @@
-import { environment } from 'common/env';
-import { logger } from 'common/logger';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
 import { MongoClient } from 'mongodb';
-import { AppDatabase, ServersDb, UsersDb } from './@types';
-import { MongoServers, MongoUsers } from './collection';
+import { AppDatabase, UsersDb, ServersDb } from './@types';
+import { MongoUsers, MongoServers } from './collection';
 
 class MongoDatabase implements AppDatabase {
 

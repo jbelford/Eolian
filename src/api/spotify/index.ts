@@ -1,4 +1,4 @@
-import { Track, TrackSource } from 'api/@types';
+import { Track, TrackSource } from '../@types';
 import { SpotifyTrack } from './@types';
 
 export * from './client';

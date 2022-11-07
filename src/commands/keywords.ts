@@ -1,5 +1,5 @@
-import { UserPermission } from 'common/constants';
-import { Keyword, KeywordGroup, KeywordGroupProperties, KeywordName, SyntaxType } from './@types';
+import { UserPermission } from '@eolian/common/constants';
+import { KeywordGroup, KeywordGroupProperties, Keyword, KeywordName, SyntaxType } from './@types';
 
 export const KEYWORD_GROUPS: Readonly<Record<KeywordGroup, KeywordGroupProperties>> = {
   increment: {

@@ -1,8 +1,8 @@
-import { youtube } from 'api';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { EolianUserError } from 'common/errors';
-import { ContextMessage } from 'framework/@types';
-import { ResolvedResource, SourceResolver } from 'resolvers/@types';
+import { youtube } from '@eolian/api';
+import { CommandOptions, CommandContext } from '@eolian/commands/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { ContextMessage } from '@eolian/framework/@types';
+import { SourceResolver, ResolvedResource } from '../@types';
 import { createYouTubePlaylist } from './playlist';
 import { createYouTubeVideo } from './video';
 

@@ -1,8 +1,10 @@
-import { Track, TrackSource } from 'api/@types';
-import { logger } from 'common/logger';
-import { httpRequest } from 'common/request';
-import { fuzzyMatch } from 'common/util';
-import { toSeconds, parse } from 'iso8601-duration';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
+import { fuzzyMatch } from '@eolian/common/util';
+import { httpRequest } from '@eolian/http';
+import { parse } from 'dotenv';
+import { toSeconds } from 'iso8601-duration';
+import { Track, TrackSource } from '../@types';
 import { BingApi, BingVideo } from './@types';
 
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
@@ -94,3 +96,7 @@ interface BingVideos {
   totalEstimatedMatches: number;
   value: BingVideo[];
 }
+
+export const bing = environment.tokens.bing
+  ? new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId)
+  : undefined;

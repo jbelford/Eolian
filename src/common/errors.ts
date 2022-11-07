@@ -1,4 +1,4 @@
-import { ContextMessage } from 'framework/@types';
+import { ContextMessage } from '@eolian/framework/@types';
 
 export class EolianUserError extends Error {
 

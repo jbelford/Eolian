@@ -1,7 +1,7 @@
-import { Command, CommandContext } from 'commands/@types';
-import { MUSIC_CATEGORY } from 'commands/category';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { CommandContext, Command } from '../@types';
+import { MUSIC_CATEGORY } from '../category';
 
 const NOT_PLAYING = "I'm not playing anything right now!";
 

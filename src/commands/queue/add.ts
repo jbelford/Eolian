@@ -1,16 +1,16 @@
-import { SOURCE_DETAILS } from 'api';
-import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
-import { QUEUE_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { getRangeOption, PATTERNS } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
-import { shuffleList, truthySum } from 'common/util';
-import { feature } from 'data';
-import { FeatureFlag, Identifier, ResourceType } from 'data/@types';
-import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
-import { SourceFetcher } from 'resolvers/@types';
+import { SOURCE_DETAILS } from '@eolian/api';
+import { UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { EolianUserError } from '@eolian/common/errors';
+import { truthySum, shuffleList } from '@eolian/common/util';
+import { feature } from '@eolian/data';
+import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
+import { RESOURCE_TYPE_DETAILS, getSourceFetcher, getSourceResolver } from '@eolian/resolvers';
+import { SourceFetcher } from '@eolian/resolvers/@types';
+import { CommandContext, CommandOptions, Command, MessageCommand } from '../@types';
+import { QUEUE_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
+import { getRangeOption, PATTERNS } from '../patterns';
 
 export function createSelectedMessage(
   name: string,

@@ -1,4 +1,4 @@
-import { environment } from 'common/env';
+import { environment } from '@eolian/common/env';
 import { FeatureFlag, FeatureFlagService } from './@types';
 
 const flagsLocal: Record<FeatureFlag, boolean> = {

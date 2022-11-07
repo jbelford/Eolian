@@ -1,10 +1,11 @@
-import { getTrackStream } from 'api';
-import { StreamSource, Track } from 'api/@types';
-import { Closable, RetrySleepAlgorithm } from 'common/@types';
-import { logger } from 'common/logger';
-import { RequestErrorCodes, RequestStreamError } from 'common/request';
-import { ExponentialSleep } from 'common/util';
-import EventEmitter from 'events';
+import { getTrackStream } from '@eolian/api';
+import { Track, StreamSource } from '@eolian/api/@types';
+import { Closable, RetrySleepAlgorithm } from '@eolian/common/@types';
+import { logger } from '@eolian/common/logger';
+import { ExponentialSleep } from '@eolian/common/util';
+import { RequestErrorCodes } from '@eolian/http';
+import { HttpRequestStreamError } from '@eolian/http/@types';
+import { EventEmitter } from 'node-cache';
 import prism from 'prism-media';
 import { Readable } from 'stream';
 
@@ -123,7 +124,7 @@ export class SongStream extends EventEmitter implements Closable {
     this.pcmTransform = undefined;
   }
 
-  private onSongErrorHandler = (err: RequestStreamError) => {
+  private onSongErrorHandler = (err: HttpRequestStreamError) => {
     if (err.code === RequestErrorCodes.ABORTED) {
       return;
     }

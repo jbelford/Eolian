@@ -1,22 +1,28 @@
-import { Closable } from 'common/@types';
-import { environment } from 'common/env';
-import { logger } from 'common/logger';
-import { InMemoryCache, InMemoryQueues } from 'data';
-import { EolianCache, MusicQueueCache, ServerDTO, ServerQueue, ServersDb } from 'data/@types';
-import { Client, Guild } from 'discord.js';
-import { DiscordPlayer } from 'music';
-import { Player } from 'music/@types';
+import { Closable } from '@eolian/common/@types';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
+import { InMemoryCache, InMemoryQueues } from '@eolian/data';
 import {
-  ContextClient,
-  PlayerDisplay,
-  QueueDisplay,
-  ServerDetails,
+  EolianCache,
+  ServerQueue,
+  ServerDTO,
+  MusicQueueCache,
+  ServersDb,
+} from '@eolian/data/@types';
+import { DiscordPlayer } from '@eolian/music';
+import { Player } from '@eolian/music/@types';
+import { Client, Guild } from 'discord.js';
+import {
+  ServerStateStore,
   ServerState,
   ServerStateDisplay,
-  ServerStateStore,
+  QueueDisplay,
+  PlayerDisplay,
+  ContextClient,
+  ServerDetails,
 } from './@types';
 import { DiscordGuildClient } from './client';
-import { DiscordPlayerDisplay, DiscordQueueDisplay } from './display';
+import { DiscordQueueDisplay, DiscordPlayerDisplay } from './display';
 import { GuildQueue } from './queue';
 import { DiscordGuild } from './server';
 

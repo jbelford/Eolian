@@ -1,19 +1,21 @@
-import { RangeFactory, Track, StreamSource, TrackSource } from 'api/@types';
-import { ProgressUpdater } from 'common/@types';
-import { environment } from 'common/env';
-import { logger } from 'common/logger';
-import { fuzzyMatch } from 'common/util';
-import { InMemoryLRUCache } from 'data';
-import { MemoryCache } from 'data/@types';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
+import { fuzzyMatch } from '@eolian/common/util';
+import { InMemoryLRUCache } from '@eolian/data';
+import { MemoryCache } from '@eolian/data/@types';
 import { youtube_v3, google } from 'googleapis';
 import { decode } from 'html-entities';
-import { Readable } from 'stream';
+import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
+import { bing } from '../bing';
+import { BingApi } from '../bing/@types';
 import { YouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
 import * as play from 'play-dl';
-import { BingApi } from 'api/bing/@types';
+import { Readable } from 'stream';
 
 const SEARCH_MIN_SCORE = 79;
-const YOUTUBE_PATTERN = /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
+const YOUTUBE_PATTERN
+  = /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
 
@@ -345,3 +347,9 @@ class YouTubeStreamSource implements StreamSource {
   }
 
 }
+
+export const youtube: YouTubeApi = new YouTubeApiImpl(
+  environment.tokens.youtube.token,
+  environment.config.youtubeCacheLimit,
+  bing
+);

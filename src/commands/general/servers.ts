@@ -1,9 +1,9 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
-import { GENERAL_CATEGORY } from 'commands/category';
-import { OWNER_COMMANDS } from 'commands/owner';
-import { PATTERNS } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { CommandContext, CommandOptions, Command } from '../@types';
+import { GENERAL_CATEGORY } from '../category';
+import { OWNER_COMMANDS } from '../owner';
+import { PATTERNS } from '../patterns';
 
 const PAGE_LENGTH = 10;
 

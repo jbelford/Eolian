@@ -1,21 +1,27 @@
+import { environment } from '@eolian/common/env';
+import { EolianCache } from '@eolian/data/@types';
 import {
   ClientCredentialsProvider,
   AuthorizationCodeProvider,
   OAuthRequestImpl,
-  AuthCacheItem,
   AuthServiceImpl,
-} from 'api/auth';
-import { AuthorizationProvider, TokenProvider, OAuthRequest, AuthService } from 'api/@types';
-import { environment } from 'common/env';
-import { RequestOptions } from 'common/request';
-import { EolianCache } from 'data/@types';
+} from '@eolian/http';
+import {
+  AuthorizationProvider,
+  TokenProvider,
+  OAuthRequest,
+  AuthService,
+  HttpRequestOptions,
+  AuthCacheItem,
+  AuthorizeParams,
+} from '@eolian/http/@types';
 
 const SPOTIFY_API = 'https://api.spotify.com/v1';
 const SPOTIFY_TOKEN = 'https://accounts.spotify.com/api/token';
 const SPOTIFY_AUTHORIZE = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_REDIRECT_URI = `${environment.baseUri}/callback/spotify`;
 
-const SPOTIFY_AUTH_OPTIONS: RequestOptions = {
+const SPOTIFY_AUTH_OPTIONS: HttpRequestOptions = {
   auth: {
     basic: {
       id: environment.tokens.spotify.clientId,
@@ -54,7 +60,7 @@ export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): Aut
     'playlist-read-private',
   ].join(',');
 
-  const authParams = {
+  const authParams: AuthorizeParams = {
     client_id: environment.tokens.spotify.clientId,
     redirect_uri: SPOTIFY_REDIRECT_URI,
     scope,

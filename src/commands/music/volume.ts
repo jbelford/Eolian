@@ -1,9 +1,9 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
-import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { PATTERNS } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { CommandContext, CommandOptions, Command } from '../@types';
+import { MUSIC_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
+import { PATTERNS } from '../patterns';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   let volume = context.server!.player.volume;

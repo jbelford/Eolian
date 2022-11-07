@@ -1,5 +1,5 @@
-import { Color } from 'common/constants';
-import { EmbedMessage } from 'framework/@types';
+import { Color } from '@eolian/common/constants';
+import { EmbedMessage } from '@eolian/framework/@types';
 import { PollOption } from './@types';
 
 export function createPollQuestionEmbed(

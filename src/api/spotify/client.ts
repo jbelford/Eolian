@@ -1,8 +1,10 @@
-import { OAuthRequest, RangeFactory, Track, StreamSource, TrackSource } from 'api/@types';
-import { YouTubeApi } from 'api/youtube/@types';
-import { ProgressUpdater } from 'common/@types';
-import { logger } from 'common/logger';
-import { fuzzyMatch } from 'common/util';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { logger } from '@eolian/common/logger';
+import { fuzzyMatch } from '@eolian/common/util';
+import { OAuthRequest } from '@eolian/http/@types';
+import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
+import { youtube } from '../youtube';
+import { YouTubeApi } from '../youtube/@types';
 import {
   SpotifyApi,
   SpotifyUrlDetails,
@@ -307,3 +309,9 @@ type GetAllItemsOptions<T> = {
   rangeFn?: RangeFactory;
   params?: Record<string, string>;
 };
+
+export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
+
+export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
+  return new SpotifyApiImpl(youtube, request);
+}

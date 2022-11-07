@@ -1,4 +1,4 @@
-import { UserPermission } from 'common/constants';
+import { UserPermission } from '@eolian/common/constants';
 import { CommandCategory } from './@types';
 
 export const ACCOUNT_CATEGORY: CommandCategory = {

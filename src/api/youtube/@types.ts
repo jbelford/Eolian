@@ -1,5 +1,5 @@
-import { StreamFetcher, RangeFactory, Track, StreamSource } from 'api/@types';
-import { ProgressUpdater } from 'common/@types';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { StreamFetcher, RangeFactory, Track, StreamSource } from '../@types';
 
 export interface YouTubeApi extends StreamFetcher {
   getResourceType(url: string): YouTubeUrlDetails | undefined;

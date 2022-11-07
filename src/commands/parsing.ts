@@ -1,22 +1,22 @@
-import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from 'commands';
-import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
+import { UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { EolianUserError } from '@eolian/common/errors';
+import { COMMAND_MAP, MESSAGE_COMMAND_MAP } from '.';
 import {
-  BaseCommand,
-  Command,
   CommandOptions,
+  SyntaxType,
+  Keyword,
+  PatternValues,
+  Pattern,
+  Command,
   CommandOptionsParsingStrategy,
   CommandParsingStrategy,
-  Keyword,
-  MessageCommand,
   ParsedCommand,
-  Pattern,
-  PatternValues,
-  SyntaxType,
+  MessageCommand,
+  BaseCommand,
 } from './@types';
 import { KEYWORDS, KEYWORDS_MAPPED } from './keywords';
-import { PATTERNS, PATTERNS_SORTED } from './patterns';
+import { PATTERNS_SORTED, PATTERNS } from './patterns';
 
 export function simpleOptionsStrategy(text: string): CommandOptions {
   const options: CommandOptions = {};

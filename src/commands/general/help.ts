@@ -1,17 +1,17 @@
-import { COMMANDS, COMMAND_MAP } from 'commands';
-import { Command, CommandArgs, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
-import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { SimpleExample, PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
 import {
   createCategoryListEmbed,
-  createCommandDetailsEmbed,
   createCommandListEmbed,
+  createCommandDetailsEmbed,
   createKeywordDetailsEmbed,
   createPatternDetailsEmbed,
-} from 'embed';
+} from '@eolian/embed';
+import { COMMAND_MAP, COMMANDS } from '..';
+import { CommandContext, CommandOptions, SyntaxType, CommandArgs, Command } from '../@types';
+import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
+import { PATTERNS, PATTERNS_SORTED, SimpleExample } from '../patterns';
 
 async function execute(
   { interaction, server }: CommandContext,

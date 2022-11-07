@@ -1,7 +1,7 @@
-import { Track } from 'api/@types';
-import { IDLE_TIMEOUT_MINS } from 'common/constants';
-import { MusicQueueCache, ServerQueue } from 'data/@types';
-import { EventEmitter } from 'events';
+import { Track } from '@eolian/api/@types';
+import { IDLE_TIMEOUT_MINS } from '@eolian/common/constants';
+import { ServerQueue, MusicQueueCache } from '@eolian/data/@types';
+import { EventEmitter } from 'node-cache';
 
 export class GuildQueue extends EventEmitter implements ServerQueue {
 

@@ -1,15 +1,15 @@
-import { Track } from 'api/@types';
-import { GITHUB_PAGE_ISSUES, UserPermission } from 'common/constants';
-import { ServerQueue } from 'data/@types';
-import { createBasicEmbed, createPlayingEmbed, createQueueEmbed } from 'embed';
-import { Player } from 'music/@types';
+import { Track } from '@eolian/api/@types';
+import { UserPermission, GITHUB_PAGE_ISSUES } from '@eolian/common/constants';
+import { ServerQueue } from '@eolian/data/@types';
+import { createBasicEmbed, createQueueEmbed, createPlayingEmbed } from '@eolian/embed';
+import { Player } from '@eolian/music/@types';
 import {
+  QueueDisplay,
   ContextMessage,
-  ContextSendable,
   ContextTextChannel,
+  ContextSendable,
   MessageButtonOnClickHandler,
   PlayerDisplay,
-  QueueDisplay,
 } from './@types';
 
 const QUEUE_PAGE_LENGTH = 15;

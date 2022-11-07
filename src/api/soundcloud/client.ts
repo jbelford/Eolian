@@ -1,10 +1,12 @@
-import { OAuthRequest, Track, StreamSource, TrackSource } from 'api/@types';
-import { YouTubeApi } from 'api/youtube/@types';
-import { ProgressUpdater } from 'common/@types';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { querystringify } from 'common/request';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import { querystringify } from '@eolian/http';
+import { OAuthRequest } from '@eolian/http/@types';
 import { Readable } from 'stream';
+import { Track, StreamSource, TrackSource } from '../@types';
+import { youtube } from '../youtube';
+import { YouTubeApi } from '../youtube/@types';
 import {
   SoundCloudApi,
   SoundCloudUser,
@@ -283,4 +285,10 @@ class SoundCloudStreamSource implements StreamSource {
     return this.req.getStream(this.stream);
   }
 
+}
+
+export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
+
+export function createSoundCloudClient(request: OAuthRequest): SoundCloudApi {
+  return new SoundCloudApiImpl(youtube, request);
 }

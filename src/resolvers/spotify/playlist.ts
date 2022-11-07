@@ -1,14 +1,14 @@
-import { createSpotifyClient, mapSpotifyTrack, spotify } from 'api';
-import { RangeFactory, TrackSource } from 'api/@types';
-import { SpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from 'api/spotify/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/patterns';
-import { EolianUserError } from 'common/errors';
-import { feature } from 'data';
-import { FeatureFlag, ResourceType } from 'data/@types';
-import { DownloaderDisplay } from 'framework';
-import { ContextMessage, ContextSendable } from 'framework/@types';
-import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import { createSpotifyClient, mapSpotifyTrack, spotify } from '@eolian/api';
+import { TrackSource, RangeFactory } from '@eolian/api/@types';
+import { SpotifyApi, SpotifyPlaylist, SpotifyPlaylistTracks } from '@eolian/api/spotify/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { getRangeOption } from '@eolian/commands/patterns';
+import { EolianUserError } from '@eolian/common/errors';
+import { feature } from '@eolian/data';
+import { FeatureFlag, ResourceType } from '@eolian/data/@types';
+import { DownloaderDisplay } from '@eolian/framework';
+import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
+import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyPlaylistResolver implements SourceResolver {
 

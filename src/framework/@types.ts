@@ -1,10 +1,12 @@
-import { OAuthRequest, Track, TrackSource } from 'api/@types';
-import { ParsedCommand, SyntaxType } from 'commands/@types';
-import { Closable } from 'common/@types';
-import { UserPermission } from 'common/constants';
-import { Identifier, ServerDTO, ServerQueue, UserDTO } from 'data/@types';
-import { SelectionOption } from 'embed/@types';
-import { Player } from 'music/@types';
+import { TrackSource, Track } from '@eolian/api/@types';
+import { ParsedCommand, SyntaxType } from '@eolian/commands/@types';
+import { Closable } from '@eolian/common/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { ServerDTO, UserDTO, Identifier, ServerQueue } from '@eolian/data/@types';
+import { SelectionOption } from '@eolian/embed/@types';
+import { AuthorizationCodeProvider } from '@eolian/http';
+import { AuthService, OAuthRequest } from '@eolian/http/@types';
+import { Player } from '@eolian/music/@types';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -215,4 +217,13 @@ export interface ServerDetails extends ServerInfo {
   removeDjRole(id: string): Promise<boolean>;
   setDjLimited(allow: boolean): Promise<void>;
   updateUsage(): Promise<void>;
+}
+
+export type UserRequest = OAuthRequest<AuthorizationCodeProvider>;
+
+export interface IAuthServiceProvider extends Closable {
+  getService(api: TrackSource): AuthService;
+  getUserRequest(userId: string, api: TrackSource): Promise<UserRequest | undefined>;
+  setUserRequest(userId: string, request: UserRequest, api: TrackSource): Promise<void>;
+  removeUserRequest(userId: string, api?: TrackSource): Promise<void>;
 }

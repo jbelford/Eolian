@@ -1,18 +1,18 @@
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
-import { GENERAL_CATEGORY } from 'commands/category';
-import { PATTERNS } from 'commands/patterns';
-import { Closable } from 'common/@types';
-import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI, UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { createPollQuestionEmbed, createPollResultsEmbed } from 'embed';
-import { PollOption } from 'embed/@types';
+import { Closable } from '@eolian/common/@types';
+import { NUMBER_TO_EMOJI, EMOJI_TO_NUMBER, UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import { createPollQuestionEmbed, createPollResultsEmbed } from '@eolian/embed';
+import { PollOption } from '@eolian/embed/@types';
 import {
   ContextMessage,
   ContextSendable,
   ContextUser,
   MessageButtonOnClickHandler,
-} from 'framework/@types';
+} from '@eolian/framework/@types';
+import { CommandContext, CommandOptions, Command } from '../@types';
+import { GENERAL_CATEGORY } from '../category';
+import { PATTERNS } from '../patterns';
 
 class PollMessage implements Closable {
 

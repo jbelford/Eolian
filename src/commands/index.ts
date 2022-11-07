@@ -2,7 +2,7 @@ import { Command, MessageCommand } from './@types';
 import { ACCOUNT_COMMANDS } from './account';
 import { GENERAL_COMMANDS } from './general';
 import { MUSIC_COMMANDS, PLAY_MESSAGE_COMMAND } from './music';
-import { ADD_MESSAGE_COMMAND, QUEUE_COMMANDS } from './queue';
+import { QUEUE_COMMANDS, ADD_MESSAGE_COMMAND } from './queue';
 import { SETTINGS_COMMANDS } from './settings';
 
 export const COMMANDS: Command[] = GENERAL_COMMANDS.concat(ACCOUNT_COMMANDS)

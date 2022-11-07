@@ -1,7 +1,7 @@
-import { TrackSource } from 'api/@types';
-import { RangeArgument } from 'common/@types';
-import { UserPermission } from 'common/constants';
-import { ContextClient, ContextCommandInteraction, ServerState } from 'framework/@types';
+import { TrackSource } from '@eolian/api/@types';
+import { RangeArgument } from '@eolian/common/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { ContextClient, ContextCommandInteraction, ServerState } from '@eolian/framework/@types';
 
 export interface BaseCommand {
   name: string;

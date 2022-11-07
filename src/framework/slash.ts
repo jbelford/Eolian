@@ -1,36 +1,39 @@
 import {
-  ContextMenuCommandBuilder,
-  SlashCommandBuilder,
-  SlashCommandStringOption,
-} from '@discordjs/builders';
-import { REST } from '@discordjs/rest';
-import {
-  checkSetKeyword,
   COMMANDS,
-  getCommand,
-  getMessageCommand,
   MESSAGE_COMMANDS,
-  patternMatch,
+  getCommand,
   simpleOptionsStrategy,
-} from 'commands';
+  checkSetKeyword,
+  patternMatch,
+  getMessageCommand,
+} from '@eolian/commands';
 import {
   Command,
-  CommandArgs,
-  CommandOptions,
-  Keyword,
   KeywordGroup,
+  CommandArgs,
+  Keyword,
+  Pattern,
   MessageCommand,
   ParsedCommand,
-  Pattern,
+  CommandOptions,
   SyntaxType,
-} from 'commands/@types';
-import { KEYWORDS, KEYWORD_GROUPS } from 'commands/keywords';
-import { PATTERNS, PATTERNS_SORTED } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { ApplicationCommandType, ChatInputCommandInteraction, RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord.js';
+} from '@eolian/commands/@types';
+import { KEYWORD_GROUPS, KEYWORDS } from '@eolian/commands/keywords';
+import { PATTERNS, PATTERNS_SORTED } from '@eolian/commands/patterns';
+import { UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import {
+  Routes,
+  REST,
+  RESTPostAPIApplicationCommandsJSONBody,
+  SlashCommandBuilder,
+  SlashCommandStringOption,
+  ContextMenuCommandBuilder,
+  ApplicationCommandType,
+  ChatInputCommandInteraction,
+} from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
   if (!environment.tokens.discord.clientId) {

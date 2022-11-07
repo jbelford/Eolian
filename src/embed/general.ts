@@ -1,10 +1,10 @@
-import { SoundCloudUser } from 'api/soundcloud/@types';
-import { SpotifyUser } from 'api/spotify/@types';
-import { SyntaxType } from 'commands/@types';
-import { Color, DEFAULT_VOLUME } from 'common/constants';
-import { environment } from 'common/env';
-import { Identifier, ServerDTO } from 'data/@types';
-import { ContextUser, EmbedMessage, ServerInfo } from 'framework/@types';
+import { SoundCloudUser } from '@eolian/api/soundcloud/@types';
+import { SpotifyUser } from '@eolian/api/spotify/@types';
+import { SyntaxType } from '@eolian/commands/@types';
+import { Color, DEFAULT_VOLUME } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { Identifier, ServerDTO } from '@eolian/data/@types';
+import { EmbedMessage, ContextUser, ServerInfo } from '@eolian/framework/@types';
 import { SelectionOption } from './@types';
 
 export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {

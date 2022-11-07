@@ -1,14 +1,13 @@
-import { youtube } from 'api';
-import { RangeFactory, TrackSource } from 'api/@types';
-import { mapYouTubeVideo } from 'api/youtube';
-import { YoutubePlaylist } from 'api/youtube/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/patterns';
-import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
-import { DownloaderDisplay } from 'framework';
-import { ContextMessage, ContextSendable } from 'framework/@types';
-import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import { mapYouTubeVideo, youtube } from '@eolian/api';
+import { TrackSource, RangeFactory } from '@eolian/api/@types';
+import { YoutubePlaylist } from '@eolian/api/youtube/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { getRangeOption } from '@eolian/commands/patterns';
+import { EolianUserError } from '@eolian/common/errors';
+import { ResourceType } from '@eolian/data/@types';
+import { DownloaderDisplay } from '@eolian/framework';
+import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
+import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class YouTubePlaylistResolver implements SourceResolver {
 

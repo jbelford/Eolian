@@ -1,15 +1,15 @@
-import { SOURCE_DETAILS } from 'api';
-import { Command, CommandContext, CommandOptions, MessageCommand } from 'commands/@types';
-import { MUSIC_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { PATTERNS } from 'commands/patterns';
-import { createSelectedMessage } from 'commands/queue/add';
-import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
-import { getSourceFetcher, getSourceResolver, RESOURCE_TYPE_DETAILS } from 'resolvers';
-import { SourceFetcher } from 'resolvers/@types';
+import { SOURCE_DETAILS } from '@eolian/api';
+import { UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { EolianUserError } from '@eolian/common/errors';
+import { ResourceType } from '@eolian/data/@types';
+import { RESOURCE_TYPE_DETAILS, getSourceFetcher, getSourceResolver } from '@eolian/resolvers';
+import { SourceFetcher } from '@eolian/resolvers/@types';
+import { CommandContext, CommandOptions, Command, MessageCommand } from '../@types';
+import { MUSIC_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
+import { PATTERNS } from '../patterns';
+import { createSelectedMessage } from '../queue/add';
 
 async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();

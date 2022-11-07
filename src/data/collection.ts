@@ -1,6 +1,6 @@
-import { SyntaxType } from 'commands/@types';
+import { SyntaxType } from '@eolian/commands/@types';
 import { Collection, Filter, UpdateFilter } from 'mongodb';
-import { CollectionDb, Identifier, ServerDTO, ServersDb, UserDTO, UsersDb } from './@types';
+import { CollectionDb, UserDTO, UsersDb, Identifier, ServerDTO, ServersDb } from './@types';
 
 interface MongoDoc {
   _id: string;

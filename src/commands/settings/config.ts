@@ -1,9 +1,9 @@
-import { Command, CommandArgs, CommandContext, CommandOptions, SyntaxType } from 'commands/@types';
-import { SETTINGS_CATEGORY } from 'commands/category';
-import { SimpleExample } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
-import { createServerDetailsEmbed } from 'embed';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { createServerDetailsEmbed } from '@eolian/embed';
+import { CommandContext, CommandOptions, SyntaxType, CommandArgs, Command } from '../@types';
+import { SETTINGS_CATEGORY } from '../category';
+import { SimpleExample } from '../patterns';
 
 enum CONFIG_OPTION {
   PREFIX = 'prefix',

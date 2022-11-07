@@ -1,13 +1,13 @@
 import {
-  AudioPlayer,
-  DiscordGatewayAdapterCreator,
-  entersState,
   joinVoiceChannel,
+  DiscordGatewayAdapterCreator,
   VoiceConnection,
+  entersState,
   VoiceConnectionStatus,
+  AudioPlayer,
 } from '@discordjs/voice';
-import { logger } from 'common/logger';
-import { ChannelType, Client, VoiceChannel } from 'discord.js';
+import { logger } from '@eolian/common/logger';
+import { VoiceChannel, ChannelType, Client } from 'discord.js';
 import { ContextVoiceChannel, ContextVoiceConnection } from './@types';
 
 export class DiscordVoiceChannel implements ContextVoiceChannel {

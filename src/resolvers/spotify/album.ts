@@ -1,12 +1,12 @@
-import { mapSpotifyTrack, spotify } from 'api';
-import { TrackSource } from 'api/@types';
-import { SpotifyAlbum, SpotifyAlbumFull } from 'api/spotify/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { EolianUserError } from 'common/errors';
-import { ResourceType } from 'data/@types';
-import { SelectionOption } from 'embed/@types';
-import { ContextMessage } from 'framework/@types';
-import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import { mapSpotifyTrack, spotify } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SpotifyAlbum, SpotifyAlbumFull } from '@eolian/api/spotify/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { ResourceType } from '@eolian/data/@types';
+import { SelectionOption } from '@eolian/embed/@types';
+import { ContextMessage } from '@eolian/framework/@types';
+import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyAlbumResolver implements SourceResolver {
 

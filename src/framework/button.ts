@@ -1,4 +1,4 @@
-import { logger } from 'common/logger';
+import { logger } from '@eolian/common/logger';
 import { EmbedMessageButton } from './@types';
 
 export class ButtonRegistry {

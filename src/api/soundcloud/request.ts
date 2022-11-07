@@ -1,22 +1,27 @@
-import { AuthorizationProvider, AuthService, OAuthRequest, TokenProvider } from 'api/@types';
+import { environment } from '@eolian/common/env';
+import { EolianCache } from '@eolian/data/@types';
 import {
   ClientCredentialsProvider,
   OAuthRequestImpl,
   AuthorizationCodeProvider,
-  AuthCacheItem,
   AuthServiceImpl,
+} from '@eolian/http';
+import {
+  TokenProvider,
+  OAuthRequest,
+  AuthorizationProvider,
+  AuthService,
+  HttpRequestOptions,
+  AuthCacheItem,
   AuthorizeParams,
-} from 'api/auth';
-import { environment } from 'common/env';
-import { RequestOptions } from 'common/request';
-import { EolianCache } from 'data/@types';
+} from '@eolian/http/@types';
 
 const SOUNDCLOUD_API = 'https://api.soundcloud.com';
 const SOUNDCLOUD_TOKEN = `${SOUNDCLOUD_API}/oauth2/token`;
 const SOUNDCLOUD_AUTHORIZE = `${SOUNDCLOUD_API}/connect`;
 const SOUNDCLOUD_REDIRECT_URI = `${environment.baseUri}/callback/soundcloud`;
 
-const SOUNDCLOUD_AUTH_OPTIONS: RequestOptions = {
+const SOUNDCLOUD_AUTH_OPTIONS: HttpRequestOptions = {
   form: {
     client_id: environment.tokens.soundcloud.clientId,
     client_secret: environment.tokens.soundcloud.clientSecret,

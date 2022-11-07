@@ -1,32 +1,32 @@
-import { TrackSource } from 'api/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { EolianUserError } from 'common/errors';
-import { feature } from 'data';
-import { FeatureFlag, Identifier, ResourceType } from 'data/@types';
-import { ResourceTypeDetails, SourceFetcher, SourceResolver } from './@types';
+import { TrackSource } from '@eolian/api/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { feature } from '@eolian/data';
+import { FeatureFlag, Identifier, ResourceType } from '@eolian/data/@types';
+import { SourceResolver, SourceFetcher, ResourceTypeDetails } from './@types';
 import {
-  getSoundCloudSourceFetcher,
-  SoundCloudArtistResolver,
-  SoundCloudFavoritesResolver,
-  SoundCloudPlaylistResolver,
+  SoundCloudUrlResolver,
   SoundCloudSongResolver,
   SoundCloudTracksResolver,
-  SoundCloudUrlResolver,
+  SoundCloudFavoritesResolver,
+  SoundCloudArtistResolver,
+  SoundCloudPlaylistResolver,
+  getSoundCloudSourceFetcher,
 } from './soundcloud';
 import {
-  getSpotifySourceFetcher,
-  SpotifyAlbumResolver,
-  SpotifyArtistResolver,
-  SpotifyLikesResolver,
-  SpotifyPlaylistResolver,
-  SpotifyTracksResolver,
   SpotifyUrlResolver,
+  SpotifyTracksResolver,
+  SpotifyLikesResolver,
+  SpotifyArtistResolver,
+  SpotifyAlbumResolver,
+  SpotifyPlaylistResolver,
+  getSpotifySourceFetcher,
 } from './spotify';
 import {
-  getYouTubeSourceFetcher,
-  YouTubePlaylistResolver,
   YouTubeUrlResolver,
   YouTubeVideoResolver,
+  YouTubePlaylistResolver,
+  getYouTubeSourceFetcher,
 } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {

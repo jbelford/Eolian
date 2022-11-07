@@ -1,4 +1,4 @@
-import { Command } from 'commands/@types';
+import { Command } from '../@types';
 import { ADD_COMMAND } from './add';
 import { LIST_COMMAND } from './list';
 import { LOOP_COMMAND } from './loop';

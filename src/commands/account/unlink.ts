@@ -1,10 +1,10 @@
-import { TrackSource } from 'api/@types';
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
-import { ACCOUNT_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { UserPermission } from 'common/constants';
-import { feature } from 'data';
-import { FeatureFlag } from 'data/@types';
+import { TrackSource } from '@eolian/api/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { feature } from '@eolian/data';
+import { FeatureFlag } from '@eolian/data/@types';
+import { CommandContext, CommandOptions, Command } from '../@types';
+import { ACCOUNT_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
 
 async function execute(
   { interaction }: CommandContext,

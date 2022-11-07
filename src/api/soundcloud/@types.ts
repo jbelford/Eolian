@@ -1,5 +1,5 @@
-import { StreamFetcher } from 'api/@types';
-import { ProgressUpdater } from 'common/@types';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { StreamFetcher } from '../@types';
 
 export interface SoundCloudApi extends StreamFetcher {
   getMe(): Promise<SoundCloudUser>;

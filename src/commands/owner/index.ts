@@ -1,4 +1,4 @@
-import { OwnerCommand } from 'commands/@types';
+import { OwnerCommand } from '../@types';
 import { KICK_COMMAND, KICK_OLD_COMMAND, KICK_UNUSED_COMMAND } from './kick';
 import { UPDATE_SLASH_COMMAND } from './update';
 

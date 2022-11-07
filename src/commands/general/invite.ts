@@ -1,7 +1,7 @@
-import { Command, CommandContext } from 'commands/@types';
-import { GENERAL_CATEGORY } from 'commands/category';
-import { UserPermission } from 'common/constants';
-import { createInviteEmbed } from 'embed';
+import { UserPermission } from '@eolian/common/constants';
+import { createInviteEmbed } from '@eolian/embed';
+import { CommandContext, Command } from '../@types';
+import { GENERAL_CATEGORY } from '../category';
 
 async function execute(context: CommandContext): Promise<void> {
   const inviteLink = context.client.generateInvite();

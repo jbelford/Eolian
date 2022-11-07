@@ -1,35 +1,35 @@
-import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from 'common/constants';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { clampLength } from 'common/util';
+import { EMOJI_TO_NUMBER, NUMBER_TO_EMOJI } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import { clampLength } from '@eolian/common/util';
+import { createSelectionEmbed } from '@eolian/embed';
+import { SelectionOption } from '@eolian/embed/@types';
 import {
   BaseMessageOptions,
-  ChannelType,
-  DMChannel,
   Message,
-  MessageCollector,
-  PermissionFlagsBits,
   TextChannel,
+  DMChannel,
+  ChannelType,
+  PermissionFlagsBits,
+  MessageCollector,
 } from 'discord.js';
-import { createSelectionEmbed } from 'embed';
-import { SelectionOption } from 'embed/@types';
 import {
   ContextInteractionOptions,
   ContextMessage,
-  ContextSendable,
-  ContextTextChannel,
-  ContextUser,
   EmbedMessage,
-  MessageButtonOnClickHandler,
+  ContextSendable,
+  ContextUser,
   SelectionResult,
+  MessageButtonOnClickHandler,
+  ContextTextChannel,
 } from './@types';
 import { ButtonRegistry } from './button';
 import {
-  DiscordButtonMapping,
   DiscordMessage,
-  DiscordMessageButtons,
   mapDiscordEmbed,
+  DiscordButtonMapping,
   mapDiscordEmbedButtons,
+  DiscordMessageButtons,
 } from './message';
 
 export const STOP_EMOJI = '🚫';

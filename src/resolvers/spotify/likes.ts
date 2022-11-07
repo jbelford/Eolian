@@ -1,12 +1,12 @@
-import { createSpotifyClient, mapSpotifyTrack } from 'api';
-import { RangeFactory, TrackSource } from 'api/@types';
-import { SpotifyApi, SpotifyUser } from 'api/spotify/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/patterns';
-import { ResourceType } from 'data/@types';
-import { DownloaderDisplay } from 'framework';
-import { ContextSendable } from 'framework/@types';
-import { FetchResult, ResolvedResource, SourceFetcher, SourceResolver } from 'resolvers/@types';
+import { createSpotifyClient, mapSpotifyTrack } from '@eolian/api';
+import { TrackSource, RangeFactory } from '@eolian/api/@types';
+import { SpotifyUser, SpotifyApi } from '@eolian/api/spotify/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { getRangeOption } from '@eolian/commands/patterns';
+import { ResourceType } from '@eolian/data/@types';
+import { DownloaderDisplay } from '@eolian/framework';
+import { ContextSendable } from '@eolian/framework/@types';
+import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyLikesResolver implements SourceResolver {
 

@@ -1,18 +1,17 @@
-import { createSoundCloudClient, soundcloud } from 'api';
-import { TrackSource } from 'api/@types';
-import { mapSoundCloudTrack } from 'api/soundcloud';
-import { SoundCloudApi, SoundCloudUser } from 'api/soundcloud/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { EolianUserError } from 'common/errors';
-import { feature } from 'data';
-import { FeatureFlag, ResourceType } from 'data/@types';
+import { createSoundCloudClient, mapSoundCloudTrack, soundcloud } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SoundCloudUser, SoundCloudApi } from '@eolian/api/soundcloud/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { feature } from '@eolian/data';
+import { FeatureFlag, ResourceType } from '@eolian/data/@types';
 import {
-  FetchResult,
   MessageBundledResult,
+  SourceResolver,
   ResolvedResource,
   SourceFetcher,
-  SourceResolver,
-} from 'resolvers/@types';
+  FetchResult,
+} from '../@types';
 
 type UserResultValue = { user: SoundCloudUser; client?: SoundCloudApi };
 export type UserResult = MessageBundledResult<UserResultValue>;

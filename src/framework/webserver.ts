@@ -1,19 +1,19 @@
-import { Closable } from 'common/@types';
+import { TrackSource } from '@eolian/api/@types';
+import { Closable } from '@eolian/common/@types';
+import { GITHUB_PAGE } from '@eolian/common/constants';
+import { logger } from '@eolian/common/logger';
+import { feature } from '@eolian/data';
+import { FeatureFlag } from '@eolian/data/@types';
 import express, { RequestHandler } from 'express';
-import { logger } from 'common/logger';
 import { Server } from 'http';
-import { AuthProviders } from 'api';
-import { GITHUB_PAGE } from 'common/constants';
-import { TrackSource } from 'api/@types';
-import { feature } from 'data';
-import { FeatureFlag } from 'data/@types';
+import { IAuthServiceProvider } from './@types';
 
 export class WebServer implements Closable {
 
   private readonly app = express();
   private server: Server | undefined;
 
-  constructor(private readonly port: number, private readonly authProviders: AuthProviders) {
+  constructor(private readonly port: number, private readonly authProviders: IAuthServiceProvider) {
     this.app.get('/', (req, res) => {
       res.redirect(GITHUB_PAGE);
     });

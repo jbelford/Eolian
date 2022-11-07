@@ -1,12 +1,12 @@
-import { soundcloud } from 'api';
+import { soundcloud } from '@eolian/api';
 import {
   SoundCloudPlaylist,
   SoundCloudResourceType,
   SoundCloudTrack,
   SoundCloudUser,
-} from 'api/soundcloud/@types';
-import { EolianUserError } from 'common/errors';
-import { ResolvedResource, SourceResolver } from '../@types';
+} from '@eolian/api/soundcloud/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { SourceResolver, ResolvedResource } from '../@types';
 import { createSoundCloudUser } from './artist';
 import { createSoundCloudPlaylist } from './playlist';
 import { createSoundCloudSong } from './song';

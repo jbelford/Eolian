@@ -1,4 +1,4 @@
-import { OwnerCommand } from 'commands/@types';
+import { OwnerCommand } from '../@types';
 
 export const UPDATE_SLASH_COMMAND: OwnerCommand = {
   name: 'updateCommands',

@@ -1,6 +1,6 @@
-import { Track } from 'api/@types';
-import { shuffleList } from 'common/util';
-import { ListCache, MusicQueueCache } from './@types';
+import { Track } from '@eolian/api/@types';
+import { shuffleList } from '@eolian/common/util';
+import { MusicQueueCache, ListCache } from './@types';
 import { InMemoryListCache } from './cache';
 
 const MAX_PREV = 10;

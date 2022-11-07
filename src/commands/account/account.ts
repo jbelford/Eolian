@@ -1,14 +1,14 @@
-import { createSoundCloudClient, createSpotifyClient, soundcloud, spotify } from 'api';
-import { TrackSource } from 'api/@types';
-import { SoundCloudUser } from 'api/soundcloud/@types';
-import { SpotifyUser } from 'api/spotify/@types';
-import { Command, CommandContext, CommandOptions } from 'commands/@types';
-import { ACCOUNT_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { UserPermission } from 'common/constants';
-import { feature } from 'data';
-import { FeatureFlag } from 'data/@types';
-import { createUserDetailsEmbed } from 'embed';
+import { createSpotifyClient, createSoundCloudClient, soundcloud, spotify } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SoundCloudUser } from '@eolian/api/soundcloud/@types';
+import { SpotifyUser } from '@eolian/api/spotify/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { feature } from '@eolian/data';
+import { FeatureFlag } from '@eolian/data/@types';
+import { createUserDetailsEmbed } from '@eolian/embed';
+import { CommandContext, CommandOptions, Command } from '../@types';
+import { ACCOUNT_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.CLEAR) {

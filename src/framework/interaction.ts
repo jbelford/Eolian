@@ -1,36 +1,36 @@
-import { AuthProviders } from 'api';
-import { CommandParsingStrategy, ParsedCommand, SyntaxType } from 'commands/@types';
-import { UsersDb } from 'data/@types';
+import { ParsedCommand, CommandParsingStrategy, SyntaxType } from '@eolian/commands/@types';
+import { UsersDb } from '@eolian/data/@types';
+import { SelectionOption } from '@eolian/embed/@types';
 import {
+  MessageComponentInteraction,
+  CommandInteraction,
   BaseMessageOptions,
+  Message,
+  GuildMember,
+  TextChannel,
+  DMChannel,
   ButtonInteraction,
   ChatInputCommandInteraction,
-  CommandInteraction,
-  DMChannel,
-  GuildMember,
-  Message,
-  MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
-  TextChannel,
 } from 'discord.js';
-import { SelectionOption } from 'embed/@types';
 import {
-  ContextButtonInteraction,
-  ContextCommandInteraction,
   ContextInteraction,
+  ContextUser,
+  ContextTextChannel,
   ContextInteractionOptions,
   ContextMessage,
-  ContextTextChannel,
-  ContextUser,
-  EmbedMessage,
   SelectionResult,
+  EmbedMessage,
+  ContextButtonInteraction,
+  ContextCommandInteraction,
   ServerDetails,
+  IAuthServiceProvider,
 } from './@types';
 import { ButtonRegistry } from './button';
 import { DiscordMessageSender, DiscordChannelSender, DiscordTextChannel } from './channel';
 import { DiscordMessage } from './message';
-import { parseMessageCommand, parseSlashCommand } from './slash';
-import { DiscordUser, getPermissionLevel } from './user';
+import { parseSlashCommand, parseMessageCommand } from './slash';
+import { getPermissionLevel, DiscordUser } from './user';
 
 class CommandInteractionSender implements DiscordMessageSender {
 
@@ -77,7 +77,7 @@ class DiscordInteraction<T extends MessageComponentInteraction | CommandInteract
     protected readonly interaction: T,
     protected readonly registry: ButtonRegistry,
     private readonly users: UsersDb,
-    private readonly auth: AuthProviders
+    private readonly auth: IAuthServiceProvider
   ) {}
 
   get sendable(): boolean {
@@ -166,7 +166,7 @@ export class DiscordButtonInteraction
     interaction: ButtonInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: AuthProviders
+    auth: IAuthServiceProvider
   ) {
     super(interaction, registry, users, auth);
   }
@@ -199,7 +199,7 @@ export class DiscordCommandInteraction
     interaction: ChatInputCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: AuthProviders
+    auth: IAuthServiceProvider
   ) {
     super(interaction, registry, users, auth);
   }
@@ -239,7 +239,7 @@ export class DiscordMessageCommandInteraction
     interaction: MessageContextMenuCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: AuthProviders
+    auth: IAuthServiceProvider
   ) {
     super(interaction, registry, users, auth);
   }
@@ -292,7 +292,7 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     private readonly parser: CommandParsingStrategy,
     private readonly registry: ButtonRegistry,
     private readonly users: UsersDb,
-    private readonly auth: AuthProviders
+    private readonly auth: IAuthServiceProvider
   ) {}
 
   get sendable(): boolean {

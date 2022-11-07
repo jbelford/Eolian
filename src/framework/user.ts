@@ -1,23 +1,25 @@
-import { AuthProviders, createAuthCodeRequest } from 'api';
-import { OAuthRequest, TrackSource } from 'api/@types';
-import { UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { Identifier, UserDTO, UsersDb } from 'data/@types';
+import { createAuthCodeRequest } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { UserDTO, UsersDb, Identifier } from '@eolian/data/@types';
+import { OAuthRequest } from '@eolian/http/@types';
 import {
-  ChannelType,
-  GuildMember,
-  PermissionFlagsBits,
-  PermissionsBitField,
   User,
+  GuildMember,
+  ChannelType,
+  PermissionsBitField,
+  PermissionFlagsBits,
 } from 'discord.js';
 import {
+  ContextUser,
+  ServerDetails,
   ContextInteractionOptions,
   ContextMessage,
-  ContextSendable,
-  ContextUser,
-  ContextVoiceChannel,
   EmbedMessage,
-  ServerDetails,
+  ContextVoiceChannel,
+  ContextSendable,
+  IAuthServiceProvider,
 } from './@types';
 import { DiscordAuthorizationProvider } from './auth';
 import { DiscordSender } from './channel';
@@ -33,7 +35,7 @@ export class DiscordUser implements ContextUser {
     private readonly user: User,
     private readonly users: UsersDb,
     permission: UserPermission,
-    private readonly auth: AuthProviders,
+    private readonly auth: IAuthServiceProvider,
     private readonly guildUser?: GuildMember
   ) {
     this._permission = permission;

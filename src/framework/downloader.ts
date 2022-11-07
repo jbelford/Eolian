@@ -1,10 +1,10 @@
-import { ProgressUpdater } from 'common/@types';
+import { ProgressUpdater } from '@eolian/common/@types';
 import { ContextMessage, ContextSendable } from './@types';
 
 const PROGRESS_BAR_SIZE = 15;
 
 function renderProgressBar(name: string, value: number) {
-  const loaded = Math.round(PROGRESS_BAR_SIZE * value / 100);
+  const loaded = Math.round((PROGRESS_BAR_SIZE * value) / 100);
   let bar = '';
 
   for (let i = 0; i < loaded; ++i) {

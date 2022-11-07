@@ -1,9 +1,9 @@
-import { createSoundCloudClient, soundcloud } from 'api';
-import { TrackSource } from 'api/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { feature } from 'data';
-import { FeatureFlag, Identifier, ResourceType } from 'data/@types';
-import { SourceFetcher } from 'resolvers/@types';
+import { createSoundCloudClient, soundcloud } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { feature } from '@eolian/data';
+import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
+import { SourceFetcher } from '../@types';
 import { SoundCloudArtistFetcher } from './artist';
 import { SoundCloudFavoritesFetcher } from './likes';
 import { SoundCloudPlaylistFetcher } from './playlist';

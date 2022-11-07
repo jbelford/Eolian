@@ -1,31 +1,36 @@
-import { AuthProviders } from 'api';
-import { CommandParsingStrategy } from 'commands/@types';
-import { environment } from 'common/env';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { feature, LockManager } from 'data';
-import { AppDatabase, FeatureFlag } from 'data/@types';
+import { CommandParsingStrategy } from '@eolian/commands/@types';
+import { environment } from '@eolian/common/env';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import { LockManager, feature } from '@eolian/data';
+import { AppDatabase, FeatureFlag } from '@eolian/data/@types';
 import {
-  ActivityType,
-  ButtonInteraction,
-  ChannelType,
-  ChatInputCommandInteraction,
-  Client,
-  ClientOptions,
   GatewayIntentBits,
+  ClientOptions,
+  Partials,
+  ActivityType,
   Guild,
   Interaction,
-  Message,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
   MessageContextMenuCommandInteraction,
-  Partials,
+  Message,
+  ChannelType,
+  Client,
 } from 'discord.js';
-import { ContextClient, ContextCommandInteraction, EolianBot, ServerState } from './@types';
+import {
+  EolianBot,
+  ServerState,
+  ContextCommandInteraction,
+  ContextClient,
+  IAuthServiceProvider,
+} from './@types';
 import { ButtonRegistry } from './button';
 import {
-  DiscordClient,
-  DiscordGuildClient,
-  DISCORD_INVITE_PERMISSIONS,
   INVITE_SCOPES,
+  DISCORD_INVITE_PERMISSIONS,
+  DiscordGuildClient,
+  DiscordClient,
 } from './client';
 import {
   DiscordButtonInteraction,
@@ -73,7 +78,7 @@ const USER_COMMAND_LOCK_TIMEOUT = 60;
 export interface DiscordEolianBotArgs {
   db: AppDatabase;
   parser: CommandParsingStrategy;
-  auth: AuthProviders;
+  auth: IAuthServiceProvider;
 }
 
 const DISCORD_CLIENT_OPTIONS: ClientOptions = {
@@ -91,7 +96,7 @@ export class DiscordEolianBot implements EolianBot {
   private invite?: string;
 
   private readonly db: AppDatabase;
-  private readonly auth: AuthProviders;
+  private readonly auth: IAuthServiceProvider;
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
 
   constructor({ parser, db, auth }: DiscordEolianBotArgs) {

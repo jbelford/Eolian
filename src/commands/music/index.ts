@@ -1,13 +1,13 @@
-import { Command } from 'commands/@types';
+import { Command } from '../@types';
 import { NIGHTCORE_COMMAND } from './nightcore';
 import { PLAY_COMMAND } from './play';
 import {
+  STOP_COMMAND,
   BACK_COMMAND,
+  SKIP_COMMAND,
   PAUSE_COMMAND,
   RESUME_COMMAND,
   SHOW_COMMAND,
-  SKIP_COMMAND,
-  STOP_COMMAND,
 } from './playback';
 import { VOLUME_COMMAND } from './volume';
 

@@ -1,17 +1,17 @@
-import { TrackSource } from 'api/@types';
-import { AbsRangeArgument, RangeArgument } from 'common/@types';
-import { UserPermission } from 'common/constants';
-import { convertRangeToAbsolute } from 'common/util';
+import { TrackSource } from '@eolian/api/@types';
+import { RangeArgument, AbsRangeArgument } from '@eolian/common/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { convertRangeToAbsolute } from '@eolian/common/util';
 import {
+  Pattern,
+  PatternValues,
+  KeywordGroup,
+  UrlArgument,
+  SyntaxType,
+  PatternMatchResult,
   ArgumentExample,
   CommandArgs,
   CommandOptions,
-  KeywordGroup,
-  Pattern,
-  PatternMatchResult,
-  PatternValues,
-  SyntaxType,
-  UrlArgument,
 } from './@types';
 
 type Patterns = Partial<Record<string, Pattern>> & {

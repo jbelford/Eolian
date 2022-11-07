@@ -1,23 +1,23 @@
 import {
-  AudioPlayer,
-  AudioPlayerStatus,
   AudioResource,
+  AudioPlayer,
   createAudioPlayer,
-  createAudioResource,
   NoSubscriberBehavior,
-  StreamType,
+  AudioPlayerStatus,
   VoiceConnectionStatus,
+  createAudioResource,
+  StreamType,
 } from '@discordjs/voice';
-import { Track } from 'api/@types';
-import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from 'common/constants';
-import { environment } from 'common/env';
-import { logger } from 'common/logger';
-import { ServerQueue } from 'data/@types';
-import EventEmitter from 'events';
-import { DiscordVoiceConnection } from 'framework';
-import { ContextClient, ContextVoiceChannel } from 'framework/@types';
-import { Player } from 'music/@types';
+import { Track } from '@eolian/api/@types';
+import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
+import { ServerQueue } from '@eolian/data/@types';
+import { DiscordVoiceConnection } from '@eolian/framework';
+import { ContextClient, ContextVoiceChannel } from '@eolian/framework/@types';
+import { EventEmitter } from 'node-cache';
 import { Readable } from 'stream';
+import { Player } from './@types';
 import { SongStream } from './stream';
 
 const PLAYER_TIMEOUT = 1000 * 60 * 3;

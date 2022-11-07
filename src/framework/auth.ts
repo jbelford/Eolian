@@ -1,18 +1,14 @@
-import { SOURCE_DETAILS } from 'api';
+import { SOURCE_DETAILS } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
 import {
-  AuthorizationProvider,
-  AuthService,
-  TokenResponseWithRefresh,
-  TrackSource,
-} from 'api/@types';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import {
+  createAuthEmbed,
   createAuthCompleteEmbed,
   createAuthExpiredEmbed,
   createAuthErrorEmbed,
-  createAuthEmbed,
-} from 'embed';
+} from '@eolian/embed';
+import { AuthorizationProvider, AuthService, TokenResponseWithRefresh } from '@eolian/http/@types';
 import { ContextUser, ContextSendable, EmbedMessage } from './@types';
 
 export class DiscordAuthorizationProvider implements AuthorizationProvider {

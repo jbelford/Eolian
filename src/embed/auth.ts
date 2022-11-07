@@ -1,6 +1,6 @@
-import { SOURCE_DETAILS } from 'api';
-import { TrackSource } from 'api/@types';
-import { EmbedMessage } from 'framework/@types';
+import { SOURCE_DETAILS } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { EmbedMessage } from '@eolian/framework/@types';
 
 export function createAuthEmbed(link: string, type: TrackSource): EmbedMessage {
   const details = SOURCE_DETAILS[type];

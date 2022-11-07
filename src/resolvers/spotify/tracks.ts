@@ -1,9 +1,9 @@
-import { createSpotifyClient, mapSpotifyTrack } from 'api';
-import { TrackSource } from 'api/@types';
-import { SpotifyApi, SpotifyUser } from 'api/spotify/@types';
-import { CommandContext } from 'commands/@types';
-import { ResourceType } from 'data/@types';
-import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from 'resolvers/@types';
+import { createSpotifyClient, mapSpotifyTrack } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SpotifyUser, SpotifyApi } from '@eolian/api/spotify/@types';
+import { CommandContext } from '@eolian/commands/@types';
+import { ResourceType } from '@eolian/data/@types';
+import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyTracksResolver implements SourceResolver {
 

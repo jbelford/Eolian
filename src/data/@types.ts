@@ -1,7 +1,7 @@
-import { Track, TrackSource } from 'api/@types';
-import { SyntaxType } from 'commands/@types';
-import { Closable, Idleable } from 'common/@types';
-import EventEmitter from 'events';
+import { TrackSource, Track } from '@eolian/api/@types';
+import { SyntaxType } from '@eolian/commands/@types';
+import { Closable, Idleable } from '@eolian/common/@types';
+import { EventEmitter } from 'node-cache';
 
 export interface EolianCache<V> extends Closable {
   get(key: string): Promise<V | undefined>;

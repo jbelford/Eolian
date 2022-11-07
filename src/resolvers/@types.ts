@@ -1,6 +1,6 @@
-import { Track } from 'api/@types';
-import { Identifier } from 'data/@types';
-import { ContextMessage } from 'framework/@types';
+import { Track } from '@eolian/api/@types';
+import { Identifier } from '@eolian/data/@types';
+import { ContextMessage } from '@eolian/framework/@types';
 
 export interface ResolvedResource {
   authors: string[];

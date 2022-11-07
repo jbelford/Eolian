@@ -1,7 +1,7 @@
 import { getVoiceConnection } from '@discordjs/voice';
-import { ServerDTO, ServersDb } from 'data/@types';
-import { Client, Guild, OAuth2Scopes, PermissionFlagsBits, PermissionResolvable } from 'discord.js';
-import { ContextClient, ContextVoiceConnection, ServerInfo } from './@types';
+import { ServersDb, ServerDTO } from '@eolian/data/@types';
+import { Guild, OAuth2Scopes, PermissionResolvable, PermissionFlagsBits, Client } from 'discord.js';
+import { ServerInfo, ContextClient, ContextVoiceConnection } from './@types';
 import { registerGlobalSlashCommands } from './slash';
 import { DiscordGuildStore } from './state';
 import { DiscordVoiceConnection } from './voice';

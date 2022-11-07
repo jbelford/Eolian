@@ -1,4 +1,4 @@
-import { Track, TrackSource } from 'api/@types';
+import { Track, TrackSource } from '../@types';
 import { SoundCloudTrack } from './@types';
 
 export * from './request';

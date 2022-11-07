@@ -1,14 +1,13 @@
-import { soundcloud } from 'api';
-import { TrackSource } from 'api/@types';
-import { mapSoundCloudTrack } from 'api/soundcloud';
-import { SoundCloudApi, SoundCloudUser } from 'api/soundcloud/@types';
-import { CommandOptions } from 'commands/@types';
-import { getRangeOption } from 'commands/patterns';
-import { ProgressUpdater } from 'common/@types';
-import { ResourceType } from 'data/@types';
-import { DownloaderDisplay } from 'framework';
-import { ContextMessage, ContextSendable } from 'framework/@types';
-import { FetchResult, ResolvedResource, SourceFetcher } from 'resolvers/@types';
+import { mapSoundCloudTrack, soundcloud } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SoundCloudApi, SoundCloudUser } from '@eolian/api/soundcloud/@types';
+import { CommandOptions } from '@eolian/commands/@types';
+import { getRangeOption } from '@eolian/commands/patterns';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { ResourceType } from '@eolian/data/@types';
+import { DownloaderDisplay } from '@eolian/framework';
+import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
+import { ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 import { SoundCloudArtistResolver, UserResult } from './artist';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {

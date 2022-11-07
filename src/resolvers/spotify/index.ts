@@ -1,10 +1,10 @@
-import { createSpotifyClient, spotify } from 'api';
-import { TrackSource } from 'api/@types';
-import { SpotifyApi } from 'api/spotify/@types';
-import { CommandContext, CommandOptions } from 'commands/@types';
-import { feature } from 'data';
-import { Identifier, ResourceType, FeatureFlag } from 'data/@types';
-import { SourceFetcher } from 'resolvers/@types';
+import { createSpotifyClient, spotify } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SpotifyApi } from '@eolian/api/spotify/@types';
+import { CommandContext, CommandOptions } from '@eolian/commands/@types';
+import { feature } from '@eolian/data';
+import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
+import { SourceFetcher } from '../@types';
 import { SpotifyAlbumFetcher } from './album';
 import { SpotifyArtistFetcher } from './artist';
 import { SpotifyLikesFetcher } from './likes';

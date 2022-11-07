@@ -1,63 +1,19 @@
-import { Color } from 'common/constants';
-import { environment } from 'common/env';
-import { InMemoryCache } from 'data';
-import {
-  AuthorizationProvider,
-  OAuthRequest,
-  StreamSource,
-  Track,
-  TrackSource,
-  TrackSourceDetails,
-} from './@types';
-import { AuthCacheItem, AuthorizationCodeProvider, AuthProviders } from './auth';
-import { BingApiImpl } from './bing';
-import { BingApi } from './bing/@types';
+import { Color } from '@eolian/common/constants';
+import { AuthorizationCodeProvider } from '@eolian/http';
+import { OAuthRequest, AuthorizationProvider } from '@eolian/http/@types';
+import { TrackSource, Track, StreamSource, TrackSourceDetails } from './@types';
 import {
   createSoundCloudAuthorizationCodeProvider,
-  createSoundCloudAuthService,
   createSoundCloudRequest,
-  SoundCloudApiImpl,
+  soundcloud,
 } from './soundcloud';
-import { SoundCloudApi } from './soundcloud/@types';
-import {
-  createSpotifyAuthorizationCodeProvider,
-  createSpotifyAuthService,
-  createSpotifyRequest,
-  SpotifyApiImpl,
-} from './spotify';
-import { SpotifyApi } from './spotify/@types';
-import { YouTubeApiImpl } from './youtube';
-import { YouTubeApi } from './youtube/@types';
+import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest, spotify } from './spotify';
+import { youtube } from './youtube';
 
-let bing: BingApi | undefined;
-if (environment.tokens.bing) {
-  bing = new BingApiImpl(environment.tokens.bing.key, environment.tokens.bing.configId);
-}
-export const youtube: YouTubeApi = new YouTubeApiImpl(
-  environment.tokens.youtube.token,
-  environment.config.youtubeCacheLimit,
-  bing
-);
-export const soundcloud: SoundCloudApi = new SoundCloudApiImpl(youtube);
-export const spotify: SpotifyApi = new SpotifyApiImpl(youtube);
-
-export * from './auth';
-export { mapSpotifyTrack } from './spotify';
-
-export function createAuthProviders(): AuthProviders {
-  const cache = new InMemoryCache<AuthCacheItem>(60, false);
-  const spotifyAuthService = createSpotifyAuthService(cache);
-  const soundcloudAuthService = createSoundCloudAuthService(cache);
-  return new AuthProviders(cache, spotifyAuthService, soundcloudAuthService);
-}
-
-export function createSpotifyClient(request: OAuthRequest): SpotifyApi {
-  return new SpotifyApiImpl(youtube, request);
-}
-
-export function createSoundCloudClient(request: OAuthRequest): SoundCloudApi {
-  return new SoundCloudApiImpl(youtube, request);
-}
+export * from './bing';
+export * from './soundcloud';
+export * from './spotify';
+export * from './youtube';
 
 export function createAuthCodeRequest(
   provider: AuthorizationProvider,

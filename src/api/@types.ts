@@ -1,6 +1,5 @@
-import { AbsRangeArgument } from 'common/@types';
-import { Color } from 'common/constants';
-import { RequestParams } from 'common/request';
+import { AbsRangeArgument } from '@eolian/common/@types';
+import { Color } from '@eolian/common/constants';
 import { Readable } from 'stream';
 
 export interface StreamFetcher {
@@ -36,54 +35,4 @@ export interface Track {
 
 export interface StreamSource {
   get(seek?: number): Promise<Readable>;
-}
-
-export type TokenResponse = {
-  access_token: string;
-  scope: string;
-  expires_in: number;
-  refresh_token?: string;
-};
-
-export type TokenResponseWithRefresh = Required<TokenResponse>;
-
-export interface TokenProvider {
-  name: string;
-  getToken(): Promise<TokenResponse>;
-}
-
-export type AuthResult = {
-  /**
-   * The link which the user should be directed to in order to provide authorization
-   */
-  link: string;
-  /**
-   * An awaitable callback which will return a token once the user has authorized
-   */
-  response: Promise<TokenResponseWithRefresh>;
-};
-
-export type AuthCallbackData = {
-  err?: string;
-  code?: string;
-  state: string;
-};
-
-export interface AuthService {
-  authorize(): AuthResult;
-  callback(data: AuthCallbackData): Promise<boolean>;
-}
-
-/**
- * Needs to be implemented by user
- */
-export interface AuthorizationProvider {
-  authorize(): Promise<TokenResponseWithRefresh>;
-}
-
-export interface OAuthRequest<T extends TokenProvider = TokenProvider> {
-  readonly tokenProvider: T;
-  get<T>(path: string, params?: RequestParams): Promise<T>;
-  getUri<T>(uri: string): Promise<T>;
-  getStream(uri: string): Promise<Readable>;
 }

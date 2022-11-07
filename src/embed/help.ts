@@ -1,8 +1,8 @@
-import { COMMANDS } from 'commands';
-import { Command, CommandCategory, Keyword, Pattern, SyntaxType } from 'commands/@types';
-import { Color, GITHUB_PAGE_WIKI, UserPermission } from 'common/constants';
-import { environment } from 'common/env';
-import { EmbedMessage } from 'framework/@types';
+import { COMMANDS } from '@eolian/commands';
+import { CommandCategory, Command, SyntaxType, Keyword, Pattern } from '@eolian/commands/@types';
+import { GITHUB_PAGE_WIKI, Color, UserPermission } from '@eolian/common/constants';
+import { environment } from '@eolian/common/env';
+import { EmbedMessage } from '@eolian/framework/@types';
 
 const helpFooter = `_Want to know more? [See the Wiki](${GITHUB_PAGE_WIKI})_`;
 

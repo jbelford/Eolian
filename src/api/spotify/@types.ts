@@ -1,5 +1,5 @@
-import { RangeFactory, StreamFetcher } from 'api/@types';
-import { ProgressUpdater } from 'common/@types';
+import { ProgressUpdater } from '@eolian/common/@types';
+import { StreamFetcher, RangeFactory } from '../@types';
 
 export interface SpotifyUser {
   id: string;

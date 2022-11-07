@@ -1,4 +1,4 @@
-import { Command } from 'commands/@types';
+import { Command } from '../@types';
 import { HELP_COMMAND } from './help';
 import { INVITE_COMMAND } from './invite';
 import { POLL_COMMAND } from './poll';

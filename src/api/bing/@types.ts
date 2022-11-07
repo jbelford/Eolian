@@ -1,4 +1,4 @@
-import { Track } from 'api/@types';
+import { Track } from '../@types';
 
 export interface BingApi {
   searchVideos(query: string, publisher?: string, limit?: number): Promise<BingVideo[]>;

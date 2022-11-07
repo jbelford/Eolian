@@ -1,30 +1,12 @@
 import { IncomingHttpHeaders } from 'http';
 import { request } from 'undici';
+import { HttpRequestOptions, HttpRequestParams } from './@types';
 
 export const enum RequestErrorCodes {
   ABORTED = 'UND_ERR_ABORTED',
 }
 
-export type RequestStreamError = Error & { code?: string };
-
-export type RequestParams = Record<string, string | number | boolean>;
-
-export type RequestOptions = {
-  method?: 'GET' | 'POST';
-  params?: RequestParams;
-  form?: RequestParams;
-  headers?: Record<string, string>;
-  auth?: {
-    bearer?: string;
-    basic?: {
-      id: string;
-      password: string;
-    };
-  };
-  json?: boolean;
-};
-
-export function querystringify(params: RequestParams): string {
+export function querystringify(params: HttpRequestParams): string {
   const urlSearch = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => urlSearch.set(key, value.toString()));
   return urlSearch.toString();
@@ -38,7 +20,7 @@ export class HttpRequestError extends Error {
 
 }
 
-export async function httpRequest<T>(url: string, options?: RequestOptions): Promise<T> {
+export async function httpRequest<T>(url: string, options?: HttpRequestOptions): Promise<T> {
   if (options?.params) {
     url = `${url}?${querystringify(options.params)}`;
   }

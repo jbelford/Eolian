@@ -1,5 +1,5 @@
-import { CommandContext, OwnerCommand } from 'commands/@types';
-import { EolianUserError } from 'common/errors';
+import { EolianUserError } from '@eolian/common/errors';
+import { OwnerCommand, CommandContext } from '../@types';
 
 export const KICK_COMMAND: OwnerCommand = {
   name: 'kick',

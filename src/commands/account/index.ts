@@ -1,4 +1,4 @@
-import { Command } from 'commands/@types';
+import { Command } from '../@types';
 import { ACCOUNT_COMMAND } from './account';
 import { IDENTIFY_COMMAND } from './identify';
 import { LINK_COMMAND } from './link';

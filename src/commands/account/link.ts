@@ -1,17 +1,17 @@
-import { createSoundCloudClient, createSpotifyClient, soundcloud, spotify } from 'api';
-import { TrackSource } from 'api/@types';
-import { SoundCloudUser } from 'api/soundcloud/@types';
-import { SpotifyResourceType, SpotifyUser } from 'api/spotify/@types';
-import { Command, CommandContext, CommandOptions, UrlArgument } from 'commands/@types';
-import { ACCOUNT_CATEGORY } from 'commands/category';
-import { KEYWORDS } from 'commands/keywords';
-import { PATTERNS } from 'commands/patterns';
-import { UserPermission } from 'common/constants';
-import { EolianUserError } from 'common/errors';
-import { logger } from 'common/logger';
-import { feature } from 'data';
-import { FeatureFlag } from 'data/@types';
-import { SelectionOption } from 'embed/@types';
+import { createSpotifyClient, createSoundCloudClient, soundcloud, spotify } from '@eolian/api';
+import { TrackSource } from '@eolian/api/@types';
+import { SoundCloudUser } from '@eolian/api/soundcloud/@types';
+import { SpotifyResourceType, SpotifyUser } from '@eolian/api/spotify/@types';
+import { UserPermission } from '@eolian/common/constants';
+import { EolianUserError } from '@eolian/common/errors';
+import { logger } from '@eolian/common/logger';
+import { feature } from '@eolian/data';
+import { FeatureFlag } from '@eolian/data/@types';
+import { SelectionOption } from '@eolian/embed/@types';
+import { CommandContext, CommandOptions, UrlArgument, Command } from '../@types';
+import { ACCOUNT_CATEGORY } from '../category';
+import { KEYWORDS } from '../keywords';
+import { PATTERNS } from '../patterns';
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.SEARCH && options.URL) {

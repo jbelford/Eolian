@@ -21,7 +21,7 @@
     "outDir": "./dist",
     "baseUrl": "src",
     "paths": {
-      "*": ["*"]
+      "@eolian/*": ["*"]
     }
   },
   "include": ["src/**/*.ts"],

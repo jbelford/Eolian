@@ -1,7 +1,7 @@
-import { SOURCE_DETAILS } from 'api';
-import { Track } from 'api/@types';
-import { Color } from 'common/constants';
-import { EmbedMessage } from 'framework/@types';
+import { SOURCE_DETAILS } from '@eolian/api';
+import { Track } from '@eolian/api/@types';
+import { Color } from '@eolian/common/constants';
+import { EmbedMessage } from '@eolian/framework/@types';
 
 function trackNameFormat(track: Track) {
   return `[${track.title.replace(/\*/g, '\\*')}](${track.url})`;

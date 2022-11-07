@@ -11,8 +11,9 @@ fs.readdirSync(dir)
   .filter(filename => fs.statSync(path.join(dir, filename)).isDirectory())
   .forEach(filename => {
     const absPath = path.join(dir, filename);
-    console.log(`\t${filename} -> ${absPath}`);
-    alias[filename] = absPath;
+    const aliasPath = path.join('@eolian', filename);
+    console.log(`\t${aliasPath} -> ${absPath}`);
+    alias[aliasPath] = absPath;
   });
 
 module.exports = {
