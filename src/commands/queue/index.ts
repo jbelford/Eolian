@@ -1,9 +1,9 @@
 import { Command } from '../@types';
-import { ADD_COMMAND } from './add';
-import { LIST_COMMAND } from './list';
-import { LOOP_COMMAND } from './loop';
-import { MOVE_COMMAND } from './move';
-import { REMOVE_COMMAND } from './remove';
+import { ADD_COMMAND } from './add-command';
+import { LIST_COMMAND } from './list-command';
+import { LOOP_COMMAND } from './loop-command';
+import { MOVE_COMMAND } from './move-command';
+import { REMOVE_COMMAND } from './remove-command';
 
 export const QUEUE_COMMANDS: Command[] = [
   ADD_COMMAND,
@@ -13,4 +13,4 @@ export const QUEUE_COMMANDS: Command[] = [
   LOOP_COMMAND,
 ];
 
-export { ADD_MESSAGE_COMMAND } from './add';
+export { ADD_MESSAGE_COMMAND } from './add-command';

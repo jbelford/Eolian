@@ -42,3 +42,5 @@ _  /___  / /_/ /  / _  / / /_/ /_  / / /     _  /_/ // /_/ / /_
 Copyright 2018-${new Date().getFullYear()} Jack Belford
 
 `;
+
+export const NOT_PLAYING = "I'm not playing anything right now!";

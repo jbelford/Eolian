@@ -9,7 +9,7 @@ import { CommandContext, CommandOptions, Command, MessageCommand } from '../@typ
 import { MUSIC_CATEGORY } from '../category';
 import { KEYWORDS } from '../keywords';
 import { PATTERNS } from '../patterns';
-import { createSelectedMessage } from '../queue/add';
+import { createSelectedMessage } from '../queue/add-command';
 
 async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();
