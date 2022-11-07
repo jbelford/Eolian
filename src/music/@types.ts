@@ -1,12 +1,11 @@
 import { Idleable, Closable } from '@eolian/common/@types';
-import { ServerQueue } from '@eolian/data/@types';
-import { ContextVoiceChannel } from '@eolian/framework/@types';
+import { ContextVoiceChannel, ContextMusicQueue } from '@eolian/framework/@types';
 import { EventEmitter } from 'node-cache';
 
 export interface Player extends EventEmitter, Idleable, Closable {
   readonly isStreaming: boolean;
   readonly paused: boolean;
-  readonly queue: ServerQueue;
+  readonly queue: ContextMusicQueue;
 
   readonly volume: number;
   readonly nightcore: boolean;

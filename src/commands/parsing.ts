@@ -14,6 +14,7 @@ import {
   ParsedCommand,
   MessageCommand,
   BaseCommand,
+  KeywordGroup,
 } from './@types';
 import { KEYWORDS, KEYWORDS_MAPPED } from './keywords';
 import { PATTERNS_SORTED, PATTERNS } from './patterns';
@@ -129,6 +130,31 @@ export function patternMatch<T extends keyof PatternValues>(
     );
   }
   return text;
+}
+
+export function matchPatterns(
+  text: string,
+  permission: UserPermission,
+  patternSet: Set<string>,
+  options: CommandOptions,
+  group?: KeywordGroup
+) {
+  for (const pattern of PATTERNS_SORTED) {
+    if (!group || pattern.group === group) {
+      if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {
+        text = patternMatch(text, permission, pattern, options, SyntaxType.SLASH);
+      }
+    }
+  }
+  if (
+    patternSet.has(PATTERNS.SEARCH.name)
+    && text.length
+    && PATTERNS.SEARCH.permission <= permission
+  ) {
+    if (!group || PATTERNS.SEARCH.group === group) {
+      options.SEARCH = text;
+    }
+  }
 }
 
 function getCommandOptionParsingStrategy(

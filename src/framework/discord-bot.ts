@@ -20,26 +20,21 @@ import {
 } from 'discord.js';
 import {
   EolianBot,
-  ServerState,
   ContextCommandInteraction,
   ContextClient,
   IAuthServiceProvider,
 } from './@types';
-import { ButtonRegistry } from './button';
+import { ButtonRegistry } from './button-registry';
 import {
   INVITE_SCOPES,
   DISCORD_INVITE_PERMISSIONS,
   DiscordGuildClient,
   DiscordClient,
-} from './client';
-import {
-  DiscordButtonInteraction,
-  DiscordCommandInteraction,
-  DiscordMessageCommandInteraction,
-  DiscordMessageInteraction,
-} from './interaction';
-import { registerGuildSlashCommands } from './slash';
-import { DiscordGuildStore } from './state';
+} from './discord-client';
+import { DiscordButtonInteraction, DiscordCommandInteraction, DiscordMessageCommandInteraction, DiscordMessageInteraction } from './interaction';
+import { registerGuildSlashCommands } from './discord-slash-commands';
+import { DiscordGuildStore } from './state/discord-guild-store';
+import { ServerState } from './state/@types';
 
 const enum DiscordEvents {
   READY = 'ready',

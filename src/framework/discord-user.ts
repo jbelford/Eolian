@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import {
   ContextUser,
-  ServerDetails,
+  ContextServer,
   ContextInteractionOptions,
   ContextMessage,
   EmbedMessage,
@@ -21,9 +21,9 @@ import {
   ContextSendable,
   IAuthServiceProvider,
 } from './@types';
-import { DiscordAuthorizationProvider } from './auth';
-import { DiscordSender } from './channel';
-import { DiscordVoiceChannel } from './voice';
+import { DiscordAuthorizationProvider } from './discord-authorization-provider';
+import { DiscordSender } from './discord-channel';
+import { DiscordVoiceChannel } from './discord-voice';
 
 export class DiscordUser implements ContextUser {
 
@@ -64,7 +64,7 @@ export class DiscordUser implements ContextUser {
     return this._sender;
   }
 
-  async updatePermissions(details?: ServerDetails): Promise<void> {
+  async updatePermissions(details?: ContextServer): Promise<void> {
     if (this.permission === UserPermission.User) {
       if (details) {
         const config = await details.get();

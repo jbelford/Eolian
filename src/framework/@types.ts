@@ -1,12 +1,12 @@
 import { TrackSource, Track } from '@eolian/api/@types';
 import { ParsedCommand, SyntaxType } from '@eolian/commands/@types';
-import { Closable } from '@eolian/common/@types';
+import { Closable, Idleable } from '@eolian/common/@types';
 import { UserPermission } from '@eolian/common/constants';
-import { ServerDTO, UserDTO, Identifier, ServerQueue } from '@eolian/data/@types';
+import { ServerDTO, UserDTO, Identifier } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { AuthorizationCodeProvider } from '@eolian/http';
 import { IAuthService, IOAuthRequest } from '@eolian/http/@types';
-import { Player } from '@eolian/music/@types';
+import { EventEmitter } from 'node-cache';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -43,15 +43,15 @@ export interface ContextClient {
   readonly pic?: string;
   getVoice(): ContextVoiceConnection | undefined;
   generateInvite(): string;
-  getServers(): ServerInfo[];
+  getServers(): ContextServerInfo[];
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
-  getUnusedServers(): Promise<ServerInfo[]>;
+  getUnusedServers(): Promise<ContextServerInfo[]>;
   updateCommands(): Promise<boolean>;
   getRecentlyUsedCount(): number;
   leave(id: string): Promise<boolean>;
 }
 
-export interface ServerInfo {
+export interface ContextServerInfo {
   readonly name: string;
   readonly id: string;
   readonly members: number;
@@ -87,7 +87,7 @@ export interface ContextCommandInteraction extends ContextInteraction {
   readonly reactable: boolean;
   readonly isSlash?: boolean;
   react(emoji: string): Promise<void>;
-  getCommand(config?: ServerDetails): Promise<ParsedCommand>;
+  getCommand(config?: ContextServer): Promise<ParsedCommand>;
   toString(): string;
 }
 
@@ -114,7 +114,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   readonly name: string;
   readonly avatar?: string;
   readonly permission: UserPermission;
-  updatePermissions(details?: ServerDetails): Promise<void>;
+  updatePermissions(details?: ContextServer): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
   getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthRequest>;
@@ -187,28 +187,7 @@ export interface QueueDisplay extends Display {
   delete(): Promise<void>;
 }
 
-export interface ServerStateStore extends Closable {
-  active: number;
-  get(id: string): Promise<ServerState | undefined>;
-  set(id: string, context: ServerState): Promise<void>;
-}
-
-export interface ServerStateDisplay {
-  queue: QueueDisplay;
-  player: PlayerDisplay;
-}
-
-export interface ServerState extends Closable {
-  details: ServerDetails;
-  player: Player;
-  queue: ServerQueue;
-  display: ServerStateDisplay;
-  isIdle(): boolean;
-  closeIdle(): Promise<void>;
-  addDisposable(disposable: Closable): void;
-}
-
-export interface ServerDetails extends ServerInfo {
+export interface ContextServer extends ContextServerInfo {
   get(): Promise<ServerDTO>;
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;
@@ -217,6 +196,22 @@ export interface ServerDetails extends ServerInfo {
   removeDjRole(id: string): Promise<boolean>;
   setDjLimited(allow: boolean): Promise<void>;
   updateUsage(): Promise<void>;
+}
+
+export interface ContextMusicQueue extends EventEmitter, Idleable {
+  loop: boolean;
+  setLoopMode(enabled: boolean): Promise<void>;
+  size(loop?: boolean): Promise<number>;
+  unpop(count: number): Promise<boolean>;
+  get(index: number, count: number): Promise<[Track[], Track[]]>;
+  remove(index: number, count: number): Promise<number>;
+  move(to: number, from: number, count: number): Promise<void>;
+  add(tracks: Track[], head?: boolean): Promise<void>;
+  shuffle(): Promise<boolean>;
+  clear(): Promise<boolean>;
+  pop(): Promise<Track | undefined>;
+  peek(): Promise<Track | undefined>;
+  peekReverse(idx?: number): Promise<Track | undefined>;
 }
 
 export type UserRequest = IOAuthRequest<AuthorizationCodeProvider>;

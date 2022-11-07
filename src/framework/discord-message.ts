@@ -13,7 +13,7 @@ import {
   ActionRowBuilder,
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
-import { ButtonRegistry } from './button';
+import { ButtonRegistry } from './button-registry';
 
 export type MessageActionRow =
   | APIActionRowComponent<APIMessageActionRowComponent>

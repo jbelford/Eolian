@@ -23,14 +23,14 @@ import {
   MessageButtonOnClickHandler,
   ContextTextChannel,
 } from './@types';
-import { ButtonRegistry } from './button';
+import { ButtonRegistry } from './button-registry';
 import {
   DiscordMessage,
   mapDiscordEmbed,
   DiscordButtonMapping,
   mapDiscordEmbedButtons,
   DiscordMessageButtons,
-} from './message';
+} from './discord-message';
 
 export const STOP_EMOJI = '🚫';
 

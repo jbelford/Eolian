@@ -1,12 +1,12 @@
 import { getVoiceConnection } from '@discordjs/voice';
 import { ServersDb, ServerDTO } from '@eolian/data/@types';
 import { Guild, OAuth2Scopes, PermissionResolvable, PermissionFlagsBits, Client } from 'discord.js';
-import { ServerInfo, ContextClient, ContextVoiceConnection } from './@types';
-import { registerGlobalSlashCommands } from './slash';
-import { DiscordGuildStore } from './state';
-import { DiscordVoiceConnection } from './voice';
+import { ContextServerInfo, ContextClient, ContextVoiceConnection } from './@types';
+import { registerGlobalSlashCommands } from './discord-slash-commands';
+import { DiscordGuildStore } from './state/discord-guild-store';
+import { DiscordVoiceConnection } from './discord-voice';
 
-function mapGuildToServerInfo(guild: Guild): ServerInfo {
+function mapGuildToServerInfo(guild: Guild): ContextServerInfo {
   const botCount = guild.members.cache.filter(m => m.user.bot).size;
   return {
     id: guild.id,
@@ -62,7 +62,7 @@ export class DiscordClient implements ContextClient {
     });
   }
 
-  getServers(): ServerInfo[] {
+  getServers(): ContextServerInfo[] {
     return this.client.guilds.cache.map(mapGuildToServerInfo);
   }
 
@@ -70,7 +70,7 @@ export class DiscordClient implements ContextClient {
     return this.servers.getIdleServers(minDate);
   }
 
-  async getUnusedServers(): Promise<ServerInfo[]> {
+  async getUnusedServers(): Promise<ContextServerInfo[]> {
     const guilds = this.client.guilds.cache.map(g => g);
     const servers = await Promise.all(guilds.map(server => this.servers.get(server.id)));
     return servers

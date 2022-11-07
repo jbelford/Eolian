@@ -1,11 +1,6 @@
 import {
   COMMANDS,
   MESSAGE_COMMANDS,
-  getCommand,
-  simpleOptionsStrategy,
-  checkSetKeyword,
-  patternMatch,
-  getMessageCommand,
 } from '@eolian/commands';
 import {
   Command,
@@ -14,15 +9,11 @@ import {
   Keyword,
   Pattern,
   MessageCommand,
-  ParsedCommand,
-  CommandOptions,
-  SyntaxType,
 } from '@eolian/commands/@types';
-import { KEYWORD_GROUPS, KEYWORDS } from '@eolian/commands/keywords';
-import { PATTERNS, PATTERNS_SORTED } from '@eolian/commands/patterns';
+import { KEYWORD_GROUPS } from '@eolian/commands/keywords';
+import { PATTERNS } from '@eolian/commands/patterns';
 import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
-import { EolianUserError } from '@eolian/common/errors';
 import { logger } from '@eolian/common/logger';
 import {
   Routes,
@@ -32,7 +23,6 @@ import {
   SlashCommandStringOption,
   ContextMenuCommandBuilder,
   ApplicationCommandType,
-  ChatInputCommandInteraction,
 } from 'discord.js';
 
 export async function registerGlobalSlashCommands(): Promise<boolean> {
@@ -214,156 +204,5 @@ function createContextMenuCommand(command: MessageCommand): RESTPostAPIApplicati
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;
-  }
-}
-
-export function parseSlashCommand(
-  interaction: ChatInputCommandInteraction,
-  permission: UserPermission
-): ParsedCommand {
-  const command = getCommand(interaction.commandName, permission);
-
-  let options: CommandOptions = {};
-  if (command.keywords || command.patterns) {
-    const groupSet = new Set<string>();
-    const patternSet = new Set<string>(command.patterns?.map(p => p.name));
-
-    command.keywords?.forEach(keyword =>
-      parseSlashKeyword(keyword, permission, interaction, options, groupSet)
-    );
-    command.patterns?.forEach(pattern =>
-      parseSlashPattern(
-        pattern,
-        permission,
-        interaction,
-        options,
-        patternSet,
-        groupSet,
-        command.args
-      )
-    );
-  } else if (command.args) {
-    options.ARG = parseCommandArgs(command.args, interaction);
-  } else {
-    options = simpleOptionsStrategy(interaction.options.getString('args', false) ?? '');
-  }
-
-  return { command, options };
-}
-
-function parseCommandArgs(
-  commandArgs: CommandArgs,
-  interaction: ChatInputCommandInteraction
-): string[] {
-  const args = [];
-  for (const group of commandArgs.groups) {
-    let selectedName: string | undefined;
-    let selected: string | undefined;
-    for (const option of group.options) {
-      const value = interaction.options.getString(option.name) ?? undefined;
-      if (value) {
-        if (selected) {
-          throw new EolianUserError(`You can not specify both ${selectedName} & ${option.name}`);
-        }
-        selectedName = option.name;
-        selected = value;
-      }
-    }
-    if (selected) {
-      args.push(selected);
-    } else if (group.required) {
-      throw new EolianUserError(
-        `You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`
-      );
-    }
-  }
-  return args;
-}
-
-function parseSlashKeyword(
-  keyword: Keyword,
-  permission: UserPermission,
-  interaction: ChatInputCommandInteraction,
-  options: CommandOptions,
-  groupSet: Set<string>
-) {
-  let found: Keyword | undefined;
-  if (keyword.group) {
-    if (!groupSet.has(keyword.group)) {
-      const value = interaction.options.getString(keyword.group) ?? '';
-      found = KEYWORDS[value.toUpperCase()];
-      groupSet.add(keyword.group);
-    }
-  } else if (interaction.options.getBoolean(keyword.name.toLowerCase())) {
-    found = keyword;
-  }
-  if (found) {
-    checkSetKeyword(found, permission, options);
-  }
-}
-
-function parseSlashPattern(
-  pattern: Pattern,
-  permission: UserPermission,
-  interaction: ChatInputCommandInteraction,
-  options: CommandOptions,
-  patternSet: Set<string>,
-  groupSet: Set<string>,
-  args?: CommandArgs
-) {
-  if (args && pattern.name === PATTERNS.ARG.name) {
-    options.ARG = parseCommandArgs(args, interaction);
-  } else if (pattern.group) {
-    if (!groupSet.has(pattern.group)) {
-      const text = interaction.options.getString(pattern.group);
-      if (text) {
-        matchPatterns(text, permission, patternSet, options, pattern.group);
-      }
-      groupSet.add(pattern.group);
-    }
-  } else {
-    const text = interaction.options.getString(pattern.name.toLowerCase());
-    if (text) {
-      patternMatch(text, permission, pattern, options, SyntaxType.SLASH, true);
-    }
-  }
-}
-
-export function parseMessageCommand(
-  name: string,
-  text: string,
-  permission: UserPermission
-): ParsedCommand {
-  const command = getMessageCommand(name, permission);
-
-  const options: CommandOptions = {};
-  const patternSet = new Set<string>(command.patterns?.map(p => p.name));
-  matchPatterns(text, permission, patternSet, options);
-
-  return { command, options };
-}
-
-function matchPatterns(
-  text: string,
-  permission: UserPermission,
-  patternSet: Set<string>,
-  options: CommandOptions,
-  group?: KeywordGroup
-) {
-  for (const pattern of PATTERNS_SORTED) {
-    if (!group || pattern.group === group) {
-      if (patternSet.has(pattern.name) && pattern.name !== PATTERNS.SEARCH.name) {
-        text = patternMatch(text, permission, pattern, options, SyntaxType.SLASH);
-      }
-    }
-  }
-  if (
-    patternSet.has(PATTERNS.SEARCH.name)
-    && text.length
-    && PATTERNS.SEARCH.permission <= permission
-  ) {
-    if (!group || PATTERNS.SEARCH.group === group) {
-      options.SEARCH = text;
-    }
   }
 }

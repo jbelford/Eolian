@@ -4,7 +4,7 @@ import { SyntaxType } from '@eolian/commands/@types';
 import { Color, DEFAULT_VOLUME } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { Identifier, ServerDTO } from '@eolian/data/@types';
-import { EmbedMessage, ContextUser, ServerInfo } from '@eolian/framework/@types';
+import { EmbedMessage, ContextUser, ContextServerInfo } from '@eolian/framework/@types';
 import { SelectionOption } from './@types';
 
 export function createInviteEmbed(link: string, username: string, pic?: string): EmbedMessage {
@@ -86,7 +86,7 @@ export function createUserDetailsEmbed(
   };
 }
 
-export function createServerDetailsEmbed(guild: ServerInfo, dto: ServerDTO): EmbedMessage {
+export function createServerDetailsEmbed(guild: ContextServerInfo, dto: ServerDTO): EmbedMessage {
   const volume = dto.volume ?? DEFAULT_VOLUME;
   const roles
     = dto.djRoleIds && dto.djRoleIds.length > 0

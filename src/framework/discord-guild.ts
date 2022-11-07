@@ -4,11 +4,11 @@ import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
 import { ServerDTO, ServersDb } from '@eolian/data/@types';
 import { Guild } from 'discord.js';
-import { ServerDetails } from './@types';
+import { ContextServer } from './@types';
 
 const RECORD_USAGE_INTERVAL = 1000 * 60 * 60 * 24;
 
-export class DiscordGuild implements ServerDetails {
+export class DiscordGuild implements ContextServer {
 
   private configCache: ServerDTO | null = null;
 

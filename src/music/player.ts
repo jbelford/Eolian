@@ -12,9 +12,8 @@ import { Track } from '@eolian/api/@types';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
-import { ServerQueue } from '@eolian/data/@types';
 import { DiscordVoiceConnection } from '@eolian/framework';
-import { ContextClient, ContextVoiceChannel } from '@eolian/framework/@types';
+import { ContextClient, ContextVoiceChannel, ContextMusicQueue } from '@eolian/framework/@types';
 import { EventEmitter } from 'node-cache';
 import { Readable } from 'stream';
 import { Player } from './@types';
@@ -49,7 +48,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   constructor(
     private readonly client: ContextClient,
-    readonly queue: ServerQueue,
+    readonly queue: ContextMusicQueue,
     private _volume = DEFAULT_VOLUME
   ) {
     super();

@@ -1,7 +1,6 @@
 import { TrackSource, Track } from '@eolian/api/@types';
 import { SyntaxType } from '@eolian/commands/@types';
-import { Closable, Idleable } from '@eolian/common/@types';
-import { EventEmitter } from 'node-cache';
+import { Closable } from '@eolian/common/@types';
 
 export interface EolianCache<V> extends Closable {
   get(key: string): Promise<V | undefined>;
@@ -123,22 +122,6 @@ export interface MusicQueueCache {
   clearPrev(guildId: string): Promise<void>;
   peek(guildId: string, loop?: boolean): Promise<Track | undefined>;
   peekReverse(guildId: string, idx: number): Promise<Track | undefined>;
-}
-
-export interface ServerQueue extends EventEmitter, Idleable {
-  loop: boolean;
-  setLoopMode(enabled: boolean): Promise<void>;
-  size(loop?: boolean): Promise<number>;
-  unpop(count: number): Promise<boolean>;
-  get(index: number, count: number): Promise<[Track[], Track[]]>;
-  remove(index: number, count: number): Promise<number>;
-  move(to: number, from: number, count: number): Promise<void>;
-  add(tracks: Track[], head?: boolean): Promise<void>;
-  shuffle(): Promise<boolean>;
-  clear(): Promise<boolean>;
-  pop(): Promise<Track | undefined>;
-  peek(): Promise<Track | undefined>;
-  peekReverse(idx?: number): Promise<Track | undefined>;
 }
 
 export const enum FeatureFlag {
