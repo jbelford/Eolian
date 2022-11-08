@@ -83,3 +83,9 @@ export interface CommandContext {
   interaction: ContextCommandInteraction;
   server?: ServerState;
 }
+
+export interface ICommandStore<T extends BaseCommand> {
+  readonly list: T[];
+  get(name: string): T | undefined;
+  safeGet(name: string, permission: UserPermission): T;
+}

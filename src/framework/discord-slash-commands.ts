@@ -42,9 +42,9 @@ async function registerSlashCommands(route: `/${string}`): Promise<boolean> {
     const rest = new REST({ version: '10' }).setToken(environment.tokens.discord.main);
 
     await rest.put(route, {
-      body: COMMANDS.filter(command => command.permission < UserPermission.Owner)
+      body: COMMANDS.list.filter(command => command.permission < UserPermission.Owner)
         .map(createSlashCommand)
-        .concat(MESSAGE_COMMANDS.map(createContextMenuCommand)),
+        .concat(MESSAGE_COMMANDS.list.map(createContextMenuCommand)),
     });
     logger.info('Successfully refreshed slash commands.');
 

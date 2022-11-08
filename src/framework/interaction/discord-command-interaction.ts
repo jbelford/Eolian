@@ -1,4 +1,3 @@
-import { getCommand } from '@eolian/commands';
 import { ParsedCommand, CommandArgs } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
@@ -16,6 +15,7 @@ import { ChatInputCommandInteraction } from 'discord.js';
 import { ContextCommandInteraction, IAuthServiceProvider } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordInteraction } from './discord-interaction';
+import { COMMANDS } from '@eolian/commands';
 
 export class DiscordCommandInteraction
   extends DiscordInteraction<ChatInputCommandInteraction>
@@ -59,7 +59,7 @@ export function parseSlashCommand(
   interaction: ChatInputCommandInteraction,
   permission: UserPermission
 ): ParsedCommand {
-  const command = getCommand(interaction.commandName, permission);
+  const command = COMMANDS.safeGet(interaction.commandName, permission);
 
   let options: CommandOptions = {};
   if (command.keywords || command.patterns) {

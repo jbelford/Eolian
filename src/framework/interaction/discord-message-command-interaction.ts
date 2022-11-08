@@ -1,8 +1,7 @@
 import { matchPatterns } from '@eolian/command-options';
 import { CommandOptions } from '@eolian/command-options/@types';
-import { getMessageCommand } from '@eolian/commands';
+import { MESSAGE_COMMANDS } from '@eolian/commands';
 import { ParsedCommand } from '@eolian/commands/@types';
-import { UserPermission } from '@eolian/common/constants';
 import { UsersDb } from '@eolian/data/@types';
 import { MessageContextMenuCommandInteraction, Message } from 'discord.js';
 import { ContextCommandInteraction, IAuthServiceProvider } from '../@types';
@@ -39,29 +38,17 @@ export class DiscordMessageCommandInteraction
   }
 
   async getCommand(): Promise<ParsedCommand> {
-    return parseMessageCommand(
-      this.interaction.commandName,
-      this.message.content,
-      this.user.permission
-    );
+    const command = MESSAGE_COMMANDS.safeGet(this.interaction.commandName, this.user.permission);
+
+    const options: CommandOptions = {};
+    const patternSet = new Set<string>(command.patterns?.map(p => p.name));
+    matchPatterns(this.message.content, this.user.permission, patternSet, options);
+
+    return { command, options };
   }
 
   toString(): string {
     return `(${this.interaction.commandName}) ${this.message.content}`;
   }
 
-}
-
-export function parseMessageCommand(
-  name: string,
-  text: string,
-  permission: UserPermission
-): ParsedCommand {
-  const command = getMessageCommand(name, permission);
-
-  const options: CommandOptions = {};
-  const patternSet = new Set<string>(command.patterns?.map(p => p.name));
-  matchPatterns(text, permission, patternSet, options);
-
-  return { command, options };
 }

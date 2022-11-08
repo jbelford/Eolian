@@ -9,10 +9,10 @@ import {
 } from '@eolian/embed';
 import { KEYWORDS, PATTERNS, PATTERNS_SORTED } from '@eolian/command-options';
 import { CommandOptions, SyntaxType } from '@eolian/command-options/@types';
-import { COMMAND_MAP, COMMANDS } from '..';
 import { CommandContext, CommandArgs, Command } from '../@types';
 import { COMMAND_CATEGORIES, GENERAL_CATEGORY } from '../category';
 import { SimpleExample } from '../simple-argument-example';
+import { COMMANDS } from '../command-store';
 
 async function execute(
   { interaction, server }: CommandContext,
@@ -56,7 +56,7 @@ async function execute(
     type = details.syntax ?? SyntaxType.KEYWORD;
   }
 
-  const command = COMMAND_MAP[arg];
+  const command = COMMANDS.get(arg);
   if (
     command
     && (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
@@ -99,7 +99,7 @@ const args: CommandArgs = {
           name: 'command',
           details: 'The command to get help for',
           getChoices() {
-            return COMMANDS.map(cmd => cmd.name);
+            return COMMANDS.list.map(cmd => cmd.name);
           },
         },
         {
