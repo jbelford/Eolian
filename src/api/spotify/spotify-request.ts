@@ -47,7 +47,9 @@ export function createSpotifyAuthorizationCodeProvider(
   );
 }
 
-export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): IOAuthHttpClient<T> {
+export function createSpotifyRequest<T extends TokenProvider>(
+  tokenProvider: T
+): IOAuthHttpClient<T> {
   return new OAuthHttpClient<T>(SPOTIFY_API, tokenProvider);
 }
 
