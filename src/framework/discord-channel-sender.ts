@@ -32,18 +32,18 @@ export class DiscordChannelSender implements ContextSendable {
 
   constructor(
     messageSender: DiscordMessageSender,
-    private readonly registry: ButtonRegistry,
-    private readonly channel: TextChannel | DMChannel
+    registry: ButtonRegistry,
+    private readonly textChannel: TextChannel | DMChannel
   ) {
-    this.sender = new DiscordSender(messageSender, this.registry);
+    this.sender = new DiscordSender(messageSender, registry);
   }
 
   get sendable(): boolean {
     if (this._sendable === undefined) {
       this._sendable = true;
-      if (this.channel.type === ChannelType.GuildText) {
-        const permissions = (this.channel as TextChannel).permissionsFor(
-          (this.channel as TextChannel).guild.members.me!
+      if (this.textChannel.type === ChannelType.GuildText) {
+        const permissions = (this.textChannel as TextChannel).permissionsFor(
+          (this.textChannel as TextChannel).guild.members.me!
         );
         this._sendable &&= !!permissions?.has(
           PermissionFlagsBits.ViewChannel
@@ -167,7 +167,7 @@ export class DiscordChannelSender implements ContextSendable {
     count: number,
     cb: (message: Message | undefined) => void
   ): MessageCollector {
-    const collector = this.channel.createMessageCollector({
+    const collector = this.textChannel.createMessageCollector({
       filter(message: Message) {
         if (message.author.id !== userId) {
           return false;

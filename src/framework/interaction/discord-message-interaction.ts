@@ -1,6 +1,5 @@
 import { CommandParsingStrategy, ParsedCommand } from '@eolian/commands/@types';
 import { UsersDb } from '@eolian/data/@types';
-import { SelectionOption } from '@eolian/embed/@types';
 import { Message, BaseMessageOptions, TextChannel, DMChannel } from 'discord.js';
 import {
   ContextCommandInteraction,
@@ -8,8 +7,6 @@ import {
   ContextTextChannel,
   ContextMessage,
   IAuthServiceProvider,
-  SelectionResult,
-  EmbedMessage,
   ContextServer,
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
@@ -30,13 +27,15 @@ class MessageInteractionSender implements DiscordMessageSender {
 
 }
 
-export class DiscordMessageInteraction implements ContextCommandInteraction {
+export class DiscordMessageInteraction
+  extends DiscordChannelSender
+  implements ContextCommandInteraction
+{
 
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
   private _hasReplied = false;
-  private _sender?: DiscordChannelSender;
 
   constructor(
     private readonly discordMessage: Message,
@@ -44,10 +43,12 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     private readonly registry: ButtonRegistry,
     private readonly users: UsersDb,
     private readonly auth: IAuthServiceProvider
-  ) {}
-
-  get sendable(): boolean {
-    return this.channel.sendable;
+  ) {
+    super(
+      new MessageInteractionSender(discordMessage),
+      registry,
+      <TextChannel | DMChannel>discordMessage.channel
+    );
   }
 
   get hasReplied(): boolean {
@@ -92,35 +93,8 @@ export class DiscordMessageInteraction implements ContextCommandInteraction {
     return this.channel.reactable;
   }
 
-  private get sender(): DiscordChannelSender {
-    if (!this._sender) {
-      this._sender = new DiscordChannelSender(
-        new MessageInteractionSender(this.discordMessage),
-        this.registry,
-        <TextChannel | DMChannel>this.discordMessage.channel
-      );
-    }
-    return this._sender;
-  }
-
   react(emoji: string): Promise<void> {
     return this.message.react(emoji);
-  }
-
-  send(message: string): Promise<ContextMessage | undefined> {
-    return this.sender.send(message);
-  }
-
-  sendSelection(
-    question: string,
-    options: SelectionOption[],
-    user: ContextUser
-  ): Promise<SelectionResult> {
-    return this.sender.sendSelection(question, options, user);
-  }
-
-  sendEmbed(embed: EmbedMessage): Promise<ContextMessage | undefined> {
-    return this.sender.sendEmbed(embed);
   }
 
   async defer(): Promise<void> {
