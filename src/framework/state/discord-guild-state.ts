@@ -2,8 +2,6 @@ import { Track } from '@eolian/api/@types';
 import { Closable } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
 import { QueueCache, ServerDTO } from '@eolian/data/@types';
-import { DiscordPlayer } from '@eolian/music';
-import { Player } from '@eolian/music/@types';
 import {
   QueueDisplay,
   PlayerDisplay,
@@ -14,6 +12,8 @@ import {
 import { DiscordPlayerDisplay } from '../discord-player-display';
 import { DiscordQueueDisplay } from '../discord-queue-display';
 import { ServerMusicQueue } from '../server-music-queue';
+import { DiscordPlayer } from '../voice';
+import { Player } from '../voice/@types';
 import { ServerStateDisplay, ServerState } from './@types';
 
 class DiscordGuildStateDisplay implements ServerStateDisplay, Closable {

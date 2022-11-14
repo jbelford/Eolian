@@ -12,12 +12,12 @@ import { Track } from '@eolian/api/@types';
 import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
-import { DiscordVoiceConnection } from '@eolian/framework';
 import { ContextClient, ContextVoiceChannel, ContextMusicQueue } from '@eolian/framework/@types';
 import { EventEmitter } from 'node-cache';
 import { Readable } from 'stream';
 import { Player } from './@types';
-import { SongStream } from './stream';
+import { DiscordVoiceConnection } from './discord-voice-connection';
+import { SongStream } from './song-stream';
 
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 const PLAYER_RETRIES = 2;

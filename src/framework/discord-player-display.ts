@@ -1,7 +1,6 @@
 import { Track } from '@eolian/api/@types';
 import { UserPermission, GITHUB_PAGE_ISSUES } from '@eolian/common/constants';
 import { createBasicEmbed, createPlayingEmbed } from '@eolian/embed';
-import { Player } from '@eolian/music/@types';
 import {
   PlayerDisplay,
   ContextMessage,
@@ -11,6 +10,7 @@ import {
   MessageButtonOnClickHandler,
 } from './@types';
 import { QUEUE_PAGE_LENGTH } from './discord-queue-display';
+import { Player } from './voice/@types';
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
 

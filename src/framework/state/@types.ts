@@ -1,6 +1,6 @@
 import { Closable } from '@eolian/common/@types';
-import { Player } from '@eolian/music/@types';
 import { ContextServer, ContextMusicQueue, PlayerDisplay, QueueDisplay } from '../@types';
+import { Player } from '../voice/@types';
 
 export interface ServerState extends Closable {
   details: ContextServer;

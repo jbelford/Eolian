@@ -4,7 +4,7 @@ import { Guild, OAuth2Scopes, PermissionResolvable, PermissionFlagsBits, Client 
 import { ContextServerInfo, ContextClient, ContextVoiceConnection } from './@types';
 import { registerGlobalSlashCommands } from './discord-slash-commands';
 import { DiscordGuildStore } from './state/discord-guild-store';
-import { DiscordVoiceConnection } from './discord-voice';
+import { DiscordVoiceConnection } from './voice';
 
 function mapGuildToServerInfo(guild: Guild): ContextServerInfo {
   const botCount = guild.members.cache.filter(m => m.user.bot).size;

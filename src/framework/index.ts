@@ -5,7 +5,6 @@ export * from './discord-client';
 export * from './discord-message';
 export * from './server-music-queue';
 export * from './discord-user';
-export * from './discord-voice';
 export * from './webserver';
 export * from './auth-service-providers';
 export * from './downloader-display';
