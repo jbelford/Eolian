@@ -7,12 +7,14 @@ import {
   Keyword,
   ArgumentExample,
   SyntaxType,
+  KeywordGroup,
 } from '@eolian/command-options/@types';
 
 export interface BaseCommand {
   name: string;
   permission: UserPermission;
   patterns?: Pattern[];
+  patternsGrouped?: Map<KeywordGroup, Pattern[]>;
   dmAllowed?: boolean;
   noDefaultReply?: boolean;
   execute(context: CommandContext, options: CommandOptions): Promise<void>;
@@ -46,6 +48,7 @@ export interface Command extends BaseCommand {
   details: string;
   category: CommandCategory;
   keywords?: Keyword[];
+  keywordSet?: Set<string>;
   new?: boolean;
   usage: CommandUsage[];
   /**

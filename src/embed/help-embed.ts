@@ -41,7 +41,8 @@ export function createCommandListEmbed(
     description: `${category.details}\n\n`,
   };
 
-  const commands = COMMANDS.list.filter(cmd => cmd.category.name === category.name)
+  const commands = COMMANDS.list
+    .filter(cmd => cmd.category.name === category.name)
     .filter(cmd => cmd.permission < UserPermission.Admin || cmd.permission <= permission)
     .map(cmd => (cmd.new ? `${cmd.name} *NEW*` : cmd.name));
 

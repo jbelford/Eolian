@@ -2,15 +2,14 @@ import { ParsedCommand, CommandArgs } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
 import { UsersDb } from '@eolian/data/@types';
+import { CommandOptionBuilder, KEYWORDS, PATTERNS } from '@eolian/command-options';
 import {
-  checkSetKeyword,
-  KEYWORDS,
-  matchPatterns,
-  patternMatch,
-  PATTERNS,
-  SimpleParsingStrategy,
-} from '@eolian/command-options';
-import { CommandOptions, Keyword, Pattern, SyntaxType } from '@eolian/command-options/@types';
+  CommandOptions,
+  Keyword,
+  KeywordGroup,
+  Pattern,
+  SyntaxType,
+} from '@eolian/command-options/@types';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { ContextCommandInteraction, IAuthServiceProvider } from '../@types';
 import { ButtonRegistry } from '../button-registry';
@@ -61,43 +60,38 @@ export function parseSlashCommand(
 ): ParsedCommand {
   const command = COMMANDS.safeGet(interaction.commandName, permission);
 
+  const builder = new CommandOptionBuilder(permission, SyntaxType.SLASH);
   let options: CommandOptions = {};
   if (command.keywords || command.patterns) {
     const groupSet = new Set<string>();
-    const patternSet = new Set<string>(command.patterns?.map(p => p.name));
 
-    command.keywords?.forEach(keyword =>
-      parseSlashKeyword(keyword, permission, interaction, options, groupSet)
-    );
-    command.patterns?.forEach(pattern =>
-      parseSlashPattern(
-        pattern,
-        permission,
-        interaction,
-        options,
-        patternSet,
-        groupSet,
-        command.args
-      )
-    );
+    command.keywords
+      ?.map(keyword => getKeyword(keyword, groupSet, interaction))
+      .forEach(keyword => keyword && builder.withKeyword(keyword));
+
+    if (command.patternsGrouped) {
+      parseGroupPatterns(builder, command.patternsGrouped, interaction);
+    }
+
+    command.patterns
+      ?.filter(pattern => !pattern.group)
+      .forEach(pattern => parseSlashPattern(builder, pattern, interaction, command.args));
+
+    options = builder.get();
   } else if (command.args) {
     options.ARG = parseCommandArgs(command.args, interaction);
   } else {
-    options = SimpleParsingStrategy.resolve(
-      interaction.options.getString('args', false) ?? '',
-      permission
-    );
+    builder.withTextArgs(interaction.options.getString('args', false) ?? '');
+    options = builder.get();
   }
 
   return { command, options };
 }
 
-function parseSlashKeyword(
+function getKeyword(
   keyword: Keyword,
-  permission: UserPermission,
-  interaction: ChatInputCommandInteraction,
-  options: CommandOptions,
-  groupSet: Set<string>
+  groupSet: Set<string>,
+  interaction: ChatInputCommandInteraction
 ) {
   let found: Keyword | undefined;
   if (keyword.group) {
@@ -109,34 +103,34 @@ function parseSlashKeyword(
   } else if (interaction.options.getBoolean(keyword.name.toLowerCase())) {
     found = keyword;
   }
-  if (found) {
-    checkSetKeyword(found, permission, options);
-  }
+  return found;
 }
 
 function parseSlashPattern(
+  builder: CommandOptionBuilder,
   pattern: Pattern,
-  permission: UserPermission,
   interaction: ChatInputCommandInteraction,
-  options: CommandOptions,
-  patternSet: Set<string>,
-  groupSet: Set<string>,
   args?: CommandArgs
 ) {
   if (args && pattern.name === PATTERNS.ARG.name) {
-    options.ARG = parseCommandArgs(args, interaction);
-  } else if (pattern.group) {
-    if (!groupSet.has(pattern.group)) {
-      const text = interaction.options.getString(pattern.group);
-      if (text) {
-        matchPatterns(text, permission, patternSet, options, pattern.group);
-      }
-      groupSet.add(pattern.group);
-    }
+    builder.withArgs(parseCommandArgs(args, interaction));
   } else {
     const text = interaction.options.getString(pattern.name.toLowerCase());
     if (text) {
-      patternMatch(text, permission, pattern, options, SyntaxType.SLASH, true);
+      builder.withPattern(pattern, text, true);
+    }
+  }
+}
+
+function parseGroupPatterns(
+  builder: CommandOptionBuilder,
+  patternGroups: Map<KeywordGroup, Pattern[]>,
+  interaction: ChatInputCommandInteraction
+) {
+  for (const [group, patterns] of patternGroups) {
+    const text = interaction.options.getString(group);
+    if (text) {
+      builder.withPatterns(patterns, text);
     }
   }
 }

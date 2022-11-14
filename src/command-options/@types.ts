@@ -8,8 +8,8 @@ export interface CommandOptionsParsingStrategy {
   resolve(
     text: string,
     permission: UserPermission,
-    keywords?: string[],
-    patterns?: string[]
+    keywords?: Set<string>,
+    patterns?: Pattern[]
   ): CommandOptions;
 }
 
@@ -49,7 +49,7 @@ export interface Keyword extends ArgumentExample {
   text(type: SyntaxType, short?: boolean): string;
 }
 
-export interface Pattern<T extends keyof PatternValues = keyof PatternValues> {
+export interface Pattern<T extends PatternName = PatternName> {
   readonly name: T;
   readonly details: string;
   readonly permission: UserPermission;
@@ -88,6 +88,8 @@ export type KeywordName = Uppercase<
   | 'tracks'
   | 'fast'
 >;
+
+export type PatternName = keyof PatternValues;
 
 export type PatternValues = {
   TOP: RangeArgument;

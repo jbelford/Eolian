@@ -1,29 +1,9 @@
-import {
-  Command,
-  CommandParsingStrategy,
-  ParsedCommand,
-} from '@eolian/commands/@types';
+import { CommandParsingStrategy, ParsedCommand } from '@eolian/commands/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
-import {
-  KeywordParsingStrategy,
-  TraditionalParsingStrategy,
-  SimpleParsingStrategy,
-} from '@eolian/command-options';
-import { SyntaxType, CommandOptionsParsingStrategy } from '@eolian/command-options/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { COMMANDS } from './command-store';
-
-function getCommandOptionParsingStrategy(
-  command: Command,
-  type: SyntaxType
-): CommandOptionsParsingStrategy {
-  if (command.keywords || command.patterns) {
-    return type === SyntaxType.KEYWORD
-      ? KeywordParsingStrategy
-      : TraditionalParsingStrategy;
-  }
-  return SimpleParsingStrategy;
-}
+import { CommandOptionsParser } from '@eolian/command-options';
 
 class TextCommandParsingStrategy implements CommandParsingStrategy {
 
@@ -45,11 +25,11 @@ class TextCommandParsingStrategy implements CommandParsingStrategy {
 
     const command = COMMANDS.safeGet(commandName, permission);
 
-    const options = getCommandOptionParsingStrategy(command, type).resolve(
+    const options = new CommandOptionsParser(type).resolve(
       text,
       permission,
-      command.keywords?.map(keyword => keyword.name),
-      command.patterns?.map(pattern => pattern.name)
+      command.keywordSet,
+      command.patterns
     );
 
     return { command, options };

@@ -30,7 +30,7 @@ export const SEARCH_PATTERN: Pattern<'SEARCH'> = {
   group: KeywordGroup.Search,
   ex: text => new SearchExample(text),
   matchText: (text: string, type: SyntaxType) =>
-    type === SyntaxType.SLASH
-      ? { matches: true, newText: '', args: text.trim() }
-      : matchGroup(text, /\B\(\s*(.*[^\s])\s*\)\B/i, 0),
+    type === SyntaxType.KEYWORD
+      ? matchGroup(text, /\B\(\s*(.*[^\s])\s*\)\B/i, 0)
+      : { matches: true, newText: '', args: text.trim() },
 };

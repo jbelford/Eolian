@@ -1,6 +1,6 @@
 import { AbsRangeArgument } from '@eolian/common/@types';
 import { convertRangeToAbsolute } from '@eolian/common/util';
-import { CommandOptions, Pattern, PatternValues } from '../@types';
+import { CommandOptions, Pattern, PatternName } from '../@types';
 import { ARG_PATTERN } from './arg-pattern';
 import { BOTTOM_PATTERN } from './bottom-pattern';
 import { IDENTIFIER_PATTERN } from './identifier-pattern';
@@ -10,7 +10,7 @@ import { TOP_PATTERN } from './top-pattern';
 import { URL_PATTERN } from './url-pattern';
 
 type Patterns = Partial<Record<string, Pattern>> & {
-  [key in keyof PatternValues]: Pattern<key>;
+  [name in PatternName]: Pattern<name>;
 };
 
 export const PATTERNS: Readonly<Patterns> = {

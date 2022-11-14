@@ -1,5 +1,5 @@
-import { matchPatterns } from '@eolian/command-options';
-import { CommandOptions } from '@eolian/command-options/@types';
+import { CommandOptionBuilder } from '@eolian/command-options';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { MESSAGE_COMMANDS } from '@eolian/commands';
 import { ParsedCommand } from '@eolian/commands/@types';
 import { UsersDb } from '@eolian/data/@types';
@@ -40,11 +40,12 @@ export class DiscordMessageCommandInteraction
   async getCommand(): Promise<ParsedCommand> {
     const command = MESSAGE_COMMANDS.safeGet(this.interaction.commandName, this.user.permission);
 
-    const options: CommandOptions = {};
-    const patternSet = new Set<string>(command.patterns?.map(p => p.name));
-    matchPatterns(this.message.content, this.user.permission, patternSet, options);
+    const builder = new CommandOptionBuilder(this.user.permission, SyntaxType.SLASH);
+    if (command.patterns) {
+      builder.withPatterns(command.patterns, this.message.content);
+    }
 
-    return { command, options };
+    return { command, options: builder.get() };
   }
 
   toString(): string {
