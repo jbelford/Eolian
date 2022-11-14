@@ -13,7 +13,7 @@ export class TextCommandOptionBuilder implements ITextCommandOptionBuilder {
 
   constructor(
     private text: string,
-    permission: UserPermission,
+    private readonly permission: UserPermission,
     private readonly syntax = SyntaxType.KEYWORD
   ) {
     this.baseBuilder = new CommandOptionBuilder(permission, syntax);
@@ -26,7 +26,7 @@ export class TextCommandOptionBuilder implements ITextCommandOptionBuilder {
       patterns.forEach(pattern => {
         if (pattern.name !== PATTERNS.SEARCH.name) {
           this.withPattern(pattern);
-        } else {
+        } else if (PATTERNS.SEARCH.permission <= this.permission) {
           this.hasSearch = true;
         }
       });

@@ -14,6 +14,7 @@ export interface BaseCommand {
   name: string;
   permission: UserPermission;
   patterns?: Pattern[];
+  patternsUngrouped?: Pattern[];
   patternsGrouped?: Map<KeywordGroup, Pattern[]>;
   dmAllowed?: boolean;
   noDefaultReply?: boolean;
@@ -85,6 +86,11 @@ export interface CommandContext {
   client: ContextClient;
   interaction: ContextCommandInteraction;
   server?: ServerState;
+}
+
+export interface ICommandOptionProvider {
+  getString(name: string): string | undefined;
+  getBoolean(name: string): boolean | undefined;
 }
 
 export interface ICommandStore<T extends BaseCommand> {

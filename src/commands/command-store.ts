@@ -43,6 +43,7 @@ commands.forEach(command => {
   }
   if (command.patterns) {
     command.patterns = command.patterns.sort((a, b) => b.priority - a.priority);
+    command.patternsUngrouped = command.patterns.filter(pattern => !pattern.group);
     command.patternsGrouped = command.patterns.reduce((m, p) => {
       if (p.group) {
         const list = m.get(p.group) ?? [];

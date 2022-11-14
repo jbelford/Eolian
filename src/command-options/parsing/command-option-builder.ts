@@ -34,7 +34,7 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
     patterns.forEach(pattern => {
       if (pattern.name !== PATTERNS.SEARCH.name) {
         text = this.withPattern(pattern, text);
-      } else {
+      } else if (PATTERNS.SEARCH.permission <= this.permission) {
         hasSearch = true;
       }
     });
@@ -42,9 +42,8 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
     if (hasSearch && text.length) {
       this.options.SEARCH = text;
       return '';
-    } else {
-      return text;
     }
+    return text;
   }
 
   withKeyword(keyword: Keyword, hasKeyword = true) {
