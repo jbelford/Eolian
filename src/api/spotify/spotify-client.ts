@@ -1,7 +1,7 @@
 import { ProgressUpdater } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
 import { fuzzyMatch } from '@eolian/common/util';
-import { IOAuthRequest } from '@eolian/http/@types';
+import { IOAuthHttpClient } from '@eolian/http/@types';
 import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
 import { youtube } from '../youtube';
 import { IYouTubeApi } from '../youtube/@types';
@@ -25,7 +25,7 @@ class SpotifyApi implements ISpotifyApi {
 
   constructor(
     private readonly youtube: IYouTubeApi,
-    private readonly req: IOAuthRequest = CLIENT_SPOTIFY_REQUEST
+    private readonly req: IOAuthHttpClient = CLIENT_SPOTIFY_REQUEST
   ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
@@ -312,6 +312,6 @@ type GetAllItemsOptions<T> = {
 
 export const spotify: ISpotifyApi = new SpotifyApi(youtube);
 
-export function createSpotifyClient(request: IOAuthRequest): ISpotifyApi {
+export function createSpotifyClient(request: IOAuthHttpClient): ISpotifyApi {
   return new SpotifyApi(youtube, request);
 }

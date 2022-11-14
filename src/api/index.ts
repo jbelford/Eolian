@@ -1,6 +1,6 @@
 import { Color } from '@eolian/common/constants';
 import { AuthorizationCodeProvider } from '@eolian/http';
-import { IOAuthRequest, IAuthorizationProvider } from '@eolian/http/@types';
+import { IOAuthHttpClient, IAuthorizationProvider } from '@eolian/http/@types';
 import { TrackSource, Track, StreamSource, TrackSourceDetails } from './@types';
 import {
   createSoundCloudAuthorizationCodeProvider,
@@ -19,7 +19,7 @@ export function createAuthCodeRequest(
   provider: IAuthorizationProvider,
   api: TrackSource,
   refreshToken?: string
-): IOAuthRequest<AuthorizationCodeProvider> {
+): IOAuthHttpClient<AuthorizationCodeProvider> {
   switch (api) {
     case TrackSource.Spotify: {
       const tokenProvider = createSpotifyAuthorizationCodeProvider(provider, refreshToken);

@@ -73,7 +73,7 @@ export interface IAuthorizationProvider {
   authorize(): Promise<TokenResponseWithRefresh>;
 }
 
-export interface IOAuthRequest<T extends TokenProvider = TokenProvider> {
+export interface IOAuthHttpClient<T extends TokenProvider = TokenProvider> {
   readonly tokenProvider: T;
   get<T>(path: string, params?: HttpRequestParams): Promise<T>;
   getUri<T>(uri: string): Promise<T>;

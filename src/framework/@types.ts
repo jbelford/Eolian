@@ -6,7 +6,7 @@ import { UserPermission } from '@eolian/common/constants';
 import { ServerDTO, UserDTO, Identifier } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { AuthorizationCodeProvider } from '@eolian/http';
-import { IAuthService, IOAuthRequest } from '@eolian/http/@types';
+import { IAuthService, IOAuthHttpClient } from '@eolian/http/@types';
 import { EventEmitter } from 'node-cache';
 
 export interface EolianBot extends Closable {
@@ -118,7 +118,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   updatePermissions(details?: ContextServer): Promise<void>;
   getVoice(): ContextVoiceChannel | undefined;
   get(): Promise<UserDTO>;
-  getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthRequest>;
+  getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthHttpClient>;
   setToken(token: string | null, api: TrackSource): Promise<void>;
   clearData(): Promise<boolean>;
   setIdentifier(id: string, identifier: Identifier): Promise<void>;
@@ -215,7 +215,7 @@ export interface ContextMusicQueue extends EventEmitter, Idleable {
   peekReverse(idx?: number): Promise<Track | undefined>;
 }
 
-export type UserRequest = IOAuthRequest<AuthorizationCodeProvider>;
+export type UserRequest = IOAuthHttpClient<AuthorizationCodeProvider>;
 
 export interface IAuthServiceProvider extends Closable {
   getService(api: TrackSource): IAuthService;

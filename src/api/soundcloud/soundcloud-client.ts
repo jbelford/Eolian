@@ -2,7 +2,7 @@ import { ProgressUpdater } from '@eolian/common/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { logger } from '@eolian/common/logger';
 import { querystringify } from '@eolian/http';
-import { IOAuthRequest } from '@eolian/http/@types';
+import { IOAuthHttpClient } from '@eolian/http/@types';
 import { Readable } from 'stream';
 import { Track, StreamSource, TrackSource } from '../@types';
 import { youtube } from '../youtube';
@@ -25,7 +25,7 @@ class SoundCloudApi implements ISoundCloudApi {
 
   constructor(
     private readonly youtube: IYouTubeApi,
-    private readonly req: IOAuthRequest = CLIENT_SOUNDCLOUD_REQUEST
+    private readonly req: IOAuthHttpClient = CLIENT_SOUNDCLOUD_REQUEST
   ) {}
 
   async getMe(): Promise<SoundCloudUser> {
@@ -275,7 +275,7 @@ type GetPaginatedItemsOptions = {
 class SoundCloudStreamSource implements StreamSource {
 
   constructor(
-    private readonly req: IOAuthRequest,
+    private readonly req: IOAuthHttpClient,
     private readonly url: string,
     private readonly stream: string
   ) {}
@@ -289,6 +289,6 @@ class SoundCloudStreamSource implements StreamSource {
 
 export const soundcloud: ISoundCloudApi = new SoundCloudApi(youtube);
 
-export function createSoundCloudClient(request: IOAuthRequest): ISoundCloudApi {
+export function createSoundCloudClient(request: IOAuthHttpClient): ISoundCloudApi {
   return new SoundCloudApi(youtube, request);
 }

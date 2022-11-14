@@ -3,13 +3,13 @@ import { EolianCache } from '@eolian/data/@types';
 import {
   ClientCredentialsProvider,
   AuthorizationCodeProvider,
-  OAuthRequestImpl,
+  OAuthHttpClient,
   AuthService,
 } from '@eolian/http';
 import {
   IAuthorizationProvider,
   TokenProvider,
-  IOAuthRequest,
+  IOAuthHttpClient,
   IAuthService,
   HttpRequestOptions,
   AuthCacheItem,
@@ -47,8 +47,8 @@ export function createSpotifyAuthorizationCodeProvider(
   );
 }
 
-export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): IOAuthRequest<T> {
-  return new OAuthRequestImpl<T>(SPOTIFY_API, tokenProvider);
+export function createSpotifyRequest<T extends TokenProvider>(tokenProvider: T): IOAuthHttpClient<T> {
+  return new OAuthHttpClient<T>(SPOTIFY_API, tokenProvider);
 }
 
 export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): IAuthService {
