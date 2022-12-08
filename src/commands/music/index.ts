@@ -1,5 +1,6 @@
 import { Command } from '../@types';
 import { BACK_COMMAND } from './back-command';
+import { BASSBOOST_COMMAND } from './bassboost-command';
 import { NIGHTCORE_COMMAND } from './nightcore-command';
 import { PAUSE_COMMAND } from './pause-command';
 import { PLAY_COMMAND } from './play-command';
@@ -19,6 +20,7 @@ export const MUSIC_COMMANDS: Command[] = [
   VOLUME_COMMAND,
   SHOW_COMMAND,
   NIGHTCORE_COMMAND,
+  BASSBOOST_COMMAND,
 ];
 
 export { PLAY_MESSAGE_COMMAND } from './play-command';

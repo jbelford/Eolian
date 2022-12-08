@@ -8,9 +8,11 @@ export interface Player extends EventEmitter, Idleable, Closable {
   readonly queue: ContextMusicQueue;
   readonly volume: number;
   readonly nightcore: boolean;
+  readonly bass: boolean;
   getChannel(): ContextVoiceChannel | undefined;
   setVolume(value: number): void;
   setNightcore(on: boolean): void;
+  setBassBoost(on: boolean): void;
   play(): Promise<void>;
   skip(): Promise<void>;
   stop(): void;

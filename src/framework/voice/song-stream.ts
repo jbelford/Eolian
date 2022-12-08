@@ -21,7 +21,14 @@ const FFMPEG_ARGUMENTS = [
   '-ac',
   '2',
 ];
-const FFMPEG_NIGHTCORE = FFMPEG_ARGUMENTS.concat(['-filter:a', 'asetrate=48000*1.25,atempo=1.06']);
+
+const FFMPEG_NIGHTCORE_FILTERS = 'asetrate=48000*1.25,atempo=1.06';
+const FFMPEG_BASS_BOOSTED_FILTERS = 'equalizer=f=150:width_type=h:width=100:g=15';
+
+type StreamOptions = {
+  nightcore?: boolean;
+  bass?: boolean;
+};
 
 export class SongStream extends EventEmitter implements Closable {
 
@@ -29,7 +36,7 @@ export class SongStream extends EventEmitter implements Closable {
   private songStream?: Readable;
   private pcmTransform?: prism.FFmpeg;
   private track?: Track;
-  private nightcore = false;
+  private options?: StreamOptions;
   private source?: StreamSource;
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
   private start?: number;
@@ -54,7 +61,7 @@ export class SongStream extends EventEmitter implements Closable {
 
   async setStreamTrack(
     track: Track,
-    nightcore = false,
+    options?: StreamOptions,
     retry = false,
     seek?: number
   ): Promise<boolean> {
@@ -75,9 +82,7 @@ export class SongStream extends EventEmitter implements Closable {
       .once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
 
-    const ffmpeg = new prism.FFmpeg({
-      args: !track.live && nightcore ? FFMPEG_NIGHTCORE : FFMPEG_ARGUMENTS,
-    });
+    const ffmpeg = this.createFfmpeg(track.live, options);
     stream
       .pipe(ffmpeg)
       .once('error', (err: Error) => this.cleanup(err))
@@ -99,11 +104,28 @@ export class SongStream extends EventEmitter implements Closable {
     this.start = Date.now();
     this.source = source;
     this.track = track;
-    this.nightcore = nightcore;
+    this.options = options;
     this.songStream = stream;
     this.pcmTransform = ffmpeg;
 
     return true;
+  }
+
+  private createFfmpeg(isLive?: boolean, options?: StreamOptions) {
+    const filters: string[] = [];
+    if (!isLive && options) {
+      if (options.nightcore) {
+        filters.push(FFMPEG_NIGHTCORE_FILTERS);
+      }
+      if (options.bass) {
+        filters.push(FFMPEG_BASS_BOOSTED_FILTERS);
+      }
+    }
+
+    const args = filters.length
+      ? FFMPEG_ARGUMENTS.concat(['-af', filters.join(', ')])
+      : FFMPEG_ARGUMENTS;
+    return new prism.FFmpeg({ args });
   }
 
   end() {
@@ -141,7 +163,7 @@ export class SongStream extends EventEmitter implements Closable {
     try {
       await this.sleepAlg.sleep();
       const seek = this.start && Math.max(0, Date.now() - this.start - 5000);
-      const success = await this.setStreamTrack(this.track!, this.nightcore, true, seek);
+      const success = await this.setStreamTrack(this.track!, this.options, true, seek);
       if (!success) {
         throw new Error('Failed to retry stream');
       }

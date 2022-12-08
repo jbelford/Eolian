@@ -53,7 +53,12 @@ export function createQueueEmbed(
   return embed;
 }
 
-export function createPlayingEmbed(track: Track, volume: number, nightcore: boolean): EmbedMessage {
+export function createPlayingEmbed(
+  track: Track,
+  volume: number,
+  nightcore: boolean,
+  bass: boolean
+): EmbedMessage {
   const details = SOURCE_DETAILS[track.src];
   const embed: EmbedMessage = {
     color: details.color,
@@ -68,8 +73,17 @@ export function createPlayingEmbed(track: Track, volume: number, nightcore: bool
   };
   if (track.live) {
     embed.header!.text += ` ⚡ Live Stream`;
-  } else if (nightcore) {
-    embed.header!.text += ` ⚡ Nightcore`;
+  } else if (nightcore || bass) {
+    embed.header!.text += ' ⚡ ';
+    if (nightcore) {
+      embed.header!.text += 'Nightcore';
+      if (bass) {
+        embed.header!.text += ' / ';
+      }
+    }
+    if (bass) {
+      embed.header!.text += 'Bass Boosted';
+    }
   }
   return embed;
 }

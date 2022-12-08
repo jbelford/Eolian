@@ -44,6 +44,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private _audioPlayer: AudioPlayer | null = null;
   private _isStreaming = false;
   private _nightcore = false;
+  private _bass = false;
   private _paused = false;
 
   constructor(
@@ -125,6 +126,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
     return this._nightcore;
   }
 
+  get bass(): boolean {
+    return this._bass;
+  }
+
   get idle(): boolean {
     return (
       (!this.isStreaming || this._paused) && Date.now() - this.lastUsed >= IDLE_TIMEOUT_MINS * 1000
@@ -152,6 +157,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   setNightcore(on: boolean): void {
     this._nightcore = on;
+  }
+
+  setBassBoost(on: boolean): void {
+    this._bass = on;
   }
 
   async play(): Promise<void> {
@@ -253,7 +262,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
     let track = await this.queue.peek();
     for (let i = 0; i < NEXT_SONG_ATTEMPTS && track; ++i) {
-      const success = await this.songStream.setStreamTrack(track, this.nightcore);
+      const success = await this.songStream.setStreamTrack(track, {
+        nightcore: this.nightcore,
+        bass: this.bass,
+      });
       if (success) {
         this._paused = false;
         await this.popNext();

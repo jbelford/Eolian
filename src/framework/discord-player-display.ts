@@ -22,6 +22,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private queueAhead = false;
   private inputLock = false;
   private nightcore = false;
+  private bass = false;
 
   constructor(private readonly player: Player, private readonly queueDisplay: QueueDisplay) {
     this.player.on('next', this.onNextHandler);
@@ -74,6 +75,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onNextHandler = async (track: Track) => {
     this.nightcore = this.player.nightcore;
+    this.bass = this.player.bass;
     this.track = track;
     await this.updateMessage();
   };
@@ -84,7 +86,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
         this.player.queue.size(),
         this.player.queue.peekReverse(1),
       ]);
-      const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore);
+      const embed = createPlayingEmbed(this.track, this.player.volume, this.nightcore, this.bass);
       embed.buttons = [
         {
           emoji: '⏏',
