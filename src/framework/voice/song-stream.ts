@@ -77,7 +77,14 @@ export class SongStream extends EventEmitter implements Closable {
       return false;
     }
 
-    let stream = await source.get(seek);
+    let stream: Readable;
+    try {
+      stream = await source.get(seek);
+    } catch (e) {
+      logger.warn('Failed to get create stream!\n%s', e);
+      return false;
+    }
+
     stream = stream
       .once('error', this.onSongErrorHandler)
       .once('close', () => logger.debug(`Song stream closed`));
