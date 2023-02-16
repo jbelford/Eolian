@@ -2598,7 +2598,7 @@ __metadata:
     sodium-native: ^4.0.1
     ts-loader: ^9.3.1
     typescript: ^4.8.3
-    undici: ^5.16.0
+    undici: ^5.19.1
     utf-8-validate: ^6.0.2
     webpack: ^5.74.0
     webpack-cli: ^4.10.0
@@ -5541,12 +5541,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.13.0, undici@npm:^5.16.0":
+"undici@npm:^5.13.0":
   version: 5.16.0
   resolution: "undici@npm:5.16.0"
   dependencies:
     busboy: ^1.6.0
   checksum: bc22e797cbf469351713c88af33e65e21952a75f431b78b0e75fb2411426ab38b888ec0761d4b81eadf8f6e8872ed23fb75641cc7319c6a7f08bd083899fa1cc
+  languageName: node
+  linkType: hard
+
+"undici@npm:^5.19.1":
+  version: 5.19.1
+  resolution: "undici@npm:5.19.1"
+  dependencies:
+    busboy: ^1.6.0
+  checksum: 57ee94ee74d944faa41dbcb2faf4e0c90069708d3aaae860185884e51376b5d457728352a8396d69a3c9cb752b62ff99a19a664c5aacb7ee61cc488af499a01c
   languageName: node
   linkType: hard
 
