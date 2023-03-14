@@ -57,7 +57,7 @@ export class SpotifyUrlResolver implements SourceResolver {
       const { tokens } = await user.get();
       if (tokens?.spotify) {
         const request = await user.getRequest(channel, TrackSource.Spotify);
-        client = createSpotifyClient(request) ;
+        client = createSpotifyClient(request);
       }
     }
     const playlist = await client.getPlaylist(id);
