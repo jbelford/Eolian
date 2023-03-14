@@ -49,7 +49,7 @@ function getBySource(context: CommandContext, params: CommandOptions) {
     case TrackSource.YouTube:
       return new YouTubeUrlResolver(params.URL.value, params, context);
     case TrackSource.Spotify:
-      return new SpotifyUrlResolver(params.URL.value, params, context.interaction.channel);
+      return new SpotifyUrlResolver(params.URL.value, params, context);
     default:
       return UNKNOWN_RESOLVER;
   }
