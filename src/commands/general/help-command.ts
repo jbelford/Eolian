@@ -51,9 +51,14 @@ async function execute(
   let type = SyntaxType.KEYWORD;
   if (interaction.isSlash) {
     type = SyntaxType.SLASH;
-  } else if (server) {
-    const details = await server.details.get();
-    type = details.syntax ?? SyntaxType.KEYWORD;
+  } else {
+    const user = await interaction.user.get();
+    if (user.syntax !== undefined) {
+      type = user.syntax;
+    } else if (server) {
+      const details = await server.details.get();
+      type = details.syntax ?? SyntaxType.KEYWORD;
+    }
   }
 
   const command = COMMANDS.get(arg);

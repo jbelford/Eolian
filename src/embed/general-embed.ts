@@ -58,7 +58,8 @@ export function createUserDetailsEmbed(
   contextUser: ContextUser,
   spotify?: SpotifyUser,
   soundcloud?: SoundCloudUser,
-  identifiers?: Record<string, Identifier>
+  identifiers?: Record<string, Identifier>,
+  syntax?: SyntaxType,
 ): EmbedMessage {
   let description
     = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`
@@ -71,6 +72,9 @@ export function createUserDetailsEmbed(
   } else {
     description += 'N/A';
   }
+
+  const syntaxName = syntax === undefined ? 'Server Default' : syntaxTypeToName(syntax);
+  description += `\n**Syntax**: \`${syntaxName}\``;
 
   return {
     header: {
@@ -111,7 +115,7 @@ export function createServerDetailsEmbed(guild: ContextServerInfo, dto: ServerDT
   };
 }
 
-function syntaxTypeToName(type: SyntaxType) {
+export function syntaxTypeToName(type: SyntaxType) {
   if (type === SyntaxType.KEYWORD) {
     return 'keyword';
   }

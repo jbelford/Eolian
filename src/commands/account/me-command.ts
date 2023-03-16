@@ -54,7 +54,8 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       context.interaction.user,
       spotifyAccount,
       soundcloudAccount,
-      user && user.identifiers
+      user?.identifiers,
+      user?.syntax
     );
 
     await defer;

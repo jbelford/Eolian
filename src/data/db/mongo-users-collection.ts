@@ -1,3 +1,4 @@
+import { SyntaxType } from '@eolian/command-options/@types';
 import { UserDTO, UsersDb, Identifier } from '../@types';
 import { MongoCollection } from './mongo-collection';
 
@@ -41,6 +42,14 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
 
   async removeIdentifier(id: string, key: string): Promise<boolean> {
     return await this.unsetProperty(id, `identifiers.${key}`);
+  }
+
+  async setSyntax(id: string, type: SyntaxType): Promise<void> {
+    await this.setProperty(id, 'syntax', type);
+  }
+
+  async removeSyntax(id: string): Promise<void> {
+    await this.unsetProperty(id, 'syntax');
   }
 
 }

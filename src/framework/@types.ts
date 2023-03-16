@@ -125,6 +125,7 @@ export interface ContextUser extends Pick<ContextSendable, 'send' | 'sendEmbed'>
   removeIdentifier(id: string): Promise<boolean>;
   setSpotify(id: string | null): Promise<void>;
   setSoundCloud(id: number | null): Promise<void>;
+  setSyntax(type: SyntaxType | null): Promise<void>;
 }
 
 export interface EmbedMessage {

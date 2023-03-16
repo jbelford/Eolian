@@ -35,6 +35,8 @@ export interface UsersDb extends CollectionDb<UserDTO> {
   removeSpotifyRefreshToken(id: string): Promise<void>;
   setIdentifier(id: string, key: string, identifier: Identifier): Promise<void>;
   removeIdentifier(id: string, key: string): Promise<boolean>;
+  setSyntax(id: string, type: SyntaxType): Promise<void>;
+  removeSyntax(id: string): Promise<void>;
 }
 
 export interface ServersDb extends CollectionDb<ServerDTO> {
@@ -70,6 +72,7 @@ export interface UserDTO extends DocDTO {
     soundcloud?: string;
   };
   identifiers?: Record<string, Identifier>;
+  syntax?: SyntaxType;
 }
 
 export interface Identifier {

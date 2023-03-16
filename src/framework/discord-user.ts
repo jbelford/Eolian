@@ -1,8 +1,10 @@
 import { createAuthCodeRequest } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
+import { SyntaxType } from '@eolian/command-options/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
-import { UserDTO, UsersDb, Identifier } from '@eolian/data/@types';
+import { InMemoryLRUCache } from '@eolian/data';
+import { UserDTO, UsersDb, Identifier, MemoryCache } from '@eolian/data/@types';
 import { IOAuthHttpClient } from '@eolian/http/@types';
 import {
   User,
@@ -24,6 +26,8 @@ import {
 import { DiscordAuthorizationProvider } from './discord-authorization-provider';
 import { DiscordSender } from './discord-sender';
 import { DiscordVoiceChannel } from './voice';
+
+const USER_CACHE: MemoryCache<UserDTO> = new InMemoryLRUCache(1000);
 
 export class DiscordUser implements ContextUser {
 
@@ -109,7 +113,13 @@ export class DiscordUser implements ContextUser {
   }
 
   async get(): Promise<UserDTO> {
-    return this.dto || (this.dto = (await this.users.get(this.id)) ?? { _id: this.id });
+    this.dto = USER_CACHE.get(this.id);
+    if (this.dto) {
+      return this.dto;
+    }
+    this.dto = (await this.users.get(this.id)) ?? { _id: this.id };
+    USER_CACHE.set(this.id, this.dto);
+    return this.dto;
   }
 
   async getRequest(sendable: ContextSendable, api: TrackSource): Promise<IOAuthHttpClient> {
@@ -193,6 +203,17 @@ export class DiscordUser implements ContextUser {
       await this.users.setSoundCloud(this.id, id);
     } else {
       await this.users.removeSoundCloud(this.id);
+    }
+  }
+
+  async setSyntax(type: SyntaxType | null): Promise<void> {
+    if (this.dto) {
+      this.dto.syntax = type ?? undefined;
+    }
+    if (type !== null) {
+      await this.users.setSyntax(this.id, type);
+    } else {
+      await this.users.removeSyntax(this.id);
     }
   }
 

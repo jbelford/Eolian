@@ -103,7 +103,10 @@ export class DiscordMessageInteraction
 
   async getCommand(config?: ContextServer): Promise<ParsedCommand> {
     let type: SyntaxType | undefined;
-    if (config) {
+    const { syntax } = await this.user.get();
+    if (syntax !== undefined) {
+      type = syntax;
+    } else if (config) {
       const dto = await config.get();
       type = dto.syntax;
     }
