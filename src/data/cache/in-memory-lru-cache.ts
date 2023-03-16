@@ -43,7 +43,16 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
     return val;
   }
 
-  set(id: string, val: T): void {
+  set(id: string, val: T | undefined): void {
+    if (val === undefined) {
+      const node = this.map.get(id);
+      if (node) {
+        this.map.delete(id);
+        this.remove(node);
+      }
+      return;
+    }
+
     let node: CacheNode<T>;
     if (this.map.size === this.size && this.tail) {
       node = this.tail;

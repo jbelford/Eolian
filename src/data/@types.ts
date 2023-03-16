@@ -11,7 +11,7 @@ export interface EolianCache<V> extends Closable {
 
 export interface MemoryCache<T> {
   get(id: string): T | undefined;
-  set(id: string, val: T): void;
+  set(id: string, val: T | undefined): void;
 }
 
 export interface AppDatabase extends Closable {

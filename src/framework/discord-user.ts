@@ -31,7 +31,7 @@ const USER_CACHE: MemoryCache<UserDTO> = new InMemoryLRUCache(1000);
 
 export class DiscordUser implements ContextUser {
 
-  private dto?: UserDTO;
+  private _dto?: UserDTO | null = null;
   private _permission: UserPermission;
   private _sender?: DiscordSender;
 
@@ -59,6 +59,18 @@ export class DiscordUser implements ContextUser {
 
   get permission(): UserPermission {
     return this._permission;
+  }
+
+  private get dto(): UserDTO | undefined {
+    if (this._dto === null) {
+      this._dto = USER_CACHE.get(this.id);
+    }
+    return this._dto;
+  }
+
+  private set dto(newDto: UserDTO | undefined) {
+    this._dto = newDto;
+    USER_CACHE.set(this.id, this._dto);
   }
 
   private get sender(): DiscordSender {
@@ -113,12 +125,10 @@ export class DiscordUser implements ContextUser {
   }
 
   async get(): Promise<UserDTO> {
-    this.dto = USER_CACHE.get(this.id);
     if (this.dto) {
       return this.dto;
     }
     this.dto = (await this.users.get(this.id)) ?? { _id: this.id };
-    USER_CACHE.set(this.id, this.dto);
     return this.dto;
   }
 
