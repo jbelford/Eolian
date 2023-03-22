@@ -20,7 +20,7 @@ export class SpotifyLikesResolver implements SourceResolver {
     );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
-    return createSpotifyLikes(user, client, this.context.interaction, this.params);
+    return createSpotifyLikes(user, client, this.context.interaction.channel, this.params);
   }
 
 }

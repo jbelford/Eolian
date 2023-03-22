@@ -34,14 +34,14 @@ export async function getSpotifySourceFetcher(
       const client = feature.enabled(FeatureFlag.SPOTIFY_AUTH)
         ? await getClient(identifier, context)
         : spotify;
-      return new SpotifyPlaylistFetcher(identifier.id, params, context.interaction, client);
+      return new SpotifyPlaylistFetcher(identifier.id, params, context.interaction.channel, client);
     }
     case ResourceType.Song:
       return new SpotifySongFetcher(identifier.id);
     case ResourceType.Likes:
       if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const client = await getClient(identifier, context);
-        return new SpotifyLikesFetcher(client, params, context.interaction);
+        return new SpotifyLikesFetcher(client, params, context.interaction.channel);
       }
       break;
     case ResourceType.Tracks:

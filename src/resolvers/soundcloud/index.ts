@@ -41,9 +41,9 @@ export async function getSoundCloudSourceFetcher(
           TrackSource.SoundCloud
         );
         const client = createSoundCloudClient(request);
-        return new SoundCloudFavoritesFetcher(client, params, context.interaction);
+        return new SoundCloudFavoritesFetcher(client, params, context.interaction.channel);
       }
-      return new SoundCloudFavoritesFetcher(id, params, context.interaction);
+      return new SoundCloudFavoritesFetcher(id, params, context.interaction.channel);
     case ResourceType.Playlist: {
       let client = soundcloud;
       if (identifier.auth && feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
