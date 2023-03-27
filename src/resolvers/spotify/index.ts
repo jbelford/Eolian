@@ -4,7 +4,7 @@ import { ISpotifyApi } from '@eolian/api/spotify/@types';
 import { CommandOptions } from '@eolian/command-options/@types';
 import { CommandContext } from '@eolian/commands/@types';
 import { feature } from '@eolian/data';
-import { Identifier, ResourceType, FeatureFlag } from '@eolian/data/@types';
+import { Identifier, ResourceType, FeatureFlag, SpotifyTracksIdentifier } from '@eolian/data/@types';
 import { SourceFetcher } from '../@types';
 import { SpotifyAlbumFetcher } from './spotify-album-resolver';
 import { SpotifyArtistFetcher } from './spotify-artist-resolver';
@@ -46,8 +46,9 @@ export async function getSpotifySourceFetcher(
       break;
     case ResourceType.Tracks:
       if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
+        const { range } = identifier as SpotifyTracksIdentifier;
         const client = await getClient(identifier, context);
-        return new SpotifyTracksFetcher(client);
+        return new SpotifyTracksFetcher(client, range);
       }
       break;
     default:

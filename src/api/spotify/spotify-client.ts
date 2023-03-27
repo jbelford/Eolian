@@ -18,6 +18,7 @@ import {
   SpotifyTrack,
   SpotifyPlaylist,
   SpotifyAlbum,
+  SpotifyTimeRange,
 } from './@types';
 import { CLIENT_SPOTIFY_REQUEST } from './spotify-request';
 
@@ -56,11 +57,11 @@ class SpotifyApi implements ISpotifyApi {
     }
   }
 
-  async getMyTopTracks(): Promise<SpotifyTrack[]> {
+  async getMyTopTracks(range = SpotifyTimeRange.MEDIUM): Promise<SpotifyTrack[]> {
     try {
       return await this.getPaginatedItems('me/top/tracks', {
         limit: 50,
-        params: { time_range: 'short_term' },
+        params: { time_range: range },
       });
     } catch (e) {
       logger.warn('Failed to fetch current Spotify user tracks');

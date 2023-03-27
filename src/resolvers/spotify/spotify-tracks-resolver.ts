@@ -1,13 +1,14 @@
 import { createSpotifyClient, mapSpotifyTrack } from '@eolian/api';
 import { TrackSource } from '@eolian/api/@types';
-import { SpotifyUser, ISpotifyApi } from '@eolian/api/spotify/@types';
+import { SpotifyUser, ISpotifyApi, SpotifyTimeRange } from '@eolian/api/spotify/@types';
+import { CommandOptions } from '@eolian/command-options/@types';
 import { CommandContext } from '@eolian/commands/@types';
-import { ResourceType } from '@eolian/data/@types';
+import { ResourceType, SpotifyTracksIdentifier } from '@eolian/data/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyTracksResolver implements SourceResolver {
 
-  constructor(private readonly context: CommandContext) {}
+  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 
   async resolve(): Promise<ResolvedResource> {
     const request = await this.context.interaction.user.getRequest(
@@ -16,14 +17,27 @@ export class SpotifyTracksResolver implements SourceResolver {
     );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
-    return createSpotifyTracks(user, client);
+    return createSpotifyTracks(user, client, this.getRange());
+  }
+
+  private getRange(): SpotifyTimeRange | undefined {
+    if (this.params.SHORT) {
+      return SpotifyTimeRange.SHORT;
+    } else if (this.params.LONG) {
+      return SpotifyTimeRange.LONG;
+    }
+    return undefined;
   }
 
 }
 
-export function createSpotifyTracks(user: SpotifyUser, client: ISpotifyApi): ResolvedResource {
+export function createSpotifyTracks(user: SpotifyUser, client: ISpotifyApi, range?: SpotifyTimeRange): ResolvedResource {
+  const term = range
+    ? range === SpotifyTimeRange.LONG ? 'All Time' : 'Last 4 Weeks'
+    : 'Last 6 Months';
+
   return {
-    name: 'Top Tracks',
+    name: `Top Tracks (${term})`,
     authors: [user.display_name ?? '<unknown>'],
     identifier: {
       id: user.id,
@@ -31,17 +45,18 @@ export function createSpotifyTracks(user: SpotifyUser, client: ISpotifyApi): Res
       type: ResourceType.Tracks,
       url: user.external_urls.spotify,
       auth: true,
-    },
-    fetcher: new SpotifyTracksFetcher(client),
+      range
+    } as SpotifyTracksIdentifier,
+    fetcher: new SpotifyTracksFetcher(client, range),
   };
 }
 
 export class SpotifyTracksFetcher implements SourceFetcher {
 
-  constructor(private readonly client: ISpotifyApi) {}
+  constructor(private readonly client: ISpotifyApi, private readonly range?: SpotifyTimeRange) {}
 
   async fetch(): Promise<FetchResult> {
-    const spotifyTracks = await this.client.getMyTopTracks();
+    const spotifyTracks = await this.client.getMyTopTracks(this.range);
 
     const tracks = spotifyTracks.map(track => mapSpotifyTrack(track));
 

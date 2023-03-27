@@ -1,4 +1,5 @@
 import { TrackSource } from '@eolian/api/@types';
+import { SpotifyTimeRange } from '@eolian/api/spotify/@types';
 import { SyntaxType } from '@eolian/command-options/@types';
 import { Closable } from '@eolian/common/@types';
 
@@ -81,6 +82,10 @@ export interface Identifier {
   id: string;
   url: string;
   auth?: boolean;
+}
+
+export interface SpotifyTracksIdentifier extends Identifier {
+  range?: SpotifyTimeRange
 }
 
 export const enum ResourceType {

@@ -140,7 +140,7 @@ export const KEYWORDS: Readonly<
   ),
   TRACKS: new KeywordDetails(
     'TRACKS',
-    'Indicates to fetch SoundCloud tracks or Spotify top tracks.',
+    'Indicates to fetch SoundCloud tracks or Spotify top tracks (default medium term, use SHORT or LONG keywords for different time range.)',
     UserPermission.User,
     KeywordGroup.Type
   ),
@@ -151,6 +151,16 @@ export const KEYWORDS: Readonly<
     undefined,
     'f'
   ),
+  SHORT: new KeywordDetails(
+    'SHORT',
+    'Indicates to get top tracks for short term time range',
+    UserPermission.User,
+  ),
+  LONG: new KeywordDetails(
+    'LONG',
+    'Indicates to get top tracks for long term time range',
+    UserPermission.User
+  )
 };
 
 export const KEYWORDS_MAPPED = Object.values(KEYWORDS)

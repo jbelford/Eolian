@@ -87,6 +87,8 @@ export type KeywordName = Uppercase<
   | 'likes'
   | 'tracks'
   | 'fast'
+  | 'short'
+  | 'long'
 >;
 
 export type PatternName = keyof PatternValues;

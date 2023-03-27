@@ -109,11 +109,17 @@ export const enum SpotifyResourceType {
   ALBUM = 'album',
 }
 
+export const enum SpotifyTimeRange {
+  SHORT = 'short_term',
+  MEDIUM = 'medium_term',
+  LONG = 'long_term'
+}
+
 export interface ISpotifyApi extends StreamFetcher {
   resolve(uri: string): SpotifyUrlDetails | undefined;
   getMe(): Promise<SpotifyUser>;
   getMyTracks(progress?: ProgressUpdater, rangeFn?: RangeFactory): Promise<SpotifyUserTrack[]>;
-  getMyTopTracks(): Promise<SpotifyTrack[]>;
+  getMyTopTracks(range?: SpotifyTimeRange): Promise<SpotifyTrack[]>;
   getUser(id: string): Promise<SpotifyUser>;
   getTrack(id: string): Promise<SpotifyTrack>;
   getPlaylist(id: string): Promise<SpotifyPlaylistTracks>;
