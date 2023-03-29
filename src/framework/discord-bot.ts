@@ -213,33 +213,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private onButtonClickHandler = async (interaction: ButtonInteraction) => {
     const embedButton = this.registry.getButton(interaction.message.id, interaction.customId);
-    if (embedButton) {
-      const contextInteraction = new DiscordButtonInteraction(
-        interaction,
-        this.registry,
-        this.db.users,
-        this.auth
-      );
-
-      if (!embedButton.userId || embedButton.userId === interaction.user.id) {
-        let state: ServerState | undefined;
-        if (interaction.guild) {
-          state = await this.guildStore.getState(interaction.guild);
-        }
-        await contextInteraction.user.updatePermissions(state?.details);
-
-        if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
-          await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
-        } else {
-          const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
-          if (destroy) {
-            contextInteraction.message.releaseButtons();
-          }
-        }
-      } else {
-        await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
-      }
-    } else {
+    if (!embedButton) {
       logger.warn(
         'Unknown button click received: %s %s',
         interaction.message.id,
@@ -247,6 +221,32 @@ export class DiscordEolianBot implements EolianBot {
       );
       await interaction.update({ content: `***Expired Message***`, components: [] });
       await interaction.followUp({ content: 'Sorry, this button has expired.', ephemeral: true });
+      return;
+    }
+
+    const contextInteraction = new DiscordButtonInteraction(
+      interaction,
+      this.registry,
+      this.db.users,
+      this.auth
+    );
+
+    if (embedButton.userId === interaction.user.id) {
+      await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
+      return;
+    }
+
+    const state = interaction.guild && await this.guildStore.getState(interaction.guild);
+    await contextInteraction.user.updatePermissions(state?.details);
+
+    if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
+      await contextInteraction.send(`Sorry, you do not have permission to use this button!`);
+      return;
+    }
+
+    const destroy = await embedButton.onClick(contextInteraction, embedButton.emoji);
+    if (destroy) {
+      contextInteraction.message.releaseButtons();
     }
   };
 
@@ -254,31 +254,32 @@ export class DiscordEolianBot implements EolianBot {
     interaction: ChatInputCommandInteraction | MessageContextMenuCommandInteraction
   ) => {
     const locked = await this.lockManager.isLocked(interaction.user.id);
-    if (!locked) {
-      try {
-        await this.lockManager.lock(interaction.user.id);
-        const contextInteraction = interaction.isChatInputCommand()
-          ? new DiscordCommandInteraction(interaction, this.registry, this.db.users, this.auth)
-          : new DiscordMessageCommandInteraction(
-              interaction,
-              this.registry,
-              this.db.users,
-              this.auth
-            );
-
-        const noDefault = await this.onBotInvoked(
-          contextInteraction,
-          interaction.guild ?? undefined
-        );
-
-        if (!contextInteraction.hasReplied && !noDefault) {
-          await contextInteraction.send('👌', { ephemeral: true });
-        }
-      } finally {
-        await this.lockManager.unlock(interaction.user.id);
-      }
-    } else {
+    if (locked) {
       await interaction.reply({ content: 'One command at a time please!', ephemeral: true });
+      return;
+    }
+
+    try {
+      await this.lockManager.lock(interaction.user.id);
+      const contextInteraction = interaction.isChatInputCommand()
+        ? new DiscordCommandInteraction(interaction, this.registry, this.db.users, this.auth)
+        : new DiscordMessageCommandInteraction(
+            interaction,
+            this.registry,
+            this.db.users,
+            this.auth
+          );
+
+      const noDefault = await this.onBotInvoked(
+        contextInteraction,
+        interaction.guild ?? undefined
+      );
+
+      if (!contextInteraction.hasReplied && !noDefault) {
+        await contextInteraction.send('👌', { ephemeral: true });
+      }
+    } finally {
+      await this.lockManager.unlock(interaction.user.id);
     }
   };
 
@@ -288,26 +289,28 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     try {
-      if (await this.isBotInvoked(message)) {
-        const locked = await this.lockManager.isLocked(message.author.id);
-        if (!locked) {
-          try {
-            await this.lockManager.lock(message.author.id);
-            const interaction = new DiscordMessageInteraction(
-              message,
-              this.parser,
-              this.registry,
-              this.db.users,
-              this.auth
-            );
+      if (!(await this.isBotInvoked(message))) {
+        return;
+      }
+      const locked = await this.lockManager.isLocked(message.author.id);
+      if (locked) {
+        await message.reply({ content: 'One command at a time please!' });
+        return;
+      }
 
-            await this.onBotInvoked(interaction, message.guild ?? undefined);
-          } finally {
-            await this.lockManager.unlock(message.author.id);
-          }
-        } else {
-          await message.reply({ content: 'One command at a time please!' });
-        }
+      try {
+        await this.lockManager.lock(message.author.id);
+        const interaction = new DiscordMessageInteraction(
+          message,
+          this.parser,
+          this.registry,
+          this.db.users,
+          this.auth
+        );
+
+        await this.onBotInvoked(interaction, message.guild ?? undefined);
+      } finally {
+        await this.lockManager.unlock(message.author.id);
       }
     } catch (e) {
       logger.warn(`Unhandled error occured during request: %s`, e);
