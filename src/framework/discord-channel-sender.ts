@@ -26,6 +26,8 @@ import { DiscordMessageSender, DiscordSender } from './discord-sender';
 
 const STOP_EMOJI = '🚫';
 
+export type SupportedTextChannel = TextChannel | DMChannel | VoiceChannel;
+
 export class DiscordChannelSender implements ContextSendable {
 
   private readonly sender: DiscordSender;
@@ -34,7 +36,7 @@ export class DiscordChannelSender implements ContextSendable {
   constructor(
     messageSender: DiscordMessageSender,
     registry: ButtonRegistry,
-    private readonly textChannel: TextChannel | DMChannel | VoiceChannel
+    private readonly textChannel: SupportedTextChannel
   ) {
     this.sender = new DiscordSender(messageSender, registry);
   }
@@ -43,9 +45,7 @@ export class DiscordChannelSender implements ContextSendable {
     if (this._sendable === undefined) {
       this._sendable = true;
       if (this.textChannel.type !== ChannelType.DM) {
-        const permissions = this.textChannel.permissionsFor(
-          this.textChannel.guild.members.me!
-        );
+        const permissions = this.textChannel.permissionsFor(this.textChannel.guild.members.me!);
         this._sendable &&= !!permissions?.has(
           PermissionFlagsBits.ViewChannel
             | PermissionFlagsBits.SendMessages

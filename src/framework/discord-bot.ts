@@ -236,7 +236,7 @@ export class DiscordEolianBot implements EolianBot {
       return;
     }
 
-    const state = interaction.guild && await this.guildStore.getState(interaction.guild);
+    const state = interaction.guild && (await this.guildStore.getState(interaction.guild));
     await contextInteraction.user.updatePermissions(state?.details);
 
     if (embedButton.permission && contextInteraction.user.permission < embedButton.permission) {
@@ -270,10 +270,7 @@ export class DiscordEolianBot implements EolianBot {
             this.auth
           );
 
-      const noDefault = await this.onBotInvoked(
-        contextInteraction,
-        interaction.guild ?? undefined
-      );
+      const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
 
       if (!contextInteraction.hasReplied && !noDefault) {
         await contextInteraction.send('👌', { ephemeral: true });

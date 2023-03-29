@@ -1,11 +1,11 @@
-import { TextChannel, DMChannel, ChannelType, PermissionFlagsBits, VoiceChannel, GuildChannel } from 'discord.js';
+import { ChannelType, PermissionFlagsBits, GuildChannel } from 'discord.js';
 import { ContextTextChannel } from './@types';
 import { ButtonRegistry } from './button-registry';
-import { DiscordChannelSender } from './discord-channel-sender';
+import { DiscordChannelSender, SupportedTextChannel } from './discord-channel-sender';
 
 export class DiscordTextChannel extends DiscordChannelSender implements ContextTextChannel {
 
-  constructor(private readonly channel: TextChannel | DMChannel | VoiceChannel, registry: ButtonRegistry) {
+  constructor(private readonly channel: SupportedTextChannel, registry: ButtonRegistry) {
     super(channel, registry, channel);
   }
 

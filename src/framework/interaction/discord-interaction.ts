@@ -1,12 +1,5 @@
 import { UsersDb } from '@eolian/data/@types';
-import {
-  MessageComponentInteraction,
-  CommandInteraction,
-  GuildMember,
-  TextChannel,
-  DMChannel,
-  VoiceChannel,
-} from 'discord.js';
+import { MessageComponentInteraction, CommandInteraction, GuildMember } from 'discord.js';
 import {
   ContextInteraction,
   ContextUser,
@@ -15,7 +8,7 @@ import {
 } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordTextChannel } from '../discord-channel';
-import { DiscordChannelSender } from '../discord-channel-sender';
+import { DiscordChannelSender, SupportedTextChannel } from '../discord-channel-sender';
 import { getPermissionLevel, DiscordUser } from '../discord-user';
 import { DiscordInteractionSender } from './discord-interaction-sender';
 
@@ -36,7 +29,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
     super(
       new DiscordInteractionSender(interaction),
       registry,
-      <TextChannel | DMChannel | VoiceChannel>interaction.channel
+      interaction.channel as SupportedTextChannel
     );
   }
 
@@ -64,7 +57,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
   get channel(): ContextTextChannel {
     if (!this._channel) {
       this._channel = new DiscordTextChannel(
-        <TextChannel | DMChannel>this.interaction.channel,
+        this.interaction.channel as SupportedTextChannel,
         this.registry
       );
     }
