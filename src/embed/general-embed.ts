@@ -59,7 +59,7 @@ export function createUserDetailsEmbed(
   spotify?: SpotifyUser,
   soundcloud?: SoundCloudUser,
   identifiers?: Record<string, Identifier>,
-  syntax?: SyntaxType,
+  syntax?: SyntaxType
 ): EmbedMessage {
   let description
     = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`

@@ -85,7 +85,7 @@ export interface Identifier {
 }
 
 export interface SpotifyTracksIdentifier extends Identifier {
-  range?: SpotifyTimeRange
+  range?: SpotifyTimeRange;
 }
 
 export const enum ResourceType {

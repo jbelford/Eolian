@@ -154,13 +154,13 @@ export const KEYWORDS: Readonly<
   SHORT: new KeywordDetails(
     'SHORT',
     'Indicates to get top tracks for short term time range',
-    UserPermission.User,
+    UserPermission.User
   ),
   LONG: new KeywordDetails(
     'LONG',
     'Indicates to get top tracks for long term time range',
     UserPermission.User
-  )
+  ),
 };
 
 export const KEYWORDS_MAPPED = Object.values(KEYWORDS)

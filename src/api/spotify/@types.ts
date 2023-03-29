@@ -112,7 +112,7 @@ export const enum SpotifyResourceType {
 export const enum SpotifyTimeRange {
   SHORT = 'short_term',
   MEDIUM = 'medium_term',
-  LONG = 'long_term'
+  LONG = 'long_term',
 }
 
 export interface ISpotifyApi extends StreamFetcher {

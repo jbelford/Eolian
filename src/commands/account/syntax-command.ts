@@ -10,7 +10,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   if (!options.ARG?.length) {
     const user = await context.interaction.user.get();
     if (user.syntax !== undefined) {
-      await context.interaction.send(`Your syntax preference is currently: \`${syntaxTypeToName(user.syntax)}\``);
+      await context.interaction.send(
+        `Your syntax preference is currently: \`${syntaxTypeToName(user.syntax)}\``
+      );
     } else {
       await context.interaction.send(`Your syntax preference is currently: \`Server Default\``);
     }
@@ -50,10 +52,10 @@ const args: CommandArgs = {
           name: 'type',
           details: 'The syntax setting',
           getChoices: () => ['keyword', 'traditional', 'clear'],
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };
 
 export const SYNTAX_COMMAND: Command = {
@@ -70,17 +72,17 @@ export const SYNTAX_COMMAND: Command = {
     },
     {
       title: 'Set syntax to keyword',
-      example: SimpleExample.create(args, 'keyword')
+      example: SimpleExample.create(args, 'keyword'),
     },
     {
       title: 'Set syntax to traditional',
-      example: SimpleExample.create(args, 'traditional')
+      example: SimpleExample.create(args, 'traditional'),
     },
     {
       title: 'Reset syntax config to server default',
-      example: SimpleExample.create(args, 'clear')
-    }
+      example: SimpleExample.create(args, 'clear'),
+    },
   ],
   args,
-  execute
+  execute,
 };

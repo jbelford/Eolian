@@ -31,9 +31,15 @@ export class SpotifyTracksResolver implements SourceResolver {
 
 }
 
-export function createSpotifyTracks(user: SpotifyUser, client: ISpotifyApi, range?: SpotifyTimeRange): ResolvedResource {
+export function createSpotifyTracks(
+  user: SpotifyUser,
+  client: ISpotifyApi,
+  range?: SpotifyTimeRange
+): ResolvedResource {
   const term = range
-    ? range === SpotifyTimeRange.LONG ? 'All Time' : 'Last 4 Weeks'
+    ? range === SpotifyTimeRange.LONG
+      ? 'All Time'
+      : 'Last 4 Weeks'
     : 'Last 6 Months';
 
   return {
@@ -45,7 +51,7 @@ export function createSpotifyTracks(user: SpotifyUser, client: ISpotifyApi, rang
       type: ResourceType.Tracks,
       url: user.external_urls.spotify,
       auth: true,
-      range
+      range,
     } as SpotifyTracksIdentifier,
     fetcher: new SpotifyTracksFetcher(client, range),
   };
