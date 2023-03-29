@@ -1,11 +1,11 @@
-import { TextChannel, DMChannel, ChannelType, PermissionFlagsBits } from 'discord.js';
+import { TextChannel, DMChannel, ChannelType, PermissionFlagsBits, VoiceChannel, GuildChannel } from 'discord.js';
 import { ContextTextChannel } from './@types';
 import { ButtonRegistry } from './button-registry';
 import { DiscordChannelSender } from './discord-channel-sender';
 
 export class DiscordTextChannel extends DiscordChannelSender implements ContextTextChannel {
 
-  constructor(private readonly channel: TextChannel | DMChannel, registry: ButtonRegistry) {
+  constructor(private readonly channel: TextChannel | DMChannel | VoiceChannel, registry: ButtonRegistry) {
     super(channel, registry, channel);
   }
 
@@ -19,8 +19,8 @@ export class DiscordTextChannel extends DiscordChannelSender implements ContextT
 
   get visible(): boolean {
     if (!this.isDm) {
-      const permissions = (this.channel as TextChannel).permissionsFor(
-        (this.channel as TextChannel).guild.members.me!
+      const permissions = (this.channel as GuildChannel).permissionsFor(
+        (this.channel as GuildChannel).guild.members.me!
       );
       return permissions.has(PermissionFlagsBits.ViewChannel);
     }
@@ -29,8 +29,8 @@ export class DiscordTextChannel extends DiscordChannelSender implements ContextT
 
   get reactable(): boolean {
     if (!this.isDm) {
-      const permissions = (this.channel as TextChannel).permissionsFor(
-        (this.channel as TextChannel).guild.members.me!
+      const permissions = (this.channel as GuildChannel).permissionsFor(
+        (this.channel as GuildChannel).guild.members.me!
       );
       return permissions.has(PermissionFlagsBits.AddReactions);
     }

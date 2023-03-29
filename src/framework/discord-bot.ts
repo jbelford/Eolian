@@ -430,6 +430,7 @@ export class DiscordEolianBot implements EolianBot {
     switch (message.channel.type) {
       case ChannelType.DM:
       case ChannelType.GuildText:
+      case ChannelType.GuildVoice:
         return true;
       default:
         return false;

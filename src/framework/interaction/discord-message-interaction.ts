@@ -1,6 +1,6 @@
 import { CommandParsingStrategy, ParsedCommand } from '@eolian/commands/@types';
 import { UsersDb } from '@eolian/data/@types';
-import { Message, BaseMessageOptions, TextChannel, DMChannel } from 'discord.js';
+import { Message, BaseMessageOptions, TextChannel, DMChannel, VoiceChannel } from 'discord.js';
 import {
   ContextCommandInteraction,
   ContextUser,
@@ -47,7 +47,7 @@ export class DiscordMessageInteraction
     super(
       new MessageInteractionSender(discordMessage),
       registry,
-      <TextChannel | DMChannel>discordMessage.channel
+      <TextChannel | DMChannel | VoiceChannel>discordMessage.channel
     );
   }
 

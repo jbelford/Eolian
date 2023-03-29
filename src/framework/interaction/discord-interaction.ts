@@ -5,6 +5,7 @@ import {
   GuildMember,
   TextChannel,
   DMChannel,
+  VoiceChannel,
 } from 'discord.js';
 import {
   ContextInteraction,
@@ -35,7 +36,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
     super(
       new DiscordInteractionSender(interaction),
       registry,
-      <TextChannel | DMChannel>interaction.channel
+      <TextChannel | DMChannel | VoiceChannel>interaction.channel
     );
   }
 

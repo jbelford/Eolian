@@ -10,6 +10,7 @@ import {
   ChannelType,
   PermissionFlagsBits,
   MessageCollector,
+  VoiceChannel,
 } from 'discord.js';
 import {
   ContextInteractionOptions,
@@ -33,7 +34,7 @@ export class DiscordChannelSender implements ContextSendable {
   constructor(
     messageSender: DiscordMessageSender,
     registry: ButtonRegistry,
-    private readonly textChannel: TextChannel | DMChannel
+    private readonly textChannel: TextChannel | DMChannel | VoiceChannel
   ) {
     this.sender = new DiscordSender(messageSender, registry);
   }
@@ -41,9 +42,9 @@ export class DiscordChannelSender implements ContextSendable {
   get sendable(): boolean {
     if (this._sendable === undefined) {
       this._sendable = true;
-      if (this.textChannel.type === ChannelType.GuildText) {
-        const permissions = (this.textChannel as TextChannel).permissionsFor(
-          (this.textChannel as TextChannel).guild.members.me!
+      if (this.textChannel.type !== ChannelType.DM) {
+        const permissions = this.textChannel.permissionsFor(
+          this.textChannel.guild.members.me!
         );
         this._sendable &&= !!permissions?.has(
           PermissionFlagsBits.ViewChannel
