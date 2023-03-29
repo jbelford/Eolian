@@ -8,7 +8,12 @@ import { CommandOptionsParser } from '@eolian/command-options';
 class TextCommandParsingStrategy implements CommandParsingStrategy {
 
   messageInvokesBot(message: string, prefix = environment.cmdToken): boolean {
-    return message.trim().charAt(0) === prefix;
+    const trimmed = message.trim();
+    if (!trimmed.startsWith(prefix)) {
+      return false;
+    }
+    const text = trimmed.slice(1).trim();
+    return text.length > 0 && !text.startsWith(prefix);
   }
 
   parseCommand(
