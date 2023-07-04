@@ -27,6 +27,7 @@ export interface YoutubeVideo {
   url: string;
   artwork: string;
   isLive?: boolean;
+  blocked?: boolean;
 }
 
 export interface YoutubePlaylist {

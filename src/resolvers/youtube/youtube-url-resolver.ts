@@ -40,6 +40,8 @@ export class YouTubeUrlResolver implements SourceResolver {
         const video = await youtube.getVideo(resourceDetails.video);
         if (!video) {
           throw new EolianUserError('I could not find details about this video!');
+        } else if (video.blocked) {
+          throw new EolianUserError('🚫 This video is blocked in my region. Try another.');
         }
         return createYouTubeVideo(video, message);
       } else if (resourceDetails.playlist) {

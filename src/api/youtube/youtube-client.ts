@@ -307,6 +307,7 @@ function mapVideoResponse(
       ?? thumbnails.medium?.url
       ?? thumbnails.default!.url!,
     isLive: (video.snippet as youtube_v3.Schema$VideoSnippet).liveBroadcastContent === 'live',
+    blocked: (video as youtube_v3.Schema$Video).contentDetails?.regionRestriction?.blocked?.includes?.('US'),
   };
 }
 

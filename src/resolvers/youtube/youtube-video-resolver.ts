@@ -63,6 +63,10 @@ export class YouTubeVideoFetcher implements SourceFetcher {
       throw new EolianUserError(
         `I could not find details for video https://www.youtube.com/watch?v=${this.id}`
       );
+    } else if (video.blocked) {
+      throw new EolianUserError(
+        `🚫 The video https://www.youtube.com/watch?v=${this.id} is blocked in my region`
+      );
     }
     return { tracks: [mapYouTubeVideo(video)], rangeOptimized: true };
   }
