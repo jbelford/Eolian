@@ -231,7 +231,7 @@ export class DiscordEolianBot implements EolianBot {
       this.auth
     );
 
-    if (embedButton.userId === interaction.user.id) {
+    if (embedButton.userId && embedButton.userId !== interaction.user.id) {
       await contextInteraction.send(`Only <@${embedButton.userId}> may click this button`);
       return;
     }
