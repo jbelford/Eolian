@@ -1,8 +1,5 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "ES2021",
-    "lib": ["ES2021"],
     "sourceMap": true,
     "declaration": false,
     "allowJs": true,
@@ -16,14 +13,8 @@
     "noUnusedLocals": true,
     "removeComments": true,
     "resolveJsonModule": true,
-    "types": ["node"],
     "typeRoots": ["node_modules/@types"],
     "outDir": "./dist",
-    "baseUrl": "src",
-    "paths": {
-      "@eolian/*": ["*"]
-    }
   },
-  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.{spec,test}.ts"]
 }

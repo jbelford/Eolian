@@ -139,6 +139,7 @@ export const enum FeatureFlag {
    * Leave old servers when migrating token
    */
   DISCORD_OLD_LEAVE,
+  WEBSITE,
 }
 
 export interface FeatureFlagService {

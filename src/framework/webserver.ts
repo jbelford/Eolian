@@ -1,12 +1,13 @@
 import { TrackSource } from '@eolian/api/@types';
 import { Closable } from '@eolian/common/@types';
-import { GITHUB_PAGE } from '@eolian/common/constants';
 import { logger } from '@eolian/common/logger';
 import { feature } from '@eolian/data';
 import { FeatureFlag } from '@eolian/data/@types';
 import express, { RequestHandler } from 'express';
 import { Server } from 'http';
 import { IAuthServiceProvider } from './@types';
+import path from 'path';
+import { GITHUB_PAGE } from '@eolian/common/constants';
 
 export class WebServer implements Closable {
 
@@ -14,9 +15,17 @@ export class WebServer implements Closable {
   private server: Server | undefined;
 
   constructor(private readonly port: number, private readonly authProviders: IAuthServiceProvider) {
-    this.app.get('/', (req, res) => {
-      res.redirect(GITHUB_PAGE);
-    });
+    if (feature.enabled(FeatureFlag.WEBSITE)) {
+      this.app.use(express.static(path.join(__dirname, 'public')));
+
+      this.app.get('/', (req, res) => {
+        res.render('index.html');
+      });
+    } else {
+      this.app.get('/', (req, res) => {
+        res.redirect(GITHUB_PAGE);
+      });
+    }
 
     if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
       this.app.get('/callback/spotify', this.authCallback(TrackSource.Spotify));

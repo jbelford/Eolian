@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@eolian/*": ["*"]
+    }
+  },
+  "include": ["**/*.ts"],
+}

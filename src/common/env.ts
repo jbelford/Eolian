@@ -88,5 +88,6 @@ export const environment: AppEnv = {
     spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),
     discordOldLeave: getEnvFlag('FLAG_DISCORD_OLD_LEAVE'),
+    enableWebsite: getEnvFlag('FLAG_ENABLE_WEBSITE'),
   },
 };
