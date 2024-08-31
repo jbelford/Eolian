@@ -61,5 +61,5 @@ export async function httpRequest<T>(url: string, options?: HttpRequestOptions):
     }
   }
 
-  return options?.json ? await res.body.json() : res.body;
+  return <T>(options?.json ? await res.body.json() : res.body);
 }

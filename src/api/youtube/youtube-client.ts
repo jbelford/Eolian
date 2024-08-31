@@ -10,16 +10,14 @@ import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
 import { bing } from '../bing';
 import { IBingApi } from '../bing/@types';
 import { IYouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
-import * as play from 'play-dl';
 import { Readable } from 'stream';
+import ytdl from '@distube/ytdl-core';
 
 const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN
   = /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
-
-play.setToken({ youtube: { cookie: environment.tokens.youtube.cookie } });
 
 class YouTubeApi implements IYouTubeApi {
 
@@ -343,8 +341,10 @@ class YouTubeStreamSource implements StreamSource {
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s', this.url);
-    const result = await play.stream(this.url, { seek, discordPlayerCompatibility: true });
-    return result.stream;
+    const agent = ytdl.createAgent([{ name: "cookie", value: environment.tokens.youtube.cookie }])
+    const info = await ytdl.getInfo(this.url, { agent });
+    const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
+    return ytdl(this.url, { agent, format: audioFormats[0] })
   }
 
 }
