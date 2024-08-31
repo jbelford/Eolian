@@ -35,7 +35,7 @@ export function createQueueEmbed(
       += `from ${tracks[0].poster}\n\n`
       + tracks
         .slice(1)
-        .map((t, i) => `**${i + start + 2}. ${trackNameFormat(t)}**`)
+        .map((t, i) => `\0**${i + start + 2}. ${trackNameFormat(t)}**`)
         .join('\n');
     embed.url = tracks[0].url;
   } else {
