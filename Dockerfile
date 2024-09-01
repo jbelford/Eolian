@@ -10,11 +10,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends dialog \
     && apt-get install -y --no-install-recommends openssh-server \
     && echo "root:Docker!" | chpasswd \
-    && chmod u+x ./docker/entrypoint.sh
+    && chmod u+x ./entrypoint.sh
 COPY ./docker/sshd_config /etc/ssh/
 
 EXPOSE 8000 2222
-ENTRYPOINT [ "./docker/entrypoint.sh" ]
 
 # Build
 RUN yarn install
@@ -23,4 +22,4 @@ RUN npm install pm2 -g
 
 EXPOSE 8080
 
-CMD ["pm2-runtime", "./dist/bundle.js"]
+ENTRYPOINT [ "./entrypoint.sh" ]
