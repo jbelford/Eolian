@@ -10,8 +10,7 @@ import { RangeFactory, Track, StreamSource, TrackSource } from '../@types';
 import { bing } from '../bing';
 import { IBingApi } from '../bing/@types';
 import { IYouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
-import { Readable } from 'stream';
-import ytdl from '@ybd-project/ytdl-core';
+import { YouTubeStreamSource } from './youtube-stream-source';
 
 const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN
@@ -333,20 +332,6 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
     artwork: video.artwork,
     live: video.isLive,
   };
-}
-
-class YouTubeStreamSource implements StreamSource {
-
-  constructor(private readonly url: string) {}
-
-  async get(seek?: number): Promise<Readable> {
-    logger.info('Getting youtube stream %s', this.url);
-    const specialOptions = { poToken: environment.tokens.youtube.poToken, visitorData: environment.tokens.youtube.visitorData };
-    const info = await ytdl.getInfo(this.url, specialOptions);
-    const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-    return ytdl(this.url, { ...specialOptions, format: audioFormats[0] })
-  }
-
 }
 
 export const youtube: IYouTubeApi = new YouTubeApi(

@@ -3,7 +3,6 @@ import { EolianUserError } from '@eolian/common/errors';
 import { logger } from '@eolian/common/logger';
 import { querystringify } from '@eolian/http';
 import { IOAuthHttpClient } from '@eolian/http/@types';
-import { Readable } from 'stream';
 import { Track, StreamSource, TrackSource } from '../@types';
 import { youtube } from '../youtube';
 import { IYouTubeApi } from '../youtube/@types';
@@ -16,6 +15,7 @@ import {
   SoundCloudPlaylist,
 } from './@types';
 import { CLIENT_SOUNDCLOUD_REQUEST } from './soundcloud-request';
+import { SoundCloudStreamSource } from './soundcloud-stream-source';
 
 const TRACKS_PARAMS = {
   access: 'playable,blocked,preview',
@@ -271,21 +271,6 @@ type GetPaginatedItemsOptions = {
   requestLimit?: number;
   progress?: ProgressUpdater;
 };
-
-class SoundCloudStreamSource implements StreamSource {
-
-  constructor(
-    private readonly req: IOAuthHttpClient,
-    private readonly url: string,
-    private readonly stream: string
-  ) {}
-
-  get(): Promise<Readable> {
-    logger.info('Getting soundcloud stream %s', this.url);
-    return this.req.getStream(this.stream);
-  }
-
-}
 
 export const soundcloud: ISoundCloudApi = new SoundCloudApi(youtube);
 
