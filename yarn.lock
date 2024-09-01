@@ -4583,6 +4583,7 @@ __metadata:
     webpack-cli: "npm:^4.10.0"
     webpack-node-externals: "npm:^3.0.0"
     winston: "npm:^3.8.2"
+    youtube-po-token-generator: "npm:^0.2.0"
     zlib-sync: "npm:^0.1.9"
   languageName: unknown
   linkType: soft
