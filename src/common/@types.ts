@@ -28,7 +28,9 @@ export interface AppEnv {
     youtube: {
       token: string;
       identityToken?: string;
-      cookie: string;
+      cookie?: string;
+      poToken?: string;
+      visitorData?: string;
     };
     soundcloud: {
       clientId: string;

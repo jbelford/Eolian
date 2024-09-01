@@ -11,7 +11,7 @@ import { bing } from '../bing';
 import { IBingApi } from '../bing/@types';
 import { IYouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from './@types';
 import { Readable } from 'stream';
-import ytdl from '@distube/ytdl-core';
+import ytdl from '@ybd-project/ytdl-core';
 
 const SEARCH_MIN_SCORE = 79;
 const YOUTUBE_PATTERN
@@ -341,10 +341,10 @@ class YouTubeStreamSource implements StreamSource {
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s', this.url);
-    const agent = ytdl.createAgent([{ name: "cookie", value: environment.tokens.youtube.cookie }])
-    const info = await ytdl.getInfo(this.url, { agent });
+    const specialOptions = { poToken: environment.tokens.youtube.poToken, visitorData: environment.tokens.youtube.visitorData };
+    const info = await ytdl.getInfo(this.url, specialOptions);
     const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-    return ytdl(this.url, { agent, format: audioFormats[0] })
+    return ytdl(this.url, { ...specialOptions, format: audioFormats[0] })
   }
 
 }

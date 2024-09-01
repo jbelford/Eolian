@@ -64,7 +64,9 @@ export const environment: AppEnv = {
     youtube: {
       token: getEnv('YOUTUBE_TOKEN'),
       identityToken: getEnvOpt('YOUTUBE_IDENTITY_TOKEN'),
-      cookie: getEnv('YOUTUBE_COOKIE'),
+      cookie: getEnvOpt('YOUTUBE_COOKIE'),
+      poToken: getEnvOpt('YOUTUBE_PO_TOKEN'),
+      visitorData: getEnvOpt('YOUTUBE_VISITOR_DATA')
     },
     soundcloud: {
       clientId: getEnv('SOUNDCLOUD_CLIENT_ID'),
