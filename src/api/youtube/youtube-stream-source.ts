@@ -1,23 +1,31 @@
 import { logger } from '@eolian/common/logger';
-import { YTDL_NodejsStreamType, YtdlCore } from '@ybd-project/ytdl-core';
 import { Readable } from 'stream';
 import { StreamSource } from '../@types';
-// @ts-ignore
-import { generate } from 'youtube-po-token-generator';
+import { httpRequest } from '@eolian/http';
+import { Innertube, UniversalCache } from 'youtubei.js';
+import { generatePoToken } from './potoken';
 
-const ytdl = new YtdlCore();
+const cache = new UniversalCache(true);
 
 export class YouTubeStreamSource implements StreamSource {
 
-  constructor(private readonly url: string) {}
+  constructor(private readonly url: string, private readonly id: string) {}
 
   async get(seek?: number): Promise<Readable> {
-    logger.info('Getting youtube stream %s', this.url);
+    logger.info('Getting youtube stream %s - %s', this.url, this.id);
 
-    const info = await ytdl.getFullInfo(this.url);
-    const audioFormats = info.formats.filter(format => format.hasAudio && !format.hasVideo);
-    const stream = await ytdl.downloadFromInfo<YTDL_NodejsStreamType>(info, { format: audioFormats[0], streamType: 'nodejs' });
-    return stream as Readable;
+    const { poToken, visitorData } = await generatePoToken();
+
+    const innertube = await Innertube.create({
+      po_token: poToken,
+      visitor_data: visitorData,
+      cache,
+      generate_session_locally: true,
+    });
+
+    const info = await innertube.getBasicInfo(this.id);
+    const audioStreamingURL = info.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player);
+    return httpRequest(audioStreamingURL);
   }
 
 }

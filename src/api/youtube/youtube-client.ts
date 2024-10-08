@@ -20,7 +20,7 @@ const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+vi
 
 class YouTubeApi implements IYouTubeApi {
 
-  private readonly cache: MemoryCache<{ url: string; live: boolean }>;
+  private readonly cache: MemoryCache<{ url: string; id: string; live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
   constructor(token: string, cacheSize: number, private readonly bing?: IBingApi) {
@@ -268,11 +268,11 @@ class YouTubeApi implements IYouTubeApi {
     if (!result) {
       const video = await this.searchStreamVideo(track);
       if (video) {
-        result = { url: video.url, live: !!video.live };
+        result = { url: video.url, id: video.id!, live: !!video.live };
         this.cache.set(cacheId, result);
       }
     }
-    return result ? new YouTubeStreamSource(result.url) : undefined;
+    return result ? new YouTubeStreamSource(result.url, result.id) : undefined;
   }
 
   async getStream(track: Track): Promise<StreamSource | undefined> {
@@ -281,7 +281,7 @@ class YouTubeApi implements IYouTubeApi {
         `Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`
       );
     }
-    return new YouTubeStreamSource(track.url);
+    return new YouTubeStreamSource(track.url, track.id!);
   }
 
 }
