@@ -14,6 +14,7 @@ export interface AppEnv {
   ownerGuild?: string;
   port: number;
   baseUri: string;
+  commitDate: string;
   tokens: {
     discord: {
       clientId?: string;

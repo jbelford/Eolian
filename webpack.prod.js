@@ -3,6 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const nodeExternals = require('webpack-node-externals');
+const webpack = require('webpack');
 
 const alias = {};
 const dir = path.join(__dirname, 'src');
@@ -16,6 +17,11 @@ fs.readdirSync(dir)
     alias[aliasPath] = absPath;
   });
 
+let commitHash = require('child_process')
+  .execSync('git log -1 --date=format:"%d.%m.%y" --format="%ad"')
+  .toString()
+  .trim();
+
 module.exports = {
   mode: 'production',
   entry: path.join(dir, 'app.ts'),
@@ -28,6 +34,11 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      __COMMIT_DATE__: JSON.stringify(commitHash)
+    })
+  ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: alias,

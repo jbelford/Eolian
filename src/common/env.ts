@@ -54,6 +54,8 @@ export const environment: AppEnv = {
   ownerGuild: getEnvOpt('OWNER_GUILD'),
   port: getNumberEnv('PORT', 8080) || 8080,
   baseUri: getEnv('BASE_URI', 'http://localhost:8080'),
+  // @ts-ignore
+  commitDate: __COMMIT_DATE__,
   tokens: {
     discord: {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),

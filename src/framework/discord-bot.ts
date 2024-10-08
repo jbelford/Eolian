@@ -179,8 +179,9 @@ export class DiscordEolianBot implements EolianBot {
       this.client.user!.setPresence({
         activities: [
           {
-            name: `${environment.cmdToken}help or /help`,
-            type: ActivityType.Listening,
+            name: `Use ${environment.cmdToken}help (Updated ${environment.commitDate})`,
+            type: ActivityType.Custom,
+            url: 'https://www.eolianbot.com',
           },
         ],
       });
