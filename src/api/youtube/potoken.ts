@@ -3,10 +3,10 @@ import { Innertube } from 'youtubei.js';
 import { BG, FetchFunction } from 'bgutils-js';
 import { logger } from '@eolian/common/logger';
 import { randomUUID } from 'crypto';
-import { EnvHttpProxyAgent } from 'undici';
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { environment } from '@eolian/common/env';
+import { Agent } from 'http';
 
 type TokenData = {
   timestamp: number;
@@ -30,14 +30,17 @@ export async function generatePoToken(fetchFunc?: FetchFunction): Promise<TokenD
   return tokenData;
 }
 
-export function createProxyUrl() {
+export function createProxyAgent(): Agent | undefined {
+  if (!environment.proxy) {
+    return undefined;
+  }
   const sessId = `sessid-${randomUUID()}`;
-  const { user, password, name } = environment.proxy!;
-  return `http://${user}-${sessId}:${password}@${name}`;
+  const { user, password, name } = environment.proxy;
+  return new HttpsProxyAgent(`http://${user}-${sessId}:${password}@${name}`);
 }
 
 export function createFetchFunction(): FetchFunction {
-  const agent = environment.proxy ? new HttpsProxyAgent(createProxyUrl()) : undefined;
+  const agent = createProxyAgent();
   return async (input, init) => {
     const notRequest = typeof input === "string" || input instanceof URL;
     const url = notRequest
@@ -57,12 +60,6 @@ export function createFetchFunction(): FetchFunction {
     const response = await fetch(url, modifiedInit as any);
     return response as any;
   };
-}
-
-export function createEnvProxyAgent() {
-  return new EnvHttpProxyAgent({
-    httpProxy: createProxyUrl()
-  });
 }
 
 async function generateTokenInternal(fetchFunc?: FetchFunction): Promise<TokenData> {
