@@ -9,6 +9,7 @@ import { ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SoundCloudSongResolver implements SourceResolver {
+  public source = TrackSource.SoundCloud;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 

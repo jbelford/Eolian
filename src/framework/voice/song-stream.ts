@@ -5,7 +5,7 @@ import { logger } from '@eolian/common/logger';
 import { ExponentialSleep } from '@eolian/common/util';
 import { RequestErrorCodes } from '@eolian/http';
 import { HttpRequestStreamError } from '@eolian/http/@types';
-import { EventEmitter } from 'node-cache';
+import EventEmitter from 'events';
 import prism from 'prism-media';
 import { Readable } from 'stream';
 

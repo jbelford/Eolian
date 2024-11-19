@@ -31,6 +31,7 @@ import {
 } from './youtube';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
+  source: TrackSource.Unknown,
   resolve: async () => {
     throw new EolianUserError('Could not find unknown resource.');
   },
@@ -71,7 +72,7 @@ function getByQuery(context: CommandContext, params: CommandOptions) {
 }
 
 function getSongResolver(params: CommandOptions, context: CommandContext) {
-  if (params.SOUNDCLOUD) {
+  if (useSoundCloud(context, params)) {
     return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
     context.interaction.send(
@@ -83,7 +84,7 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
 
 function getTracksResolver(context: CommandContext, params: CommandOptions) {
   if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
-    if (params.SOUNDCLOUD) {
+    if (useSoundCloud(context, params)) {
       return new SoundCloudTracksResolver(context, params);
     } else if (params.YOUTUBE) {
       context.interaction.send('(Psst.. The TRACKS keyword is not available for YouTube.)');
@@ -97,7 +98,7 @@ function getTracksResolver(context: CommandContext, params: CommandOptions) {
 
 function getLikesResolver(context: CommandContext, params: CommandOptions) {
   if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
-    if (params.SOUNDCLOUD) {
+    if (useSoundCloud(context, params)) {
       return new SoundCloudFavoritesResolver(context, params);
     } else if (params.YOUTUBE) {
       context.interaction.send('(Psst.. The LIKES keyword is not available for YouTube.)');
@@ -114,7 +115,7 @@ function getArtistResolver(context: CommandContext, params: CommandOptions) {
     context.interaction.send(
       `Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`
     );
-  } else if (params.SOUNDCLOUD) {
+  } else if (useSoundCloud(context, params)) {
     return new SoundCloudArtistResolver(context, params);
   }
   return new SpotifyArtistResolver(context, params);
@@ -129,16 +130,26 @@ function getAlbumResolver(context: CommandContext, params: CommandOptions) {
 
 function getPlaylistResolver(context: CommandContext, params: CommandOptions) {
   if (params.MY) {
-    if (params.SOUNDCLOUD) {
+    if (useSoundCloud(context, params)) {
       return new SoundCloudPlaylistResolver(context, params);
     }
     return new SpotifyPlaylistResolver(context, params);
   } else if (params.SPOTIFY) {
     return new SpotifyPlaylistResolver(context, params);
-  } else if (params.SOUNDCLOUD) {
+  } else if (useSoundCloud(context, params)) {
     return new SoundCloudPlaylistResolver(context, params);
   }
   return new YouTubePlaylistResolver(context, params);
+}
+
+function useSoundCloud(context: CommandContext, params: CommandOptions) {
+  return params.SOUNDCLOUD || (context.server && !context.server.details.isAllowedYouTube);
+}
+
+function validateSourceAllowed(context: CommandContext, source: TrackSource) {
+  if (context.server && !context.server.details.isAllowedYouTube && source !== TrackSource.SoundCloud) {
+    throw new EolianUserError('😔 Sorry, YouTube streaming is only permitted for select guilds. This guild may only use SoundCloud. [Learn more](https://github.com/jbelford/Eolian/wiki/FAQ#youtube-limitation-for-eolian-bot-2024-update)')
+  }
 }
 
 export function getSourceResolver(context: CommandContext, params: CommandOptions): SourceResolver {
@@ -146,7 +157,9 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
     throw new EolianUserError('You must specify only an URL, SEARCH or MY.');
   }
 
-  return params.URL ? getBySource(context, params) : getByQuery(context, params);
+  const resolver = params.URL ? getBySource(context, params) : getByQuery(context, params);
+  validateSourceAllowed(context, resolver.source);
+  return resolver;
 }
 
 export async function getSourceFetcher(
@@ -154,6 +167,7 @@ export async function getSourceFetcher(
   context: CommandContext,
   params: CommandOptions
 ): Promise<SourceFetcher> {
+  validateSourceAllowed(context, identifier.src);
   switch (identifier.src) {
     case TrackSource.SoundCloud:
       return getSoundCloudSourceFetcher(identifier, context, params);

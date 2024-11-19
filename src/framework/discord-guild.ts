@@ -34,6 +34,10 @@ export class DiscordGuild implements ContextServer {
     return this.guild.ownerId;
   }
 
+  get isAllowedYouTube(): boolean {
+    return environment.youtubeAllowList.size === 0 || environment.youtubeAllowList.has(this.id);
+  }
+
   async get(): Promise<ServerDTO> {
     if (!this.configCache) {
       this.configCache = await this.servers.get(this.id);

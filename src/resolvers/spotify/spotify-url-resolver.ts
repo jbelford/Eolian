@@ -12,6 +12,7 @@ import { createSpotifyArtist } from './spotify-artist-resolver';
 import { createSpotifyPlaylist } from './spotify-playlist-resolver';
 
 export class SpotifyUrlResolver implements SourceResolver {
+  public source = TrackSource.Spotify;
 
   constructor(
     private readonly url: string,

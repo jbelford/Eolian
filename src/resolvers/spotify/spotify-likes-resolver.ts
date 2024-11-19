@@ -10,6 +10,7 @@ import { ContextSendable } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyLikesResolver implements SourceResolver {
+  public source = TrackSource.Spotify;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 

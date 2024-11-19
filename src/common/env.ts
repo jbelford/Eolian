@@ -71,6 +71,7 @@ export const environment: AppEnv = {
   // @ts-ignore
   commitDate: __COMMIT_DATE__,
   proxy: getProxyEnv(),
+  youtubeAllowList: new Set(getArrayEnv('YOUTUBE_ALLOWLIST')),
   tokens: {
     discord: {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),

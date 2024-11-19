@@ -27,7 +27,7 @@ export class YouTubeStreamSource implements StreamSource {
     });
 
     const info = await innertube.getBasicInfo(this.id);
-    const audioStreamingURL = info.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player);
+    const audioStreamingURL = info.chooseFormat({ quality: 'bestefficiency', type: 'audio' }).decipher(innertube.session.player);
     return httpRequest(audioStreamingURL, { proxy });
   }
 

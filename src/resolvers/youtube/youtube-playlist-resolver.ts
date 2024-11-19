@@ -11,6 +11,7 @@ import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class YouTubePlaylistResolver implements SourceResolver {
+  public source = TrackSource.YouTube;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 

@@ -1,4 +1,4 @@
-import { Track } from '@eolian/api/@types';
+import { Track, TrackSource } from '@eolian/api/@types';
 import { Identifier } from '@eolian/data/@types';
 import { ContextMessage } from '@eolian/framework/@types';
 
@@ -11,6 +11,7 @@ export interface ResolvedResource {
 }
 
 export interface SourceResolver {
+  readonly source: TrackSource;
   resolve(): Promise<ResolvedResource>;
 }
 

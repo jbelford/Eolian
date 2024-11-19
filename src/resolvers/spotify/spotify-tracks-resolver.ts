@@ -7,6 +7,7 @@ import { ResourceType, SpotifyTracksIdentifier } from '@eolian/data/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyTracksResolver implements SourceResolver {
+  public source = TrackSource.Spotify;
 
   constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
 

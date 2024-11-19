@@ -12,6 +12,7 @@ import { ContextSendable, ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 
 export class SpotifyPlaylistResolver implements SourceResolver {
+  public source = TrackSource.Spotify;
 
   private client: ISpotifyApi = spotify;
 

@@ -15,6 +15,7 @@ export interface AppEnv {
   port: number;
   baseUri: string;
   commitDate: string;
+  youtubeAllowList: Set<string>;
   proxy?: {
     user: string;
     password: string;

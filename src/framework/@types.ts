@@ -7,7 +7,7 @@ import { ServerDTO, UserDTO, Identifier } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { AuthorizationCodeProvider } from '@eolian/http';
 import { IAuthService, IOAuthHttpClient } from '@eolian/http/@types';
-import { EventEmitter } from 'node-cache';
+import { EventEmitter } from 'events';
 
 export interface EolianBot extends Closable {
   start(): Promise<void>;
@@ -190,6 +190,7 @@ export interface QueueDisplay extends Display {
 }
 
 export interface ContextServer extends ContextServerInfo {
+  readonly isAllowedYouTube: boolean;
   get(): Promise<ServerDTO>;
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;

@@ -6,11 +6,13 @@ import { ContextMessage } from '@eolian/framework/@types';
 import { SourceResolver, ResolvedResource } from '../@types';
 import { createYouTubePlaylist } from './youtube-playlist-resolver';
 import { createYouTubeVideo } from './youtube-video-resolver';
+import { TrackSource } from '@eolian/api/@types';
 
 const MY_MIX_PLAYLIST_ID = 'RDMM';
 const LIKED_MUSIC_ID = 'LM';
 
 export class YouTubeUrlResolver implements SourceResolver {
+  public source = TrackSource.YouTube;
 
   constructor(
     private readonly url: string,

@@ -18,6 +18,7 @@ type UserResultValue = { user: SoundCloudUser; client?: ISoundCloudApi };
 export type UserResult = MessageBundledResult<UserResultValue>;
 
 export class SoundCloudArtistResolver implements SourceResolver {
+  public source = TrackSource.SoundCloud;
 
   constructor(
     protected readonly context: CommandContext,

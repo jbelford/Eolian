@@ -11,6 +11,7 @@ import { ResolvedResource, SourceFetcher, FetchResult } from '../@types';
 import { SoundCloudArtistResolver, UserResult } from './soundcloud-artist-resolver';
 
 export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
+  public source = TrackSource.SoundCloud;
 
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();

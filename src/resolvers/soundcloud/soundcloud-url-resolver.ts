@@ -10,8 +10,10 @@ import { SourceResolver, ResolvedResource } from '../@types';
 import { createSoundCloudUser } from './soundcloud-artist-resolver';
 import { createSoundCloudPlaylist } from './soundcloud-playlist-resolver';
 import { createSoundCloudSong } from './soundcloud-song-resolver';
+import { TrackSource } from '@eolian/api/@types';
 
 export class SoundCloudUrlResolver implements SourceResolver {
+  public source = TrackSource.SoundCloud;
 
   constructor(private readonly url: string) {}
 
