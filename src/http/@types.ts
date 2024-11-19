@@ -17,6 +17,7 @@ export type HttpRequestOptions = {
     };
   };
   json?: boolean;
+  proxy?: string;
 };
 
 export type TokenResponse = {

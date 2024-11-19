@@ -2,7 +2,7 @@ import { logger } from '@eolian/common/logger';
 import { Readable } from 'stream';
 import { StreamSource } from '../@types';
 import { Innertube, UniversalCache } from 'youtubei.js';
-import { createFetchFunction, generatePoToken } from './potoken';
+import { createFetchFunction, createProxyUrl, generatePoToken } from './potoken';
 import { httpRequest } from '@eolian/http';
 
 const cache = new UniversalCache(true);
@@ -14,7 +14,8 @@ export class YouTubeStreamSource implements StreamSource {
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s - %s', this.url, this.id);
 
-    const fetch = createFetchFunction();
+    const proxy = createProxyUrl();
+    const fetch = createFetchFunction(proxy);
     const { poToken, visitorData } = await generatePoToken(fetch);
 
     const innertube = await Innertube.create({
@@ -27,7 +28,7 @@ export class YouTubeStreamSource implements StreamSource {
 
     const info = await innertube.getBasicInfo(this.id);
     const audioStreamingURL = info.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player);
-    return httpRequest(audioStreamingURL);
+    return httpRequest(audioStreamingURL, { proxy });
   }
 
 }

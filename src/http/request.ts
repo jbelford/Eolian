@@ -1,5 +1,5 @@
 import { IncomingHttpHeaders } from 'http';
-import { request } from 'undici';
+import { EnvHttpProxyAgent, request } from 'undici';
 import { HttpRequestOptions, HttpRequestParams } from './@types';
 
 export const enum RequestErrorCodes {
@@ -49,6 +49,7 @@ export async function httpRequest<T>(url: string, options?: HttpRequestOptions):
     headers,
     body,
     maxRedirections: 5,
+    dispatcher: options?.proxy ? new EnvHttpProxyAgent({ httpProxy: options.proxy }) : undefined
   });
 
   if (res.statusCode >= 400) {

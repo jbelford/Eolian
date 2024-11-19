@@ -39,8 +39,17 @@ export function createProxyAgent(): Agent | undefined {
   return new HttpsProxyAgent(`http://${user}-${sessId}:${password}@${name}`);
 }
 
-export function createFetchFunction(): FetchFunction {
-  const agent = createProxyAgent();
+export function createProxyUrl(): string | undefined {
+  if (!environment.proxy) {
+    return undefined;
+  }
+  const sessId = `sessid-${randomUUID()}`;
+  const { user, password, name } = environment.proxy;
+  return `http://${user}-${sessId}:${password}@${name}`;
+}
+
+export function createFetchFunction(proxy?: string): FetchFunction {
+  const agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
   return async (input, init) => {
     const notRequest = typeof input === "string" || input instanceof URL;
     const url = notRequest
