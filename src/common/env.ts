@@ -46,6 +46,20 @@ function getEnvFlag(name: string): boolean {
   return getEnvOpt(name) === 'true';
 }
 
+function getProxyEnv(): AppEnv['proxy'] {
+  const proxyUser = getEnvOpt('HTTP_PROXY_USER');
+  const proxyPass = getEnvOpt('HTTP_PROXY_PASSWORD');
+  const proxyName = getEnvOpt('HTTP_PROXY_NAME');
+  if (!proxyUser || !proxyPass || !proxyName) {
+    return undefined;
+  }
+  return {
+    name: proxyName,
+    password: proxyPass,
+    user: proxyUser,
+  }
+}
+
 export const environment: AppEnv = {
   prod: getEnv('NODE_ENV') === 'production',
   debug: getEnvFlag('DEBUG_ENABLED'),
@@ -56,6 +70,7 @@ export const environment: AppEnv = {
   baseUri: getEnv('BASE_URI', 'http://localhost:8080'),
   // @ts-ignore
   commitDate: __COMMIT_DATE__,
+  proxy: getProxyEnv(),
   tokens: {
     discord: {
       clientId: getEnvOpt('DISCORD_CLIENT_ID'),

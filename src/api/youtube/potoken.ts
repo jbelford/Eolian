@@ -1,7 +1,12 @@
 import { JSDOM } from 'jsdom';
 import { Innertube } from 'youtubei.js';
-import { BG } from 'bgutils-js';
+import { BG, FetchFunction } from 'bgutils-js';
 import { logger } from '@eolian/common/logger';
+import { randomUUID } from 'crypto';
+import { EnvHttpProxyAgent } from 'undici';
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { environment } from '@eolian/common/env';
 
 type TokenData = {
   timestamp: number;
@@ -14,18 +19,53 @@ let tokenData: Promise<TokenData> | undefined;
 
 const REFRESH_TIME = 1000 * 60 * 60 * 24;
 
-export async function generatePoToken(): Promise<TokenData> {
+export async function generatePoToken(fetchFunc?: FetchFunction): Promise<TokenData> {
   if (tokenData) {
     const result = await tokenData;
     if (Date.now() - result.timestamp < REFRESH_TIME) {
       return result;
     }
   }
-  tokenData = generateTokenInternal()
+  tokenData = generateTokenInternal(fetchFunc)
   return tokenData;
 }
 
-async function generateTokenInternal(): Promise<TokenData> {
+export function createProxyUrl() {
+  const sessId = `sessid-${randomUUID()}`;
+  const { user, password, name } = environment.proxy!;
+  return `http://${user}-${sessId}:${password}@${name}`;
+}
+
+export function createFetchFunction(): FetchFunction {
+  const agent = environment.proxy ? new HttpsProxyAgent(createProxyUrl()) : undefined;
+  return async (input, init) => {
+    const notRequest = typeof input === "string" || input instanceof URL;
+    const url = notRequest
+        ? input
+        : input.url;
+
+    const modifiedInit = {
+      ...init,
+      method: init?.method,
+      agent,
+    };
+
+    if (!notRequest) {
+      modifiedInit.method = input.method;
+    }
+
+    const response = await fetch(url, modifiedInit as any);
+    return response as any;
+  };
+}
+
+export function createEnvProxyAgent() {
+  return new EnvHttpProxyAgent({
+    httpProxy: createProxyUrl()
+  });
+}
+
+async function generateTokenInternal(fetchFunc?: FetchFunction): Promise<TokenData> {
   const innertube = await Innertube.create({ retrieve_player: false });
 
   const requestKey = 'O43z0dpjhgX20SCx4KAo';
@@ -39,8 +79,7 @@ async function generateTokenInternal(): Promise<TokenData> {
   });
 
   const bgConfig = {
-    // @ts-ignore
-    fetch: (url, options) => fetch(url, options),
+    fetch: fetchFunc,
     globalObj: globalThis,
     identifier: visitorData,
     requestKey,

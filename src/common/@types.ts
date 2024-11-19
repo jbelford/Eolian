@@ -15,6 +15,11 @@ export interface AppEnv {
   port: number;
   baseUri: string;
   commitDate: string;
+  proxy?: {
+    user: string;
+    password: string;
+    name: string;
+  },
   tokens: {
     discord: {
       clientId?: string;

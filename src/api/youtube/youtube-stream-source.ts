@@ -1,9 +1,9 @@
 import { logger } from '@eolian/common/logger';
 import { Readable } from 'stream';
 import { StreamSource } from '../@types';
-import { httpRequest } from '@eolian/http';
 import { Innertube, UniversalCache } from 'youtubei.js';
-import { generatePoToken } from './potoken';
+import { createFetchFunction, generatePoToken } from './potoken';
+import { httpRequest } from '@eolian/http';
 
 const cache = new UniversalCache(true);
 
@@ -14,13 +14,15 @@ export class YouTubeStreamSource implements StreamSource {
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s - %s', this.url, this.id);
 
-    const { poToken, visitorData } = await generatePoToken();
+    const fetch = createFetchFunction();
+    const { poToken, visitorData } = await generatePoToken(fetch);
 
     const innertube = await Innertube.create({
       po_token: poToken,
       visitor_data: visitorData,
       cache,
       generate_session_locally: true,
+      fetch
     });
 
     const info = await innertube.getBasicInfo(this.id);
