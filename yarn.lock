@@ -3069,6 +3069,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/webrtc@npm:^0.0.37":
+  version: 0.0.37
+  resolution: "@types/webrtc@npm:0.0.37"
+  checksum: 10/778c77dc30bfe587d980d0e116c9cc6de1c590f6315a1510e246fe96516661f80ff51cffd89c97f64eb289de69e6daf20333cb5a38037cfc70573bbf9403753b
+  languageName: node
+  linkType: hard
+
 "@types/whatwg-url@npm:^8.2.1":
   version: 8.2.1
   resolution: "@types/whatwg-url@npm:8.2.1"
@@ -3498,7 +3505,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agent-base@npm:6, agent-base@npm:^6.0.2":
+"agent-base@npm:5":
+  version: 5.1.1
+  resolution: "agent-base@npm:5.1.1"
+  checksum: 10/82954db5dccdccccf52c4b7f548394a696accd259d564bfb325fb02586aaaa9df96f5d50bb19134923fe5ff9c21195e7a88871bf4e086cca9014a549a0ba2a5f
+  languageName: node
+  linkType: hard
+
+"agent-base@npm:6, agent-base@npm:^6.0.1, agent-base@npm:^6.0.2":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
   dependencies:
@@ -3712,6 +3726,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bent@npm:^7.3.12":
+  version: 7.3.12
+  resolution: "bent@npm:7.3.12"
+  dependencies:
+    bytesish: "npm:^0.4.1"
+    caseless: "npm:~0.12.0"
+    is-stream: "npm:^2.0.0"
+  checksum: 10/9aa8e1a37081530912022662bec68d8a0279aaedbed963e8376314d8fea2037937bcfcca5259a5497b4a1111e4139c41d291f427d4be580751418872a07412d8
+  languageName: node
+  linkType: hard
+
 "bgutils-js@npm:^2.2.0":
   version: 2.2.0
   resolution: "bgutils-js@npm:2.2.0"
@@ -3862,6 +3887,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bytesish@npm:^0.4.1":
+  version: 0.4.4
+  resolution: "bytesish@npm:0.4.4"
+  checksum: 10/50a6c9423f66fff984676ee1d3c5f12d2a23830cb5de81abc597415aa2f51cc617b251d660eede10b8e45bf3a3a5c31d4be467ec69888f31ccc66e90cb586ad5
+  languageName: node
+  linkType: hard
+
 "cacache@npm:^15.2.0":
   version: 15.3.0
   resolution: "cacache@npm:15.3.0"
@@ -3932,7 +3964,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caseless@npm:^0.12.0":
+"caseless@npm:^0.12.0, caseless@npm:~0.12.0":
   version: 0.12.0
   resolution: "caseless@npm:0.12.0"
   checksum: 10/ea1efdf430975fdbac3505cdd21007f7ac5aa29b6d4d1c091f965853cd1bf87e4b08ea07b31a6d688b038872b7cdf0589d9262d59c699d199585daad052aeb20
@@ -4598,6 +4630,7 @@ __metadata:
     https-proxy-agent: "npm:^7.0.5"
     iso8601-duration: "npm:^2.1.1"
     jsdom: "npm:^25.0.1"
+    microsoft-cognitiveservices-speech-sdk: "npm:^1.41.0"
     mongodb: "npm:^4.11.0"
     node-cache: "npm:^5.1.2"
     node-fetch: "npm:2"
@@ -5636,6 +5669,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"https-proxy-agent@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "https-proxy-agent@npm:4.0.0"
+  dependencies:
+    agent-base: "npm:5"
+    debug: "npm:4"
+  checksum: 10/e90ca77ec10ef9987ad464853dfee744fb13fb02ad72f31c770ba09fb55675206a1de3c8b7e74d809fc00ed3baa7e01a48c569a419a675bfa3ef1ee975822b70
+  languageName: node
+  linkType: hard
+
 "https-proxy-agent@npm:^5.0.0":
   version: 5.0.0
   resolution: "https-proxy-agent@npm:5.0.0"
@@ -6337,6 +6380,20 @@ __metadata:
     braces: "npm:^3.0.1"
     picomatch: "npm:^2.2.3"
   checksum: 10/c499da5aad38f3ba1a32a73a81f3dd9b631e12492133c503c14ce59aa5c631159c08f2c43d3a7e0ea3955c7921d41b7b97e662360fe3b28b2cfb0923949c176d
+  languageName: node
+  linkType: hard
+
+"microsoft-cognitiveservices-speech-sdk@npm:^1.41.0":
+  version: 1.41.0
+  resolution: "microsoft-cognitiveservices-speech-sdk@npm:1.41.0"
+  dependencies:
+    "@types/webrtc": "npm:^0.0.37"
+    agent-base: "npm:^6.0.1"
+    bent: "npm:^7.3.12"
+    https-proxy-agent: "npm:^4.0.0"
+    uuid: "npm:^9.0.0"
+    ws: "npm:^7.5.6"
+  checksum: 10/fc00d6a71c8ffa392ffdee39d4c99d538ed72830a9f04de5cbe6c4bd8eda1df3a1124cda1c6dbf05587e2e450ffc7a68fdddbea4d6929c0fec51676175716366
   languageName: node
   linkType: hard
 
@@ -8796,6 +8853,21 @@ __metadata:
   version: 1.0.2
   resolution: "wrappy@npm:1.0.2"
   checksum: 10/159da4805f7e84a3d003d8841557196034155008f817172d4e986bd591f74aa82aa7db55929a54222309e01079a65a92a9e6414da5a6aa4b01ee44a511ac3ee5
+  languageName: node
+  linkType: hard
+
+"ws@npm:^7.5.6":
+  version: 7.5.10
+  resolution: "ws@npm:7.5.10"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10/9c796b84ba80ffc2c2adcdfc9c8e9a219ba99caa435c9a8d45f9ac593bba325563b3f83edc5eb067cc6d21b9a6bf2c930adf76dd40af5f58a5ca6859e81858f0
   languageName: node
   linkType: hard
 

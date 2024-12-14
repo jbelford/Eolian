@@ -6,7 +6,6 @@ import { randomUUID } from 'crypto';
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { environment } from '@eolian/common/env';
-import { Agent } from 'http';
 
 type TokenData = {
   timestamp: number;
@@ -30,22 +29,13 @@ export async function generatePoToken(fetchFunc?: FetchFunction): Promise<TokenD
   return tokenData;
 }
 
-export function createProxyAgent(): Agent | undefined {
-  if (!environment.proxy) {
-    return undefined;
-  }
-  const sessId = `sessid-${randomUUID()}`;
-  const { user, password, name } = environment.proxy;
-  return new HttpsProxyAgent(`http://${user}-${sessId}:${password}@${name}`);
-}
-
 export function createProxyUrl(): string | undefined {
   if (!environment.proxy) {
     return undefined;
   }
   const sessId = `sessid-${randomUUID()}`;
   const { user, password, name } = environment.proxy;
-  return `http://${user}-${sessId}:${password}@${name}`;
+  return `http://${user}-cc-us-${sessId}:${password}@${name}`;
 }
 
 export function createFetchFunction(proxy?: string): FetchFunction {

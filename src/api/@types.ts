@@ -13,6 +13,7 @@ export const enum TrackSource {
   Spotify,
   YouTube,
   SoundCloud,
+  Poetry,
 }
 
 export type TrackSourceDetails = {

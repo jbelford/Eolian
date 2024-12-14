@@ -79,6 +79,8 @@ export type KeywordName = Uppercase<
   | 'soundcloud'
   | 'spotify'
   | 'youtube'
+  | 'poem'
+  | 'random'
   | 'playlist'
   | 'album'
   | 'artist'

@@ -29,6 +29,7 @@ import {
   YouTubePlaylistResolver,
   getYouTubeSourceFetcher,
 } from './youtube';
+import { PoetryResolver } from './poetry';
 
 const UNKNOWN_RESOLVER: SourceResolver = {
   source: TrackSource.Unknown,
@@ -72,7 +73,9 @@ function getByQuery(context: CommandContext, params: CommandOptions) {
 }
 
 function getSongResolver(params: CommandOptions, context: CommandContext) {
-  if (useSoundCloud(context, params)) {
+  if (params.POEM) {
+    return new PoetryResolver(context, params);
+  } else if (useSoundCloud(context, params)) {
     return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
     context.interaction.send(

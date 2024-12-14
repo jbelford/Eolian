@@ -94,6 +94,10 @@ export const environment: AppEnv = {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
     },
+    speech: {
+      key: getEnv('SPEECH_SERVICE_KEY'),
+      region: getEnv('SPEECH_SERVICE_REGION'),
+    }
   },
   mongo: {
     uri: getEnv('MONGO_URI'),

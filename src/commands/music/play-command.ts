@@ -38,7 +38,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
     );
 
     fetcher = await getSourceFetcher(identifier, context, options);
-  } else if (options.SEARCH || options.URL) {
+  } else if (options.SEARCH || options.URL || options.POEM) {
     await context.interaction.defer(false);
     const resource = await getSourceResolver(context, options).resolve();
     if (resource) {
@@ -106,7 +106,7 @@ export const PLAY_COMMAND: Command = {
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: UserPermission.DJ,
-  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.FAST],
+  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.POEM, KEYWORDS.FAST, KEYWORDS.RANDOM],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   noDefaultReply: true,
   usage: [

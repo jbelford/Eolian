@@ -101,6 +101,17 @@ export const KEYWORDS: Readonly<
     UserPermission.User,
     KeywordGroup.Source
   ),
+  POEM: new KeywordDetails(
+    'POEM',
+    'Indicates to fetch a resource from Poetry if applicable.',
+    UserPermission.User,
+    KeywordGroup.Source
+  ),
+  RANDOM: new KeywordDetails(
+    'RANDOM',
+    'Indicates to fetch a random resource. (Only available for Poetry)',
+    UserPermission.User
+  ),
   PLAYLIST: new KeywordDetails(
     'PLAYLIST',
     'Indicates to fetch songs from a playlist given a query.',

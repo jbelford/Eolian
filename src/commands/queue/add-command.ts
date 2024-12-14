@@ -28,15 +28,17 @@ export function createSelectedMessage(
 }
 
 async function executeAdd(context: CommandContext, options: CommandOptions): Promise<void> {
-  const sum = truthySum(options.SEARCH, options.URL, options.IDENTIFIER);
-  if (sum === 0 && !options.MY) {
-    throw new EolianUserError(
-      'You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. See `help add` to learn more.'
-    );
-  } else if (sum > 1) {
-    throw new EolianUserError(
-      'You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again. See `help add` to learn more.'
-    );
+  if (!options.POEM) {
+    const sum = truthySum(options.SEARCH, options.URL, options.IDENTIFIER);
+    if (sum === 0 && !options.MY) {
+      throw new EolianUserError(
+        'You must provide me a SEARCH, URL or IDENTIFIER pattern or use the MY keyword. See `help add` to learn more.'
+      );
+    } else if (sum > 1) {
+      throw new EolianUserError(
+        'You can only include 1 SEARCH, URL, or IDENTIFIER pattern. Please try again. See `help add` to learn more.'
+      );
+    }
   }
 
   let fetcher: SourceFetcher | undefined;
@@ -119,6 +121,7 @@ export const ADD_COMMAND: Command = {
     KEYWORDS.SOUNDCLOUD,
     KEYWORDS.SPOTIFY,
     KEYWORDS.YOUTUBE,
+    KEYWORDS.POEM,
     KEYWORDS.PLAYLIST,
     KEYWORDS.ALBUM,
     KEYWORDS.ARTIST,
@@ -129,6 +132,7 @@ export const ADD_COMMAND: Command = {
     KEYWORDS.FAST,
     KEYWORDS.SHORT,
     KEYWORDS.LONG,
+    KEYWORDS.RANDOM,
   ],
   patterns: [PATTERNS.SEARCH, PATTERNS.IDENTIFIER, PATTERNS.URL, PATTERNS.TOP, PATTERNS.BOTTOM],
   usage: [

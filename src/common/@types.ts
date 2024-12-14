@@ -47,6 +47,10 @@ export interface AppEnv {
       clientId: string;
       clientSecret: string;
     };
+    speech: {
+      key: string;
+      region: string;
+    }
   };
   mongo: {
     uri: string;
