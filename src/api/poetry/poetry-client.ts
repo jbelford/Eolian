@@ -2,8 +2,8 @@ import { httpRequest } from '@eolian/http';
 import { StreamSource, Track, TrackSource } from '../@types';
 import { IPoetryApi, Poem, PoetryTrack, SearchOptions } from './@types';
 import { logger } from '@eolian/common/logger';
-import { speechService } from './speech-service';
 import { Readable } from 'stream';
+import { speechService } from '../speech';
 
 const POETRY_API = 'https://poetrydb.org';
 
@@ -73,7 +73,9 @@ class PoetryStreamSource implements StreamSource {
 
   async get(): Promise<Readable> {
     logger.info('Getting poetry stream %s - %s', this.track.id);
-    return speechService.textToSpeech(this.track.lines.join('\n'));
+
+    const text = `Hey folks, Eolian here using my new AI generated voice to bring you a narration of "${this.track.title}" by ${this.track.poster}. Let's begin...\n\n${this.track.lines.join('\n')}`;
+    return speechService.textToSpeech(text);
   }
 }
 
@@ -84,6 +86,7 @@ export function mapPoemToTrack(poem: Poem): PoetryTrack {
     src: TrackSource.Poetry,
     url: poetry.getPoemUrl(poem),
     lines: poem.lines,
+    ai: true,
   };
 }
 

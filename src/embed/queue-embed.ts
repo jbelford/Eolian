@@ -85,5 +85,10 @@ export function createPlayingEmbed(
       embed.header!.text += 'Bass Boosted';
     }
   }
+  if (track.ai) {
+    embed.footer = {
+      text: 'Audio is AI generated',
+    };
+  }
   return embed;
 }

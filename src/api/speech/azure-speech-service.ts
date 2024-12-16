@@ -1,9 +1,9 @@
-import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
 import { SpeechConfig, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk';
 import { PassThrough, Readable } from 'stream';
+import { ISpeechService } from './@types';
 
-class SpeechService {
+export class AzureSpeechService implements ISpeechService {
   private readonly speechConfig: SpeechConfig;
 
   constructor(subscriptionKey: string, serviceRegion: string) {
@@ -40,7 +40,3 @@ class SpeechService {
   }
 }
 
-export const speechService = new SpeechService(
-  environment.tokens.speech.key,
-  environment.tokens.speech.region
-);

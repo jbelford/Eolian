@@ -32,6 +32,7 @@ export interface Track {
   readonly src: TrackSource;
   readonly duration?: number;
   readonly live?: boolean;
+  readonly ai?: boolean;
 }
 
 export interface StreamSource {

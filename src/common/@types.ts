@@ -47,10 +47,11 @@ export interface AppEnv {
       clientId: string;
       clientSecret: string;
     };
+    openai?: string;
     speech: {
       key: string;
       region: string;
-    }
+    };
   };
   mongo: {
     uri: string;
