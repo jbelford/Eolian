@@ -45,7 +45,7 @@ export class PoetryResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         'Choose a poem',
         resourceDetails.map(poem => ({
-          name: poem.title,
+          name: `${poem.title} (${poem.linecount} lines)`,
           subname: poem.author,
           url: poetry.getPoemUrl(poem),
         })),

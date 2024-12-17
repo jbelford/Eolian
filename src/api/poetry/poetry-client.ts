@@ -13,13 +13,13 @@ class PoetryClient implements IPoetryApi {
     return result.length ? result[0] : undefined;
   }
 
-  searchPoems(title?: string, author?: string, options: SearchOptions = {}): Promise<Poem[]> {
+  async searchPoems(title?: string, author?: string, options: SearchOptions = {}): Promise<Poem[]> {
     if (!title?.length && !author?.length && !options.random) {
       throw new Error('Must provide title or author to search for poems');
     }
 
     const limit = options.limit || 5;
-    const searchTerms = [limit.toString()];
+    const searchTerms = ['25'];
 
     let fields = options.random ? 'random' : 'poemcount';
     if (title?.length) {
@@ -31,7 +31,17 @@ class PoetryClient implements IPoetryApi {
       searchTerms.push(author);
     }
 
-    return this.get<Poem[]>(fields, searchTerms);
+    const poems = await this.get<Poem[]>(fields, searchTerms);
+    const filteredPoems: Poem[] = [];
+    for (const poem of poems) {
+      if (poem.lines.join('\n').length < 3896) {
+        filteredPoems.push(poem);
+        if (filteredPoems.length >= limit) {
+          break;
+        }
+      }
+    }
+    return filteredPoems;
   }
 
   getStream(track: Track): Promise<StreamSource | undefined> {
@@ -70,14 +80,15 @@ class PoetryStreamSource implements StreamSource {
   async get(): Promise<Readable> {
     logger.info('Getting poetry stream %s', this.track.id);
 
-    const text = `Hey folks, Eolian here using my new AI generated voice to bring you a narration of "${this.track.title}" by ${this.track.poster}. Let's begin...\n\n${this.track.lines.join('\n')}...`;
+    const poemJoin = this.track.lines.join('\n');
+    const text = `Hey folks, Eolian here using my new AI generated voice to bring you a narration of "${this.track.title}" by ${this.track.poster}. Let's begin...\n\n${poemJoin}...`;
     return speechService.textToSpeech(text);
   }
 }
 
 export function mapPoemToTrack(poem: Poem): PoetryTrack {
   return {
-    id: `${poem.title}:${poem.author}`,
+    id: `${poem.title};${poem.author}`,
     title: poem.title,
     poster: poem.author,
     src: TrackSource.Poetry,
