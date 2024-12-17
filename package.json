@@ -10,7 +10,7 @@
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
     "lint": "eslint src/**/*.ts",
-    "format": "prettier --write ./src && eslint --fix src/**/*.ts"
+    "format": "prettier --write ./src"
   },
   "keywords": [
     "music",
@@ -72,12 +72,8 @@
     "@types/react-dom": "^18.2.18",
     "@types/webpack-node-externals": "^2.5.3",
     "@types/winston": "^2.4.4",
-    "@typescript-eslint/eslint-plugin": "^5.37.0",
-    "@typescript-eslint/parser": "^5.37.0",
     "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.23.1",
-    "eslint-config-prettier": "^8.5.0",
-    "prettier": "^2.7.1",
+    "prettier": "^3.4.2",
     "ts-loader": "^9.3.1",
     "typescript": "5.4.5",
     "webpack": "^5.74.0",

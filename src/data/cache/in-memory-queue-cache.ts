@@ -8,7 +8,6 @@ const MAX_PREV = 10;
  * Temporary implementation storing queues in-memory.
  */
 export class InMemoryQueueCache<T> implements QueueCache<T> {
-
   private readonly cache: ListCache<T>;
 
   constructor(ttl: number) {
@@ -128,5 +127,4 @@ export class InMemoryQueueCache<T> implements QueueCache<T> {
   }
 
   private prevKey = (guildId: string) => `${guildId}_prev`;
-
 }

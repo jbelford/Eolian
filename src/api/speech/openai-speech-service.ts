@@ -30,11 +30,10 @@ export class OpenAiSpeechService implements ISpeechService {
       });
     } else if (environment.tokens.openai) {
       openai = new OpenAI({
-        apiKey: environment.tokens.openai
+        apiKey: environment.tokens.openai,
       });
     }
 
     return openai ? new OpenAiSpeechService(openai) : undefined;
   }
-
 }

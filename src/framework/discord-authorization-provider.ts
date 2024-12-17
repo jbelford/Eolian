@@ -16,14 +16,13 @@ import {
 import { ContextUser, ContextSendable, EmbedMessage } from './@types';
 
 export class DiscordAuthorizationProvider implements IAuthorizationProvider {
-
   private readonly name: string;
 
   constructor(
     private readonly user: ContextUser,
     private readonly service: IAuthService,
     private readonly type: TrackSource,
-    public sendable: ContextSendable
+    public sendable: ContextSendable,
   ) {
     this.name = SOURCE_DETAILS[type].name;
   }
@@ -38,7 +37,7 @@ export class DiscordAuthorizationProvider implements IAuthorizationProvider {
     const message = await this.user.sendEmbed(embedMessage);
     if (!message) {
       throw new EolianUserError(
-        `I failed to send ${this.name} authorization link to you via DM! Are you blocking me? 😢`
+        `I failed to send ${this.name} authorization link to you via DM! Are you blocking me? 😢`,
       );
     }
     try {
@@ -59,9 +58,8 @@ export class DiscordAuthorizationProvider implements IAuthorizationProvider {
         await message.editEmbed(createAuthErrorEmbed(this.type));
       }
       throw new EolianUserError(
-        `${this.name} authorization failed! Be sure to check your DMs and try again.`
+        `${this.name} authorization failed! Be sure to check your DMs and try again.`,
       );
     }
   }
-
 }

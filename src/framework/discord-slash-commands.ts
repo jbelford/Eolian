@@ -33,7 +33,7 @@ export async function registerGuildSlashCommands(guildId: string): Promise<boole
 
   logger.info('Sending refresh for slash commands for guild %s', guildId);
   return registerSlashCommands(
-    Routes.applicationGuildCommands(environment.tokens.discord.clientId, guildId)
+    Routes.applicationGuildCommands(environment.tokens.discord.clientId, guildId),
   );
 }
 
@@ -87,7 +87,7 @@ function createSlashCommand(command: Command): RESTPostAPIApplicationCommandsJSO
           (option = option
             .setName('args')
             .setDescription(`Use "/help ${command.name}" to see arguments`)
-            .setRequired(false))
+            .setRequired(false)),
       );
     }
 
@@ -125,7 +125,7 @@ function addCommandArgOptions(builder: SlashCommandBuilder, args: CommandArgs) {
 function addKeywordOption(
   builder: SlashCommandBuilder,
   keyword: Keyword,
-  groupOption: Map<KeywordGroup, SlashCommandStringOption>
+  groupOption: Map<KeywordGroup, SlashCommandStringOption>,
 ) {
   const name = keyword.name.toLowerCase();
   if (keyword.group) {
@@ -151,7 +151,7 @@ function addKeywordOption(
     }
 
     builder.addBooleanOption(option =>
-      option.setName(name).setDescription(details).setRequired(false)
+      option.setName(name).setDescription(details).setRequired(false),
     );
   }
 }
@@ -160,7 +160,7 @@ function addPatternOption(
   builder: SlashCommandBuilder,
   pattern: Pattern,
   groupOption: Map<KeywordGroup, SlashCommandStringOption>,
-  args?: CommandArgs
+  args?: CommandArgs,
 ) {
   if (args && pattern.name === PATTERNS.ARG.name) {
     addCommandArgOptions(builder, args);
@@ -181,18 +181,20 @@ function addPatternOption(
     }
 
     builder.addStringOption(option =>
-      option.setName(pattern.name.toLowerCase()).setDescription(details).setRequired(false)
+      option.setName(pattern.name.toLowerCase()).setDescription(details).setRequired(false),
     );
   }
 }
 
 function createContextMenuCommand(command: MessageCommand): RESTPostAPIApplicationCommandsJSONBody {
   try {
-    return new ContextMenuCommandBuilder()
-      .setName(command.name)
-      // @ts-expect-error This is a bug in the discordjs typings
-      .setType(ApplicationCommandType.Message)
-      .toJSON();
+    return (
+      new ContextMenuCommandBuilder()
+        .setName(command.name)
+        // @ts-expect-error This is a bug in the discordjs typings
+        .setType(ApplicationCommandType.Message)
+        .toJSON()
+    );
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;

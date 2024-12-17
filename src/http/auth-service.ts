@@ -14,7 +14,6 @@ import {
 import { httpRequest, querystringify } from './request';
 
 export class AuthService implements IAuthService {
-
   private options: HttpRequestOptions;
 
   constructor(
@@ -23,7 +22,7 @@ export class AuthService implements IAuthService {
     private readonly tokenUrl: string,
     private readonly authorizeParams: AuthorizeParams,
     authenticationOptions: HttpRequestOptions,
-    private readonly cache: EolianCache<AuthCacheItem>
+    private readonly cache: EolianCache<AuthCacheItem>,
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
     this.options.form = {
@@ -66,5 +65,4 @@ export class AuthService implements IAuthService {
     this.options.form!.code = code;
     return await httpRequest(this.tokenUrl, this.options);
   }
-
 }

@@ -79,7 +79,7 @@ function getSongResolver(params: CommandOptions, context: CommandContext) {
     return new SoundCloudSongResolver(context, params);
   } else if (params.SPOTIFY) {
     context.interaction.send(
-      `Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`
+      `Actually, I will search YouTube instead. If that doesn't work out try SoundCloud.`,
     );
   }
   return new YouTubeVideoResolver(context, params);
@@ -116,7 +116,7 @@ function getLikesResolver(context: CommandContext, params: CommandOptions) {
 function getArtistResolver(context: CommandContext, params: CommandOptions) {
   if (params.YOUTUBE) {
     context.interaction.send(
-      `Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`
+      `Hmm. Actually, I'm going to use Spotify instead. If that doesn't work out try with SoundCloud.`,
     );
   } else if (useSoundCloud(context, params)) {
     return new SoundCloudArtistResolver(context, params);
@@ -150,8 +150,14 @@ function useSoundCloud(context: CommandContext, params: CommandOptions) {
 }
 
 function validateSourceAllowed(context: CommandContext, source: TrackSource) {
-  if (context.server && !context.server.details.isAllowedYouTube && source !== TrackSource.SoundCloud) {
-    throw new EolianUserError('😔 Sorry, YouTube streaming is only permitted for select guilds. This guild may only use SoundCloud. [Learn more](https://github.com/jbelford/Eolian/wiki/FAQ#youtube-limitation-for-eolian-bot-2024-update)')
+  if (
+    context.server &&
+    !context.server.details.isAllowedYouTube &&
+    source !== TrackSource.SoundCloud
+  ) {
+    throw new EolianUserError(
+      '😔 Sorry, YouTube streaming is only permitted for select guilds. This guild may only use SoundCloud. [Learn more](https://github.com/jbelford/Eolian/wiki/FAQ#youtube-limitation-for-eolian-bot-2024-update)',
+    );
   }
 }
 
@@ -168,7 +174,7 @@ export function getSourceResolver(context: CommandContext, params: CommandOption
 export async function getSourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions
+  params: CommandOptions,
 ): Promise<SourceFetcher> {
   validateSourceAllowed(context, identifier.src);
   switch (identifier.src) {

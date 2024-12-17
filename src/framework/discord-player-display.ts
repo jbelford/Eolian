@@ -13,7 +13,6 @@ import { QUEUE_PAGE_LENGTH } from './discord-queue-display';
 import { Player } from './voice/@types';
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
-
   private track: Track | null = null;
   private message: ContextMessage | null = null;
 
@@ -24,7 +23,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
   private nightcore = false;
   private bass = false;
 
-  constructor(private readonly player: Player, private readonly queueDisplay: QueueDisplay) {
+  constructor(
+    private readonly player: Player,
+    private readonly queueDisplay: QueueDisplay,
+  ) {
     this.player.on('next', this.onNextHandler);
     this.player.on('update', this.onUpdateHandler);
     this.player.on('idle', this.onIdleHandler);
@@ -154,7 +156,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       this.track = null;
       await this.safeDelete();
       await this.channel?.send(
-        `Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`
+        `Hmm.. there was an issue with streaming that. Check here if it is a known issue or to report it: ${GITHUB_PAGE_ISSUES}`,
       );
     }
   };
@@ -167,7 +169,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private onTrackFailureHandler = async (track: Track) => {
     await this.channel?.send(
-      `❌ I could not find stream for **${track.title}** by **${track.poster}**. Skipping.`
+      `❌ I could not find stream for **${track.title}** by **${track.poster}**. Skipping.`,
     );
   };
 
@@ -188,7 +190,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
         } else {
           await interaction.send(
             'You are not currently listening! Join my voice channel and try again.',
-            { ephemeral: true }
+            { ephemeral: true },
           );
         }
       }
@@ -244,5 +246,4 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
     return false;
   });
-
 }

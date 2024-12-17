@@ -2,8 +2,10 @@ import { ArgumentExample, SyntaxType } from '@eolian/command-options/@types';
 import { CommandArgs } from './@types';
 
 export class SimpleExample implements ArgumentExample {
-
-  private constructor(private readonly name: string, private readonly value: string) {}
+  private constructor(
+    private readonly name: string,
+    private readonly value: string,
+  ) {}
 
   text(type: SyntaxType): string {
     if (type === SyntaxType.SLASH) {
@@ -27,5 +29,4 @@ export class SimpleExample implements ArgumentExample {
       }
     });
   }
-
 }

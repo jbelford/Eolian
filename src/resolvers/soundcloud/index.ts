@@ -19,7 +19,7 @@ export { SoundCloudUrlResolver } from './soundcloud-url-resolver';
 export async function getSoundCloudSourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions
+  params: CommandOptions,
 ): Promise<SourceFetcher> {
   const id = +identifier.id;
   switch (identifier.type) {
@@ -28,7 +28,7 @@ export async function getSoundCloudSourceFetcher(
       if (identifier.auth && feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
         const request = await context.interaction.user.getRequest(
           context.interaction,
-          TrackSource.SoundCloud
+          TrackSource.SoundCloud,
         );
         const client = createSoundCloudClient(request);
         return new SoundCloudArtistFetcher(client);
@@ -38,7 +38,7 @@ export async function getSoundCloudSourceFetcher(
       if (identifier.auth && feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
         const request = await context.interaction.user.getRequest(
           context.interaction,
-          TrackSource.SoundCloud
+          TrackSource.SoundCloud,
         );
         const client = createSoundCloudClient(request);
         return new SoundCloudFavoritesFetcher(client, params, context.interaction.channel);
@@ -49,7 +49,7 @@ export async function getSoundCloudSourceFetcher(
       if (identifier.auth && feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
         const request = await context.interaction.user.getRequest(
           context.interaction,
-          TrackSource.SoundCloud
+          TrackSource.SoundCloud,
         );
         client = createSoundCloudClient(request);
       }

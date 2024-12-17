@@ -17,7 +17,7 @@ export class YouTubeUrlResolver implements SourceResolver {
   constructor(
     private readonly url: string,
     private readonly params: CommandOptions,
-    private readonly context: CommandContext
+    private readonly context: CommandContext,
   ) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -28,7 +28,7 @@ export class YouTubeUrlResolver implements SourceResolver {
         const result = await this.context.interaction.sendSelection(
           'Do you want this video or the playlist?',
           ['Video', 'Playlist'],
-          this.context.interaction.user
+          this.context.interaction.user,
         );
         if (result.selected === 0) {
           resourceDetails.playlist = undefined;
@@ -61,11 +61,10 @@ export class YouTubeUrlResolver implements SourceResolver {
           playlist,
           this.params,
           this.context.interaction.channel,
-          message
+          message,
         );
       }
     }
     throw new EolianUserError('The YouTube URL provided is not valid!');
   }
-
 }

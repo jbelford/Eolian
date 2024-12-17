@@ -6,7 +6,6 @@ import { COMMANDS } from './command-store';
 import { CommandOptionsParser } from '@eolian/command-options';
 
 class TextCommandParsingStrategy implements CommandParsingStrategy {
-
   messageInvokesBot(message: string, prefix = environment.cmdToken): boolean {
     const trimmed = message.trim();
     if (!trimmed.startsWith(prefix)) {
@@ -19,7 +18,7 @@ class TextCommandParsingStrategy implements CommandParsingStrategy {
   parseCommand(
     message: string,
     permission: UserPermission,
-    type = SyntaxType.KEYWORD
+    type = SyntaxType.KEYWORD,
   ): ParsedCommand {
     let text = message.trim();
 
@@ -34,12 +33,11 @@ class TextCommandParsingStrategy implements CommandParsingStrategy {
       text,
       permission,
       command.keywordSet,
-      command.patterns
+      command.patterns,
     );
 
     return { command, options };
   }
-
 }
 
 export function createCommandParsingStrategy(): CommandParsingStrategy {

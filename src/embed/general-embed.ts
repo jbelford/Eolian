@@ -38,7 +38,7 @@ export function createSelectionEmbed(
   question: string,
   options: SelectionOption[],
   username: string,
-  pic?: string
+  pic?: string,
 ): EmbedMessage {
   return {
     header: {
@@ -59,12 +59,12 @@ export function createUserDetailsEmbed(
   spotify?: SpotifyUser,
   soundcloud?: SoundCloudUser,
   identifiers?: Record<string, Identifier>,
-  syntax?: SyntaxType
+  syntax?: SyntaxType,
 ): EmbedMessage {
-  let description
-    = `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n`
-    + `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n`
-    + `**Identifiers:** `;
+  let description =
+    `**Spotify:** ${spotify ? spotify.external_urls.spotify : 'N/A'}\n` +
+    `**SoundCloud:** ${soundcloud ? soundcloud.permalink_url : 'N/A'}\n` +
+    `**Identifiers:** `;
   if (identifiers && Object.keys(identifiers).length > 0) {
     description += Object.keys(identifiers)
       .map(key => `[${key}](${identifiers[key].url})`)
@@ -92,8 +92,8 @@ export function createUserDetailsEmbed(
 
 export function createServerDetailsEmbed(guild: ContextServerInfo, dto: ServerDTO): EmbedMessage {
   const volume = dto.volume ?? DEFAULT_VOLUME;
-  const roles
-    = dto.djRoleIds && dto.djRoleIds.length > 0
+  const roles =
+    dto.djRoleIds && dto.djRoleIds.length > 0
       ? dto.djRoleIds.map(role => `<@&${role}>`).join(', ')
       : '`None`';
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`

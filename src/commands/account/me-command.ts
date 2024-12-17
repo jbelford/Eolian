@@ -27,7 +27,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       if (user.tokens?.spotify) {
         const request = await context.interaction.user.getRequest(
           context.interaction,
-          TrackSource.Spotify
+          TrackSource.Spotify,
         );
         const client = createSpotifyClient(request);
         spotifyAccount = await client.getMe();
@@ -41,7 +41,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       if (user.tokens?.soundcloud) {
         const request = await context.interaction.user.getRequest(
           context.interaction,
-          TrackSource.SoundCloud
+          TrackSource.SoundCloud,
         );
         const client = createSoundCloudClient(request);
         soundcloudAccount = await client.getMe();
@@ -55,7 +55,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       spotifyAccount,
       soundcloudAccount,
       user?.identifiers,
-      user?.syntax
+      user?.syntax,
     );
 
     await defer;

@@ -10,8 +10,10 @@ import { IBingApi, BingVideo } from './@types';
 const BING_API = 'https://api.bing.microsoft.com/v7.0';
 
 class BingApi implements IBingApi {
-
-  constructor(private readonly key: string, private readonly configId: string) {}
+  constructor(
+    private readonly key: string,
+    private readonly configId: string,
+  ) {}
 
   async searchVideos(query: string, publisher?: string, limit = 5): Promise<BingVideo[]> {
     try {
@@ -37,14 +39,14 @@ class BingApi implements IBingApi {
   async searchYoutubeSong(
     name: string,
     artist: string,
-    duration?: number
+    duration?: number,
   ): Promise<(Track & { score: number })[]> {
     const query = `${artist} ${name}`;
     const videos = await this.searchVideos(query, 'YouTube', 15);
     if (videos.length) {
       const sorted = await fuzzyMatch(
         query,
-        videos.map(video => `${video.creator.name} ${video.name}`)
+        videos.map(video => `${video.creator.name} ${video.name}`),
       );
       if (duration) {
         sorted.sort((a, b) => {
@@ -75,7 +77,7 @@ class BingApi implements IBingApi {
 
   private async get<T>(
     path: string,
-    params: { [key: string]: string | number | boolean } = {}
+    params: { [key: string]: string | number | boolean } = {},
   ): Promise<T> {
     params.customConfig = this.configId;
 
@@ -88,7 +90,6 @@ class BingApi implements IBingApi {
     };
     return await httpRequest<T>(uri, { params, headers, json: true });
   }
-
 }
 
 interface BingVideos {

@@ -12,7 +12,7 @@ export function createQueueEmbed(
   loopTracks: Track[],
   start: number,
   total: number,
-  loop: boolean
+  loop: boolean,
 ): EmbedMessage {
   const embed: EmbedMessage = {
     color: Color.Selection,
@@ -31,9 +31,9 @@ export function createQueueEmbed(
 
   if (tracks.length) {
     embed.title = `${start + 1}. ${tracks[0].title}`;
-    embed.description
-      += `from ${tracks[0].poster}\n\n`
-      + tracks
+    embed.description +=
+      `from ${tracks[0].poster}\n\n` +
+      tracks
         .slice(1)
         .map((t, i) => `\0**${i + start + 2}. ${trackNameFormat(t)}**`)
         .join('\n');
@@ -57,7 +57,7 @@ export function createPlayingEmbed(
   track: Track,
   volume: number,
   nightcore: boolean,
-  bass: boolean
+  bass: boolean,
 ): EmbedMessage {
   const details = SOURCE_DETAILS[track.src];
   const embed: EmbedMessage = {

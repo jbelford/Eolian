@@ -17,7 +17,6 @@ import { Player } from '../voice/@types';
 import { ServerStateDisplay, ServerState } from './@types';
 
 class DiscordGuildStateDisplay implements ServerStateDisplay, Closable {
-
   private _queue?: QueueDisplay;
   private _player?: PlayerDisplay;
 
@@ -42,11 +41,9 @@ class DiscordGuildStateDisplay implements ServerStateDisplay, Closable {
     this._player = undefined;
     this._queue = undefined;
   }
-
 }
 
 export class DiscordGuildState implements ServerState {
-
   private _player?: Player;
   private _queue?: ContextMusicQueue;
   private disposable: Closable[] = [];
@@ -58,7 +55,7 @@ export class DiscordGuildState implements ServerState {
     private readonly client: ContextClient,
     readonly details: ContextServer,
     private readonly config: ServerDTO,
-    private readonly queues: QueueCache<Track>
+    private readonly queues: QueueCache<Track>,
   ) {}
 
   get player(): Player {
@@ -108,5 +105,4 @@ export class DiscordGuildState implements ServerState {
     ]);
     this._player = undefined;
   }
-
 }

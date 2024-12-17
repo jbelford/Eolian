@@ -12,7 +12,7 @@ type TokenData = {
   poToken?: string;
   placeholderPoToken: string;
   visitorData?: string;
-}
+};
 
 let tokenData: Promise<TokenData> | undefined;
 
@@ -25,7 +25,7 @@ export async function generatePoToken(fetchFunc?: FetchFunction): Promise<TokenD
       return result;
     }
   }
-  tokenData = generateTokenInternal(fetchFunc)
+  tokenData = generateTokenInternal(fetchFunc);
   return tokenData;
 }
 
@@ -41,10 +41,8 @@ export function createProxyUrl(): string | undefined {
 export function createFetchFunction(proxy?: string): FetchFunction {
   const agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
   return async (input, init) => {
-    const notRequest = typeof input === "string" || input instanceof URL;
-    const url = notRequest
-        ? input
-        : input.url;
+    const notRequest = typeof input === 'string' || input instanceof URL;
+    const url = notRequest ? input : input.url;
 
     const modifiedInit = {
       ...init,
@@ -71,7 +69,7 @@ async function generateTokenInternal(fetchFunc?: FetchFunction): Promise<TokenDa
 
   Object.assign(globalThis, {
     window: dom.window,
-    document: dom.window.document
+    document: dom.window.document,
   });
 
   const bgConfig = {
@@ -81,16 +79,14 @@ async function generateTokenInternal(fetchFunc?: FetchFunction): Promise<TokenDa
     requestKey,
   };
 
-    // @ts-ignore
+  // @ts-ignore
   const challenge = await BG.Challenge.create(bgConfig);
 
-  if (!challenge)
-    throw new Error('Could not get challenge');
+  if (!challenge) throw new Error('Could not get challenge');
 
   if (challenge.script) {
-    const script = challenge.script.find((sc) => sc !== null);
-    if (script)
-      new Function(script)();
+    const script = challenge.script.find(sc => sc !== null);
+    if (script) new Function(script)();
   } else {
     console.warn('Unable to load Botguard.');
   }
@@ -99,17 +95,17 @@ async function generateTokenInternal(fetchFunc?: FetchFunction): Promise<TokenDa
     program: challenge.challenge,
     globalName: challenge.globalName,
     // @ts-ignore
-    bgConfig
+    bgConfig,
   });
 
-    // @ts-ignore
+  // @ts-ignore
   const placeholderPoToken = BG.PoToken.generatePlaceholder(visitorData);
 
   logger.info(
     `NEW TOKENS GENERATED\nPoToken %s\nPlaceholder %s\nVisitorData: %s`,
     poToken,
     placeholderPoToken,
-    visitorData
+    visitorData,
   );
 
   return {

@@ -10,7 +10,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const sum = truthySum(options.TOP, options.BOTTOM, options.NEXT, options.NUMBER);
   if (sum === 0) {
     throw new EolianUserError(
-      'You must provide NUMBER, TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!'
+      'You must provide NUMBER, TOP, BOTTOM, or NEXT keywords so I know what you wanted to remove!',
     );
   } else if (sum > 1) {
     throw new EolianUserError('You must provide only 1 of NUMBER, TOP, BOTTOM, or NEXT keywords!');
@@ -42,7 +42,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const removed = await context.server!.queue.remove(range.start, range.stop - range.start);
   await context.interaction.send(
     `Removed songs ${range.start + 1} to ${range.stop} from the queue! (${removed} total)`,
-    { ephemeral: false }
+    { ephemeral: false },
   );
 }
 

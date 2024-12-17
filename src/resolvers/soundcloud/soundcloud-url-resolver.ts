@@ -30,5 +30,4 @@ export class SoundCloudUrlResolver implements SourceResolver {
         throw new EolianUserError('The SoundCloud URL is not valid!');
     }
   }
-
 }

@@ -87,7 +87,6 @@ const DISCORD_CLIENT_OPTIONS: ClientOptions = {
 };
 
 export class DiscordEolianBot implements EolianBot {
-
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
   private readonly guildStore: DiscordGuildStore;
@@ -218,7 +217,7 @@ export class DiscordEolianBot implements EolianBot {
       logger.warn(
         'Unknown button click received: %s %s',
         interaction.message.id,
-        interaction.customId
+        interaction.customId,
       );
       await interaction.update({ content: `***Expired Message***`, components: [] });
       await interaction.followUp({ content: 'Sorry, this button has expired.', ephemeral: true });
@@ -229,7 +228,7 @@ export class DiscordEolianBot implements EolianBot {
       interaction,
       this.registry,
       this.db.users,
-      this.auth
+      this.auth,
     );
 
     if (embedButton.userId && embedButton.userId !== interaction.user.id) {
@@ -252,7 +251,7 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onCommandHandler = async (
-    interaction: ChatInputCommandInteraction | MessageContextMenuCommandInteraction
+    interaction: ChatInputCommandInteraction | MessageContextMenuCommandInteraction,
   ) => {
     const locked = await this.lockManager.isLocked(interaction.user.id);
     if (locked) {
@@ -268,7 +267,7 @@ export class DiscordEolianBot implements EolianBot {
             interaction,
             this.registry,
             this.db.users,
-            this.auth
+            this.auth,
           );
 
       const noDefault = await this.onBotInvoked(contextInteraction, interaction.guild ?? undefined);
@@ -303,7 +302,7 @@ export class DiscordEolianBot implements EolianBot {
           this.parser,
           this.registry,
           this.db.users,
-          this.auth
+          this.auth,
         );
 
         await this.onBotInvoked(interaction, message.guild ?? undefined);
@@ -323,7 +322,7 @@ export class DiscordEolianBot implements EolianBot {
     try {
       if (this.invite && (await this.isBotInvoked(message))) {
         await message.reply(
-          `This bot is being migrated to a new token! Invite the new bot \n${this.invite}`
+          `This bot is being migrated to a new token! Invite the new bot \n${this.invite}`,
         );
         if (feature.enabled(FeatureFlag.DISCORD_OLD_LEAVE)) {
           await message.guild?.leave();
@@ -353,7 +352,7 @@ export class DiscordEolianBot implements EolianBot {
 
   private async onBotInvoked(
     interaction: ContextCommandInteraction,
-    guild?: Guild
+    guild?: Guild,
   ): Promise<boolean> {
     const start = Date.now();
     let noDefaultReply = false;
@@ -364,11 +363,11 @@ export class DiscordEolianBot implements EolianBot {
         if (!interaction.channel.visible) {
           await interaction.send(
             `I can't execute commands in this channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`,
-            { force: true }
+            { force: true },
           );
         } else {
           await interaction.user.send(
-            `I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`
+            `I can't execute commands in that channel. I require \`View Channel\`, \`Send Messages\`, \`Embed Links\`, and \`Read Message History\` permissions.`,
           );
         }
         return noDefaultReply;
@@ -387,7 +386,7 @@ export class DiscordEolianBot implements EolianBot {
       const { command, options } = await interaction.getCommand(server?.details);
       if (interaction.channel.isDm && !command.dmAllowed) {
         await interaction.send(
-          `Sorry, this command is not allowed via DM. Try again in a guild channel.`
+          `Sorry, this command is not allowed via DM. Try again in a guild channel.`,
         );
         return false;
       }
@@ -409,12 +408,12 @@ export class DiscordEolianBot implements EolianBot {
           }
         } else {
           await interaction.send(
-            `Hmm.. I tried to do that but something in my internals is broken. Try again later.`
+            `Hmm.. I tried to do that but something in my internals is broken. Try again later.`,
           );
         }
       } else {
         await interaction.user.send(
-          `Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`
+          `Hmm.. something went wrong and I can't send to that channel anymore. Try again and fix permissions if needed.`,
         );
       }
 
@@ -437,5 +436,4 @@ export class DiscordEolianBot implements EolianBot {
         return false;
     }
   }
-
 }

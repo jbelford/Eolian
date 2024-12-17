@@ -5,11 +5,13 @@ import { EventEmitter } from 'node-cache';
 import { ContextMusicQueue } from './@types';
 
 export class ServerMusicQueue extends EventEmitter implements ContextMusicQueue {
-
   private lastUpdated = Date.now();
   private loopEnabled = false;
 
-  constructor(private readonly queue: QueueCache<Track>, private readonly serverId: string) {
+  constructor(
+    private readonly queue: QueueCache<Track>,
+    private readonly serverId: string,
+  ) {
     super();
   }
 
@@ -101,5 +103,4 @@ export class ServerMusicQueue extends EventEmitter implements ContextMusicQueue 
     this.emit('remove');
     this.emitUpdate();
   };
-
 }

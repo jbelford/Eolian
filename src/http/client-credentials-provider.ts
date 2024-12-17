@@ -3,14 +3,13 @@ import { TokenProvider, HttpRequestOptions, TokenResponse } from './@types';
 import { httpRequest, HttpRequestError } from './request';
 
 export class ClientCredentialsProvider implements TokenProvider {
-
   private readonly options: HttpRequestOptions;
   private refreshToken?: string;
 
   constructor(
     readonly name: string,
     private readonly tokenEndpoint: string,
-    authenticationOptions: HttpRequestOptions
+    authenticationOptions: HttpRequestOptions,
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
   }
@@ -46,5 +45,4 @@ export class ClientCredentialsProvider implements TokenProvider {
     }
     return result;
   }
-
 }

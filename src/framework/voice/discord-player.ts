@@ -35,7 +35,6 @@ const NEXT_SONG_ATTEMPTS = 5;
  *
  */
 export class DiscordPlayer extends EventEmitter implements Player {
-
   private lastUsed = Date.now();
   private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: SongStream | null = null;
@@ -50,7 +49,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   constructor(
     private readonly client: ContextClient,
     readonly queue: ContextMusicQueue,
-    private _volume = DEFAULT_VOLUME
+    private _volume = DEFAULT_VOLUME,
   ) {
     super();
   }
@@ -95,7 +94,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     if (connection) {
       connection.discordConnection.removeListener(
         VoiceConnectionStatus.Disconnected,
-        this.onDisconnectHandler
+        this.onDisconnectHandler,
       );
       connection.close();
     }
@@ -173,7 +172,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         }
         connection.discordConnection.on(
           VoiceConnectionStatus.Disconnected,
-          this.onDisconnectHandler
+          this.onDisconnectHandler,
         );
         this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
@@ -336,5 +335,4 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.stop();
     this.emitError();
   };
-
 }

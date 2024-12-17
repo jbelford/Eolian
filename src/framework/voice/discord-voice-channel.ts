@@ -3,7 +3,6 @@ import { VoiceChannel } from 'discord.js';
 import { ContextVoiceChannel } from '../@types';
 
 export class DiscordVoiceChannel implements ContextVoiceChannel {
-
   constructor(private readonly channel: VoiceChannel) {}
 
   get id(): string {
@@ -26,5 +25,4 @@ export class DiscordVoiceChannel implements ContextVoiceChannel {
   hasPeopleListening(): boolean {
     return !!this.channel.members.find(member => !member.user.bot && !member.voice.deaf);
   }
-
 }

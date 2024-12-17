@@ -16,11 +16,11 @@ import { COMMANDS } from '../command-store';
 
 async function execute(
   { interaction, server }: CommandContext,
-  { ARG }: CommandOptions
+  { ARG }: CommandOptions,
 ): Promise<void> {
   if (!ARG?.length) {
     const categories = COMMAND_CATEGORIES.filter(
-      category => category.permission <= interaction.user.permission
+      category => category.permission <= interaction.user.permission,
     );
     const config = await server?.details.get();
     const categoryListEmbed = createCategoryListEmbed(categories, config?.prefix);
@@ -38,8 +38,8 @@ async function execute(
     idx--;
   }
 
-  const category
-    = !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
+  const category =
+    !isNaN(idx) && idx >= 0 && idx < COMMAND_CATEGORIES.length
       ? COMMAND_CATEGORIES[idx]
       : COMMAND_CATEGORIES.find(category => category.name.toLowerCase() === arg);
   if (category) {
@@ -63,8 +63,8 @@ async function execute(
 
   const command = COMMANDS.get(arg);
   if (
-    command
-    && (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
+    command &&
+    (command.permission < UserPermission.Admin || command.permission <= interaction.user.permission)
   ) {
     const commandEmbed = createCommandDetailsEmbed(command, type);
     await interaction.sendEmbed(commandEmbed);
@@ -73,8 +73,8 @@ async function execute(
 
   const keyword = KEYWORDS[arg.toUpperCase()];
   if (
-    keyword
-    && (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)
+    keyword &&
+    (keyword.permission < UserPermission.Admin || keyword.permission <= interaction.user.permission)
   ) {
     const keywordEmbed = createKeywordDetailsEmbed(keyword, type);
     await interaction.sendEmbed(keywordEmbed);
@@ -83,8 +83,8 @@ async function execute(
 
   const pattern = PATTERNS[arg.toUpperCase()];
   if (
-    pattern
-    && (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)
+    pattern &&
+    (pattern.permission < UserPermission.Admin || pattern.permission <= interaction.user.permission)
   ) {
     const patternEmbed = createPatternDetailsEmbed(pattern, type);
     await interaction.sendEmbed(patternEmbed);

@@ -31,7 +31,6 @@ type StreamOptions = {
 };
 
 export class SongStream extends EventEmitter implements Closable {
-
   private output: prism.VolumeTransformer;
   private songStream?: Readable;
   private pcmTransform?: prism.FFmpeg;
@@ -41,7 +40,10 @@ export class SongStream extends EventEmitter implements Closable {
   private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
   private start?: number;
 
-  constructor(volume: number, private readonly retries = 1) {
+  constructor(
+    volume: number,
+    private readonly retries = 1,
+  ) {
     super();
     this.output = new prism.VolumeTransformer({ type: 's16le', volume: volume });
     this.output.on('close', () => logger.debug(`Song output closed`));
@@ -63,7 +65,7 @@ export class SongStream extends EventEmitter implements Closable {
     track: Track,
     options?: StreamOptions,
     retry = false,
-    seek?: number
+    seek?: number,
   ): Promise<boolean> {
     let source: StreamSource | undefined;
     if (!this.source) {
@@ -178,5 +180,4 @@ export class SongStream extends EventEmitter implements Closable {
       this.cleanup(e);
     }
   }
-
 }

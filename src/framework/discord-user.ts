@@ -30,7 +30,6 @@ import { DiscordVoiceChannel } from './voice';
 const USER_CACHE: MemoryCache<UserDTO> = new InMemoryLRUCache(1000);
 
 export class DiscordUser implements ContextUser {
-
   private _dto?: UserDTO | null = null;
   private _permission: UserPermission;
   private _sender?: DiscordSender;
@@ -40,7 +39,7 @@ export class DiscordUser implements ContextUser {
     private readonly users: UsersDb,
     permission: UserPermission,
     private readonly auth: IAuthServiceProvider,
-    private readonly guildUser?: GuildMember
+    private readonly guildUser?: GuildMember,
   ) {
     this._permission = permission;
   }
@@ -109,7 +108,7 @@ export class DiscordUser implements ContextUser {
 
   sendEmbed(
     embed: EmbedMessage,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined> {
     return this.sender.sendEmbed(embed, options);
   }
@@ -258,12 +257,11 @@ export class DiscordUser implements ContextUser {
       await this.users.removeSoundCloudRefreshToken(this.id);
     }
   }
-
 }
 
 export function getPermissionLevel(
   user: User,
-  memberPermissions?: Readonly<PermissionsBitField> | null
+  memberPermissions?: Readonly<PermissionsBitField> | null,
 ): UserPermission {
   if (environment.owners.includes(user.id)) {
     return UserPermission.Owner;

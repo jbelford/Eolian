@@ -12,7 +12,6 @@ export class DiscordMessageCommandInteraction
   extends DiscordInteraction<MessageContextMenuCommandInteraction>
   implements ContextCommandInteraction
 {
-
   readonly isSlash = true;
   readonly reactable = false;
   private _message?: Message;
@@ -21,7 +20,7 @@ export class DiscordMessageCommandInteraction
     interaction: MessageContextMenuCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: IAuthServiceProvider
+    auth: IAuthServiceProvider,
   ) {
     super(interaction, registry, users, auth);
   }
@@ -51,5 +50,4 @@ export class DiscordMessageCommandInteraction
   toString(): string {
     return `(${this.interaction.commandName}) ${this.message.content}`;
   }
-
 }

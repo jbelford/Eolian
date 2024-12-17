@@ -9,10 +9,12 @@ import { QUEUE_COMMANDS, ADD_MESSAGE_COMMAND } from './queue';
 import { SETTINGS_COMMANDS } from './settings';
 
 class CommandStore<T extends BaseCommand> implements ICommandStore<T> {
-
   private readonly map: Map<string, T>;
 
-  constructor(readonly list: T[], commandKeyFn: (command: T) => string[]) {
+  constructor(
+    readonly list: T[],
+    commandKeyFn: (command: T) => string[],
+  ) {
     this.map = new Map(list.flatMap(command => commandKeyFn(command).map(key => [key, command])));
   }
 
@@ -29,7 +31,6 @@ class CommandStore<T extends BaseCommand> implements ICommandStore<T> {
   get(name: string): T | undefined {
     return this.map.get(name);
   }
-
 }
 
 const commands: Command[] = GENERAL_COMMANDS.concat(ACCOUNT_COMMANDS)
@@ -56,9 +57,9 @@ commands.forEach(command => {
 });
 
 export const COMMANDS: ICommandStore<Command> = new CommandStore(commands, command =>
-  command.shortName ? [command.name, command.shortName] : [command.name]
+  command.shortName ? [command.name, command.shortName] : [command.name],
 );
 export const MESSAGE_COMMANDS: ICommandStore<MessageCommand> = new CommandStore(
   [PLAY_MESSAGE_COMMAND, ADD_MESSAGE_COMMAND],
-  command => [command.name]
+  command => [command.name],
 );

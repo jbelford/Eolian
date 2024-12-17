@@ -20,7 +20,7 @@ export * from './poetry';
 export function createAuthCodeRequest(
   provider: IAuthorizationProvider,
   api: TrackSource,
-  refreshToken?: string
+  refreshToken?: string,
 ): IOAuthHttpClient<AuthorizationCodeProvider> {
   switch (api) {
     case TrackSource.Spotify: {

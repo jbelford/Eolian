@@ -2,7 +2,6 @@ import { EolianCache, ListCache } from '../@types';
 import { InMemoryCache } from './in-memory-cache';
 
 export class InMemoryListCache<V> implements ListCache<V> {
-
   private counts = new Map<string, number>();
   private cache: EolianCache<V[]>;
 
@@ -91,5 +90,4 @@ export class InMemoryListCache<V> implements ListCache<V> {
   async close(): Promise<void> {
     await this.cache.close();
   }
-
 }

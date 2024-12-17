@@ -9,12 +9,15 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class SpotifyTracksResolver implements SourceResolver {
   public source = TrackSource.Spotify;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const request = await this.context.interaction.user.getRequest(
       this.context.interaction,
-      TrackSource.Spotify
+      TrackSource.Spotify,
     );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
@@ -29,13 +32,12 @@ export class SpotifyTracksResolver implements SourceResolver {
     }
     return undefined;
   }
-
 }
 
 export function createSpotifyTracks(
   user: SpotifyUser,
   client: ISpotifyApi,
-  range?: SpotifyTimeRange
+  range?: SpotifyTimeRange,
 ): ResolvedResource {
   const term = range
     ? range === SpotifyTimeRange.LONG
@@ -59,8 +61,10 @@ export function createSpotifyTracks(
 }
 
 export class SpotifyTracksFetcher implements SourceFetcher {
-
-  constructor(private readonly client: ISpotifyApi, private readonly range?: SpotifyTimeRange) {}
+  constructor(
+    private readonly client: ISpotifyApi,
+    private readonly range?: SpotifyTimeRange,
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const spotifyTracks = await this.client.getMyTopTracks(this.range);
@@ -69,5 +73,4 @@ export class SpotifyTracksFetcher implements SourceFetcher {
 
     return { tracks };
   }
-
 }

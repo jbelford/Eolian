@@ -20,7 +20,7 @@ export interface AppEnv {
     user: string;
     password: string;
     name: string;
-  },
+  };
   tokens: {
     discord: {
       clientId?: string;

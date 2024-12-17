@@ -22,7 +22,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
 
   constructor(
     protected readonly context: CommandContext,
-    protected readonly params: CommandOptions
+    protected readonly params: CommandOptions,
   ) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -49,7 +49,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         'Choose a SoundCloud user',
         users.map(user => ({ name: user.username, url: user.permalink_url })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return { value: { user: users[result.selected] }, message: result.message };
@@ -60,7 +60,7 @@ export class SoundCloudArtistResolver implements SourceResolver {
     if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
       const request = await this.context.interaction.user.getRequest(
         this.context.interaction,
-        TrackSource.SoundCloud
+        TrackSource.SoundCloud,
       );
       const client = createSoundCloudClient(request);
       return { user: await client.getMe(), client };
@@ -72,11 +72,9 @@ export class SoundCloudArtistResolver implements SourceResolver {
       return { user: await soundcloud.getUser(user.soundcloud) };
     }
   }
-
 }
 
 export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
-
   async resolve(): Promise<ResolvedResource> {
     const result = await this.getSoundCloudUser();
     const resource = createSoundCloudUser(result);
@@ -85,7 +83,6 @@ export class SoundCloudTracksResolver extends SoundCloudArtistResolver {
     resource.identifier.url = `${resource.identifier.url}/tracks`;
     return resource;
   }
-
 }
 
 export function createSoundCloudUser({ value, message }: UserResult): ResolvedResource {
@@ -105,15 +102,13 @@ export function createSoundCloudUser({ value, message }: UserResult): ResolvedRe
 }
 
 export class SoundCloudArtistFetcher implements SourceFetcher {
-
   constructor(private readonly idOrClient: number | ISoundCloudApi) {}
 
   async fetch(): Promise<FetchResult> {
-    const tracks
-      = typeof this.idOrClient === 'number'
+    const tracks =
+      typeof this.idOrClient === 'number'
         ? await soundcloud.getUserTracks(this.idOrClient)
         : await this.idOrClient.getMyTracks();
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
-
 }

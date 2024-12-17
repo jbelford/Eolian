@@ -11,7 +11,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     const user = await context.interaction.user.get();
     if (user.syntax !== undefined) {
       await context.interaction.send(
-        `Your syntax preference is currently: \`${syntaxTypeToName(user.syntax)}\``
+        `Your syntax preference is currently: \`${syntaxTypeToName(user.syntax)}\``,
       );
     } else {
       await context.interaction.send(`Your syntax preference is currently: \`Server Default\``);
@@ -33,7 +33,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
       break;
     default:
       throw new EolianUserError(
-        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`
+        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`,
       );
   }
 

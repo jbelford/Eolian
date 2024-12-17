@@ -5,11 +5,10 @@ import { EolianUserError } from '@eolian/common/errors';
 import { Command, ICommandOptionProvider } from './@types';
 
 export class SlashCommandOptionParser {
-
   constructor(
     private readonly command: Command,
     private readonly optionProvider: ICommandOptionProvider,
-    private readonly permission: UserPermission
+    private readonly permission: UserPermission,
   ) {}
 
   resolve(): CommandOptions {
@@ -58,7 +57,7 @@ export class SlashCommandOptionParser {
         args.push(selected);
       } else if (group.required) {
         throw new EolianUserError(
-          `You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`
+          `You must provide ${group.options.map(o => `\`${o.name}\``).join(' or ')}`,
         );
       }
     }
@@ -105,5 +104,4 @@ export class SlashCommandOptionParser {
       }
     });
   }
-
 }

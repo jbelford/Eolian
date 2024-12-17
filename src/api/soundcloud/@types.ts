@@ -18,7 +18,7 @@ export interface ISoundCloudApi extends StreamFetcher {
   getUserFavorites(
     id: number,
     max?: number,
-    progress?: ProgressUpdater
+    progress?: ProgressUpdater,
   ): Promise<SoundCloudTrack[]>;
 }
 

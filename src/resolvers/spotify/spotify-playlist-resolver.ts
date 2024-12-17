@@ -16,7 +16,10 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
   private client: ISpotifyApi = spotify;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const playlists = await this.searchSpotifyPlaylists();
@@ -32,7 +35,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
           subname: playlist.owner.display_name,
           url: playlist.external_urls.spotify,
         })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createSpotifyPlaylist(
@@ -40,14 +43,14 @@ export class SpotifyPlaylistResolver implements SourceResolver {
         playlists[result.selected],
         this.params,
         this.context.interaction.channel,
-        result.message
+        result.message,
       );
     } else {
       return createSpotifyPlaylist(
         this.client,
         playlists[0],
         this.params,
-        this.context.interaction.channel
+        this.context.interaction.channel,
       );
     }
   }
@@ -64,7 +67,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
       if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const request = await this.context.interaction.user.getRequest(
           this.context.interaction,
-          TrackSource.Spotify
+          TrackSource.Spotify,
         );
         this.client = createSpotifyClient(request);
 
@@ -73,7 +76,7 @@ export class SpotifyPlaylistResolver implements SourceResolver {
         const user = await this.context.interaction.user.get();
         if (!user.spotify) {
           throw new EolianUserError(
-            `I can't search your Spotify playlists because you haven't set your Spotify account yet!`
+            `I can't search your Spotify playlists because you haven't set your Spotify account yet!`,
           );
         }
         playlists = await this.client.searchPlaylists(this.params.SEARCH, limit, user.spotify);
@@ -84,7 +87,6 @@ export class SpotifyPlaylistResolver implements SourceResolver {
 
     return playlists;
   }
-
 }
 
 export function createSpotifyPlaylist(
@@ -92,7 +94,7 @@ export function createSpotifyPlaylist(
   playlist: SpotifyPlaylist,
   params: CommandOptions,
   sendable: ContextSendable,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: playlist.name,
@@ -110,13 +112,12 @@ export function createSpotifyPlaylist(
 }
 
 export class SpotifyPlaylistFetcher implements SourceFetcher {
-
   constructor(
     private readonly id: string,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
     private readonly client: ISpotifyApi,
-    private readonly playlist?: SpotifyPlaylist
+    private readonly playlist?: SpotifyPlaylist,
   ) {}
 
   async fetch(): Promise<FetchResult> {
@@ -124,8 +125,8 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
     let rangeOptimized = false;
 
     if (
-      this.playlist?.tracks.items
-      && this.playlist.tracks.total === this.playlist.tracks.items.length
+      this.playlist?.tracks.items &&
+      this.playlist.tracks.total === this.playlist.tracks.items.length
     ) {
       playlist = this.playlist as SpotifyPlaylistTracks;
     } else {
@@ -143,5 +144,4 @@ export class SpotifyPlaylistFetcher implements SourceFetcher {
       .map(item => mapSpotifyTrack(item.track!, undefined, defaultForLocals));
     return { tracks, rangeOptimized };
   }
-
 }

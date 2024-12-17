@@ -3,14 +3,13 @@ import { CommandOptions, CommandOptionsParsingStrategy, Pattern, SyntaxType } fr
 import { TextCommandOptionBuilder } from './text-command-option-builder';
 
 export class CommandOptionsParser implements CommandOptionsParsingStrategy {
-
   constructor(private readonly syntax: SyntaxType) {}
 
   resolve(
     text: string,
     permission: UserPermission,
     keywords?: Set<string>,
-    patterns?: Pattern[]
+    patterns?: Pattern[],
   ): CommandOptions {
     const builder = new TextCommandOptionBuilder(text, permission, this.syntax);
 
@@ -28,5 +27,4 @@ export class CommandOptionsParser implements CommandOptionsParsingStrategy {
 
     return builder.get();
   }
-
 }

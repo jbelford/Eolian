@@ -2,7 +2,6 @@ import NodeCache from 'node-cache';
 import { EolianCache } from '../@types';
 
 export class InMemoryCache<V> implements EolianCache<V> {
-
   private cache: NodeCache;
 
   constructor(
@@ -10,7 +9,7 @@ export class InMemoryCache<V> implements EolianCache<V> {
     clone = true,
     private readonly onExpired?: (key: string, value: V) => void,
     private readonly onClose?: (value: V) => Promise<void>,
-    checkPeriod = 300
+    checkPeriod = 300,
   ) {
     this.cache = new NodeCache({
       stdTTL: this.ttl,
@@ -56,5 +55,4 @@ export class InMemoryCache<V> implements EolianCache<V> {
   async refreshTTL(key: string): Promise<boolean> {
     return this.cache.ttl(key, this.ttl);
   }
-
 }

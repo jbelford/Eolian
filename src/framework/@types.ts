@@ -24,11 +24,11 @@ export interface ContextSendable {
   sendSelection(
     question: string,
     options: SelectionOption[],
-    user: ContextUser
+    user: ContextUser,
   ): Promise<SelectionResult>;
   sendEmbed(
     embed: EmbedMessage,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined>;
 }
 
@@ -172,7 +172,7 @@ export interface EmbedMessageButton {
 
 export type MessageButtonOnClickHandler = (
   interaction: ContextButtonInteraction,
-  emoji: string
+  emoji: string,
 ) => Promise<boolean>;
 
 export interface Display extends Closable {

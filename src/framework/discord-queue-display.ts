@@ -13,7 +13,6 @@ import {
 export const QUEUE_PAGE_LENGTH = 15;
 
 export class DiscordQueueDisplay implements QueueDisplay {
-
   private message: ContextMessage | null = null;
   private channel: ContextTextChannel | null = null;
   private sendable?: ContextSendable;
@@ -146,5 +145,4 @@ export class DiscordQueueDisplay implements QueueDisplay {
     await interaction.deferUpdate();
     return false;
   };
-
 }

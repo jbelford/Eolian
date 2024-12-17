@@ -12,7 +12,6 @@ import { ServerStateStore, ServerState } from './@types';
 import { DiscordGuildState } from './discord-guild-state';
 
 class InMemoryServerStateStore implements ServerStateStore {
-
   private cache: EolianCache<ServerState>;
   private _active = 0;
 
@@ -60,20 +59,21 @@ class InMemoryServerStateStore implements ServerStateStore {
       logger.warn(`Error occured clearing guild state: %s`, e);
     }
   };
-
 }
 
 const QUEUE_CACHE_TIMEOUT = 60 * 60 * 3;
 
 export class DiscordGuildStore implements Closable {
-
   private readonly guildMap = new Map<string, ContextServer>();
   private readonly queues: QueueCache<Track> = new InMemoryQueueCache(QUEUE_CACHE_TIMEOUT);
   private readonly stateStore: ServerStateStore = new InMemoryServerStateStore(
-    environment.config.guildCacheTTL
+    environment.config.guildCacheTTL,
   );
 
-  constructor(private readonly client: Client, private readonly serversDb: ServersDb) {}
+  constructor(
+    private readonly client: Client,
+    private readonly serversDb: ServersDb,
+  ) {}
 
   get active(): number {
     return this.stateStore.active;
@@ -104,5 +104,4 @@ export class DiscordGuildStore implements Closable {
   async close(): Promise<void> {
     await this.stateStore.close();
   }
-
 }

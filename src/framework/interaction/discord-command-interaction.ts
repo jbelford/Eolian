@@ -11,14 +11,13 @@ export class DiscordCommandInteraction
   extends DiscordInteraction<ChatInputCommandInteraction>
   implements ContextCommandInteraction
 {
-
   readonly isSlash = true;
 
   constructor(
     interaction: ChatInputCommandInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: IAuthServiceProvider
+    auth: IAuthServiceProvider,
   ) {
     super(interaction, registry, users, auth);
   }
@@ -40,7 +39,7 @@ export class DiscordCommandInteraction
     const options = new SlashCommandOptionParser(
       command,
       new DiscordInteractionOptionProvider(this.interaction),
-      this.user.permission
+      this.user.permission,
     ).resolve();
     return { command, options };
   }
@@ -48,5 +47,4 @@ export class DiscordCommandInteraction
   toString(): string {
     return this.interaction.toString();
   }
-
 }

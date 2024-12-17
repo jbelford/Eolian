@@ -9,16 +9,15 @@ import { IAuthServiceProvider, UserRequest } from './@types';
 const AUTH_PROVIDER_CACHE_TTL = 1000 * 60 * 75;
 
 class AuthServiceProvider implements IAuthServiceProvider {
-
   private readonly requestCache: EolianCache<UserRequest> = new InMemoryCache(
     AUTH_PROVIDER_CACHE_TTL,
-    false
+    false,
   );
 
   constructor(
     private readonly authCallbackCache: EolianCache<AuthCacheItem>,
     private readonly spotify: IAuthService,
-    private readonly soundcloud: IAuthService
+    private readonly soundcloud: IAuthService,
   ) {}
 
   getService(api: TrackSource): IAuthService {
@@ -56,7 +55,6 @@ class AuthServiceProvider implements IAuthServiceProvider {
   async close(): Promise<void> {
     await Promise.allSettled([this.authCallbackCache.close(), this.requestCache.close()]);
   }
-
 }
 
 export function createAuthProviders(): IAuthServiceProvider {

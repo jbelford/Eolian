@@ -34,7 +34,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
     const srcName = SOURCE_DETAILS[identifier.src].name;
     await context.interaction.send(
       `🔎 Resolved identifier \`${identifier.url}\` (**${typeName}** from **${srcName}**)`,
-      { ephemeral: false }
+      { ephemeral: false },
     );
 
     fetcher = await getSourceFetcher(identifier, context, options);
@@ -62,7 +62,7 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
       const queueLimit = details.queueLimit ?? environment.config.queueLimit;
       if (queueSize + tracks.length > queueLimit) {
         throw new EolianUserError(
-          `Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`
+          `Sorry, the queue limit is capped at ${queueLimit}! Remove items from queue and try again`,
         );
       }
       await context.server!.queue.add(tracks, true);
@@ -106,7 +106,14 @@ export const PLAY_COMMAND: Command = {
 You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song right away.`,
   category: MUSIC_CATEGORY,
   permission: UserPermission.DJ,
-  keywords: [KEYWORDS.SOUNDCLOUD, KEYWORDS.SPOTIFY, KEYWORDS.YOUTUBE, KEYWORDS.POEM, KEYWORDS.FAST, KEYWORDS.RANDOM],
+  keywords: [
+    KEYWORDS.SOUNDCLOUD,
+    KEYWORDS.SPOTIFY,
+    KEYWORDS.YOUTUBE,
+    KEYWORDS.POEM,
+    KEYWORDS.FAST,
+    KEYWORDS.RANDOM,
+  ],
   patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
   noDefaultReply: true,
   usage: [

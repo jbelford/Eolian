@@ -9,7 +9,7 @@ export interface CommandOptionsParsingStrategy {
     text: string,
     permission: UserPermission,
     keywords?: Set<string>,
-    patterns?: Pattern[]
+    patterns?: Pattern[],
   ): CommandOptions;
 }
 

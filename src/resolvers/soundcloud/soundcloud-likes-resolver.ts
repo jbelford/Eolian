@@ -19,17 +19,16 @@ export class SoundCloudFavoritesResolver extends SoundCloudArtistResolver {
       result,
       this.params,
       this.context.interaction.channel,
-      result.message
+      result.message,
     );
   }
-
 }
 
 export function createSoundCloudLikes(
   result: UserResult,
   params: CommandOptions,
   sendable: ContextSendable,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: 'Liked Tracks',
@@ -45,32 +44,31 @@ export function createSoundCloudLikes(
       result.value.client ?? result.value.user.id,
       params,
       sendable,
-      result.value.user
+      result.value.user,
     ),
     selectionMessage: message,
   };
 }
 
 export class SoundCloudFavoritesFetcher implements SourceFetcher {
-
   constructor(
     private readonly idOrClient: number | ISoundCloudApi,
     private readonly params: CommandOptions,
     private readonly sendable: ContextSendable,
-    private readonly user?: SoundCloudUser
+    private readonly user?: SoundCloudUser,
   ) {}
 
   async fetch(): Promise<FetchResult> {
-    const user
-      = this.user
-      ?? (typeof this.idOrClient === 'number'
+    const user =
+      this.user ??
+      (typeof this.idOrClient === 'number'
         ? await soundcloud.getUser(this.idOrClient)
         : await this.idOrClient.getMe());
 
     const { max, downloader } = this.getListOptions('Fetching likes', user.public_favorites_count);
 
-    const tracks
-      = typeof this.idOrClient === 'number'
+    const tracks =
+      typeof this.idOrClient === 'number'
         ? await soundcloud.getUserFavorites(this.idOrClient, max, downloader)
         : await this.idOrClient.getMyFavorites(max, downloader);
 
@@ -79,7 +77,7 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
   private getListOptions(
     downloaderName: string,
-    max: number
+    max: number,
   ): { max: number; downloader?: ProgressUpdater } {
     let downloader: ProgressUpdater | undefined;
 
@@ -94,5 +92,4 @@ export class SoundCloudFavoritesFetcher implements SourceFetcher {
 
     return { max, downloader };
   }
-
 }

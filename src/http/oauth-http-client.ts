@@ -4,11 +4,13 @@ import { TokenProvider, IOAuthHttpClient, HttpRequestParams } from './@types';
 import { Readable } from 'stream';
 
 export class OAuthHttpClient<T extends TokenProvider> implements IOAuthHttpClient<T> {
-
   private expiration = 0;
   private accessToken?: string;
 
-  constructor(readonly baseApiUrl: string, readonly tokenProvider: T) {}
+  constructor(
+    readonly baseApiUrl: string,
+    readonly tokenProvider: T,
+  ) {}
 
   get<T>(path: string, params = {}): Promise<T> {
     return this.checkGetRequest(`${this.baseApiUrl}/${path}`, params);
@@ -25,7 +27,7 @@ export class OAuthHttpClient<T extends TokenProvider> implements IOAuthHttpClien
   private async checkGetRequest<T>(
     url: string,
     params?: HttpRequestParams,
-    stream = false
+    stream = false,
   ): Promise<T> {
     if (Date.now() + 10000 >= this.expiration) {
       await this.updateToken();
@@ -51,5 +53,4 @@ export class OAuthHttpClient<T extends TokenProvider> implements IOAuthHttpClien
     this.accessToken = data.access_token;
     this.expiration = Date.now() + data.expires_in * 1000;
   }
-
 }

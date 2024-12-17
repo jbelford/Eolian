@@ -19,7 +19,6 @@ function renderProgressBar(name: string, value: number) {
 }
 
 export class DownloaderDisplay implements ProgressUpdater {
-
   private lastSent = 0;
   private value = 0;
   private message?: ContextMessage;
@@ -29,7 +28,7 @@ export class DownloaderDisplay implements ProgressUpdater {
     private readonly sendable: ContextSendable,
     private readonly name: string,
     private total: number = 1000,
-    private readonly refreshInterval = 1000
+    private readonly refreshInterval = 1000,
   ) {}
 
   init(total?: number): void {
@@ -64,5 +63,4 @@ export class DownloaderDisplay implements ProgressUpdater {
       }
     }
   };
-
 }

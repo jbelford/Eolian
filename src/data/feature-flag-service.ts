@@ -9,11 +9,9 @@ const flagsLocal: Record<FeatureFlag, boolean> = {
 };
 
 class SimpleFeatureFlagService implements FeatureFlagService {
-
   enabled(flag: FeatureFlag): boolean {
     return flagsLocal[flag];
   }
-
 }
 
 export const feature: FeatureFlagService = new SimpleFeatureFlagService();

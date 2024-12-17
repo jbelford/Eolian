@@ -17,7 +17,7 @@ export class SpotifyUrlResolver implements SourceResolver {
   constructor(
     private readonly url: string,
     private readonly params: CommandOptions,
-    private readonly context: CommandContext
+    private readonly context: CommandContext,
   ) {}
 
   async resolve(): Promise<ResolvedResource> {
@@ -64,7 +64,6 @@ export class SpotifyUrlResolver implements SourceResolver {
     const playlist = await client.getPlaylist(id);
     return createSpotifyPlaylist(spotify, playlist, this.params, channel);
   }
-
 }
 
 function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
@@ -82,12 +81,13 @@ function createSpotifyTrack(track: SpotifyTrack): ResolvedResource {
 }
 
 export class SpotifySongFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string, private readonly track?: SpotifyTrack) {}
+  constructor(
+    private readonly id: string,
+    private readonly track?: SpotifyTrack,
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const track = this.track ? this.track : await spotify.getTrack(this.id);
     return { tracks: [mapSpotifyTrack(track)] };
   }
-
 }

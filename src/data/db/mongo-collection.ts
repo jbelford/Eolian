@@ -6,7 +6,6 @@ interface MongoDoc {
 }
 
 export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
-
   constructor(protected readonly collection: Collection<T>) {}
 
   async get(id: string): Promise<T | null> {
@@ -21,18 +20,18 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
   protected async setProperty<K extends Extract<keyof T, string>, V>(
     id: string,
     key: K | `${K}.${string}`,
-    value: V
+    value: V,
   ): Promise<void> {
     await this.collection.updateOne(
       { _id: id } as unknown as Filter<T>,
       { $set: { [key]: value }, $setOnInsert: { _id: id } } as unknown as UpdateFilter<T>,
-      { upsert: true }
+      { upsert: true },
     );
   }
 
   protected async unsetProperty<K extends Extract<keyof T, string>>(
     id: string,
-    key: K | `${K}.${string}`
+    key: K | `${K}.${string}`,
   ): Promise<boolean> {
     const result = await this.collection.updateOne(
       { _id: id } as unknown as Filter<T>,
@@ -40,9 +39,8 @@ export class MongoCollection<T extends MongoDoc> implements CollectionDb<T> {
         $unset: {
           [key]: true,
         },
-      } as UpdateFilter<T>
+      } as UpdateFilter<T>,
     );
     return result.modifiedCount > 0;
   }
-
 }

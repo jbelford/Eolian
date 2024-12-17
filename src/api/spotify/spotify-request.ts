@@ -31,24 +31,24 @@ const SPOTIFY_AUTH_OPTIONS: HttpRequestOptions = {
 };
 
 export const CLIENT_SPOTIFY_REQUEST = createSpotifyRequest(
-  new ClientCredentialsProvider('Spotify', SPOTIFY_TOKEN, SPOTIFY_AUTH_OPTIONS)
+  new ClientCredentialsProvider('Spotify', SPOTIFY_TOKEN, SPOTIFY_AUTH_OPTIONS),
 );
 
 export function createSpotifyAuthorizationCodeProvider(
   provider: IAuthorizationProvider,
-  refreshToken?: string
+  refreshToken?: string,
 ): AuthorizationCodeProvider {
   return new AuthorizationCodeProvider(
     'Spotify',
     SPOTIFY_TOKEN,
     SPOTIFY_AUTH_OPTIONS,
     provider,
-    refreshToken
+    refreshToken,
   );
 }
 
 export function createSpotifyRequest<T extends TokenProvider>(
-  tokenProvider: T
+  tokenProvider: T,
 ): IOAuthHttpClient<T> {
   return new OAuthHttpClient<T>(SPOTIFY_API, tokenProvider);
 }
@@ -74,6 +74,6 @@ export function createSpotifyAuthService(cache: EolianCache<AuthCacheItem>): IAu
     SPOTIFY_TOKEN,
     authParams,
     SPOTIFY_AUTH_OPTIONS,
-    cache
+    cache,
   );
 }

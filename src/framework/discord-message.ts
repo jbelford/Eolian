@@ -26,10 +26,9 @@ export interface DiscordMessageButtons {
 }
 
 export class DiscordMessage implements ContextMessage {
-
   constructor(
     private readonly message: Message,
-    private readonly buttons?: DiscordMessageButtons
+    private readonly buttons?: DiscordMessageButtons,
   ) {}
 
   get text(): string {
@@ -108,7 +107,6 @@ export class DiscordMessage implements ContextMessage {
       logger.warn(`Failed to delete message created by ourself`);
     }
   }
-
 }
 
 export function mapDiscordEmbed(embed: EmbedMessage): EmbedBuilder {
@@ -153,7 +151,7 @@ export function mapDiscordEmbedButtons(buttons: EmbedMessageButton[]): DiscordBu
 
   for (let i = 0; i < buttons.length; i += 5) {
     const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      ...messageButtons.slice(i, i + 5)
+      ...messageButtons.slice(i, i + 5),
     );
     buttonRows.push(row.toJSON());
   }

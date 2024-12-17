@@ -5,13 +5,11 @@ import { matchGroup } from './patterns-utils';
 const name = 'IDENTIFIER';
 
 class IdentifierExample implements ArgumentExample {
-
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
     return type === SyntaxType.SLASH ? `${name}:${this._text}` : `[${this._text}]`;
   }
-
 }
 
 export const IDENTIFIER_PATTERN: Pattern<'IDENTIFIER'> = {

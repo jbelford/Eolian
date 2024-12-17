@@ -3,7 +3,7 @@ import { StreamFetcher, Track } from '../@types';
 export type SearchOptions = {
   random?: boolean;
   limit?: number;
-}
+};
 
 export interface IPoetryApi extends StreamFetcher {
   getPoem(id: string): Promise<Poem | undefined>;
@@ -20,4 +20,4 @@ export type Poem = {
 
 export type PoetryTrack = Track & {
   lines: string[];
-}
+};

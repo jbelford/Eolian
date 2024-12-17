@@ -18,20 +18,19 @@ export interface DiscordMessageSender {
 export const DISCORD_CONTENT_MAX = 2000;
 
 export class DiscordSender {
-
   constructor(
     private readonly sender: DiscordMessageSender,
-    private readonly registry?: ButtonRegistry
+    private readonly registry?: ButtonRegistry,
   ) {}
 
   async send(
     message: string,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined> {
     try {
       const discordMessage = await this.sender.send(
         { content: clampLength(message, DISCORD_CONTENT_MAX) },
-        options?.ephemeral
+        options?.ephemeral,
       );
       return new DiscordMessage(discordMessage);
     } catch (e) {
@@ -42,7 +41,7 @@ export class DiscordSender {
 
   async sendEmbed(
     embed: EmbedMessage,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined> {
     try {
       const rich = mapDiscordEmbed(embed);
@@ -69,5 +68,4 @@ export class DiscordSender {
     }
     return undefined;
   }
-
 }

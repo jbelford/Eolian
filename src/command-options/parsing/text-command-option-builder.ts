@@ -7,14 +7,13 @@ import { ITextCommandOptionBuilder } from './@types';
 import { CommandOptionBuilder } from './command-option-builder';
 
 export class TextCommandOptionBuilder implements ITextCommandOptionBuilder {
-
   private baseBuilder: CommandOptionBuilder;
   private hasSearch = false;
 
   constructor(
     private text: string,
     private readonly permission: UserPermission,
-    private readonly syntax = SyntaxType.KEYWORD
+    private readonly syntax = SyntaxType.KEYWORD,
   ) {
     this.baseBuilder = new CommandOptionBuilder(permission, syntax);
   }
@@ -87,5 +86,4 @@ export class TextCommandOptionBuilder implements ITextCommandOptionBuilder {
   private withPattern<T extends PatternName>(pattern: Pattern<T>) {
     this.text = this.baseBuilder.withPattern(pattern, this.text);
   }
-
 }

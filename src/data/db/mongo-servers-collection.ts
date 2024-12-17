@@ -3,7 +3,6 @@ import { ServerDTO, ServersDb } from '../@types';
 import { MongoCollection } from './mongo-collection';
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
-
   async getIdleServers(minDate: Date): Promise<ServerDTO[]> {
     const result = await this.collection
       .find({
@@ -55,7 +54,7 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
       },
       {
         upsert: true,
-      }
+      },
     );
   }
 
@@ -68,7 +67,7 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
         $pull: {
           djRoleIds: roleId,
         },
-      }
+      },
     );
     return result.modifiedCount > 0;
   }
@@ -76,5 +75,4 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
   async setDjAllowLimited(id: string, allow: boolean): Promise<void> {
     await this.setProperty(id, 'djAllowLimited', allow);
   }
-
 }

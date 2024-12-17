@@ -14,7 +14,10 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
   private client: ISoundCloudApi = soundcloud;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const playlists = await this.searchSoundCloudPlaylists();
@@ -30,7 +33,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
           subname: playlist.user.username,
           url: playlist.permalink_url,
         })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createSoundCloudPlaylist(playlists[result.selected], this.client, result.message);
@@ -51,7 +54,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
       if (feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)) {
         const request = await this.context.interaction.user.getRequest(
           this.context.interaction,
-          TrackSource.SoundCloud
+          TrackSource.SoundCloud,
         );
         this.client = createSoundCloudClient(request);
         playlists = await this.client.searchMyPlaylists(this.params.SEARCH, limit);
@@ -59,7 +62,7 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
         const user = await this.context.interaction.user.get();
         if (!user.soundcloud) {
           throw new EolianUserError(
-            `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`
+            `I can't search your SoundCloud playlists because you haven't set your SoundCloud account yet!`,
           );
         }
         playlists = await soundcloud.searchPlaylists(this.params.SEARCH, limit, user.soundcloud);
@@ -70,13 +73,12 @@ export class SoundCloudPlaylistResolver implements SourceResolver {
 
     return playlists;
   }
-
 }
 
 export function createSoundCloudPlaylist(
   playlist: SoundCloudPlaylist,
   client: ISoundCloudApi,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: playlist.title,
@@ -94,11 +96,10 @@ export function createSoundCloudPlaylist(
 }
 
 export class SoundCloudPlaylistFetcher implements SourceFetcher {
-
   constructor(
     private readonly id: number,
     private readonly client: ISoundCloudApi,
-    private readonly playlist?: SoundCloudPlaylist
+    private readonly playlist?: SoundCloudPlaylist,
   ) {}
 
   async fetch(): Promise<FetchResult> {
@@ -111,5 +112,4 @@ export class SoundCloudPlaylistFetcher implements SourceFetcher {
     }
     return { tracks: tracks.map(mapSoundCloudTrack) };
   }
-
 }

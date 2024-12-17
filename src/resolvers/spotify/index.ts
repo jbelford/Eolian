@@ -28,7 +28,7 @@ export { SpotifyTracksResolver } from './spotify-tracks-resolver';
 export async function getSpotifySourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions
+  params: CommandOptions,
 ): Promise<SourceFetcher> {
   switch (identifier.type) {
     case ResourceType.Album:
@@ -66,7 +66,7 @@ async function getClient(identifier: Identifier, context: CommandContext): Promi
   if (identifier.auth) {
     const request = await context.interaction.user.getRequest(
       context.interaction,
-      TrackSource.Spotify
+      TrackSource.Spotify,
     );
     client = createSpotifyClient(request);
   }

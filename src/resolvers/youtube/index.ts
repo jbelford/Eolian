@@ -12,7 +12,7 @@ export { YouTubeVideoResolver } from './youtube-video-resolver';
 export function getYouTubeSourceFetcher(
   identifier: Identifier,
   context: CommandContext,
-  params: CommandOptions
+  params: CommandOptions,
 ): SourceFetcher {
   switch (identifier.type) {
     case ResourceType.Playlist:

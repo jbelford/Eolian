@@ -9,10 +9,12 @@ import { ContextServer } from './@types';
 const RECORD_USAGE_INTERVAL = 1000 * 60 * 60 * 24;
 
 export class DiscordGuild implements ContextServer {
-
   private configCache: ServerDTO | null = null;
 
-  constructor(private readonly servers: ServersDb, private readonly guild: Guild) {}
+  constructor(
+    private readonly servers: ServersDb,
+    private readonly guild: Guild,
+  ) {}
 
   get id(): string {
     return this.guild.id;
@@ -134,5 +136,4 @@ export class DiscordGuild implements ContextServer {
     this.configCache!.lastUsage = date;
     await this.servers.setLastUsage(this.id, this.configCache!.lastUsage);
   }
-
 }

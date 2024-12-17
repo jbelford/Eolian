@@ -126,7 +126,7 @@ export interface ISpotifyApi extends StreamFetcher {
   getPlaylistTracks(
     id: string,
     progress?: ProgressUpdater,
-    rangeFn?: RangeFactory
+    rangeFn?: RangeFactory,
   ): Promise<SpotifyPlaylistTracks>;
   getAlbum(id: string): Promise<SpotifyAlbumFull>;
   getAlbumTracks(id: string): Promise<SpotifyAlbumFull>;

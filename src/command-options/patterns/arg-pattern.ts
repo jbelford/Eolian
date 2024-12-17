@@ -5,7 +5,6 @@ import { matchGroup } from './patterns-utils';
 const name = 'ARG';
 
 class ArgumentPatternExample implements ArgumentExample {
-
   constructor(private readonly args: string[]) {}
 
   text(type: SyntaxType): string {
@@ -15,7 +14,6 @@ class ArgumentPatternExample implements ArgumentExample {
       return '/ ' + this.args.join(' / ') + ' /';
     }
   }
-
 }
 
 export const ARG_PATTERN: Pattern<'ARG'> = {

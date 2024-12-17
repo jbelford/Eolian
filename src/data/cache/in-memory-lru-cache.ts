@@ -1,11 +1,13 @@
 import { MemoryCache } from '../@types';
 
 class CacheNode<T> {
-
   prev?: CacheNode<T>;
   next?: CacheNode<T>;
 
-  constructor(private _id: string, private _value: T) {}
+  constructor(
+    private _id: string,
+    private _value: T,
+  ) {}
 
   get id(): string {
     return this._id;
@@ -19,11 +21,9 @@ class CacheNode<T> {
     this._id = id;
     this._value = value;
   }
-
 }
 
 export class InMemoryLRUCache<T> implements MemoryCache<T> {
-
   private map = new Map<string, CacheNode<T>>();
   private head?: CacheNode<T>;
   private tail?: CacheNode<T>;
@@ -91,5 +91,4 @@ export class InMemoryLRUCache<T> implements MemoryCache<T> {
     node.prev = undefined;
     node.next = undefined;
   }
-
 }

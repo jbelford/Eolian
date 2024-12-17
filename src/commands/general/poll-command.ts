@@ -16,7 +16,6 @@ import { CommandContext, Command } from '../@types';
 import { GENERAL_CATEGORY } from '../category';
 
 class PollMessage implements Closable {
-
   private options: PollOption[];
   private userSelections = new Map<string, PollOption>();
 
@@ -26,7 +25,7 @@ class PollMessage implements Closable {
     private readonly sendable: ContextSendable,
     private readonly user: ContextUser,
     private readonly question: string,
-    options: string[]
+    options: string[],
   ) {
     this.options = options.map((text, i) => ({ text, emoji: NUMBER_TO_EMOJI[i + 1], count: 0 }));
   }
@@ -42,7 +41,7 @@ class PollMessage implements Closable {
       this.question,
       this.options,
       this.user.name,
-      this.user.avatar
+      this.user.avatar,
     );
     questionEmbed.buttons = this.options.map(option => ({
       emoji: option.emoji,
@@ -61,7 +60,7 @@ class PollMessage implements Closable {
       this.question,
       this.options,
       this.user.name,
-      this.user.avatar
+      this.user.avatar,
     );
     await Promise.allSettled([
       this.sendable.sendEmbed(resultEmbed, { ephemeral: false }),
@@ -99,18 +98,17 @@ class PollMessage implements Closable {
     await this.sendResults();
     return true;
   };
-
 }
 
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.ARG) {
     throw new EolianUserError(
-      'Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`'
+      'Missing arguments! The format is: `poll / question / option1 / option2 / ... / optionN /`',
     );
   } else if (options.ARG.length < 3) {
     logger.warn(
       `Poll action received args of incorrect length. This should not happen. %s`,
-      options.ARG
+      options.ARG,
     );
     throw new EolianUserError('Incorrect number of arguments. Must provide at least 2 options!');
   } else if (options.ARG.length > 11) {
@@ -124,7 +122,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     context.interaction,
     context.interaction.user,
     question,
-    pollOptions
+    pollOptions,
   );
 
   context.server!.addDisposable(poll);
@@ -167,7 +165,7 @@ export const POLL_COMMAND: Command = {
               details: 'Poll option',
             },
           ],
-        }))
+        })),
     ),
   },
   execute,

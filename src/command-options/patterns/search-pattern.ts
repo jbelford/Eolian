@@ -3,7 +3,6 @@ import { ArgumentExample, SyntaxType, Pattern, KeywordGroup } from '../@types';
 import { matchGroup } from './patterns-utils';
 
 class SearchExample implements ArgumentExample {
-
   constructor(private readonly _text: string) {}
 
   text(type: SyntaxType): string {
@@ -18,7 +17,6 @@ class SearchExample implements ArgumentExample {
         throw new Error(`Unknown syntax type ${type}!`);
     }
   }
-
 }
 
 export const SEARCH_PATTERN: Pattern<'SEARCH'> = {

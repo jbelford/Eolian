@@ -45,9 +45,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   const members = servers.reduce((sum, server) => sum + server.members, 0);
   const recentlyUsed = context.client.getRecentlyUsedCount();
-  let response
-    = `Total Servers: ${servers.length}\nTotal Users: ${members}\nActive Servers: ${recentlyUsed}`
-    + '```';
+  let response =
+    `Total Servers: ${servers.length}\nTotal Users: ${members}\nActive Servers: ${recentlyUsed}` +
+    '```';
   response += servers
     .slice(start, start + PAGE_LENGTH)
     .map((server, i) => `${start + i + 1}. ${JSON.stringify(server)}`)

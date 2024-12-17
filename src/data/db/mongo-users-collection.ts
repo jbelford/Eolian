@@ -3,7 +3,6 @@ import { UserDTO, UsersDb, Identifier } from '../@types';
 import { MongoCollection } from './mongo-collection';
 
 export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
-
   async setSoundCloud(id: string, soundcloud: number): Promise<void> {
     await this.setProperty(id, 'soundcloud', soundcloud);
   }
@@ -51,5 +50,4 @@ export class MongoUsers extends MongoCollection<UserDTO> implements UsersDb {
   async removeSyntax(id: string): Promise<void> {
     await this.unsetProperty(id, 'syntax');
   }
-
 }

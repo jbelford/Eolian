@@ -19,15 +19,15 @@ export function truthySum(...values: unknown[]): number {
 export function convertRangeToAbsolute(
   range: RangeArgument,
   max: number,
-  reverse?: boolean
+  reverse?: boolean,
 ): AbsRangeArgument {
   let newStart = 0;
   let newStop = max;
 
   if (range.stop) {
     newStart = Math.min(max - 1, Math.max(1, range.start) - 1);
-    newStop
-      = range.stop < 0 ? max + range.stop + 1 : Math.min(max - 1, Math.max(1, range.stop) - 1);
+    newStop =
+      range.stop < 0 ? max + range.stop + 1 : Math.min(max - 1, Math.max(1, range.stop) - 1);
 
     if (reverse) {
       newStart = max - newStart;
@@ -57,7 +57,7 @@ export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 export function fuzzyMatch(
   query: string,
-  list: string[]
+  list: string[],
 ): Promise<{ choice: string; score: number; key: number }[]> {
   return fuzz.extractAsPromised(query, list, {
     scorer: fuzz.token_sort_ratio,
@@ -70,10 +70,12 @@ export const noop = (): void => {
 };
 
 export class ExponentialSleep implements RetrySleepAlgorithm {
-
   private _count = 0;
 
-  constructor(private readonly initial = 1000, private readonly multiplier = 2) {
+  constructor(
+    private readonly initial = 1000,
+    private readonly multiplier = 2,
+  ) {
     if (initial <= 0 || multiplier <= 0) {
       throw new Error('Bad arguments provided!');
     }
@@ -91,7 +93,6 @@ export class ExponentialSleep implements RetrySleepAlgorithm {
     await sleep(this.initial * this.multiplier ** this.count);
     ++this._count;
   }
-
 }
 
 export function cleanupOnExit(resources: Closable[]) {
@@ -105,7 +106,7 @@ export function cleanupOnExit(resources: Closable[]) {
     logger.info('Executing cleanup');
 
     const promises = resources.map(x =>
-      x.close().catch(err => logger.warn(`Failed to clean resource: %s`, err))
+      x.close().catch(err => logger.warn(`Failed to clean resource: %s`, err)),
     );
 
     Promise.all(promises).finally(() => {

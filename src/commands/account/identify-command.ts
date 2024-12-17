@@ -24,13 +24,13 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 
   if (options.IDENTIFIER.length > IDENTIFIER_MAX_KEY_LENGTH) {
     throw new EolianUserError(
-      `The identifier must be less than ${IDENTIFIER_MAX_KEY_LENGTH} characters! Try again.`
+      `The identifier must be less than ${IDENTIFIER_MAX_KEY_LENGTH} characters! Try again.`,
     );
   }
 
   if (options.URL && options.SEARCH) {
     throw new EolianUserError(
-      `You specified both URL and SEARCH pattern! Please try again with only one of those.`
+      `You specified both URL and SEARCH pattern! Please try again with only one of those.`,
     );
   }
 
@@ -39,14 +39,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   const resource = await getSourceResolver(context, options).resolve();
   if (!resource) {
     throw new EolianUserError(
-      `You must provide me something to identify! Please try again with a URL or query.`
+      `You must provide me something to identify! Please try again with a URL or query.`,
     );
   }
 
   await context.interaction.user.setIdentifier(options.IDENTIFIER, resource.identifier);
-  const response
-    = `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\``
-    + ` can now be identified with \`${options.IDENTIFIER}\`.`;
+  const response =
+    `Awesome! The resource \`${resource.name}\` by \`${resource.authors.join(',')}\`` +
+    ` can now be identified with \`${options.IDENTIFIER}\`.`;
   if (resource.selectionMessage) {
     await resource.selectionMessage.edit(response);
   } else {

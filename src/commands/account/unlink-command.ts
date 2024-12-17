@@ -9,7 +9,7 @@ import { ACCOUNT_CATEGORY } from '../category';
 
 async function execute(
   { interaction }: CommandContext,
-  { SOUNDCLOUD, SPOTIFY }: CommandOptions
+  { SOUNDCLOUD, SPOTIFY }: CommandOptions,
 ): Promise<void> {
   let response: string | undefined;
 

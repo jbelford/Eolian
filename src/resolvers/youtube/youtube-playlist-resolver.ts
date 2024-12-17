@@ -13,7 +13,10 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class YouTubePlaylistResolver implements SourceResolver {
   public source = TrackSource.YouTube;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -29,25 +32,24 @@ export class YouTubePlaylistResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         'Choose a YouTube playlist',
         playlists.map(playlist => ({ name: playlist.name, url: playlist.url })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createYouTubePlaylist(
         playlists[result.selected],
         this.params,
         this.context.interaction.channel,
-        result.message
+        result.message,
       );
     }
   }
-
 }
 
 export function createYouTubePlaylist(
   playlist: YoutubePlaylist,
   params: CommandOptions,
   sendable: ContextSendable,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: playlist.name,
@@ -64,11 +66,10 @@ export function createYouTubePlaylist(
 }
 
 export class YouTubePlaylistFetcher implements SourceFetcher {
-
   constructor(
     private readonly id: string,
     private readonly params: CommandOptions,
-    private readonly sendable: ContextSendable
+    private readonly sendable: ContextSendable,
   ) {}
 
   async fetch(): Promise<FetchResult> {
@@ -77,5 +78,4 @@ export class YouTubePlaylistFetcher implements SourceFetcher {
     const videos = await youtube.getPlaylistVideos(this.id, progress, rangeFn);
     return { tracks: videos.map(mapYouTubeVideo), rangeOptimized: true };
   }
-
 }

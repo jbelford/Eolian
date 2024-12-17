@@ -5,7 +5,7 @@ export interface IBingApi {
   searchYoutubeSong(
     name: string,
     artist: string,
-    duration?: number
+    duration?: number,
   ): Promise<(Track & { score: number })[]>;
 }
 

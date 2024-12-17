@@ -11,7 +11,10 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class YouTubeVideoResolver implements SourceResolver {
   public source = TrackSource.YouTube;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -27,18 +30,17 @@ export class YouTubeVideoResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         'Choose a YouTube video',
         videos.map(video => ({ name: video.name, url: video.url })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createYouTubeVideo(videos[result.selected], result.message);
     }
   }
-
 }
 
 export function createYouTubeVideo(
   video: YoutubeVideo,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: video.name,
@@ -55,21 +57,22 @@ export function createYouTubeVideo(
 }
 
 export class YouTubeVideoFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string, private readonly video?: YoutubeVideo) {}
+  constructor(
+    private readonly id: string,
+    private readonly video?: YoutubeVideo,
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     const video = this.video ? this.video : await youtube.getVideo(this.id);
     if (!video) {
       throw new EolianUserError(
-        `I could not find details for video https://www.youtube.com/watch?v=${this.id}`
+        `I could not find details for video https://www.youtube.com/watch?v=${this.id}`,
       );
     } else if (video.blocked) {
       throw new EolianUserError(
-        `🚫 The video https://www.youtube.com/watch?v=${this.id} is blocked in my region`
+        `🚫 The video https://www.youtube.com/watch?v=${this.id} is blocked in my region`,
       );
     }
     return { tracks: [mapYouTubeVideo(video)], rangeOptimized: true };
   }
-
 }

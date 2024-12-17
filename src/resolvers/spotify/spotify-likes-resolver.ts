@@ -12,25 +12,27 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class SpotifyLikesResolver implements SourceResolver {
   public source = TrackSource.Spotify;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     const request = await this.context.interaction.user.getRequest(
       this.context.interaction,
-      TrackSource.Spotify
+      TrackSource.Spotify,
     );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
     return createSpotifyLikes(user, client, this.context.interaction.channel, this.params);
   }
-
 }
 
 export function createSpotifyLikes(
   user: SpotifyUser,
   client: ISpotifyApi,
   sendable: ContextSendable,
-  params: CommandOptions
+  params: CommandOptions,
 ): ResolvedResource {
   return {
     name: 'Liked Tracks',
@@ -47,11 +49,10 @@ export function createSpotifyLikes(
 }
 
 export class SpotifyLikesFetcher implements SourceFetcher {
-
   constructor(
     private readonly client: ISpotifyApi,
     private readonly params: CommandOptions,
-    private readonly sendable: ContextSendable
+    private readonly sendable: ContextSendable,
   ) {}
 
   async fetch(): Promise<FetchResult> {
@@ -64,5 +65,4 @@ export class SpotifyLikesFetcher implements SourceFetcher {
 
     return { tracks, rangeOptimized: true };
   }
-
 }

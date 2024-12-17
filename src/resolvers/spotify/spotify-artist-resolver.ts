@@ -11,7 +11,10 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class SpotifyArtistResolver implements SourceResolver {
   public source = TrackSource.Spotify;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -27,18 +30,17 @@ export class SpotifyArtistResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         'Choose a Spotify artist',
         artists.map(artist => ({ name: artist.name, url: artist.external_urls.spotify })),
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createSpotifyArtist(artists[result.selected], result.message);
     }
   }
-
 }
 
 export function createSpotifyArtist(
   artist: SpotifyArtist,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: artist.name,
@@ -55,12 +57,10 @@ export function createSpotifyArtist(
 }
 
 export class SpotifyArtistFetcher implements SourceFetcher {
-
   constructor(private readonly id: string) {}
 
   async fetch(): Promise<FetchResult> {
     const tracks = await spotify.getArtistTracks(this.id);
     return { tracks: tracks.map(track => mapSpotifyTrack(track)) };
   }
-
 }

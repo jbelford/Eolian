@@ -1,8 +1,10 @@
 import { ArgumentExample, SyntaxType, PatternMatchResult } from '../@types';
 
 export class PassthroughExample implements ArgumentExample {
-
-  constructor(private readonly name: string, private readonly _text: string) {}
+  constructor(
+    private readonly name: string,
+    private readonly _text: string,
+  ) {}
 
   text(type: SyntaxType): string {
     if (type === SyntaxType.SLASH) {
@@ -10,12 +12,13 @@ export class PassthroughExample implements ArgumentExample {
     }
     return this._text;
   }
-
 }
 
 export class RangeExample implements ArgumentExample {
-
-  constructor(private readonly _text: string, private readonly name: string) {}
+  constructor(
+    private readonly _text: string,
+    private readonly name: string,
+  ) {}
 
   text(type: SyntaxType): string {
     switch (type) {
@@ -29,7 +32,6 @@ export class RangeExample implements ArgumentExample {
         throw new Error(`Unknown syntax type ${type}!`);
     }
   }
-
 }
 
 export function matchText(text: string, reg: RegExp): PatternMatchResult<string[]> {

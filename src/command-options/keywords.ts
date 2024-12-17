@@ -20,13 +20,12 @@ export const KEYWORD_GROUPS: Readonly<Record<KeywordGroup, KeywordGroupPropertie
 };
 
 class KeywordDetails implements Keyword {
-
   constructor(
     readonly name: KeywordName,
     readonly details: string,
     readonly permission: UserPermission,
     readonly group?: KeywordGroup,
-    readonly shortName?: string
+    readonly shortName?: string,
   ) {}
 
   text(type: SyntaxType, short?: boolean): string {
@@ -43,7 +42,6 @@ class KeywordDetails implements Keyword {
         throw new Error(`Unknown syntax type '${type}'!`);
     }
   }
-
 }
 
 export const KEYWORDS: Readonly<
@@ -54,14 +52,14 @@ export const KEYWORDS: Readonly<
     'Indicates to enable a particular feature.',
     UserPermission.User,
     KeywordGroup.Switch,
-    'on'
+    'on',
   ),
   DISABLE: new KeywordDetails(
     'DISABLE',
     'Indicates to disable a particular feature.',
     UserPermission.User,
     KeywordGroup.Switch,
-    'off'
+    'off',
   ),
   CLEAR: new KeywordDetails('CLEAR', 'Indicates to remove some data.', UserPermission.User),
   MORE: new KeywordDetails(
@@ -69,108 +67,108 @@ export const KEYWORDS: Readonly<
     'Indicates to increase a value.',
     UserPermission.User,
     KeywordGroup.Increment,
-    'inc'
+    'inc',
   ),
   LESS: new KeywordDetails(
     'LESS',
     'Indicates to decrease a value.',
     UserPermission.User,
     KeywordGroup.Increment,
-    'dec'
+    'dec',
   ),
   MY: new KeywordDetails(
     'MY',
     'Indicates to fetch information from your account. Be it SoundCloud or Spotify.',
-    UserPermission.User
+    UserPermission.User,
   ),
   SOUNDCLOUD: new KeywordDetails(
     'SOUNDCLOUD',
     'Indicates to fetch a resource from SoundCloud if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
   ),
   SPOTIFY: new KeywordDetails(
     'SPOTIFY',
     'Indicates to fetch a resource from Spotify if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
   ),
   YOUTUBE: new KeywordDetails(
     'YOUTUBE',
     'Indicates to fetch a resource from YouTube if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
   ),
   POEM: new KeywordDetails(
     'POEM',
     'Indicates to fetch a resource from Poetry if applicable.',
     UserPermission.User,
-    KeywordGroup.Source
+    KeywordGroup.Source,
   ),
   RANDOM: new KeywordDetails(
     'RANDOM',
     'Indicates to fetch a random resource. (Only available for Poetry)',
-    UserPermission.User
+    UserPermission.User,
   ),
   PLAYLIST: new KeywordDetails(
     'PLAYLIST',
     'Indicates to fetch songs from a playlist given a query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   ALBUM: new KeywordDetails(
     'ALBUM',
     'Indicates to fetch songs from an album given a query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   ARTIST: new KeywordDetails(
     'ARTIST',
     'Indicates to fetch songs for an artist given the query.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   NEXT: new KeywordDetails(
     'NEXT',
     'Indicates to apply operation to the top of queue.',
     UserPermission.DJ,
     undefined,
-    'n'
+    'n',
   ),
   SHUFFLE: new KeywordDetails(
     'SHUFFLE',
     'Indicates to shuffle the fetched tracks.',
     UserPermission.User,
-    undefined
+    undefined,
   ),
   LIKES: new KeywordDetails(
     'LIKES',
     'Indicates to fetch liked tracks.\nFetching using TOP likes will execute much faster.',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   TRACKS: new KeywordDetails(
     'TRACKS',
     'Indicates to fetch SoundCloud tracks or Spotify top tracks (default medium term, use SHORT or LONG keywords for different time range.)',
     UserPermission.User,
-    KeywordGroup.Type
+    KeywordGroup.Type,
   ),
   FAST: new KeywordDetails(
     'FAST',
     'Select the first result if multiple options',
     UserPermission.User,
     undefined,
-    'f'
+    'f',
   ),
   SHORT: new KeywordDetails(
     'SHORT',
     'Indicates to get top tracks for short term time range',
-    UserPermission.User
+    UserPermission.User,
   ),
   LONG: new KeywordDetails(
     'LONG',
     'Indicates to get top tracks for long term time range',
-    UserPermission.User
+    UserPermission.User,
   ),
 };
 

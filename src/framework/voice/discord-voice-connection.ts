@@ -5,8 +5,10 @@ import { ContextVoiceChannel, ContextVoiceConnection } from '../@types';
 import { DiscordVoiceChannel } from './discord-voice-channel';
 
 export class DiscordVoiceConnection implements ContextVoiceConnection {
-
-  constructor(private readonly client: Client, readonly discordConnection: VoiceConnection) {}
+  constructor(
+    private readonly client: Client,
+    readonly discordConnection: VoiceConnection,
+  ) {}
 
   get channelId(): string {
     return this.discordConnection.joinConfig.channelId!;
@@ -18,7 +20,7 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
       logger.warn(
         'Guild channel received is not voice. Type: %s Id: %s',
         channel?.type,
-        this.channelId
+        this.channelId,
       );
     }
     return new DiscordVoiceChannel(channel as VoiceChannel);
@@ -46,5 +48,4 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
   async close(): Promise<void> {
     this.discordConnection.destroy();
   }
-
 }

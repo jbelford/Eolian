@@ -8,8 +8,10 @@ import { httpRequest } from '@eolian/http';
 const cache = new UniversalCache(true);
 
 export class YouTubeStreamSource implements StreamSource {
-
-  constructor(private readonly url: string, private readonly id: string) {}
+  constructor(
+    private readonly url: string,
+    private readonly id: string,
+  ) {}
 
   async get(seek?: number): Promise<Readable> {
     logger.info('Getting youtube stream %s - %s', this.url, this.id);
@@ -23,12 +25,13 @@ export class YouTubeStreamSource implements StreamSource {
       visitor_data: visitorData,
       cache,
       generate_session_locally: true,
-      fetch
+      fetch,
     });
 
     const info = await innertube.getBasicInfo(this.id);
-    const audioStreamingURL = info.chooseFormat({ quality: 'best', type: 'audio' }).decipher(innertube.session.player);
+    const audioStreamingURL = info
+      .chooseFormat({ quality: 'best', type: 'audio' })
+      .decipher(innertube.session.player);
     return httpRequest(audioStreamingURL, { proxy });
   }
-
 }

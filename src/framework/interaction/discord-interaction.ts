@@ -16,7 +16,6 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
   extends DiscordChannelSender
   implements ContextInteraction
 {
-
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
 
@@ -24,12 +23,12 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
     protected readonly interaction: T,
     protected readonly registry: ButtonRegistry,
     private readonly users: UsersDb,
-    private readonly auth: IAuthServiceProvider
+    private readonly auth: IAuthServiceProvider,
   ) {
     super(
       new DiscordInteractionSender(interaction),
       registry,
-      interaction.channel as SupportedTextChannel
+      interaction.channel as SupportedTextChannel,
     );
   }
 
@@ -37,7 +36,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
     if (!this._user) {
       const permission = getPermissionLevel(
         this.interaction.user,
-        this.interaction.memberPermissions
+        this.interaction.memberPermissions,
       );
       if (this.interaction.member) {
         this._user = new DiscordUser(
@@ -45,7 +44,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
           this.users,
           permission,
           this.auth,
-          this.interaction.member as GuildMember
+          this.interaction.member as GuildMember,
         );
       } else {
         this._user = new DiscordUser(this.interaction.user, this.users, permission, this.auth);
@@ -58,7 +57,7 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
     if (!this._channel) {
       this._channel = new DiscordTextChannel(
         this.interaction.channel as SupportedTextChannel,
-        this.registry
+        this.registry,
       );
     }
     return this._channel;
@@ -71,5 +70,4 @@ export class DiscordInteraction<T extends MessageComponentInteraction | CommandI
   async defer(ephemeral = true): Promise<void> {
     await this.interaction.deferReply({ ephemeral });
   }
-
 }

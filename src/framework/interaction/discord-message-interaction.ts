@@ -18,20 +18,17 @@ import { DiscordMessageSender } from '../discord-sender';
 import { SyntaxType } from '@eolian/command-options/@types';
 
 class MessageInteractionSender implements DiscordMessageSender {
-
   constructor(private readonly message: Message) {}
 
   async send(options: BaseMessageOptions): Promise<Message<boolean>> {
     return this.message.reply(options);
   }
-
 }
 
 export class DiscordMessageInteraction
   extends DiscordChannelSender
   implements ContextCommandInteraction
 {
-
   private _user?: ContextUser;
   private _channel?: ContextTextChannel;
   private _message?: ContextMessage;
@@ -42,12 +39,12 @@ export class DiscordMessageInteraction
     private readonly parser: CommandParsingStrategy,
     private readonly registry: ButtonRegistry,
     private readonly users: UsersDb,
-    private readonly auth: IAuthServiceProvider
+    private readonly auth: IAuthServiceProvider,
   ) {
     super(
       new MessageInteractionSender(discordMessage),
       registry,
-      discordMessage.channel as SupportedTextChannel
+      discordMessage.channel as SupportedTextChannel,
     );
   }
 
@@ -59,14 +56,14 @@ export class DiscordMessageInteraction
     if (!this._user) {
       const permission = getPermissionLevel(
         this.discordMessage.author,
-        this.discordMessage.member?.permissions
+        this.discordMessage.member?.permissions,
       );
       this._user = new DiscordUser(
         this.discordMessage.author,
         this.users,
         permission,
         this.auth,
-        this.discordMessage.member ?? undefined
+        this.discordMessage.member ?? undefined,
       );
     }
     return this._user;
@@ -76,7 +73,7 @@ export class DiscordMessageInteraction
     if (!this._channel) {
       this._channel = new DiscordTextChannel(
         this.discordMessage.channel as SupportedTextChannel,
-        this.registry
+        this.registry,
       );
     }
     return this._channel;
@@ -116,7 +113,6 @@ export class DiscordMessageInteraction
   toString(): string {
     return this.discordMessage.content;
   }
-
 }
 
 function removeMentions(text: string): string {

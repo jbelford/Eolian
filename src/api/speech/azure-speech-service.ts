@@ -34,9 +34,8 @@ export class AzureSpeechService implements ISpeechService {
           synthesizer.close();
           bufferStream.end();
           reject(error);
-        }
+        },
       );
-    })
+    });
   }
 }
-

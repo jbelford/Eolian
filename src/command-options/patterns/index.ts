@@ -24,12 +24,12 @@ export const PATTERNS: Readonly<Patterns> = {
 };
 
 export const PATTERNS_SORTED = (Object.values(PATTERNS) as Pattern[]).sort(
-  (a, b) => b.priority - a.priority
+  (a, b) => b.priority - a.priority,
 );
 
 export function getRangeOption(
   options: CommandOptions,
-  total: number
+  total: number,
 ): AbsRangeArgument | undefined {
   let range: AbsRangeArgument | undefined;
   if (options.TOP) {

@@ -7,12 +7,11 @@ import {
 import { DiscordMessageSender } from '../discord-sender';
 
 export class DiscordInteractionSender implements DiscordMessageSender {
-
   constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
 
   async send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message> {
     const hasButtons = !!options.components?.length;
-    const ephemeral = hasButtons ? false : forceEphemeral ?? true;
+    const ephemeral = hasButtons ? false : (forceEphemeral ?? true);
     let reply: Message;
     if (!this.interaction.replied) {
       if (!this.interaction.deferred) {
@@ -36,5 +35,4 @@ export class DiscordInteractionSender implements DiscordMessageSender {
     }
     return reply;
   }
-
 }

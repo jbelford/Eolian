@@ -57,7 +57,7 @@ function getProxyEnv(): AppEnv['proxy'] {
     name: proxyName,
     password: proxyPass,
     user: proxyUser,
-  }
+  };
 }
 
 function getAzureOpenAi() {
@@ -95,7 +95,7 @@ export const environment: AppEnv = {
       identityToken: getEnvOpt('YOUTUBE_IDENTITY_TOKEN'),
       cookie: getEnvOpt('YOUTUBE_COOKIE'),
       poToken: getEnvOpt('YOUTUBE_PO_TOKEN'),
-      visitorData: getEnvOpt('YOUTUBE_VISITOR_DATA')
+      visitorData: getEnvOpt('YOUTUBE_VISITOR_DATA'),
     },
     soundcloud: {
       clientId: getEnv('SOUNDCLOUD_CLIENT_ID'),
@@ -110,7 +110,7 @@ export const environment: AppEnv = {
     speech: {
       key: getEnv('SPEECH_SERVICE_KEY'),
       region: getEnv('SPEECH_SERVICE_REGION'),
-    }
+    },
   },
   mongo: {
     uri: getEnv('MONGO_URI'),

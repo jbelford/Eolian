@@ -29,7 +29,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   await context.interaction.send(
-    `🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`
+    `🔁 Loop mode is currently ${context.server!.queue.loop ? 'enabled' : 'disabled'}!`,
   );
 }
 

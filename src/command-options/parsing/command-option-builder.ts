@@ -5,12 +5,11 @@ import { PATTERNS } from '../patterns';
 import { ICommandOptionBuilder } from './@types';
 
 export class CommandOptionBuilder implements ICommandOptionBuilder {
-
   private options: CommandOptions = {};
 
   constructor(
     private readonly permission: UserPermission,
-    private readonly syntax = SyntaxType.KEYWORD
+    private readonly syntax = SyntaxType.KEYWORD,
   ) {}
 
   withPattern<T extends PatternName>(pattern: Pattern<T>, text: string, required = false): string {
@@ -23,7 +22,7 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
       return result.newText;
     } else if (required) {
       throw new EolianUserError(
-        `Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``
+        `Provided option \`${pattern.name}\` is incorrectly specified. See \`/help ${pattern.name}\``,
       );
     }
     return text;
@@ -54,7 +53,7 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
       this.options[keyword.name] = true;
     } else {
       throw new EolianUserError(
-        `This command does not accept the \`${keyword.name}\` keyword. Try again without it.`
+        `This command does not accept the \`${keyword.name}\` keyword. Try again without it.`,
       );
     }
   }
@@ -72,5 +71,4 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
   get(): CommandOptions {
     return this.options;
   }
-
 }

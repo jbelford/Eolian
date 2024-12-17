@@ -23,10 +23,9 @@ import {
 import { CLIENT_SPOTIFY_REQUEST } from './spotify-request';
 
 class SpotifyApi implements ISpotifyApi {
-
   constructor(
     private readonly youtube: IYouTubeApi,
-    private readonly req: IOAuthHttpClient = CLIENT_SPOTIFY_REQUEST
+    private readonly req: IOAuthHttpClient = CLIENT_SPOTIFY_REQUEST,
   ) {}
 
   resolve(uri: string): SpotifyUrlDetails | undefined {
@@ -47,7 +46,7 @@ class SpotifyApi implements ISpotifyApi {
 
   async getMyTracks(
     progress?: ProgressUpdater,
-    rangeFn?: RangeFactory
+    rangeFn?: RangeFactory,
   ): Promise<SpotifyUserTrack[]> {
     try {
       return await this.getPaginatedItems('me/tracks', { progress, limit: 50, rangeFn });
@@ -99,7 +98,7 @@ class SpotifyApi implements ISpotifyApi {
   async getPlaylistTracks(
     id: string,
     progress?: ProgressUpdater,
-    rangeFn?: RangeFactory
+    rangeFn?: RangeFactory,
   ): Promise<SpotifyPlaylistTracks> {
     try {
       const playlist = await this.getPlaylist(id);
@@ -169,7 +168,7 @@ class SpotifyApi implements ISpotifyApi {
     try {
       const response = await this.req.get<{ playlists: SpotifyPagingObject<SpotifyPlaylist> }>(
         'search',
-        { type: 'playlist', q: query, limit }
+        { type: 'playlist', q: query, limit },
       );
       return response.playlists.items;
     } catch (e) {
@@ -185,20 +184,20 @@ class SpotifyApi implements ISpotifyApi {
   private async searchUserPlaylists(
     resource: string,
     query: string,
-    limit = 5
+    limit = 5,
   ): Promise<SpotifyPlaylist[]> {
     try {
       const playlists = await this.getPaginatedItems<SpotifyPlaylist>(`${resource}/playlists`);
       const results = await fuzzyMatch(
         query,
-        playlists.map(playlist => playlist.name)
+        playlists.map(playlist => playlist.name),
       );
       return results.slice(0, limit).map(result => playlists[result.key]);
     } catch (e) {
       logger.warn(
         `Failed to fetch Spotify user playlists: query: %s resource: %s`,
         query,
-        resource
+        resource,
       );
       throw e;
     }
@@ -226,7 +225,7 @@ class SpotifyApi implements ISpotifyApi {
           type: 'artist',
           q: query,
           limit,
-        }
+        },
       );
       return response.artists.items;
     } catch (e) {
@@ -238,7 +237,7 @@ class SpotifyApi implements ISpotifyApi {
   getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.Spotify) {
       throw new Error(
-        `Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`
+        `Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`,
       );
     }
     const trackCopy: Track = { ...track };
@@ -300,7 +299,6 @@ class SpotifyApi implements ISpotifyApi {
 
     return items;
   }
-
 }
 
 type GetAllItemsOptions<T> = {

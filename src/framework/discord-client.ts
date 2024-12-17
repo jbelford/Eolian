@@ -36,11 +36,10 @@ export const DISCORD_INVITE_PERMISSIONS: PermissionResolvable = [
 ];
 
 export class DiscordClient implements ContextClient {
-
   constructor(
     protected readonly client: Client,
     private readonly guildStore: DiscordGuildStore,
-    private readonly servers: ServersDb
+    private readonly servers: ServersDb,
   ) {}
 
   get name(): string {
@@ -91,16 +90,14 @@ export class DiscordClient implements ContextClient {
     await this.servers.delete(id);
     return !!(await this.client.guilds.cache.get(id)?.leave());
   }
-
 }
 
 export class DiscordGuildClient extends DiscordClient {
-
   constructor(
     readonly client: Client,
     private readonly guildId: string,
     guildStore: DiscordGuildStore,
-    servers: ServersDb
+    servers: ServersDb,
   ) {
     super(client, guildStore, servers);
   }
@@ -109,5 +106,4 @@ export class DiscordGuildClient extends DiscordClient {
     const connection = getVoiceConnection(this.guildId);
     return connection && new DiscordVoiceConnection(this.client, connection);
   }
-
 }

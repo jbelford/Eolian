@@ -29,14 +29,13 @@ const STOP_EMOJI = '🚫';
 export type SupportedTextChannel = TextChannel | DMChannel | VoiceChannel;
 
 export class DiscordChannelSender implements ContextSendable {
-
   private readonly sender: DiscordSender;
   private _sendable?: boolean;
 
   constructor(
     messageSender: DiscordMessageSender,
     registry: ButtonRegistry,
-    private readonly textChannel: SupportedTextChannel
+    private readonly textChannel: SupportedTextChannel,
   ) {
     this.sender = new DiscordSender(messageSender, registry);
   }
@@ -47,10 +46,10 @@ export class DiscordChannelSender implements ContextSendable {
       if (this.textChannel.type !== ChannelType.DM) {
         const permissions = this.textChannel.permissionsFor(this.textChannel.guild.members.me!);
         this._sendable &&= !!permissions?.has(
-          PermissionFlagsBits.ViewChannel
-            | PermissionFlagsBits.SendMessages
-            | PermissionFlagsBits.EmbedLinks
-            | PermissionFlagsBits.ReadMessageHistory
+          PermissionFlagsBits.ViewChannel |
+            PermissionFlagsBits.SendMessages |
+            PermissionFlagsBits.EmbedLinks |
+            PermissionFlagsBits.ReadMessageHistory,
         );
       }
     }
@@ -59,7 +58,7 @@ export class DiscordChannelSender implements ContextSendable {
 
   async send(
     message: string,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined> {
     if (this.sendable || options?.force) {
       return await this.sender.send(message, options);
@@ -69,7 +68,7 @@ export class DiscordChannelSender implements ContextSendable {
 
   async sendEmbed(
     embed: EmbedMessage,
-    options?: ContextInteractionOptions
+    options?: ContextInteractionOptions,
   ): Promise<ContextMessage | undefined> {
     if (this.sendable) {
       return await this.sender.sendEmbed(embed, options);
@@ -80,7 +79,7 @@ export class DiscordChannelSender implements ContextSendable {
   async sendSelection(
     question: string,
     options: SelectionOption[],
-    user: ContextUser
+    user: ContextUser,
   ): Promise<SelectionResult> {
     if (this.sendable) {
       const result = await this._sendSelection(question, options, user);
@@ -98,7 +97,7 @@ export class DiscordChannelSender implements ContextSendable {
   private _sendSelection(
     question: string,
     options: SelectionOption[],
-    user: ContextUser
+    user: ContextUser,
   ): Promise<SelectionResult | undefined> {
     return new Promise((resolve, reject) => {
       let resolved = false;
@@ -166,7 +165,7 @@ export class DiscordChannelSender implements ContextSendable {
   private awaitUserSelection(
     userId: string,
     count: number,
-    cb: (message: Message | undefined) => void
+    cb: (message: Message | undefined) => void,
   ): MessageCollector {
     const collector = this.textChannel.createMessageCollector({
       filter(message: Message) {
@@ -186,5 +185,4 @@ export class DiscordChannelSender implements ContextSendable {
 
     return collector;
   }
-
 }

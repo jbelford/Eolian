@@ -10,11 +10,13 @@ import path from 'path';
 import { GITHUB_PAGE } from '@eolian/common/constants';
 
 export class WebServer implements Closable {
-
   private readonly app = express();
   private server: Server | undefined;
 
-  constructor(private readonly port: number, private readonly authProviders: IAuthServiceProvider) {
+  constructor(
+    private readonly port: number,
+    private readonly authProviders: IAuthServiceProvider,
+  ) {
     if (feature.enabled(FeatureFlag.WEBSITE)) {
       this.app.use(express.static(path.join(__dirname, 'public')));
 
@@ -70,5 +72,4 @@ export class WebServer implements Closable {
       }
     };
   }
-
 }

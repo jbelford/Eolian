@@ -4,9 +4,7 @@ import { PoetryFetcher } from './poetry-resolver';
 
 export { PoetryResolver } from './poetry-resolver';
 
-export function getPoetrySourceFetcher(
-  identifier: Identifier,
-): SourceFetcher {
+export function getPoetrySourceFetcher(identifier: Identifier): SourceFetcher {
   switch (identifier.type) {
     case ResourceType.Song:
       return new PoetryFetcher(identifier.id);

@@ -13,11 +13,12 @@ export function querystringify(params: HttpRequestParams): string {
 }
 
 export class HttpRequestError extends Error {
-
-  constructor(readonly statusCode: number, readonly body: any) {
+  constructor(
+    readonly statusCode: number,
+    readonly body: any,
+  ) {
     super(`HttpRequestError ${statusCode}: ${JSON.stringify(body)}`);
   }
-
 }
 
 export async function httpRequest<T>(url: string, options?: HttpRequestOptions): Promise<T> {
@@ -29,7 +30,7 @@ export async function httpRequest<T>(url: string, options?: HttpRequestOptions):
   if (options?.auth) {
     if (options.auth.basic) {
       const key = Buffer.from(`${options.auth.basic.id}:${options.auth.basic.password}`).toString(
-        'base64'
+        'base64',
       );
       headers.authorization = `Basic ${key}`;
     } else if (options.auth.bearer) {
@@ -49,7 +50,7 @@ export async function httpRequest<T>(url: string, options?: HttpRequestOptions):
     headers,
     body,
     maxRedirections: 5,
-    dispatcher: options?.proxy ? new EnvHttpProxyAgent({ httpProxy: options.proxy }) : undefined
+    dispatcher: options?.proxy ? new EnvHttpProxyAgent({ httpProxy: options.proxy }) : undefined,
   });
 
   if (res.statusCode >= 400) {

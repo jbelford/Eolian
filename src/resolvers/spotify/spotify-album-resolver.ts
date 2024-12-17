@@ -12,7 +12,10 @@ import { SourceResolver, ResolvedResource, SourceFetcher, FetchResult } from '..
 export class SpotifyAlbumResolver implements SourceResolver {
   public source = TrackSource.Spotify;
 
-  constructor(private readonly context: CommandContext, private readonly params: CommandOptions) {}
+  constructor(
+    private readonly context: CommandContext,
+    private readonly params: CommandOptions,
+  ) {}
 
   async resolve(): Promise<ResolvedResource> {
     if (!this.params.SEARCH) {
@@ -33,18 +36,17 @@ export class SpotifyAlbumResolver implements SourceResolver {
       const result = await this.context.interaction.sendSelection(
         `Select the album you want (resolved via Spotify)`,
         options,
-        this.context.interaction.user
+        this.context.interaction.user,
       );
 
       return createSpotifyAlbum(albums[result.selected], result.message);
     }
   }
-
 }
 
 export function createSpotifyAlbum(
   album: SpotifyAlbum,
-  message?: ContextMessage
+  message?: ContextMessage,
 ): ResolvedResource {
   return {
     name: album.name,
@@ -61,8 +63,10 @@ export function createSpotifyAlbum(
 }
 
 export class SpotifyAlbumFetcher implements SourceFetcher {
-
-  constructor(private readonly id: string, private readonly album?: SpotifyAlbum) {}
+  constructor(
+    private readonly id: string,
+    private readonly album?: SpotifyAlbum,
+  ) {}
 
   async fetch(): Promise<FetchResult> {
     let album: SpotifyAlbumFull;
@@ -76,5 +80,4 @@ export class SpotifyAlbumFetcher implements SourceFetcher {
     const tracks = album.tracks.items.map(track => mapSpotifyTrack(track, artwork));
     return { tracks };
   }
-
 }

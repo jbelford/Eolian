@@ -21,7 +21,7 @@ export const URL_PATTERN: Pattern<'URL'> = {
     const match = matchGroup(
       text,
       /\b((https?:\/\/)?[^\s]+\.(com|be)(\/[^\s]+)?|spotify:[a-zA-Z]+:[^\s]+)(\b|\B|\$)/,
-      0
+      0,
     );
     let args: UrlArgument | undefined;
     if (match.matches && match.args) {

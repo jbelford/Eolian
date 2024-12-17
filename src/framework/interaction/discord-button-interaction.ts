@@ -9,14 +9,13 @@ export class DiscordButtonInteraction
   extends DiscordInteraction<ButtonInteraction>
   implements ContextButtonInteraction
 {
-
   private _message?: ContextMessage;
 
   constructor(
     interaction: ButtonInteraction,
     registry: ButtonRegistry,
     users: UsersDb,
-    auth: IAuthServiceProvider
+    auth: IAuthServiceProvider,
   ) {
     super(interaction, registry, users, auth);
   }
@@ -35,5 +34,4 @@ export class DiscordButtonInteraction
   async deferUpdate(): Promise<void> {
     await this.interaction.deferUpdate();
   }
-
 }

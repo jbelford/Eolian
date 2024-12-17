@@ -8,7 +8,7 @@ export interface IYouTubeApi extends StreamFetcher {
   getPlaylistVideos(
     id: string,
     progress?: ProgressUpdater,
-    rangeFn?: RangeFactory
+    rangeFn?: RangeFactory,
   ): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string, limit?: number): Promise<YoutubePlaylist[]>;
   searchVideos(query: string, limit?: number): Promise<YoutubeVideo[]>;

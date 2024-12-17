@@ -6,7 +6,7 @@ export function createPollQuestionEmbed(
   question: string,
   options: PollOption[],
   username: string,
-  pic?: string
+  pic?: string,
 ): EmbedMessage {
   return {
     header: {
@@ -28,7 +28,7 @@ export function createPollResultsEmbed(
   question: string,
   options: PollOption[],
   username: string,
-  pic?: string
+  pic?: string,
 ): EmbedMessage {
   const description = options
     .sort((a, b) => b.count - a.count)

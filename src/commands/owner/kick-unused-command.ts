@@ -10,7 +10,7 @@ async function kickUnused(context: CommandContext): Promise<void> {
   const result = await context.interaction.sendSelection(
     'Kick?',
     [{ name: 'Yes' }, { name: 'No' }],
-    context.interaction.user
+    context.interaction.user,
   );
   if (result.selected === 0) {
     await Promise.all(servers.map(s => context.client.leave(s.id)));

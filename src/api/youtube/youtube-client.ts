@@ -13,17 +13,20 @@ import { IYouTubeApi, YouTubeUrlDetails, YoutubeVideo, YoutubePlaylist } from '.
 import { YouTubeStreamSource } from './youtube-stream-source';
 
 const SEARCH_MIN_SCORE = 79;
-const YOUTUBE_PATTERN
-  = /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
+const YOUTUBE_PATTERN =
+  /youtube\.com\/(watch|playlist)|youtu(\.be|be\.com\/shorts)\/(?<video>[^/]+)\s*$/;
 // eslint-disable-next-line no-useless-escape
 const MUSIC_VIDEO_PATTERN = /[\(\[]\s*((official\s+(music\s+)?video)|(music\s+video))\s*[\])]\s*$/i;
 
 class YouTubeApi implements IYouTubeApi {
-
   private readonly cache: MemoryCache<{ url: string; id: string; live: boolean }>;
   private readonly youtube: youtube_v3.Youtube;
 
-  constructor(token: string, cacheSize: number, private readonly bing?: IBingApi) {
+  constructor(
+    token: string,
+    cacheSize: number,
+    private readonly bing?: IBingApi,
+  ) {
     this.cache = new InMemoryLRUCache(cacheSize);
     this.youtube = google.youtube({ version: 'v3', auth: token });
   }
@@ -92,7 +95,7 @@ class YouTubeApi implements IYouTubeApi {
   async getPlaylistVideos(
     id: string,
     progress?: ProgressUpdater,
-    rangeFn?: RangeFactory
+    rangeFn?: RangeFactory,
   ): Promise<YoutubeVideo[]> {
     let items: youtube_v3.Schema$PlaylistItem[] = [];
 
@@ -142,7 +145,8 @@ class YouTubeApi implements IYouTubeApi {
 
     return items
       .filter(
-        item => item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default?.url
+        item =>
+          item.status?.privacyStatus !== 'private' && !!item.snippet?.thumbnails?.default?.url,
       )
       .map(mapVideoResponse);
   }
@@ -178,8 +182,8 @@ class YouTubeApi implements IYouTubeApi {
         // topicId: MUSIC_TOPIC,
         // videoCategoryId: MUSIC_CATEGORY_ID
       });
-      const videoResponse
-        = response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
+      const videoResponse =
+        response.data.items?.filter(item => item.id?.kind === 'youtube#video') ?? [];
       if (!videoResponse.length) return [];
 
       const videos = videoResponse
@@ -199,7 +203,7 @@ class YouTubeApi implements IYouTubeApi {
     if (videos.length) {
       const sorted = await fuzzyMatch(
         query,
-        videos.map(video => `${video.channelName} ${video.name}`)
+        videos.map(video => `${video.channelName} ${video.name}`),
       );
       return sorted.map(scored => ({
         ...mapYouTubeVideo(videos[scored.key]),
@@ -221,7 +225,7 @@ class YouTubeApi implements IYouTubeApi {
           track.poster,
           track.title,
           video.url,
-          video.score
+          video.score,
         );
         return video;
       }
@@ -247,7 +251,7 @@ class YouTubeApi implements IYouTubeApi {
         track.poster,
         track.title,
         video.url,
-        video.score
+        video.score,
       );
       // Fallback on YouTube we get bad results
       if (video.score! <= SEARCH_MIN_SCORE) {
@@ -278,38 +282,39 @@ class YouTubeApi implements IYouTubeApi {
   async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.YouTube) {
       throw new Error(
-        `Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`
+        `Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`,
       );
     }
     return new YouTubeStreamSource(track.url, track.id!);
   }
-
 }
 
 function mapVideoResponse(
-  video: youtube_v3.Schema$Video | youtube_v3.Schema$PlaylistItem | youtube_v3.Schema$SearchResult
+  video: youtube_v3.Schema$Video | youtube_v3.Schema$PlaylistItem | youtube_v3.Schema$SearchResult,
 ): YoutubeVideo {
   const thumbnails = video.snippet!.thumbnails!;
-  const id
-    = (video as youtube_v3.Schema$PlaylistItem).snippet?.resourceId?.videoId
-    ?? (typeof video.id! === 'string' ? video.id! : video.id!.videoId!);
+  const id =
+    (video as youtube_v3.Schema$PlaylistItem).snippet?.resourceId?.videoId ??
+    (typeof video.id! === 'string' ? video.id! : video.id!.videoId!);
   return {
     id,
     name: decode(video.snippet!.title!),
     channelName: decode(video.snippet!.channelTitle!),
     url: `https://www.youtube.com/watch?v=${id}`,
     artwork:
-      thumbnails.maxres?.url
-      ?? thumbnails.standard?.url
-      ?? thumbnails.medium?.url
-      ?? thumbnails.default!.url!,
+      thumbnails.maxres?.url ??
+      thumbnails.standard?.url ??
+      thumbnails.medium?.url ??
+      thumbnails.default!.url!,
     isLive: (video.snippet as youtube_v3.Schema$VideoSnippet).liveBroadcastContent === 'live',
-    blocked: (video as youtube_v3.Schema$Video).contentDetails?.regionRestriction?.blocked?.includes?.('US'),
+    blocked: (
+      video as youtube_v3.Schema$Video
+    ).contentDetails?.regionRestriction?.blocked?.includes?.('US'),
   };
 }
 
 function mapPlaylistResponse(
-  playlist: youtube_v3.Schema$Playlist | youtube_v3.Schema$SearchResult
+  playlist: youtube_v3.Schema$Playlist | youtube_v3.Schema$SearchResult,
 ): YoutubePlaylist {
   const id = typeof playlist.id! === 'string' ? playlist.id! : playlist.id!.playlistId!;
   return {
@@ -337,5 +342,5 @@ export function mapYouTubeVideo(video: YoutubeVideo): Track {
 export const youtube: IYouTubeApi = new YouTubeApi(
   environment.tokens.youtube.token,
   environment.config.youtubeCacheLimit,
-  bing
+  bing,
 );

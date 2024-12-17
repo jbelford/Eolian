@@ -16,7 +16,7 @@ import { ACCOUNT_CATEGORY } from '../category';
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (options.SEARCH && options.URL) {
     throw new EolianUserError(
-      `You provided both SEARCH and URL patterns. Please provide just one of those items.`
+      `You provided both SEARCH and URL patterns. Please provide just one of those items.`,
     );
   }
 
@@ -24,7 +24,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     await context.interaction.defer();
     const request = await context.interaction.user.getRequest(
       context.interaction,
-      TrackSource.Spotify
+      TrackSource.Spotify,
     );
     const client = createSpotifyClient(request);
     const user = await client.getMe();
@@ -33,7 +33,7 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
     await context.interaction.defer();
     const request = await context.interaction.user.getRequest(
       context.interaction,
-      TrackSource.SoundCloud
+      TrackSource.SoundCloud,
     );
     const client = createSoundCloudClient(request);
     const user = await client.getMe();
@@ -44,14 +44,14 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   } else if (options.SEARCH) {
     if (options.SPOTIFY) {
       throw new EolianUserError(
-        `Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`
+        `Sorry. Spotify doesn't allow me to search for profiles. Provide me a URL instead.`,
       );
     }
     await context.interaction.defer();
     await handleSoundCloudQuery(context, options.SEARCH);
   } else {
     throw new EolianUserError(
-      'You must provide valid URL or SEARCH for me to link your account to!'
+      'You must provide valid URL or SEARCH for me to link your account to!',
     );
   }
 }
@@ -73,7 +73,7 @@ async function handleUrl(url: UrlArgument, context: CommandContext) {
 async function handleSpotifyUrl(url: string, context: CommandContext) {
   if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
     throw new EolianUserError(
-      `You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`
+      `You don't need to provide a link! Just provide the \`${KEYWORDS.SPOTIFY.name}\` keyword!`,
     );
   }
 
@@ -89,9 +89,9 @@ async function handleSpotifyUrl(url: string, context: CommandContext) {
 
 function getSpotifyMessage(user: SpotifyUser): string {
   return (
-    `I have set your Spotify account to \`${user.display_name}\`!`
-    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\``
-    + ` keyword to search your playlists.`
+    `I have set your Spotify account to \`${user.display_name}\`!` +
+    ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SPOTIFY.name}\`` +
+    ` keyword to search your playlists.`
   );
 }
 
@@ -116,7 +116,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
   const result = await context.interaction.sendSelection(
     question,
     options,
-    context.interaction.user
+    context.interaction.user,
   );
 
   const message = await handleSoundCloud(context, soundCloudUsers[result.selected]);
@@ -125,7 +125,7 @@ async function handleSoundCloudQuery(context: CommandContext, query: string) {
 
 async function handleSoundCloud(
   context: CommandContext,
-  soundCloudUser: SoundCloudUser
+  soundCloudUser: SoundCloudUser,
 ): Promise<string> {
   await context.interaction.user.setSoundCloud(soundCloudUser.id);
   return getSoundCloudMessage(soundCloudUser);
@@ -133,9 +133,9 @@ async function handleSoundCloud(
 
 function getSoundCloudMessage(user: SoundCloudUser): string {
   return (
-    `I have set your SoundCloud account to \`${user.username}\`!`
-    + ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword`
-    + ` to use your playlists, likes, and tracks.`
+    `I have set your SoundCloud account to \`${user.username}\`!` +
+    ` You can now use the \`${KEYWORDS.MY.name}\` keyword combined with the \`${KEYWORDS.SOUNDCLOUD.name}\` keyword` +
+    ` to use your playlists, likes, and tracks.`
   );
 }
 

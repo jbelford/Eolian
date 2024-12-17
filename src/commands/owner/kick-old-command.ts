@@ -13,12 +13,12 @@ async function kickOld(context: CommandContext, [id]: string[]): Promise<void> {
     throw new EolianUserError('No servers!');
   }
   await context.interaction.send(
-    servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n')
+    servers.map((s, i) => `${i}. ${s._id} ${s.lastUsage?.toUTCString() ?? ''}`).join('\n'),
   );
   const result = await context.interaction.sendSelection(
     'Kick?',
     [{ name: 'Yes' }, { name: 'No' }],
-    context.interaction.user
+    context.interaction.user,
   );
   if (result.selected === 0) {
     await Promise.all(servers.map(s => context.client.leave(s._id)));

@@ -7,7 +7,7 @@ export * from './spotify-request';
 export function mapSpotifyTrack(
   track: SpotifyTrack,
   albumArtwork?: string,
-  playlistArtwork?: string
+  playlistArtwork?: string,
 ): Track {
   let artwork: string | undefined;
   if (track.is_local && playlistArtwork) {

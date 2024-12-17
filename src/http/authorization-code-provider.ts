@@ -3,7 +3,6 @@ import { TokenProvider, HttpRequestOptions, IAuthorizationProvider, TokenRespons
 import { httpRequest, HttpRequestError } from './request';
 
 export class AuthorizationCodeProvider implements TokenProvider {
-
   private readonly options: HttpRequestOptions;
 
   constructor(
@@ -11,7 +10,7 @@ export class AuthorizationCodeProvider implements TokenProvider {
     private readonly tokenEndpoint: string,
     authenticationOptions: HttpRequestOptions,
     readonly authorization: IAuthorizationProvider,
-    private refreshToken?: string
+    private refreshToken?: string,
   ) {
     this.options = { ...authenticationOptions, method: 'POST', json: true };
     this.options.form = { ...this.options.form, grant_type: 'refresh_token' };
@@ -41,5 +40,4 @@ export class AuthorizationCodeProvider implements TokenProvider {
     }
     return result;
   }
-
 }

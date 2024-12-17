@@ -22,10 +22,9 @@ const TRACKS_PARAMS = {
 };
 
 class SoundCloudApi implements ISoundCloudApi {
-
   constructor(
     private readonly youtube: IYouTubeApi,
-    private readonly req: IOAuthHttpClient = CLIENT_SOUNDCLOUD_REQUEST
+    private readonly req: IOAuthHttpClient = CLIENT_SOUNDCLOUD_REQUEST,
   ) {}
 
   async getMe(): Promise<SoundCloudUser> {
@@ -186,7 +185,7 @@ class SoundCloudApi implements ISoundCloudApi {
   async getUserFavorites(
     id: number,
     max?: number,
-    progress?: ProgressUpdater
+    progress?: ProgressUpdater,
   ): Promise<SoundCloudTrack[]> {
     try {
       return await this.getPaginatedItems<SoundCloudTrack>(`users/${id}/likes/tracks`, {
@@ -202,7 +201,7 @@ class SoundCloudApi implements ISoundCloudApi {
 
   private async getPaginatedItems<T>(
     path: string,
-    options: GetPaginatedItemsOptions = {}
+    options: GetPaginatedItemsOptions = {},
   ): Promise<T[]> {
     let items: T[] = [];
 
@@ -227,12 +226,12 @@ class SoundCloudApi implements ISoundCloudApi {
 
     let requests = 1;
     while (
-      result.next_href
-      && (!options.total || items.length < options.total)
-      && (!options.requestLimit || requests < options.requestLimit)
+      result.next_href &&
+      (!options.total || items.length < options.total) &&
+      (!options.requestLimit || requests < options.requestLimit)
     ) {
       result = await this.req.getUri<SoundCloudPaginatedResult<T>>(
-        `${result.next_href}&${extraParams}`
+        `${result.next_href}&${extraParams}`,
       );
       items = items.concat(result.collection);
       options.progress?.update(items.length);
@@ -251,7 +250,7 @@ class SoundCloudApi implements ISoundCloudApi {
   async getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.SoundCloud) {
       throw new Error(
-        `Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`
+        `Tried to get soundcloud readable from non-soundcloud resource: ${JSON.stringify(track)}`,
       );
     }
 
@@ -262,7 +261,6 @@ class SoundCloudApi implements ISoundCloudApi {
 
     return new SoundCloudStreamSource(this.req, track.url, track.stream);
   }
-
 }
 
 type GetPaginatedItemsOptions = {

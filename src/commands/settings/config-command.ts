@@ -87,7 +87,7 @@ async function setSyntax(context: CommandContext, syntax: string) {
       break;
     default:
       throw new EolianUserError(
-        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`
+        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`,
       );
   }
 
@@ -109,7 +109,7 @@ async function addDjRole(context: CommandContext, id: string) {
   const details = await context.server!.details.get();
   if (details.djRoleIds && details.djRoleIds.length === DJ_ROLE_LIMIT) {
     throw new EolianUserError(
-      `You may only have up to ${DJ_ROLE_LIMIT} DJ roles set! Remove DJ rules with \`dj_remove\`.`
+      `You may only have up to ${DJ_ROLE_LIMIT} DJ roles set! Remove DJ rules with \`dj_remove\`.`,
     );
   }
   const success = await context.server!.details.addDjRole(id);
@@ -140,13 +140,13 @@ async function setDjLimited(context: CommandContext, allow: string) {
       break;
     default:
       throw new EolianUserError(
-        'Unrecognized value! Provide `true` or `false` for `dj_limited` config.'
+        'Unrecognized value! Provide `true` or `false` for `dj_limited` config.',
       );
   }
   await context.server!.details.setDjLimited(enabled);
   if (enabled) {
     await context.interaction.send(
-      `✨ Users can now limited DJ! This means they can add songs to the queue as well as some very basic operations.`
+      `✨ Users can now limited DJ! This means they can add songs to the queue as well as some very basic operations.`,
     );
   } else {
     await context.interaction.send(`✨ I have removed limited DJ permissions!`);

@@ -8,7 +8,6 @@ import { speechService } from '../speech';
 const POETRY_API = 'https://poetrydb.org';
 
 class PoetryClient implements IPoetryApi {
-
   async getPoem(id: string): Promise<Poem | undefined> {
     const result = await this.get<Poem[]>('title,author,poemcount', [id, '1']);
     return result.length ? result[0] : undefined;
@@ -38,7 +37,7 @@ class PoetryClient implements IPoetryApi {
   getStream(track: Track): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.Poetry) {
       throw new Error(
-        `Tried to get poetry readable from non-youtube resource: ${JSON.stringify(track)}`
+        `Tried to get poetry readable from non-youtube resource: ${JSON.stringify(track)}`,
       );
     }
 
@@ -51,10 +50,7 @@ class PoetryClient implements IPoetryApi {
     return `${POETRY_API}/title,author,poemcount/${encodedTitle};${encodedAuthor};1`;
   }
 
-  private async get<T>(
-    inputField: string,
-    searchTerm: string[]
-  ): Promise<T> {
+  private async get<T>(inputField: string, searchTerm: string[]): Promise<T> {
     const uri = `${POETRY_API}/${inputField}/${searchTerm.join(';')}`;
 
     logger.info(`PoetryDB HTTP: %s`, uri);

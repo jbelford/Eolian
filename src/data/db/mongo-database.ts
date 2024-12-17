@@ -6,7 +6,6 @@ import { MongoServers } from './mongo-servers-collection';
 import { MongoUsers } from './mongo-users-collection';
 
 class MongoDatabase implements AppDatabase {
-
   readonly users: UsersDb;
   readonly servers: ServersDb;
 
@@ -19,7 +18,6 @@ class MongoDatabase implements AppDatabase {
   async close(): Promise<void> {
     await this.client.close();
   }
-
 }
 
 export async function createDatabase(): Promise<AppDatabase> {

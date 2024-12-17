@@ -2,7 +2,6 @@ import { EolianCache } from './@types';
 import { InMemoryCache } from './cache/in-memory-cache';
 
 export class LockManager {
-
   private readonly cache: EolianCache<boolean>;
 
   constructor(timeout: number) {
@@ -20,5 +19,4 @@ export class LockManager {
   async unlock(id: string): Promise<void> {
     await this.cache.set(id, false);
   }
-
 }
