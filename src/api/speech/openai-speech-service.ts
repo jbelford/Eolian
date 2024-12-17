@@ -7,6 +7,10 @@ export class OpenAiSpeechService implements ISpeechService {
   private constructor(private readonly openai: OpenAI) {}
 
   async textToSpeech(text: string): Promise<Readable> {
+    if (text.length > 4096) {
+      throw new Error('Text cannot be longer than 4096 characters!');
+    }
+
     const response = await this.openai.audio.speech.create({
       model: 'tts-1',
       voice: 'fable',
