@@ -74,7 +74,7 @@ class PoetryStreamSource implements StreamSource {
   async get(): Promise<Readable> {
     logger.info('Getting poetry stream %s - %s', this.track.id);
 
-    const text = `Hey folks, Eolian here using my new AI generated voice to bring you a narration of "${this.track.title}" by ${this.track.poster}. Let's begin...\n\n${this.track.lines.join('\n')}`;
+    const text = `Hey folks, Eolian here using my new AI generated voice to bring you a narration of "${this.track.title}" by ${this.track.poster}. Let's begin...\n\n${this.track.lines.join('\n')}...`;
     return speechService.textToSpeech(text);
   }
 }

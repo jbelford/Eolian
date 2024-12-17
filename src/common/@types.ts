@@ -48,6 +48,12 @@ export interface AppEnv {
       clientSecret: string;
     };
     openai?: string;
+    azureOpenAi?: {
+      apiKey: string;
+      endpoint: string;
+      apiVersion: string;
+      deployment: string;
+    };
     speech: {
       key: string;
       region: string;

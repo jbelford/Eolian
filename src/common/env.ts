@@ -60,6 +60,17 @@ function getProxyEnv(): AppEnv['proxy'] {
   }
 }
 
+function getAzureOpenAi() {
+  const apiKey = getEnvOpt('AZURE_OPENAI_KEY');
+  const endpoint = getEnvOpt('AZURE_OPENAI_ENDPOINT');
+  const deployment = getEnvOpt('AZURE_OPENAI_DEPLOYMENT');
+  const apiVersion = getEnvOpt('AZURE_OPENAI_API_VERSION');
+  if (!apiKey || !endpoint || !deployment || !apiVersion) {
+    return undefined;
+  }
+  return { apiKey, endpoint, deployment, apiVersion };
+}
+
 export const environment: AppEnv = {
   prod: getEnv('NODE_ENV') === 'production',
   debug: getEnvFlag('DEBUG_ENABLED'),
@@ -95,6 +106,7 @@ export const environment: AppEnv = {
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
     },
     openai: getEnvOpt('OPENAI_API_KEY'),
+    azureOpenAi: getAzureOpenAi(),
     speech: {
       key: getEnv('SPEECH_SERVICE_KEY'),
       region: getEnv('SPEECH_SERVICE_REGION'),
