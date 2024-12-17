@@ -190,6 +190,7 @@ function createContextMenuCommand(command: MessageCommand): RESTPostAPIApplicati
   try {
     return new ContextMenuCommandBuilder()
       .setName(command.name)
+      // @ts-expect-error This is a bug in the discordjs typings
       .setType(ApplicationCommandType.Message)
       .toJSON();
   } catch (e) {

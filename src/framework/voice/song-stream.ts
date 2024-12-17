@@ -7,7 +7,7 @@ import { RequestErrorCodes } from '@eolian/http';
 import { HttpRequestStreamError } from '@eolian/http/@types';
 import EventEmitter from 'events';
 import prism from 'prism-media';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
 const FFMPEG_ARGUMENTS = [
   '-analyzeduration',

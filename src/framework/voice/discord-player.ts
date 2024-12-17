@@ -13,11 +13,11 @@ import { DEFAULT_VOLUME, IDLE_TIMEOUT_MINS } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
 import { ContextClient, ContextVoiceChannel, ContextMusicQueue } from '@eolian/framework/@types';
-import { EventEmitter } from 'node-cache';
 import { Readable } from 'stream';
 import { Player } from './@types';
 import { DiscordVoiceConnection } from './discord-voice-connection';
 import { SongStream } from './song-stream';
+import EventEmitter from 'node:events';
 
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 const PLAYER_RETRIES = 2;

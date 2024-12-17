@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { ISpeechService } from './@types';
 import OpenAI, { AzureOpenAI } from 'openai';
 import { environment } from '@eolian/common/env';
