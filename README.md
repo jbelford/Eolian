@@ -6,38 +6,43 @@ Eolian is a Discord music bot that aims to be easy to use and provide a very pow
 
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
-# 🚧 Under Construction
+# [📩 Invite Link](https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216)
 
-This bot is still actively being improved and updates are being pushed frequently.
-Expect bugs and bot may suddenly restart without warning as updates are pushed.
+> Click the link to invite the bot directly
 
-# 📩 Invite Link
+# [🧪 Test Discord Server](https://discord.gg/pzD6UyrCTn)
 
-https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216
-
-# 🧪 Test Discord Server
-
-You can try out the bot at this server
-
-https://discord.gg/pzD6UyrCTn
+> You can try out the bot at this server
 
 # 🎇 Features
 
 ![Demo](pics/demo.gif)
 
+## 🧠 (NEW) OpenAI Generated Audio
+
+### Poetry Text to Speech
+
+![AI Poem](pics/ai_poem.png)
+Sit back and relax as Eolian reads you a poem
+
+### Spoken Sound Effects
+
+![AI Sound](pics/ai_sound.png)
+Prompt for an AI-spoken language sound effect to add that humorous touch to every voice call!
+
 ## 🔎 Search Anything
 
 You can add any type of resource to the queue. Here is the list of each type of resource and where they can be fetched from using this bot.
 
-| Type         | Spotify | SoundCloud | YouTube |
-| ------------ | ------- | ---------- | ------- |
-| Albums       | ✅      | N/A        | N/A     |
-| Songs        | ❌\*    | ✅         | ✅      |
-| Playlists    | ✅      | ✅         | ✅      |
-| Artists      | ✅      | ✅         | ❌      |
-| Likes        | ✅\*\*  | ✅         | N/A     |
-| Top Tracks   | ✅\*\*  | N/A        | N/A     |
-| Live Streams | N/A     | N/A        | ✅      |
+| Type         | Spotify | SoundCloud | YouTube | Poetry | AI  |
+| ------------ | ------- | ---------- | ------- | ------ | --- |
+| Albums       | ✅      | N/A        | N/A     | N/A    | N/A |
+| Songs        | ❌\*    | ✅         | ✅      | ✅     | ✅  |
+| Playlists    | ✅      | ✅         | ✅      | N/A    | N/A |
+| Artists      | ✅      | ✅         | ❌      | N/A    | N/A |
+| Likes        | ✅\*\*  | ✅         | N/A     | N/A    | N/A |
+| Top Tracks   | ✅\*\*  | N/A        | N/A     | N/A    | N/A |
+| Live Streams | N/A     | N/A        | ✅      | N/A    | N/A |
 
 <sub>
 * Songs searched from Spotify will default to YouTube<br>
