@@ -33,7 +33,7 @@ export const DEFAULT_VOLUME = 0.1;
 export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
 export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;
 export const GITHUB_PAGE_WIKI = `${GITHUB_PAGE}/wiki`;
-export const GITHUB_PAGE_WIKI_AI = `${GITHUB_PAGE_WIKI}/wiki`;
+export const GITHUB_PAGE_WIKI_AI = `${GITHUB_PAGE}/wiki`;
 
 export const LOGGER_HEADER = `
 __________     __________                    ________      _____
