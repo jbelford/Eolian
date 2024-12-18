@@ -1,9 +1,9 @@
 import { logger } from '@eolian/common/logger';
 import { SpeechConfig, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk';
 import { PassThrough, Readable } from 'stream';
-import { ISpeechService } from './@types';
+import { IGenerativeAudioService } from './@types';
 
-export class AzureSpeechService implements ISpeechService {
+export class AzureSpeechService implements IGenerativeAudioService {
   private readonly speechConfig: SpeechConfig;
 
   constructor(subscriptionKey: string, serviceRegion: string) {
@@ -37,5 +37,9 @@ export class AzureSpeechService implements ISpeechService {
         },
       );
     });
+  }
+
+  createSound(sound: string): Promise<Readable> {
+    return this.textToSpeech("I'm sorry, I cannot generate audio from text yet.");
   }
 }

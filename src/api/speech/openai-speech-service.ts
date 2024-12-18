@@ -1,9 +1,9 @@
 import { Readable } from 'node:stream';
-import { ISpeechService } from './@types';
+import { IGenerativeAudioService } from './@types';
 import OpenAI, { AzureOpenAI } from 'openai';
 import { environment } from '@eolian/common/env';
 
-export class OpenAiSpeechService implements ISpeechService {
+export class OpenAiSpeechService implements IGenerativeAudioService {
   private constructor(private readonly openai: OpenAI) {}
 
   async textToSpeech(text: string): Promise<Readable> {
@@ -25,7 +25,37 @@ export class OpenAiSpeechService implements ISpeechService {
     return response.body as any;
   }
 
-  static create(): ISpeechService | undefined {
+  async createSound(sound: string): Promise<Readable> {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-audio-preview',
+      modalities: ['text', 'audio'],
+      audio: {
+        format: 'opus',
+        voice: 'ash',
+      },
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an AI assistant that generates an audio output only. For the given user input, speak out an immitation of that sound using human language. Repeat the immitation multiple times if necessary.',
+        },
+        {
+          role: 'user',
+          content: sound,
+        },
+      ],
+    });
+
+    const audioData =
+      response.choices.length > 0 ? response.choices[0].message.audio?.data : undefined;
+    if (!audioData) {
+      throw new Error('Failed to receive audio response from OpenAI');
+    }
+
+    return Readable.from(Buffer.from(audioData, 'base64'));
+  }
+
+  static create(): IGenerativeAudioService | undefined {
     let openai: OpenAI | undefined;
 
     if (environment.tokens.azureOpenAi) {

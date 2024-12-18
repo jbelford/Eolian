@@ -23,6 +23,7 @@ export const enum Color {
   Spotify = 0x1db954,
   SoundCloud = 0xff7700,
   YouTube = 0xff0000,
+  AI = 0xed19e2,
 }
 
 export const IDLE_TIMEOUT_MINS = 60 * 10;
@@ -32,6 +33,7 @@ export const DEFAULT_VOLUME = 0.1;
 export const GITHUB_PAGE = 'https://github.com/jbelford/Eolian';
 export const GITHUB_PAGE_ISSUES = `${GITHUB_PAGE}/issues`;
 export const GITHUB_PAGE_WIKI = `${GITHUB_PAGE}/wiki`;
+export const GITHUB_PAGE_WIKI_AI = `${GITHUB_PAGE_WIKI}/wiki`;
 
 export const LOGGER_HEADER = `
 __________     __________                    ________      _____

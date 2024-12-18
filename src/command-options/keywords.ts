@@ -105,6 +105,12 @@ export const KEYWORDS: Readonly<
     UserPermission.User,
     KeywordGroup.Source,
   ),
+  AI: new KeywordDetails(
+    'AI',
+    'Indicates to generate an audio using AI.',
+    UserPermission.User,
+    KeywordGroup.Source,
+  ),
   RANDOM: new KeywordDetails(
     'RANDOM',
     'Indicates to fetch a random resource. (Only available for Poetry)',

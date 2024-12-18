@@ -111,6 +111,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
     KEYWORDS.SPOTIFY,
     KEYWORDS.YOUTUBE,
     KEYWORDS.POEM,
+    KEYWORDS.AI,
     KEYWORDS.FAST,
     KEYWORDS.RANDOM,
   ],

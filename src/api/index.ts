@@ -10,6 +10,7 @@ import {
 import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest, spotify } from './spotify';
 import { youtube } from './youtube';
 import { poetry } from './poetry';
+import { AiStreamSource } from './ai-stream-source';
 
 export * from './bing';
 export * from './soundcloud';
@@ -46,6 +47,8 @@ export function getTrackStream(track: Track): Promise<StreamSource | undefined> 
       return spotify.getStream(track);
     case TrackSource.Poetry:
       return poetry.getStream(track);
+    case TrackSource.AI:
+      return Promise.resolve(new AiStreamSource(track));
     default:
       throw new Error('Attempted to fetch stream for unknown source');
   }
@@ -70,6 +73,11 @@ export const SOURCE_DETAILS: Record<TrackSource, TrackSourceDetails> = {
   [TrackSource.Poetry]: {
     name: 'Poetry',
     color: Color.Spotify,
+    icon: 'https://www.dropbox.com/scl/fi/kcdit2k2rqmk2eaymcrcb/poetry_icon.png?rlkey=96dolxro85c4lhspte3ws6keu&st=4u1g80e2&raw=1',
+  },
+  [TrackSource.AI]: {
+    name: 'AI',
+    color: Color.AI,
     icon: 'https://www.dropbox.com/scl/fi/kcdit2k2rqmk2eaymcrcb/poetry_icon.png?rlkey=96dolxro85c4lhspte3ws6keu&st=4u1g80e2&raw=1',
   },
   [TrackSource.Unknown]: {
