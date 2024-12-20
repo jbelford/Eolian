@@ -244,6 +244,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       this.audioResource = createAudioResource(input, {
         inputType: StreamType.Raw,
         inlineVolume: false,
+        silencePaddingFrames: 30,
       });
 
       this.audioPlayer.play(this.audioResource);
