@@ -71,6 +71,16 @@ function getAzureOpenAi() {
   return { apiKey, endpoint, deployment, apiVersion };
 }
 
+function getOpenAi() {
+  const apiKey = getEnvOpt('OPENAI_API_KEY');
+  const ttsModel = getEnvOpt('OPENAI_TTS_MODEL');
+  const audioModel = getEnvOpt('OPENAI_AUDIO_MODEL');
+  if (!apiKey) {
+    return undefined;
+  }
+  return { apiKey, ttsModel, audioModel };
+}
+
 export const environment: AppEnv = {
   prod: getEnv('NODE_ENV') === 'production',
   debug: getEnvFlag('DEBUG_ENABLED'),
@@ -105,7 +115,7 @@ export const environment: AppEnv = {
       clientId: getEnv('SPOTIFY_CLIENT_ID'),
       clientSecret: getEnv('SPOTIFY_CLIENT_SECRET'),
     },
-    openai: getEnvOpt('OPENAI_API_KEY'),
+    openai: getOpenAi(),
     azureOpenAi: getAzureOpenAi(),
     speech: {
       key: getEnv('SPEECH_SERVICE_KEY'),

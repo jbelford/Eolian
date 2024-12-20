@@ -5,6 +5,7 @@ import { CommandContext } from '@eolian/commands/@types';
 import { EolianUserError } from '@eolian/common/errors';
 import { ResourceType } from '@eolian/data/@types';
 import { GITHUB_PAGE_WIKI_AI, UserPermission } from '@eolian/common/constants';
+import { AIAudioTrack } from '@eolian/api/speech/@types';
 
 export class AiResolver implements SourceResolver {
   public source = TrackSource.AI;
@@ -23,15 +24,18 @@ export class AiResolver implements SourceResolver {
       throw new EolianUserError('AI is not allowed on this server.');
     }
 
-    if (this.context.interaction.user.permission < UserPermission.Owner) {
-      throw new EolianUserError(
-        'AI is a preview feature only usable by the bot owner due to high costs.',
-      );
-    }
-
     const name = this.params.SEARCH;
     const poster = this.context.interaction.user.name;
     const url = GITHUB_PAGE_WIKI_AI;
+
+    const track: AIAudioTrack = {
+      src: TrackSource.AI,
+      title: name,
+      poster,
+      url,
+      preferLowCost: this.context.interaction.user.permission < UserPermission.Owner,
+      ai: true,
+    };
 
     return {
       name,
@@ -43,18 +47,11 @@ export class AiResolver implements SourceResolver {
         url,
       },
       fetcher: {
-        fetch: async () => ({
-          tracks: [
-            {
-              src: TrackSource.AI,
-              title: name,
-              poster,
-              url,
-              ai: true,
-            },
-          ],
-          rangeOptimized: true,
-        }),
+        fetch: () =>
+          Promise.resolve({
+            tracks: [track],
+            rangeOptimized: true,
+          }),
       },
     };
   }

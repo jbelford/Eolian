@@ -47,7 +47,11 @@ export interface AppEnv {
       clientId: string;
       clientSecret: string;
     };
-    openai?: string;
+    openai?: {
+      apiKey: string;
+      ttsModel?: string;
+      audioModel?: string;
+    };
     azureOpenAi?: {
       apiKey: string;
       endpoint: string;

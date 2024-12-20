@@ -4439,7 +4439,7 @@ __metadata:
     node-cache: "npm:^5.1.2"
     node-fetch: "npm:2"
     node-gyp: "npm:^10.2.0"
-    openai: "npm:^4.76.3"
+    openai: "npm:^4.77.0"
     prettier: "npm:^3.4.2"
     prism-media: "npm:^1.3.5"
     react: "npm:^18.2.0"
@@ -6418,9 +6418,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.76.3":
-  version: 4.76.3
-  resolution: "openai@npm:4.76.3"
+"openai@npm:^4.77.0":
+  version: 4.77.0
+  resolution: "openai@npm:4.77.0"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -6436,7 +6436,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/98856dd17ac3ec2cb787ab4b6d4bd1b7c81a725856c5fc7eecc1557d4b28078e79aa45ec382d9f2bdd7ec8d59478e04a0ec5cb2baedee42c965cbc4d5151b88e
+  checksum: 10/51ef7522d3c3589401b9bb0d49a3bd9df2a84648b996b3452dd4bae99c8e6b27d63a415c41847900954197051b5598de85a76f12c6b2deab33d8d70ceab5d7c3
   languageName: node
   linkType: hard
 

@@ -10,7 +10,7 @@ import {
 import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest, spotify } from './spotify';
 import { youtube } from './youtube';
 import { poetry } from './poetry';
-import { AiStreamSource } from './ai-stream-source';
+import { AiStreamSource } from './speech';
 
 export * from './bing';
 export * from './soundcloud';
@@ -78,7 +78,6 @@ export const SOURCE_DETAILS: Record<TrackSource, TrackSourceDetails> = {
   [TrackSource.AI]: {
     name: 'AI',
     color: Color.AI,
-    icon: 'https://www.dropbox.com/scl/fi/kcdit2k2rqmk2eaymcrcb/poetry_icon.png?rlkey=96dolxro85c4lhspte3ws6keu&st=4u1g80e2&raw=1',
   },
   [TrackSource.Unknown]: {
     name: 'Unknown',
