@@ -65,10 +65,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
       });
       this._audioPlayer.on('error', this.streamErrorHandler);
       if (environment.debug) {
-        this.audioPlayer.on('debug', message => {
+        this._audioPlayer.on('debug', message => {
           logger.debug(message);
         });
-        this.audioPlayer.on(AudioPlayerStatus.Buffering, () => {
+        this._audioPlayer.on(AudioPlayerStatus.Buffering, () => {
           logger.debug('Audio player is buffering');
         });
         this._audioPlayer.on(AudioPlayerStatus.Playing, () => {
@@ -78,7 +78,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
           logger.debug('Audio player is paused');
         });
       }
-      this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
+      this._audioPlayer.on(AudioPlayerStatus.Idle, () => {
         logger.debug('Audio player is idle');
         this.stop();
       });
