@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 import { IAudioOptions, IGenerativeAudioService } from './@types';
 import OpenAI, { AzureOpenAI } from 'openai';
 import { environment } from '@eolian/common/env';
+import { ChatCompletionAudioParam } from 'openai/resources/chat/completions';
 
 type IOpenAiAudioConfig = {
   ttsModel?: string;
@@ -9,6 +10,13 @@ type IOpenAiAudioConfig = {
   audioModelMini?: string;
 };
 
+const COMPLETIONS_VOICES: ChatCompletionAudioParam['voice'][] = [
+  'ash',
+  'ballad',
+  'coral',
+  'sage',
+  'verse',
+];
 const CREATE_SOUND_SYSTEM_PROMPT = `You are an AI assistant that generates an audio output only.\
  For the given user input, speak out an imitation of that sound using human language.\
  Repeat the imitation multiple times if necessary. Audio should be no longer than 30 seconds.`;
@@ -38,15 +46,18 @@ export class OpenAiAudioService implements IGenerativeAudioService {
     return response.body as any;
   }
 
-  async createSound(sound: string, options?: IAudioOptions): Promise<Readable> {
+  async createSound(
+    sound: string,
+    { preferLowCost, voice }: IAudioOptions = {},
+  ): Promise<Readable> {
     const response = await this.openai.chat.completions.create({
-      model: options?.preferLowCost
+      model: preferLowCost
         ? this.config?.audioModelMini || 'gpt-4o-mini-audio-preview'
         : this.config?.audioModel || 'gpt-4o-audio-preview-2024-12-17',
       modalities: ['text', 'audio'],
       audio: {
         format: 'opus',
-        voice: 'ash',
+        voice: (voice && COMPLETIONS_VOICES[voice]) || 'ash',
       },
       messages: [
         {

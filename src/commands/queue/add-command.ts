@@ -135,7 +135,14 @@ export const ADD_COMMAND: Command = {
     KEYWORDS.LONG,
     KEYWORDS.RANDOM,
   ],
-  patterns: [PATTERNS.SEARCH, PATTERNS.IDENTIFIER, PATTERNS.URL, PATTERNS.TOP, PATTERNS.BOTTOM],
+  patterns: [
+    PATTERNS.SEARCH,
+    PATTERNS.IDENTIFIER,
+    PATTERNS.URL,
+    PATTERNS.TOP,
+    PATTERNS.BOTTOM,
+    PATTERNS.VOICE,
+  ],
   usage: [
     {
       title: `Search song and add to top of the queue`,

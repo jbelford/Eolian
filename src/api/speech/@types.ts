@@ -3,6 +3,7 @@ import { Track } from '../@types';
 
 export type IAudioOptions = {
   preferLowCost?: boolean;
+  voice?: number;
 };
 
 export interface IGenerativeAudioService {
@@ -12,4 +13,5 @@ export interface IGenerativeAudioService {
 
 export type AIAudioTrack = Track & {
   preferLowCost?: boolean;
+  voice?: number;
 };

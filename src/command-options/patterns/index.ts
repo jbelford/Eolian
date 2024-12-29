@@ -8,6 +8,7 @@ import { NUMBER_PATTERN } from './number-pattern';
 import { SEARCH_PATTERN } from './search-pattern';
 import { TOP_PATTERN } from './top-pattern';
 import { URL_PATTERN } from './url-pattern';
+import { VOICE_PATTERN } from './voice-pattern';
 
 type Patterns = Partial<Record<string, Pattern>> & {
   [name in PatternName]: Pattern<name>;
@@ -21,6 +22,7 @@ export const PATTERNS: Readonly<Patterns> = {
   URL: URL_PATTERN,
   IDENTIFIER: IDENTIFIER_PATTERN,
   SEARCH: SEARCH_PATTERN,
+  VOICE: VOICE_PATTERN,
 };
 
 export const PATTERNS_SORTED = (Object.values(PATTERNS) as Pattern[]).sort(

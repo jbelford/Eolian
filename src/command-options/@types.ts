@@ -104,6 +104,7 @@ export type PatternValues = {
   URL: UrlArgument;
   NUMBER: number[];
   ARG: string[];
+  VOICE: number;
 };
 
 export const enum SyntaxType {

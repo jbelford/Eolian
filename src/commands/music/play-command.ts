@@ -115,7 +115,7 @@ You may optionally provide a SEARCH, URL, or IDENTIFIER pattern to play a song r
     KEYWORDS.FAST,
     KEYWORDS.RANDOM,
   ],
-  patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER],
+  patterns: [PATTERNS.SEARCH, PATTERNS.URL, PATTERNS.IDENTIFIER, PATTERNS.VOICE],
   noDefaultReply: true,
   usage: [
     {

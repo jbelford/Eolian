@@ -15,6 +15,9 @@ export class AiStreamSource implements StreamSource {
 
   get(): Promise<Readable> {
     logger.info('Getting AI stream %s', this.track.title);
-    return speechService.createSound(this.track.title, { preferLowCost: this.track.preferLowCost });
+    return speechService.createSound(this.track.title, {
+      preferLowCost: this.track.preferLowCost,
+      voice: this.track.voice,
+    });
   }
 }

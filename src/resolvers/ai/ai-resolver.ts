@@ -34,6 +34,7 @@ export class AiResolver implements SourceResolver {
       poster,
       url,
       preferLowCost: this.context.interaction.user.permission < UserPermission.Owner,
+      voice: this.params.VOICE && this.params.VOICE - 1,
       ai: true,
     };
 
