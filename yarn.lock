@@ -4453,7 +4453,7 @@ __metadata:
     webpack-cli: "npm:^4.10.0"
     webpack-node-externals: "npm:^3.0.0"
     winston: "npm:^3.8.2"
-    youtubei.js: "npm:^12.2.0"
+    youtubei.js: "npm:14.0.0"
     zlib-sync: "npm:^0.1.9"
   languageName: unknown
   linkType: soft
@@ -5580,12 +5580,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jintr@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "jintr@npm:3.2.0"
+"jintr@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "jintr@npm:3.3.1"
   dependencies:
     acorn: "npm:^8.8.0"
-  checksum: 10/728f2cd7e8837c4e4f0f9c1c3832ffae7d1b5d1ec121b75cd0d1b9c10a5016fa6d2379a06f1a4044e6568aa1b593d98a4140ffd29978d7d8478c0555aa209fac
+  checksum: 10/7ab6b295b9207212dec244ecf90c45614de5cc0bcb684cfd559a305b2149b03cd3319583634760c2f1122e263c479a484e2f2b0268301570689a14d7c4dc5d11
   languageName: node
   linkType: hard
 
@@ -8288,15 +8288,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"youtubei.js@npm:^12.2.0":
-  version: 12.2.0
-  resolution: "youtubei.js@npm:12.2.0"
+"youtubei.js@npm:14.0.0":
+  version: 14.0.0
+  resolution: "youtubei.js@npm:14.0.0"
   dependencies:
     "@bufbuild/protobuf": "npm:^2.0.0"
-    jintr: "npm:^3.2.0"
+    jintr: "npm:^3.3.1"
     tslib: "npm:^2.5.0"
     undici: "npm:^5.19.1"
-  checksum: 10/b126333fd2a909a411bf98e9d0294eef47d2a72b3d544e6cca7a50ef15ebf765748401441d129483ffc7033d2dd4cf2eee27a674c33d6fc495dde867c857a35e
+  checksum: 10/876dd1494d62dc5ec81712d7a2b7c68d593c03d3a3bddab0b24635eaf3be9b14604d042dfab2f869f0da008b486f5aa44911315a7222c8a1afda10c859080861
   languageName: node
   linkType: hard
 
