@@ -1,9 +1,29 @@
 import { logger } from '@eolian/common/logger';
 import { Readable } from 'stream';
 import { StreamSource } from '../@types';
-import { Innertube, UniversalCache } from 'youtubei.js';
+import { Innertube, Platform, Types, UniversalCache } from 'youtubei.js';
 import { createFetchFunction, createProxyUrl, generatePoToken } from './potoken';
 import { httpRequest } from '@eolian/http';
+import { environment } from '@eolian/common/env';
+
+Platform.shim.eval = async (
+  data: Types.BuildScriptResult,
+  env: Record<string, Types.VMPrimative>,
+) => {
+  const properties = [];
+
+  if (env.n) {
+    properties.push(`n: exportedVars.nFunction("${env.n}")`);
+  }
+
+  if (env.sig) {
+    properties.push(`sig: exportedVars.sigFunction("${env.sig}")`);
+  }
+
+  const code = `${data.output}\nreturn { ${properties.join(', ')} }`;
+
+  return new Function(code)();
+};
 
 const cache = new UniversalCache(true);
 
@@ -18,18 +38,19 @@ export class YouTubeStreamSource implements StreamSource {
 
     const proxy = createProxyUrl();
     const fetch = createFetchFunction(proxy);
-    const { poToken, visitorData } = await generatePoToken(fetch);
+    const { poToken, visitorData } = await generatePoToken(fetch, false);
 
     const innertube = await Innertube.create({
       po_token: poToken,
       visitor_data: visitorData,
       cache,
       generate_session_locally: true,
+      cookie: environment.tokens.youtube.cookie || undefined,
       fetch,
     });
 
     const info = await innertube.getBasicInfo(this.id);
-    const audioStreamingURL = info
+    const audioStreamingURL = await info
       .chooseFormat({ quality: 'best' })
       .decipher(innertube.session.player);
     return httpRequest(audioStreamingURL, { proxy });
