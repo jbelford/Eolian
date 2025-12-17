@@ -77,6 +77,7 @@ export interface AppEnv {
     soundcloudUserAuth: boolean;
     discordOldLeave: boolean;
     enableWebsite: boolean;
+    enablePoTokenGen: boolean;
   };
 }
 

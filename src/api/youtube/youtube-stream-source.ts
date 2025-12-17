@@ -38,16 +38,19 @@ export class YouTubeStreamSource implements StreamSource {
 
     const proxy = createProxyUrl();
     const fetch = createFetchFunction(proxy);
-    const { poToken, visitorData } = await generatePoToken(fetch, false);
-
-    const innertube = await Innertube.create({
-      po_token: poToken,
-      visitor_data: visitorData,
+    const config: Types.InnerTubeConfig = {
       cache,
       generate_session_locally: true,
       cookie: environment.tokens.youtube.cookie || undefined,
       fetch,
-    });
+    };
+    if (environment.flags.enablePoTokenGen) {
+      const { poToken, visitorData } = await generatePoToken(fetch, false);
+      config.po_token = poToken;
+      config.visitor_data = visitorData;
+    }
+
+    const innertube = await Innertube.create(config);
 
     const info = await innertube.getBasicInfo(this.id);
     const audioStreamingURL = await info
