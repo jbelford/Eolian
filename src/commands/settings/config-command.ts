@@ -10,6 +10,7 @@ enum CONFIG_OPTION {
   PREFIX = 'prefix',
   VOLUME = 'volume',
   SYNTAX = 'syntax',
+  CHANNEL = 'channel',
   DJ_ADD = 'dj_add',
   DJ_REMOVE = 'dj_remove',
   DJ_LIMITED = 'dj_limited',
@@ -21,6 +22,7 @@ const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
   [CONFIG_OPTION.PREFIX, setPrefix],
   [CONFIG_OPTION.VOLUME, setVolume],
   [CONFIG_OPTION.SYNTAX, setSyntax],
+  [CONFIG_OPTION.CHANNEL, setChannel],
   [CONFIG_OPTION.DJ_ADD, addDjRole],
   [CONFIG_OPTION.DJ_REMOVE, removeDjRole],
   [CONFIG_OPTION.DJ_LIMITED, setDjLimited],
@@ -93,6 +95,16 @@ async function setSyntax(context: CommandContext, syntax: string) {
 
   await context.server!.details.setSyntax(type);
   await context.interaction.send(`✨ The server now uses \`${syntax}\` syntax!`);
+}
+
+async function setChannel(context: CommandContext, channelId: string) {
+  const result = channelId.match(/^(<#)?(?<id>\d+)>?$/);
+  if (!result) {
+    throw new EolianUserError(`${channelId} is not a channel!`);
+  }
+  channelId = result.groups!.id;
+  await context.server!.details.setChannel(channelId);
+  await context.interaction.send(`✨ I have set the preferred channel to <#${channelId}>!`);
 }
 
 function extractRoleId(id: string) {
@@ -202,6 +214,10 @@ export const CONFIG_COMMAND: Command = {
     {
       title: 'Set syntax preference to keyword based',
       example: SimpleExample.create(args, 'syntax', 'keyword'),
+    },
+    {
+      title: 'Set channel preference for announcements',
+      example: SimpleExample.create(args, 'channel', '920079417907224636'),
     },
     {
       title: 'Set syntax preference to traditional',

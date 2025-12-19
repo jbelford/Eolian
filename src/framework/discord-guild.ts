@@ -6,7 +6,7 @@ import { ServerDTO, ServersDb } from '@eolian/data/@types';
 import { Guild } from 'discord.js';
 import { ContextServer } from './@types';
 
-const RECORD_USAGE_INTERVAL = 1000 * 60 * 60 * 24;
+const RECORD_USAGE_INTERVAL = 1000 * 60 * 60;
 
 export class DiscordGuild implements ContextServer {
   private configCache: ServerDTO | null = null;
@@ -78,6 +78,13 @@ export class DiscordGuild implements ContextServer {
     await this.servers.setVolume(this.id, volume);
   }
 
+  async setChannel(channelId: string): Promise<void> {
+    if (this.configCache) {
+      this.configCache.preferredChannelId = channelId;
+    }
+    await this.servers.setPreferredChannel(this.id, channelId);
+  }
+
   async setSyntax(type: SyntaxType): Promise<void> {
     if (this.configCache) {
       this.configCache.syntax = type;
@@ -122,7 +129,7 @@ export class DiscordGuild implements ContextServer {
     await this.servers.setDjAllowLimited(this.id, allow);
   }
 
-  async updateUsage(): Promise<void> {
+  async updateUsage(channelId: string): Promise<void> {
     if (!this.configCache) {
       await this.get();
     }
@@ -134,6 +141,6 @@ export class DiscordGuild implements ContextServer {
     }
     logger.info(`%s refreshing guild usage timestamp`, this.id);
     this.configCache!.lastUsage = date;
-    await this.servers.setLastUsage(this.id, this.configCache!.lastUsage);
+    await this.servers.setLastUsage(this.id, this.configCache!.lastUsage, channelId);
   }
 }

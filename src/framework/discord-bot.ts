@@ -393,7 +393,7 @@ export class DiscordEolianBot implements EolianBot {
 
       await command.execute({ interaction, server, client }, options);
 
-      await server?.details.updateUsage();
+      await server?.details.updateUsage(interaction.channel.id);
 
       noDefaultReply = !!command.noDefaultReply;
     } catch (e) {

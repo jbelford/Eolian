@@ -33,6 +33,7 @@ export interface ContextSendable {
 }
 
 export interface ContextTextChannel extends ContextSendable {
+  readonly id: string;
   readonly isDm: boolean;
   readonly visible: boolean;
   readonly reactable: boolean;
@@ -195,10 +196,11 @@ export interface ContextServer extends ContextServerInfo {
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;
   setSyntax(type: SyntaxType): Promise<void>;
+  setChannel(channelId: string): Promise<void>;
   addDjRole(id: string): Promise<boolean>;
   removeDjRole(id: string): Promise<boolean>;
   setDjLimited(allow: boolean): Promise<void>;
-  updateUsage(): Promise<void>;
+  updateUsage(channelId?: string): Promise<void>;
 }
 
 export interface ContextMusicQueue extends EventEmitter, Idleable {

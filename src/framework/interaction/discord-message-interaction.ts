@@ -116,5 +116,5 @@ export class DiscordMessageInteraction
 }
 
 function removeMentions(text: string): string {
-  return text.replace(/<(@[!]?|#)\d+>/g, '').trim();
+  return text.replace(/<(@[!]?)\d+>/g, '').trim();
 }

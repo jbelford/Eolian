@@ -11,6 +11,10 @@ export class DiscordTextChannel extends DiscordChannelSender implements ContextT
     super(channel, registry, channel);
   }
 
+  get id(): string {
+    return this.channel.id;
+  }
+
   get lastMessageId(): string | undefined {
     return this.channel.lastMessageId || undefined;
   }

@@ -23,8 +23,16 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
     return result;
   }
 
-  async setLastUsage(id: string, usageDate: Date): Promise<void> {
-    await this.setProperty(id, 'lastUsage', usageDate);
+  async setLastUsage(id: string, usageDate: Date, channelId: string): Promise<void> {
+    await this.collection.updateOne(
+      { _id: id },
+      { $set: { lastUsage: usageDate, lastChannelId: channelId }, $setOnInsert: { _id: id } },
+      { upsert: true },
+    );
+  }
+
+  async setPreferredChannel(id: string, channelId: string): Promise<void> {
+    await this.setProperty(id, 'preferredChannelId', channelId);
   }
 
   async setPrefix(id: string, prefix: string): Promise<void> {

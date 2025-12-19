@@ -99,6 +99,7 @@ export function createServerDetailsEmbed(guild: ContextServerInfo, dto: ServerDT
   const description = `**Prefix:** \`${dto.prefix ?? environment.cmdToken}\`
 **Volume:** \`${Math.floor(volume * 100)}%\`
 **Syntax:** \`${syntaxTypeToName(dto.syntax ?? SyntaxType.KEYWORD)}\`
+**Announcements Channel:** ${dto.preferredChannelId ? `<#${dto.preferredChannelId}>` : '`None`'}
 **DJ Roles:** ${roles}
 **Allow Limited DJ:** \`${!!dto.djAllowLimited}\``;
   return {

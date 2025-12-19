@@ -42,7 +42,8 @@ export interface UsersDb extends CollectionDb<UserDTO> {
 
 export interface ServersDb extends CollectionDb<ServerDTO> {
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
-  setLastUsage(id: string, usageDate: Date): Promise<void>;
+  setLastUsage(id: string, usageDate: Date, channelId: string): Promise<void>;
+  setPreferredChannel(id: string, channelId: string): Promise<void>;
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
   setSyntax(id: string, type: SyntaxType): Promise<void>;
@@ -57,6 +58,8 @@ export interface DocDTO {
 
 export interface ServerDTO extends DocDTO {
   lastUsage?: Date;
+  lastChannelId?: string;
+  preferredChannelId?: string;
   prefix?: string;
   volume?: number;
   syntax?: SyntaxType;
