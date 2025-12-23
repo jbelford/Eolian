@@ -42,7 +42,7 @@ import { DiscordGuildStore } from './state/discord-guild-store';
 import { ServerState } from './state/@types';
 
 const enum DiscordEvents {
-  READY = 'ready',
+  READY = 'clientReady',
   MESSAGE_CREATE = 'messageCreate',
   ERROR = 'error',
   RECONNECTING = 'shardReconnecting',

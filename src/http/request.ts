@@ -1,6 +1,25 @@
 import { IncomingHttpHeaders } from 'http';
-import { EnvHttpProxyAgent, request } from 'undici';
+import {
+  EnvHttpProxyAgent,
+  getGlobalDispatcher,
+  interceptors,
+  request,
+  setGlobalDispatcher,
+} from 'undici';
 import { HttpRequestOptions, HttpRequestParams } from './@types';
+
+setGlobalDispatcher(
+  getGlobalDispatcher().compose(
+    interceptors.redirect({ maxRedirections: 5 }),
+    interceptors.retry({
+      maxRetries: 3,
+      minTimeout: 1000,
+      maxTimeout: 10000,
+      timeoutFactor: 2,
+      retryAfter: true,
+    }),
+  ),
+);
 
 export const enum RequestErrorCodes {
   ABORTED = 'UND_ERR_ABORTED',
@@ -49,7 +68,6 @@ export async function httpRequest<T>(url: string, options?: HttpRequestOptions):
     method,
     headers,
     body,
-    maxRedirections: 5,
     dispatcher: options?.proxy ? new EnvHttpProxyAgent({ httpProxy: options.proxy }) : undefined,
   });
 

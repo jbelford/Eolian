@@ -188,13 +188,10 @@ function addPatternOption(
 
 function createContextMenuCommand(command: MessageCommand): RESTPostAPIApplicationCommandsJSONBody {
   try {
-    return (
-      new ContextMenuCommandBuilder()
-        .setName(command.name)
-        // @ts-expect-error This is a bug in the discordjs typings
-        .setType(ApplicationCommandType.Message)
-        .toJSON()
-    );
+    return new ContextMenuCommandBuilder()
+      .setName(command.name)
+      .setType(ApplicationCommandType.Message)
+      .toJSON();
   } catch (e) {
     logger.warn('Failed validation for %s', command);
     throw e;

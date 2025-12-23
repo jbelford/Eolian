@@ -1,5 +1,5 @@
 import { UsersDb } from '@eolian/data/@types';
-import { ButtonInteraction, Message } from 'discord.js';
+import { ButtonInteraction, ComponentType } from 'discord.js';
 import { ContextButtonInteraction, ContextMessage, IAuthServiceProvider } from '../@types';
 import { ButtonRegistry } from '../button-registry';
 import { DiscordInteraction } from './discord-interaction';
@@ -22,9 +22,11 @@ export class DiscordButtonInteraction
 
   get message(): ContextMessage {
     if (!this._message) {
-      this._message = new DiscordMessage(this.interaction.message as Message, {
+      this._message = new DiscordMessage(this.interaction.message, {
         registry: this.registry,
-        components: this.interaction.message.components,
+        components: this.interaction.message.components.filter(
+          component => component.type === ComponentType.ActionRow,
+        ),
         interaction: this.interaction,
       });
     }

@@ -2,7 +2,6 @@ import { logger } from '@eolian/common/logger';
 import { clampLength } from '@eolian/common/util';
 import {
   APIActionRowComponent,
-  APIMessageActionRowComponent,
   ActionRow,
   MessageActionRowComponent,
   ButtonInteraction,
@@ -11,12 +10,13 @@ import {
   MessageEditOptions,
   ButtonBuilder,
   ActionRowBuilder,
+  APIButtonComponent,
 } from 'discord.js';
 import { ButtonStyle, ContextMessage, EmbedMessage, EmbedMessageButton } from './@types';
 import { ButtonRegistry } from './button-registry';
 
-export type MessageActionRow =
-  | APIActionRowComponent<APIMessageActionRowComponent>
+type MessageActionRow =
+  | APIActionRowComponent<APIButtonComponent>
   | ActionRow<MessageActionRowComponent>;
 
 export interface DiscordMessageButtons {
