@@ -8,9 +8,11 @@ import {
   ContextSendable,
   QueueDisplay,
   MessageButtonOnClickHandler,
+  ContextButtonInteraction,
 } from './@types';
 import { QUEUE_PAGE_LENGTH } from './discord-queue-display';
 import { Player } from './voice/@types';
+import { MessageProgressUpdater } from './message-progress-updater';
 
 export class DiscordPlayerDisplay implements PlayerDisplay {
   private track: Track | null = null;
@@ -181,7 +183,6 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
         if (userVoice && userVoice.id === this.player.getChannel()?.id) {
           this.inputLock = true;
           try {
-            await interaction.deferUpdate();
             return await cb(interaction, emoji);
           } finally {
             this.inputLock = false;
@@ -197,7 +198,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     };
   }
 
-  private onPauseResumeHandler: MessageButtonOnClickHandler = this.lock(async () => {
+  private onPauseResumeHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
+    await interaction.deferUpdate();
     if (this.player.paused) {
       await this.player.resume();
     } else {
@@ -206,31 +208,27 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     return false;
   });
 
-  private backHandler: MessageButtonOnClickHandler = this.lock(async () => {
+  private backHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
     if (await this.player.queue.unpop(2)) {
-      await this.player.skip();
-      if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
-        await this.safeDelete();
-      }
+      this.skipCurrentTrack(interaction);
     }
     return false;
   });
 
-  private skipHandler: MessageButtonOnClickHandler = this.lock(async () => {
-    await this.player.skip();
-    if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
-      await this.safeDelete();
-    }
+  private skipHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
+    await this.skipCurrentTrack(interaction);
     return false;
   });
 
-  private stopHandler: MessageButtonOnClickHandler = this.lock(async () => {
+  private stopHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
+    await interaction.deferUpdate();
     this.player.stop();
     await this.safeDelete();
     return false;
   });
 
-  private queueHandler: MessageButtonOnClickHandler = this.lock(async () => {
+  private queueHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
+    await interaction.deferUpdate();
     if (this.queueAhead) {
       await this.queueDisplay.delete();
       this.queueAhead = false;
@@ -245,4 +243,19 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
     }
     return false;
   });
+
+  private async skipCurrentTrack(interaction: ContextButtonInteraction) {
+    const progress = new MessageProgressUpdater(interaction, {
+      ephemeral: true,
+      finishedMessage: '📀 Started new track',
+    });
+    try {
+      await this.player.skip(progress);
+    } finally {
+      await progress.done();
+    }
+    if (this.message && this.channel && this.channel.lastMessageId !== this.message.id) {
+      await this.safeDelete();
+    }
+  }
 }

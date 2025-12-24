@@ -12,7 +12,11 @@ import {
 } from './discord-message';
 
 export interface DiscordMessageSender {
-  send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message>;
+  send(
+    options: BaseMessageOptions,
+    forceEphemeral?: boolean,
+    editReply?: boolean,
+  ): Promise<Message>;
 }
 
 export const DISCORD_CONTENT_MAX = 2000;
@@ -31,6 +35,7 @@ export class DiscordSender {
       const discordMessage = await this.sender.send(
         { content: clampLength(message, DISCORD_CONTENT_MAX) },
         options?.ephemeral,
+        options?.editReply,
       );
       return new DiscordMessage(discordMessage);
     } catch (e) {

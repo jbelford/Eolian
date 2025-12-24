@@ -76,6 +76,7 @@ export interface ContextMessage {
 export type ContextInteractionOptions = {
   ephemeral?: boolean;
   force?: boolean;
+  editReply?: boolean;
 };
 
 export interface ContextInteraction extends ContextSendable {

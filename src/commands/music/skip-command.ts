@@ -14,7 +14,7 @@ async function react(context: CommandContext, emoji: string): Promise<void> {
 
 async function executeSkip(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
-    const progress = new MessageProgressUpdater(context.interaction.channel, 750);
+    const progress = new MessageProgressUpdater(context.interaction.channel);
     try {
       await Promise.allSettled([react(context, '⏩'), context.server!.player.skip(progress)]);
     } finally {

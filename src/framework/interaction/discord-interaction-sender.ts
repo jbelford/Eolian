@@ -10,7 +10,11 @@ import { DiscordMessageSender } from '../discord-sender';
 export class DiscordInteractionSender implements DiscordMessageSender {
   constructor(private readonly interaction: MessageComponentInteraction | CommandInteraction) {}
 
-  async send(options: BaseMessageOptions, forceEphemeral?: boolean): Promise<Message> {
+  async send(
+    options: BaseMessageOptions,
+    forceEphemeral?: boolean,
+    editReply?: boolean,
+  ): Promise<Message> {
     const hasButtons = !!options.components?.length;
     const ephemeral = hasButtons ? false : (forceEphemeral ?? true);
     const flags = ephemeral ? MessageFlags.Ephemeral : undefined;
@@ -32,6 +36,10 @@ export class DiscordInteractionSender implements DiscordMessageSender {
         }
         reply = await this.interaction.editReply(options);
       }
+    } else if (editReply) {
+      reply = await this.interaction.editReply({
+        ...options,
+      });
     } else {
       reply = await this.interaction.followUp({
         ...options,

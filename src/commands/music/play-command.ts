@@ -86,11 +86,9 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
   }
 
   if (voice) {
-    const progress = new MessageProgressUpdater(
-      context.interaction.channel,
-      750,
-      !context.server!.player.isStreaming ? '🎶 Starting stream!' : undefined,
-    );
+    const progress = new MessageProgressUpdater(context.interaction.channel, {
+      finishedMessage: !context.server!.player.isStreaming ? '🎶 Starting stream!' : undefined,
+    });
     try {
       if (!context.server!.player.isStreaming) {
         context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
