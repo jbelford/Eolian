@@ -193,6 +193,10 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
             { ephemeral: true },
           );
         }
+      } else {
+        await interaction.send('Please wait for another operation to complete.', {
+          ephemeral: true,
+        });
       }
       return false;
     };
