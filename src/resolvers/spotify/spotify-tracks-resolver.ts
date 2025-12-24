@@ -86,6 +86,6 @@ export class SpotifyTracksFetcher implements SourceFetcher {
 
     const tracks = spotifyTracks.map(track => mapSpotifyTrack(track));
 
-    return { tracks };
+    return { tracks, rangeOptimized: true };
   }
 }
