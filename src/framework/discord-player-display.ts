@@ -181,9 +181,8 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
         if (userVoice && userVoice.id === this.player.getChannel()?.id) {
           this.inputLock = true;
           try {
-            const result = await cb(interaction, emoji);
             await interaction.deferUpdate();
-            return result;
+            return await cb(interaction, emoji);
           } finally {
             this.inputLock = false;
           }
