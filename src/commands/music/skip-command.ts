@@ -2,14 +2,23 @@ import { NOT_PLAYING, UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
 import { CommandContext, Command } from '../@types';
 import { MUSIC_CATEGORY } from '../category';
+import { MessageProgressUpdater } from '@eolian/framework/message-progress-updater';
+
+async function react(context: CommandContext, emoji: string): Promise<void> {
+  if (context.interaction.reactable) {
+    await context.interaction.react(emoji);
+  } else {
+    await context.interaction.send(emoji, { ephemeral: false });
+  }
+}
 
 async function executeSkip(context: CommandContext): Promise<void> {
   if (context.server!.player.isStreaming) {
-    await context.server!.player.skip();
-    if (context.interaction.reactable) {
-      await context.interaction.react('⏩');
-    } else {
-      await context.interaction.send('⏩', { ephemeral: false });
+    const progress = new MessageProgressUpdater(context.interaction.channel, 750);
+    try {
+      await Promise.allSettled([react(context, '⏩'), context.server!.player.skip(progress)]);
+    } finally {
+      await progress.done();
     }
   } else {
     throw new EolianUserError(NOT_PLAYING);

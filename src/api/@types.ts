@@ -1,9 +1,9 @@
-import { AbsRangeArgument } from '@eolian/common/@types';
+import { AbsRangeArgument, ProgressUpdater } from '@eolian/common/@types';
 import { Color } from '@eolian/common/constants';
 import { Readable } from 'stream';
 
 export interface StreamFetcher {
-  getStream(track: Track): Promise<StreamSource | undefined>;
+  getStream(track: Track, progress?: ProgressUpdater<string>): Promise<StreamSource | undefined>;
 }
 
 export type RangeFactory = (total: number) => AbsRangeArgument | undefined;

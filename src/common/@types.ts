@@ -91,9 +91,9 @@ export interface AbsRangeArgument {
   stop: number;
 }
 
-export interface ProgressUpdater {
-  init(total?: number): void;
-  update(value: number): void;
+export interface ProgressUpdater<T = number> {
+  init(total?: T): void;
+  update(value: T): void;
   done(): Promise<void>;
 }
 

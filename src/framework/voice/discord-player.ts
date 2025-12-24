@@ -18,6 +18,7 @@ import { Player } from './@types';
 import { DiscordVoiceConnection } from './discord-voice-connection';
 import { SongStream } from './song-stream';
 import EventEmitter from 'node:events';
+import { ProgressUpdater } from '@eolian/common/@types';
 
 const PLAYER_TIMEOUT = 1000 * 60 * 3;
 const PLAYER_RETRIES = 2;
@@ -162,8 +163,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this._bass = on;
   }
 
-  async play(): Promise<void> {
+  async play(progress?: ProgressUpdater<string>): Promise<void> {
     if (!this.isStreaming) {
+      progress?.init('⚡ Setting up player...');
       this._isStreaming = true;
       try {
         const connection = this.client.getVoice() as DiscordVoiceConnection | undefined;
@@ -176,7 +178,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
         );
         this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
-        await this.startNewStream();
+        await this.startNewStream(progress);
 
         if (!connection.subscribe(this.audioPlayer)) {
           throw new Error('Failed to subscribe!');
@@ -187,13 +189,14 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
   }
 
-  async skip(): Promise<void> {
+  async skip(progress: ProgressUpdater<string>): Promise<void> {
     if (this.isStreaming) {
+      progress?.init('📀 Swapping records...');
       const size = await this.queue.size(true);
       if (size > 0) {
         await this.songStream?.close();
         this.songStream = null;
-        await this.startNewStream();
+        await this.startNewStream(progress);
       } else {
         this.stop();
       }
@@ -234,9 +237,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
   }
 
-  private async startNewStream(): Promise<void> {
+  private async startNewStream(progress?: ProgressUpdater<string>): Promise<void> {
     try {
-      const input = await this.getStream();
+      const input = await this.getStream(progress);
       if (!input) {
         throw new Error('Missing stream!');
       }
@@ -253,7 +256,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
   }
 
-  private async getStream(): Promise<Readable | null> {
+  private async getStream(progress?: ProgressUpdater<string>): Promise<Readable | null> {
     if (!this.songStream) {
       this.songStream = new SongStream(this.volume, PLAYER_RETRIES);
       this.songStream.on('end', this.streamEndHandler);
@@ -262,10 +265,16 @@ export class DiscordPlayer extends EventEmitter implements Player {
     }
     let track = await this.queue.peek();
     for (let i = 0; i < NEXT_SONG_ATTEMPTS && track; ++i) {
-      const success = await this.songStream.setStreamTrack(track, {
-        nightcore: this.nightcore,
-        bass: this.bass,
-      });
+      const success = await this.songStream.setStreamTrack(
+        track,
+        {
+          nightcore: this.nightcore,
+          bass: this.bass,
+        },
+        false,
+        undefined,
+        progress,
+      );
       if (success) {
         this._paused = false;
         await this.popNext();

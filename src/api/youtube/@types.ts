@@ -12,7 +12,7 @@ export interface IYouTubeApi extends StreamFetcher {
   ): Promise<YoutubeVideo[]>;
   searchPlaylists(query: string, limit?: number): Promise<YoutubePlaylist[]>;
   searchVideos(query: string, limit?: number): Promise<YoutubeVideo[]>;
-  searchStream(track: Track): Promise<StreamSource | undefined>;
+  searchStream(track: Track, progress?: ProgressUpdater<string>): Promise<StreamSource | undefined>;
 }
 
 export interface YouTubeUrlDetails {

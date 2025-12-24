@@ -11,6 +11,7 @@ import { createSpotifyAuthorizationCodeProvider, createSpotifyRequest, spotify }
 import { youtube } from './youtube';
 import { poetry } from './poetry';
 import { AiStreamSource } from './speech';
+import { ProgressUpdater } from '@eolian/common/@types';
 
 export * from './bing';
 export * from './soundcloud';
@@ -37,14 +38,17 @@ export function createAuthCodeRequest(
   }
 }
 
-export function getTrackStream(track: Track): Promise<StreamSource | undefined> {
+export function getTrackStream(
+  track: Track,
+  progress?: ProgressUpdater<string>,
+): Promise<StreamSource | undefined> {
   switch (track.src) {
     case TrackSource.SoundCloud:
       return soundcloud.getStream(track);
     case TrackSource.YouTube:
-      return youtube.getStream(track);
+      return youtube.getStream(track, progress);
     case TrackSource.Spotify:
-      return spotify.getStream(track);
+      return spotify.getStream(track, progress);
     case TrackSource.Poetry:
       return poetry.getStream(track);
     case TrackSource.AI:

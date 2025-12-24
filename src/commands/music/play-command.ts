@@ -10,6 +10,7 @@ import { SourceFetcher } from '@eolian/resolvers/@types';
 import { CommandContext, Command, MessageCommand } from '../@types';
 import { MUSIC_CATEGORY } from '../category';
 import { createSelectedMessage } from '../queue/add-command';
+import { MessageProgressUpdater } from '@eolian/framework/message-progress-updater';
 
 async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();
@@ -85,13 +86,22 @@ async function executePlay(context: CommandContext, options: CommandOptions): Pr
   }
 
   if (voice) {
-    if (!context.server!.player.isStreaming) {
-      context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
-      reactionChain = reactionChain.then(() => context.interaction.react('🎵'));
-      await context.server!.player.play();
-    } else if (added) {
-      reactionChain = reactionChain.then(() => context.interaction.react('👌'));
-      await context.server!.player.skip();
+    const progress = new MessageProgressUpdater(
+      context.interaction.channel,
+      750,
+      !context.server!.player.isStreaming ? '🎶 Starting stream!' : undefined,
+    );
+    try {
+      if (!context.server!.player.isStreaming) {
+        context.server!.display.player.setChannel(context.interaction.channel, context.interaction);
+        reactionChain = reactionChain.then(() => context.interaction.react('🎵'));
+        await context.server!.player.play(progress);
+      } else if (added) {
+        reactionChain = reactionChain.then(() => context.interaction.react('👌'));
+        await context.server!.player.skip(progress);
+      }
+    } finally {
+      await progress.done();
     }
   }
 

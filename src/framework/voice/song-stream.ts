@@ -1,6 +1,6 @@
 import { getTrackStream } from '@eolian/api';
 import { Track, StreamSource } from '@eolian/api/@types';
-import { Closable, RetrySleepAlgorithm } from '@eolian/common/@types';
+import { Closable, ProgressUpdater, RetrySleepAlgorithm } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
 import { ExponentialSleep } from '@eolian/common/util';
 import { RequestErrorCodes } from '@eolian/http';
@@ -66,13 +66,14 @@ export class SongStream extends EventEmitter implements Closable {
     options?: StreamOptions,
     retry = false,
     seek?: number,
+    progress?: ProgressUpdater<string>,
   ): Promise<boolean> {
     let source: StreamSource | undefined;
     if (!this.source) {
-      source = await getTrackStream(track);
+      source = await getTrackStream(track, progress);
       this.source = source;
     } else {
-      source = retry ? this.source : await getTrackStream(track);
+      source = retry ? this.source : await getTrackStream(track, progress);
     }
     if (!source) {
       logger.warn('Failed to get stream source!');

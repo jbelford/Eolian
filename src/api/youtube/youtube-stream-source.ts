@@ -5,6 +5,7 @@ import { Innertube, Platform, Types, UniversalCache } from 'youtubei.js';
 import { createFetchFunction, createProxyUrl, generatePoToken } from './potoken';
 import { httpRequest } from '@eolian/http';
 import { environment } from '@eolian/common/env';
+import { ProgressUpdater } from '@eolian/common/@types';
 
 Platform.shim.eval = async (
   data: Types.BuildScriptResult,
@@ -31,6 +32,7 @@ export class YouTubeStreamSource implements StreamSource {
   constructor(
     private readonly url: string,
     private readonly id: string,
+    private readonly progress?: ProgressUpdater<string>,
   ) {}
 
   async get(seek?: number): Promise<Readable> {
@@ -50,6 +52,7 @@ export class YouTubeStreamSource implements StreamSource {
       config.visitor_data = visitorData;
     }
 
+    this.progress?.update('📺 Fetching information from YouTube...');
     const innertube = await Innertube.create(config);
 
     const info = await innertube.getBasicInfo(this.id);

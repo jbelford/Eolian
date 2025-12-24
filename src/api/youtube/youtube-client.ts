@@ -266,7 +266,11 @@ class YouTubeApi implements IYouTubeApi {
     return video;
   }
 
-  async searchStream(track: Track): Promise<StreamSource | undefined> {
+  async searchStream(
+    track: Track,
+    progress?: ProgressUpdater<string>,
+  ): Promise<StreamSource | undefined> {
+    progress?.update('🔎 Searching for stream...');
     const cacheId = `${track.src}_` + (track.id ?? `${track.title}_${track.poster}`);
     let result = this.cache.get(cacheId);
     if (!result) {
@@ -276,16 +280,19 @@ class YouTubeApi implements IYouTubeApi {
         this.cache.set(cacheId, result);
       }
     }
-    return result ? new YouTubeStreamSource(result.url, result.id) : undefined;
+    return result ? new YouTubeStreamSource(result.url, result.id, progress) : undefined;
   }
 
-  async getStream(track: Track): Promise<StreamSource | undefined> {
+  async getStream(
+    track: Track,
+    progress?: ProgressUpdater<string>,
+  ): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.YouTube) {
       throw new Error(
         `Tried to get youtube readable from non-youtube resource: ${JSON.stringify(track)}`,
       );
     }
-    return new YouTubeStreamSource(track.url, track.id!);
+    return new YouTubeStreamSource(track.url, track.id!, progress);
   }
 }
 

@@ -1,4 +1,4 @@
-import { Idleable, Closable } from '@eolian/common/@types';
+import { Idleable, Closable, ProgressUpdater } from '@eolian/common/@types';
 import { EventEmitter } from 'node-cache';
 import { ContextMusicQueue, ContextVoiceChannel } from '../@types';
 
@@ -13,8 +13,8 @@ export interface Player extends EventEmitter, Idleable, Closable {
   setVolume(value: number): void;
   setNightcore(on: boolean): void;
   setBassBoost(on: boolean): void;
-  play(): Promise<void>;
-  skip(): Promise<void>;
+  play(progress?: ProgressUpdater<string>): Promise<void>;
+  skip(progress?: ProgressUpdater<string>): Promise<void>;
   stop(): void;
   pause(): Promise<void>;
   resume(): Promise<void>;

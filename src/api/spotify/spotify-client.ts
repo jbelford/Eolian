@@ -240,7 +240,7 @@ class SpotifyApi implements ISpotifyApi {
     }
   }
 
-  getStream(track: Track): Promise<StreamSource | undefined> {
+  getStream(track: Track, progress?: ProgressUpdater<string>): Promise<StreamSource | undefined> {
     if (track.src !== TrackSource.Spotify) {
       throw new Error(
         `Tried to get spotify readable from non-spotify resource: ${JSON.stringify(track)}`,
@@ -262,7 +262,7 @@ class SpotifyApi implements ISpotifyApi {
       trackCopy.title = noRemastered.length ? `${title} (${extra})` : title;
     }
 
-    return this.youtube.searchStream(trackCopy);
+    return this.youtube.searchStream(trackCopy, progress);
   }
 
   private async getPaginatedItems<T>(path: string, options?: GetAllItemsOptions<T>): Promise<T[]> {
