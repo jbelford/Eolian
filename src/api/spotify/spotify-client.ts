@@ -56,11 +56,17 @@ class SpotifyApi implements ISpotifyApi {
     }
   }
 
-  async getMyTopTracks(range = SpotifyTimeRange.MEDIUM): Promise<SpotifyTrack[]> {
+  async getMyTopTracks(
+    range = SpotifyTimeRange.MEDIUM,
+    progress?: ProgressUpdater,
+    rangeFn?: RangeFactory,
+  ): Promise<SpotifyTrack[]> {
     try {
       return await this.getPaginatedItems('me/top/tracks', {
         limit: 50,
         params: { time_range: range },
+        progress,
+        rangeFn,
       });
     } catch (e) {
       logger.warn('Failed to fetch current Spotify user tracks');

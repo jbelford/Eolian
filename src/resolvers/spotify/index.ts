@@ -53,7 +53,7 @@ export async function getSpotifySourceFetcher(
       if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
         const { range } = identifier as SpotifyTracksIdentifier;
         const client = await getClient(identifier, context);
-        return new SpotifyTracksFetcher(client, range);
+        return new SpotifyTracksFetcher(client, params, context.interaction.channel, range);
       }
       break;
     default:
