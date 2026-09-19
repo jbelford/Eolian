@@ -6,5 +6,8 @@ export default defineConfig({
   test: {
     ...sharedConfig.test,
     include: ['tests/integration/**/*.{test,spec}.ts'],
+    fileParallelism: false,
+    maxWorkers: 1,
+    maxConcurrency: 1,
   },
 });

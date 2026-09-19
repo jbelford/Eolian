@@ -9,14 +9,14 @@
     "build-dev": "webpack --config webpack.dev.js",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:unit": "vitest run",
+    "test": "yarn test:unit",
+    "test:unit": "vitest run --config vitest.config.mts",
+    "test:watch": "vitest --config vitest.config.mts",
     "test:integration": "vitest run --config vitest.integration.config.mts --passWithNoTests",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --config vitest.config.mts --coverage",
     "typecheck": "tsc -p src/tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write ./src"
+    "format": "prettier --write README.md package.json \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check README.md package.json \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\""
   },
   "keywords": [
     "music",

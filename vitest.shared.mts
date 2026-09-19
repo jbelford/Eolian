@@ -13,6 +13,10 @@ export const sharedConfig = {
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
     isolate: true,
+    pool: 'forks' as const,
+    fileParallelism: true,
+    maxWorkers: '100%',
+    maxConcurrency: 5,
     clearMocks: true,
     restoreMocks: true,
     unstubEnvs: true,
@@ -29,6 +33,12 @@ export const sharedConfig = {
         // Browser-backed proof-token generation is an external integration boundary.
         'src/api/youtube/potoken.ts',
       ],
+      thresholds: {
+        statements: 85,
+        branches: 78,
+        functions: 85,
+        lines: 85,
+      },
     },
   },
 };

@@ -1,0 +1,45 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.19.6
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Run unit tests with coverage
+        run: yarn test:coverage
+
+      - name: Build production bundle
+        run: yarn build
+
+      - name: Run FFmpeg integration test
+        run: yarn test:integration
