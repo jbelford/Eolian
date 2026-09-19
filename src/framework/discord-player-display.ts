@@ -214,7 +214,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
 
   private backHandler: MessageButtonOnClickHandler = this.lock(async interaction => {
     if (await this.player.queue.unpop(2)) {
-      this.skipCurrentTrack(interaction);
+      await this.skipCurrentTrack(interaction);
     }
     return false;
   });
@@ -241,7 +241,7 @@ export class DiscordPlayerDisplay implements PlayerDisplay {
       const size = await this.player.queue.size();
       if (size > 0 || this.player.queue.loop) {
         const [tracks, loop] = await this.player.queue.get(0, QUEUE_PAGE_LENGTH);
-        this.queueDisplay.send(tracks, loop, 0, size);
+        await this.queueDisplay.send(tracks, loop, 0, size);
         this.queueAhead = true;
       }
     }
