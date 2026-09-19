@@ -6,6 +6,28 @@ Eolian is a Discord music bot that aims to be easy to use and provide a very pow
 
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
+## Development
+
+Eolian requires Node.js 20.19.6 or newer and uses Yarn through Corepack.
+
+```bash
+corepack enable
+yarn install --immutable
+yarn build
+```
+
+The build has two Vite targets:
+
+- `vite.node.config.mts` creates the CommonJS bot/server entry at `dist/bundle.js`. Application
+  modules are bundled, while runtime packages and Node built-ins remain external so native
+  dependencies load from `node_modules`.
+- `vite.web.config.mts` processes `index.html` and the React entry into `dist/public`. The Express
+  server serves this directory when the website feature flag is enabled.
+
+`yarn build-dev` produces the same layout with source maps and without minification.
+`yarn build-web` builds only the browser application, and `yarn typecheck` checks both TypeScript
+projects without emitting files.
+
 # [📩 Invite Link](https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216)
 
 > Click the link to invite the bot directly
