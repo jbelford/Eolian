@@ -23,9 +23,9 @@ export function createQueueEmbed(
     thumbnail: tracks.find(t => t.artwork)?.artwork,
     footer: {
       text:
-        total > 1
-          ? `There are ${total} songs in the queue total`
-          : `There is only 1 song in the queue`,
+        total === 1
+          ? `There is only 1 song in the queue`
+          : `There are ${total} songs in the queue total`,
     },
   };
 

@@ -3,6 +3,9 @@ import { fileURLToPath } from 'node:url';
 const sourceDirectory = fileURLToPath(new URL('./src', import.meta.url));
 
 export const sharedConfig = {
+  define: {
+    __COMMIT_DATE__: JSON.stringify('test'),
+  },
   resolve: {
     alias: [{ find: /^@eolian\/(.+)$/, replacement: `${sourceDirectory}/$1` }],
   },

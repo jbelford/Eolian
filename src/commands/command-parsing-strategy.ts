@@ -11,7 +11,7 @@ class TextCommandParsingStrategy implements CommandParsingStrategy {
     if (!trimmed.startsWith(prefix)) {
       return false;
     }
-    const text = trimmed.slice(1).trim();
+    const text = trimmed.slice(prefix.length).trim();
     return text.length > 0 && !text.startsWith(prefix);
   }
 
