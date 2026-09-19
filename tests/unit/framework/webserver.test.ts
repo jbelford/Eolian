@@ -105,12 +105,23 @@ describe('WebServer', () => {
     expect(res.redirect).toHaveBeenCalledWith(GITHUB_PAGE);
   });
 
+  it('exposes a health check regardless of feature flags', () => {
+    const { provider } = createAuthProviders();
+    new WebServer(8080, provider as never);
+    const res = response();
+
+    mocks.apps[0].routes.get('/healthz')!({} as never, res as never);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith('OK');
+  });
+
   it('registers only enabled auth callbacks', () => {
     mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
     const { provider } = createAuthProviders();
     new WebServer(8080, provider as never);
 
-    expect([...mocks.apps[0].routes.keys()]).toEqual(['/', '/callback/spotify']);
+    expect([...mocks.apps[0].routes.keys()]).toEqual(['/healthz', '/', '/callback/spotify']);
   });
 
   it('rejects callbacks without state without invoking the auth service', async () => {
