@@ -1,25 +1,64 @@
-FROM node:20.19.6-bookworm
+# syntax=docker/dockerfile:1.7
+
+ARG NODE_IMAGE=node:20.19.6-bookworm-slim@sha256:b342de02eb4a57cd6986290a69833d20818508db8078dba0197a024193410aee
+
+FROM ${NODE_IMAGE} AS dependencies
 
 WORKDIR /usr/src/app
 
-COPY . .
-
-# SSH enablement
-# https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container?tabs=debian&pivots=container-linux#enable-ssh
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends dialog openssh-server \
-    && echo "root:Docker!" | chpasswd \
-    && chmod u+x ./entrypoint.sh \
+    && apt-get install -y --no-install-recommends build-essential python3 \
     && rm -rf /var/lib/apt/lists/*
-COPY ./docker/sshd_config /etc/ssh/
 
-EXPOSE 8000 2222
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn/releases/ .yarn/releases/
 
-# Build
-RUN corepack enable && yarn install --immutable
-RUN yarn run build
-RUN npm install pm2 -g
+RUN corepack enable \
+    && yarn install --immutable
 
-EXPOSE 8080
+FROM dependencies AS build
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+ARG COMMIT_DATE
+
+COPY public/ public/
+COPY src/ src/
+COPY web/ web/
+COPY webpack.prod.js webpack.web.js ./
+
+RUN test -n "$COMMIT_DATE" \
+    && COMMIT_DATE="$COMMIT_DATE" yarn build \
+    && yarn build-web --env production
+
+FROM dependencies AS production-dependencies
+
+RUN yarn workspaces focus --all --production
+
+FROM ${NODE_IMAGE} AS runtime
+
+ENV NODE_ENV=production
+
+WORKDIR /usr/src/app
+
+# Keep Azure App Service's SSH contract while limiting the runtime packages to
+# certificates, SSH, and native-library support required by production modules.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        dialog \
+        libstdc++6 \
+        openssh-server \
+    && echo "root:Docker!" | chpasswd \
+    && mkdir -p /run/sshd \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=production-dependencies /usr/src/app/node_modules/ node_modules/
+COPY --from=build /usr/src/app/dist/ dist/
+COPY package.json ./
+COPY docker/sshd_config /etc/ssh/sshd_config
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN chmod 0755 /usr/local/bin/entrypoint.sh
+
+EXPOSE 8000 2222 8080
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

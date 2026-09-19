@@ -17,10 +17,12 @@ fs.readdirSync(dir)
     alias[aliasPath] = absPath;
   });
 
-let commitHash = require('child_process')
-  .execSync('git log -1 --date=format:"%d.%m.%y" --format="%ad"')
-  .toString()
-  .trim();
+const commitDate =
+  process.env.COMMIT_DATE ||
+  require('child_process')
+    .execSync('git log -1 --date=format:"%d.%m.%y" --format="%ad"')
+    .toString()
+    .trim();
 
 module.exports = {
   mode: 'production',
@@ -36,8 +38,8 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      __COMMIT_DATE__: JSON.stringify(commitHash)
-    })
+      __COMMIT_DATE__: JSON.stringify(commitDate),
+    }),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],

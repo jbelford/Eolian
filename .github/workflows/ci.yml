@@ -32,6 +32,10 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Get image metadata
+        id: metadata
+        run: echo "commit-date=$(git log -1 --date=format:'%d.%m.%y' --format='%ad')" >>"$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -41,5 +45,7 @@ jobs:
           context: .
           push: false
           tags: eolian:ci
+          build-args: |
+            COMMIT_DATE=${{ steps.metadata.outputs.commit-date }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

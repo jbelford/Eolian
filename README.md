@@ -102,3 +102,23 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 ## 🚀 Performance Improvements
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
+
+## Container image
+
+The production image uses separate dependency, build, production-pruning, and runtime stages. The
+final image contains only the compiled bot bundle, compiled website assets, production
+`node_modules`, the pinned Node.js runtime, CA certificates, native audio libraries, and the SSH
+configuration required by Azure App Service. Source files, development dependencies, compilers,
+repository metadata, and local environment files are not copied into the runtime image.
+
+Build the same image used by CI and deployment with:
+
+```bash
+docker build \
+  --build-arg COMMIT_DATE="$(git log -1 --date=format:'%d.%m.%y' --format='%ad')" \
+  -t eolian .
+```
+
+Runtime configuration continues to come from environment variables. The container exposes the bot
+web server on port `8080` and Azure App Service SSH on port `2222`, and starts the compiled bot with
+PM2 through `entrypoint.sh`.

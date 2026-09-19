@@ -59,6 +59,7 @@ jobs:
 
           echo "tag=$tag" >>"$GITHUB_OUTPUT"
           echo "reference=$ACR_LOGIN_SERVER/eolian:$tag" >>"$GITHUB_OUTPUT"
+          echo "commit-date=$(git log -1 --date=format:'%d.%m.%y' --format='%ad')" >>"$GITHUB_OUTPUT"
 
       - name: Sign in to Azure with OIDC
         uses: azure/login@v3
@@ -98,6 +99,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.image.outputs.reference }}
+          build-args: |
+            COMMIT_DATE=${{ steps.image.outputs.commit-date }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
