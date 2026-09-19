@@ -17,6 +17,10 @@ export class WebServer implements Closable {
     private readonly port: number,
     private readonly authProviders: IAuthServiceProvider,
   ) {
+    this.app.get('/healthz', (req, res) => {
+      res.status(200).send('OK');
+    });
+
     if (feature.enabled(FeatureFlag.WEBSITE)) {
       this.app.use(express.static(path.join(__dirname, 'public')));
 
