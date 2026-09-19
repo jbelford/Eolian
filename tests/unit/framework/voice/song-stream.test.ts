@@ -243,17 +243,23 @@ describe('SongStream', () => {
     expect(song.stream).toBe(output);
   });
 
-  it('returns false when source acquisition returns nothing or rejects', async () => {
+  it('returns false when source acquisition returns nothing', async () => {
     const missing = harness();
     missing.getTrackStream.mockResolvedValueOnce(undefined);
     await expect(missing.song.setStreamTrack(track())).resolves.toBe(false);
 
-    const failed = harness();
-    failed.getTrackStream.mockRejectedValueOnce(new Error('lookup failed'));
-    await expect(failed.song.setStreamTrack(track())).resolves.toBe(false);
-
     expect(prismMocks.ffmpegs).toHaveLength(0);
-    expect(loggerMocks.warn).toHaveBeenCalledTimes(2);
+    expect(loggerMocks.warn).toHaveBeenCalledOnce();
+  });
+
+  it('propagates source acquisition errors', async () => {
+    const failed = harness();
+    const error = new Error('lookup failed');
+    failed.getTrackStream.mockRejectedValueOnce(error);
+
+    await expect(failed.song.setStreamTrack(track())).rejects.toBe(error);
+    expect(prismMocks.ffmpegs).toHaveLength(0);
+    expect(loggerMocks.warn).not.toHaveBeenCalled();
   });
 
   it('returns false when the source cannot create a stream', async () => {

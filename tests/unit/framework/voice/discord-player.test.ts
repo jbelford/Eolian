@@ -271,6 +271,8 @@ describe('DiscordPlayer', () => {
     await h.player.play();
 
     expect(h.connection.subscribe).not.toHaveBeenCalled();
+    expect(h.queue.pop).not.toHaveBeenCalled();
+    expect(h.queue.peek).toHaveBeenCalledOnce();
     expect(h.player.isStreaming).toBe(false);
   });
 

@@ -121,16 +121,8 @@ export class SongStream extends EventEmitter implements Closable {
     progress: ProgressUpdater<string> | undefined,
     expectedGeneration: number | undefined,
   ): Promise<boolean> {
-    let source: StreamSource | undefined;
-    try {
-      source =
-        retry && this.source
-          ? this.source
-          : await this.dependencies.getTrackStream(track, progress);
-    } catch (e) {
-      logger.warn('Failed to get stream source!\n%s', e);
-      return false;
-    }
+    const source =
+      retry && this.source ? this.source : await this.dependencies.getTrackStream(track, progress);
     if (!source) {
       logger.warn('Failed to get stream source!');
       return false;
