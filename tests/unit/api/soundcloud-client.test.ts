@@ -58,12 +58,101 @@ describe('SoundCloudApi', () => {
     expect(progress.done).toHaveBeenCalledOnce();
   });
 
+  it('maps current-user and resource endpoints', async () => {
+    get
+      .mockResolvedValueOnce({ id: 1, track_count: 2 })
+      .mockResolvedValueOnce({ collection: [{ id: 10 }, { id: 11 }], next_href: null })
+      .mockResolvedValueOnce({ id: 2 })
+      .mockResolvedValueOnce({ id: 3 })
+      .mockResolvedValueOnce({ id: 4 });
+
+    await expect(client.getMyTracks()).resolves.toEqual([{ id: 10 }, { id: 11 }]);
+    await client.getUser(2);
+    await client.getTrack(3);
+    await client.getPlaylist(4);
+
+    expect(get.mock.calls).toEqual([
+      ['me'],
+      [
+        'me/tracks',
+        {
+          access: 'playable,blocked,preview',
+          linked_partitioning: true,
+          limit: 2,
+        },
+      ],
+      ['users/2'],
+      ['tracks/3'],
+      ['playlists/4', { access: 'playable,blocked,preview' }],
+    ]);
+  });
+
+  it('uses the correct search paths for users, playlists, and owned playlists', async () => {
+    get
+      .mockResolvedValueOnce({ collection: [{ id: 1 }], next_href: null })
+      .mockResolvedValueOnce({ collection: [{ id: 2 }], next_href: null })
+      .mockResolvedValueOnce({ collection: [{ id: 3 }], next_href: null });
+
+    await client.searchUser('artist', 2);
+    await client.searchPlaylists('mix', 3, 42);
+    await client.searchMyPlaylists('mine', 4);
+
+    expect(get.mock.calls).toEqual([
+      ['users', { q: 'artist', linked_partitioning: true, limit: 2 }],
+      [
+        'users/42/playlists',
+        {
+          access: 'playable,blocked,preview',
+          q: 'mix',
+          linked_partitioning: true,
+          limit: 3,
+        },
+      ],
+      [
+        'me/playlists',
+        {
+          access: 'playable,blocked,preview',
+          q: 'mine',
+          linked_partitioning: true,
+          limit: 4,
+        },
+      ],
+    ]);
+  });
+
+  it('uses user counts for tracks and paginates user favorites', async () => {
+    get
+      .mockResolvedValueOnce({ id: 7, track_count: 1 })
+      .mockResolvedValueOnce({ collection: [{ id: 1 }], next_href: null })
+      .mockResolvedValueOnce({
+        collection: [{ id: 2 }],
+        next_href: 'https://api.soundcloud.test/likes?cursor=next',
+      });
+    getUri.mockResolvedValueOnce({ collection: [{ id: 3 }], next_href: null });
+
+    await expect(client.getUserTracks(7)).resolves.toEqual([{ id: 1 }]);
+    await expect(client.getUserFavorites(7, 2)).resolves.toEqual([{ id: 2 }, { id: 3 }]);
+
+    expect(get.mock.calls[1][0]).toBe('users/7/tracks');
+    expect(get.mock.calls[2][0]).toBe('users/7/likes/tracks');
+  });
+
   it('rejects ambiguous and incorrectly typed resolved resources', async () => {
     get.mockResolvedValueOnce([{ kind: 'track' }]);
     await expect(client.resolve('url')).rejects.toBeInstanceOf(EolianUserError);
 
     get.mockResolvedValueOnce({ kind: 'track' });
     await expect(client.resolveUser('url')).rejects.toThrow('not a SoundCloud user');
+  });
+
+  it('returns resolved users and propagates API failures', async () => {
+    const user = { id: 1, kind: 'user' };
+    get.mockResolvedValueOnce(user);
+    await expect(client.resolveUser('user-url')).resolves.toBe(user);
+
+    const error = new Error('SoundCloud unavailable');
+    get.mockRejectedValueOnce(error);
+    await expect(client.getMe()).rejects.toBe(error);
   });
 
   it('uses YouTube for premium tracks and SoundCloud for playable tracks', async () => {

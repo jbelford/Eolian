@@ -22,7 +22,13 @@ export const sharedConfig = {
       reporter: ['text' as const, 'html' as const, 'lcov' as const],
       reportsDirectory: './coverage',
       include: ['src/**/*.ts'],
-      exclude: ['src/app.ts', 'src/**/@types.ts', 'src/**/index.ts'],
+      exclude: [
+        'src/app.ts',
+        'src/**/@types.ts',
+        'src/**/index.ts',
+        // Browser-backed proof-token generation is an external integration boundary.
+        'src/api/youtube/potoken.ts',
+      ],
     },
   },
 };
