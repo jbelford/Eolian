@@ -103,57 +103,6 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
 
-## Development and tests
+## Development
 
-Use Node.js 20.19.6 and the repository's Yarn 4 release through Corepack:
-
-```bash
-corepack enable
-yarn install --immutable
-yarn typecheck
-yarn test
-yarn test:coverage
-yarn test:integration
-yarn build
-```
-
-`tests/unit` contains isolated tests for commands, resolvers, framework code, API clients, and
-other source modules. Unit tests mock Discord, network, database, and media boundaries so they
-remain deterministic and do not require credentials or external services. Prefer mocks at those
-boundaries while exercising the real application logic behind them.
-
-`tests/integration` contains the dedicated real FFmpeg audio-pipeline test. It generates its own
-WAV input and uses the `ffmpeg-static` binary, without network access. The integration project runs
-separately with one worker and no file-level parallelism. It reports a skipped suite when
-`ffmpeg-static` has no executable binary for the current platform or lacks the required filters;
-this keeps unsupported platforms portable while CI verifies the supported Linux binary.
-
-For a fast edit loop, run `yarn test:watch` and let Vitest rerun affected unit tests. Unit files run
-in isolated fork workers with file-level parallelism, an adaptive `100%` worker limit, and an
-in-file concurrency cap of five. This uses the available logical CPUs without embedding a
-machine-specific worker count.
-
-The worker configuration was benchmarked on an AMD Ryzen 7 7800X3D (16 logical CPUs), Node
-20.19.6, with three complete runs of 63 files / 557 tests per option:
-
-| Pool and worker limit | Median wall time |
-| --------------------- | ---------------- |
-| Current/default forks | 4.73 s           |
-| Forks, 50%            | 5.33 s           |
-| Forks, 75%            | 4.80 s           |
-| Forks, 100%           | **4.64 s**       |
-| Threads, 50%          | 5.47 s           |
-| Threads, 75%          | 4.96 s           |
-| Threads, 100%         | 4.76 s           |
-
-The explicit adaptive fork configuration was the fastest stable option and used substantially less
-peak resident memory than threads in these runs. The serial FFmpeg project is kept separate from
-that optimization.
-
-V8 coverage is enforced globally at 85% for statements, functions, and lines and 78% for branches.
-This leaves limited headroom below the measured baseline while preventing meaningful regressions.
-Exclusions are restricted to the application bootstrap, type-only files, barrel exports, and the
-browser-backed YouTube proof-token integration.
-
-Production builds remain Webpack-based (`yarn build`). Vite is used through Vitest for the test
-runner and does not replace the production bundler.
+See [Testing Eolian](docs/testing.md) for the local test workflow and test-suite design.
