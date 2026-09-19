@@ -1,0 +1,17 @@
+[tools]
+node = "20.19.6"
+
+[settings.node]
+corepack = true
+
+[tasks.setup]
+description = "Install the locked Yarn dependency tree"
+run = "corepack yarn install --immutable"
+
+[tasks.lint]
+description = "Check TypeScript formatting"
+run = "corepack yarn lint"
+
+[tasks.build]
+description = "Build the production bundle"
+run = "corepack yarn build"

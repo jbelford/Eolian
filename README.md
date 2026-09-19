@@ -6,6 +6,39 @@ Eolian is a Discord music bot that aims to be easy to use and provide a very pow
 
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
+## Development
+
+Development uses [mise](https://mise.jdx.dev/) to install the repository's pinned Node.js
+and Yarn versions and to expose the common setup, lint, and build tasks.
+
+Install these non-secret prerequisites before onboarding:
+
+- Git and mise
+- Network access for tool and package downloads
+- Python 3, `make`, and a C/C++ compiler when a native Node.js dependency needs to build
+  from source
+- Docker only when building the container image
+
+mise manages Node.js 20.19.6 and Yarn 4.4.1 for this repository. It does not install
+Docker or operating-system build dependencies. Yarn is selected through Corepack from the
+version committed in `package.json` and `.yarn/releases`.
+
+```bash
+git clone https://github.com/jbelford/Eolian.git
+cd Eolian
+mise trust
+mise install --locked node
+mise run setup
+```
+
+The application requires service credentials at runtime, but they are not needed to lint
+or build the project. Keep credentials in a local `.env` file and do not commit them.
+
+```bash
+mise run lint
+mise run build
+```
+
 # [📩 Invite Link](https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216)
 
 > Click the link to invite the bot directly

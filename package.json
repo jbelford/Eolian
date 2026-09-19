@@ -9,7 +9,7 @@
     "build-dev": "webpack --config webpack.dev.js",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
-    "lint": "eslint src/**/*.ts",
+    "lint": "prettier --check ./src",
     "format": "prettier --write ./src"
   },
   "keywords": [
