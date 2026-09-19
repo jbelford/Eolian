@@ -13,6 +13,7 @@ import { DiscordGuildState } from './discord-guild-state';
 
 class InMemoryServerStateStore implements ServerStateStore {
   private cache: EolianCache<ServerState>;
+  private readonly expirations = new Map<string, Promise<void>>();
   private _active = 0;
 
   constructor(private readonly ttl: number) {
@@ -24,7 +25,12 @@ class InMemoryServerStateStore implements ServerStateStore {
   }
 
   async get(guildId: string): Promise<ServerState | undefined> {
-    const state = await this.cache.get(guildId);
+    let state = await this.cache.get(guildId);
+    const expiration = this.expirations.get(guildId);
+    if (!state && expiration) {
+      await expiration;
+      state = await this.cache.get(guildId);
+    }
     if (state) {
       await this.cache.refreshTTL(guildId);
     }
@@ -38,6 +44,7 @@ class InMemoryServerStateStore implements ServerStateStore {
   }
 
   async close(): Promise<void> {
+    await Promise.allSettled(this.expirations.values());
     await this.cache.close();
   }
 
@@ -45,7 +52,16 @@ class InMemoryServerStateStore implements ServerStateStore {
     return state.close();
   };
 
-  private onExpired = async (key: string, state: ServerState) => {
+  private onExpired = (key: string, state: ServerState) => {
+    const expiration = this.handleExpired(key, state).finally(() => {
+      if (this.expirations.get(key) === expiration) {
+        this.expirations.delete(key);
+      }
+    });
+    this.expirations.set(key, expiration);
+  };
+
+  private handleExpired = async (key: string, state: ServerState) => {
     try {
       logger.info('%s guild state expired', key);
       if (state.isIdle()) {

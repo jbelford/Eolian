@@ -1,6 +1,7 @@
 # Folders
 node_modules
 dist
+coverage
 .vs
 # Secrets
 .env
