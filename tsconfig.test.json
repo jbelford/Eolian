@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "baseUrl": ".",
+    "paths": {
+      "@eolian/*": ["src/*"]
+    },
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["test/**/*.ts", "src/framework/e2e-test-control-options.ts"],
+  "exclude": ["node_modules"]
+}

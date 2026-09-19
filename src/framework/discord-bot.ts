@@ -40,6 +40,7 @@ import {
 import { registerGuildSlashCommands } from './discord-slash-commands';
 import { DiscordGuildStore } from './state/discord-guild-store';
 import { ServerState } from './state/@types';
+import { E2ETestControl } from './e2e-test-control';
 
 const enum DiscordEvents {
   READY = 'clientReady',
@@ -97,6 +98,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly db: AppDatabase;
   private readonly auth: IAuthServiceProvider;
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
+  readonly e2eControl?: E2ETestControl;
 
   constructor({ parser, db, auth }: DiscordEolianBotArgs) {
     this.parser = parser;
@@ -134,6 +136,12 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     this.guildStore = new DiscordGuildStore(this.client, this.db.servers);
+    if (environment.e2eControl) {
+      this.e2eControl = new E2ETestControl(this.client, this.guildStore, this.db, this.auth, {
+        ...environment.e2eControl,
+        production: environment.prod,
+      });
+    }
   }
 
   async start(): Promise<void> {

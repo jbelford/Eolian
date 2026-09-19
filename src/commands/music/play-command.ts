@@ -12,7 +12,7 @@ import { MUSIC_CATEGORY } from '../category';
 import { createSelectedMessage } from '../queue/add-command';
 import { MessageProgressUpdater } from '@eolian/framework/message-progress-updater';
 
-async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
+export async function executePlay(context: CommandContext, options: CommandOptions): Promise<void> {
   const userVoice = context.interaction.user.getVoice();
   if (!userVoice) {
     throw new EolianUserError('You need to be in a voice channel!');

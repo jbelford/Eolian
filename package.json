@@ -9,7 +9,10 @@
     "build-dev": "webpack --config webpack.dev.js",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
-    "lint": "eslint src/**/*.ts",
+    "e2e": "tsx test/e2e/harness.ts",
+    "test": "tsx --test test/**/*.test.ts",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json",
+    "lint": "prettier --check ./src ./test",
     "format": "prettier --write ./src"
   },
   "keywords": [
@@ -76,6 +79,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "prettier": "^3.4.2",
     "ts-loader": "^9.5.4",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",

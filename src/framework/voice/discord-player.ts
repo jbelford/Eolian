@@ -40,6 +40,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private timeoutCheck: NodeJS.Timeout | null = null;
   private songStream: SongStream | null = null;
   private audioResource: AudioResource | null = null;
+  private _currentTrack?: Track;
 
   private _audioPlayer: AudioPlayer | null = null;
   private _isStreaming = false;
@@ -103,6 +104,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
     this.songStream?.close();
     this.audioResource = null;
     this.songStream = null;
+    this._currentTrack = undefined;
     if (this._isStreaming) {
       this.emitDone();
     }
@@ -112,6 +114,10 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   get isStreaming(): boolean {
     return this._isStreaming;
+  }
+
+  get currentTrack(): Track | undefined {
+    return this._currentTrack;
   }
 
   get paused(): boolean {
@@ -317,6 +323,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
   private async popNext(): Promise<void> {
     this.lastUsed = Date.now();
     const track = await this.queue.pop();
+    this._currentTrack = track;
     this.emit('next', track);
   }
 

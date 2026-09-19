@@ -46,6 +46,25 @@ function getEnvFlag(name: string): boolean {
   return getEnvOpt(name) === 'true';
 }
 
+function getE2EControl(prod: boolean): AppEnv['e2eControl'] {
+  if (!getEnvFlag('E2E_CONTROL_ENABLED')) {
+    return undefined;
+  }
+  if (prod && !getEnvFlag('E2E_CONTROL_ALLOW_PRODUCTION')) {
+    throw new Error(
+      'E2E control is disabled in production unless E2E_CONTROL_ALLOW_PRODUCTION=true',
+    );
+  }
+  return {
+    token: getEnv('E2E_CONTROL_TOKEN'),
+    guildId: getEnv('E2E_CONTROL_GUILD_ID'),
+    textChannelId: getEnv('E2E_CONTROL_TEXT_CHANNEL_ID'),
+    voiceChannelId: getEnv('E2E_CONTROL_VOICE_CHANNEL_ID'),
+    actorId: getEnv('E2E_CONTROL_ACTOR_ID'),
+    allowRemote: getEnvFlag('E2E_CONTROL_ALLOW_REMOTE'),
+  };
+}
+
 function getProxyEnv(): AppEnv['proxy'] {
   const proxyUser = getEnvOpt('HTTP_PROXY_USER');
   const proxyPass = getEnvOpt('HTTP_PROXY_PASSWORD');
@@ -81,8 +100,10 @@ function getOpenAi() {
   return { apiKey, ttsModel, audioModel };
 }
 
+const prod = getEnv('NODE_ENV') === 'production';
+
 export const environment: AppEnv = {
-  prod: getEnv('NODE_ENV') === 'production',
+  prod,
   debug: getEnvFlag('DEBUG_ENABLED'),
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
@@ -131,6 +152,7 @@ export const environment: AppEnv = {
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
+  e2eControl: getE2EControl(prod),
   flags: {
     spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),

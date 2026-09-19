@@ -8,6 +8,10 @@ import { Server } from 'http';
 import { IAuthServiceProvider } from './@types';
 import path from 'path';
 import { GITHUB_PAGE } from '@eolian/common/constants';
+import { E2ETestControl } from './e2e-test-control';
+import { isE2ETestPlayRequest } from './e2e-test-control-options';
+import { environment } from '@eolian/common/env';
+import crypto from 'crypto';
 
 export class WebServer implements Closable {
   private readonly app = express();
@@ -16,10 +20,64 @@ export class WebServer implements Closable {
   constructor(
     private readonly port: number,
     private readonly authProviders: IAuthServiceProvider,
+    e2eControl?: E2ETestControl,
   ) {
     this.app.get('/healthz', (req, res) => {
       res.status(200).send('OK');
     });
+
+    if (environment.e2eControl && e2eControl) {
+      const e2eConfig = environment.e2eControl;
+      const authorize: RequestHandler = (req, res, next) => {
+        if (!e2eConfig.allowRemote && !isLoopback(req.ip)) {
+          res.status(403).json({ error: 'Remote E2E control access is disabled' });
+          return;
+        }
+        const authorization = req.header('authorization');
+        const expected = `Bearer ${e2eConfig.token}`;
+        if (!safeEqual(authorization, expected)) {
+          res.status(401).json({ error: 'Invalid E2E control authorization' });
+          return;
+        }
+        next();
+      };
+      const handle = (operation: (req: express.Request) => Promise<unknown>): RequestHandler => {
+        return async (req, res) => {
+          try {
+            res.status(200).json(await operation(req));
+          } catch (error) {
+            logger.warn('E2E control request failed: %s', error);
+            res.status(409).json({
+              error: error instanceof Error ? error.message : 'E2E control request failed',
+            });
+          }
+        };
+      };
+
+      this.app.use('/test-control', authorize, express.json({ limit: '4kb' }));
+      this.app.post(
+        '/test-control/play',
+        handle(async req => {
+          if (!isE2ETestPlayRequest(req.body)) {
+            throw new Error('Invalid E2E play request');
+          }
+          return await e2eControl.play(req.body);
+        }),
+      );
+      this.app.get(
+        '/test-control/state',
+        handle(async () => await e2eControl.getState()),
+      );
+      this.app.post(
+        '/test-control/cleanup',
+        handle(async req => {
+          if (!req.body || typeof req.body.runId !== 'string') {
+            throw new Error('Cleanup requires a runId');
+          }
+          return await e2eControl.cleanup(req.body.runId);
+        }),
+      );
+    }
 
     if (feature.enabled(FeatureFlag.WEBSITE)) {
       this.app.use(express.static(path.join(__dirname, 'public')));
@@ -31,6 +89,22 @@ export class WebServer implements Closable {
       this.app.get('/', (req, res) => {
         res.redirect(GITHUB_PAGE);
       });
+    }
+
+    function isLoopback(ip: string | undefined): boolean {
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    }
+
+    function safeEqual(actual: string | undefined, expected: string): boolean {
+      if (!actual) {
+        return false;
+      }
+      const actualBuffer = Buffer.from(actual);
+      const expectedBuffer = Buffer.from(expected);
+      return (
+        actualBuffer.length === expectedBuffer.length &&
+        crypto.timingSafeEqual(actualBuffer, expectedBuffer)
+      );
     }
 
     if (feature.enabled(FeatureFlag.SPOTIFY_AUTH)) {
