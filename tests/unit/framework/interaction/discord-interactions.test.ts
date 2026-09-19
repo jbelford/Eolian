@@ -7,6 +7,7 @@ const adapterMocks = vi.hoisted(() => ({
   userDto: { _id: 'user' } as Record<string, unknown>,
   userInstances: [] as unknown[],
   channelInstances: [] as unknown[],
+  messageSenders: [] as { send: (options: unknown) => Promise<unknown> }[],
 }));
 
 vi.mock('@eolian/framework/discord-user', () => ({
@@ -45,6 +46,9 @@ vi.mock('@eolian/framework/discord-channel-sender', () => ({
     send = vi.fn();
     sendEmbed = vi.fn();
     sendSelection = vi.fn();
+    constructor(sender: { send: (options: unknown) => Promise<unknown> }) {
+      adapterMocks.messageSenders.push(sender);
+    }
   },
 }));
 
@@ -90,6 +94,7 @@ describe('DiscordInteraction adapters', () => {
     adapterMocks.userDto = { _id: 'user' };
     adapterMocks.userInstances.length = 0;
     adapterMocks.channelInstances.length = 0;
+    adapterMocks.messageSenders.length = 0;
   });
   it('normalizes absent slash options to undefined', () => {
     const interaction = {
@@ -161,6 +166,9 @@ describe('DiscordInteraction adapters', () => {
 describe('DiscordMessageInteraction', () => {
   beforeEach(() => {
     adapterMocks.userDto = { _id: 'user' };
+    adapterMocks.userInstances.length = 0;
+    adapterMocks.channelInstances.length = 0;
+    adapterMocks.messageSenders.length = 0;
   });
   function createMessage(content = '<@123> play song') {
     return {
@@ -223,5 +231,31 @@ describe('DiscordMessageInteraction', () => {
     await interaction.react('✅');
     expect(raw.react).toHaveBeenCalledWith('✅');
     await expect(interaction.defer()).resolves.toBeUndefined();
+  });
+
+  it('uses undefined syntax without preferences and lazily caches its wrappers', async () => {
+    const parser = { parseCommand: vi.fn().mockResolvedValue({ command: {}, options: {} }) };
+    const raw = createMessage('<@123> <@!321> play');
+    const interaction = new DiscordMessageInteraction(
+      raw as never,
+      parser as never,
+      registry as never,
+      users as never,
+      auth as never,
+    );
+
+    expect(adapterMocks.userInstances).toHaveLength(0);
+    expect(adapterMocks.channelInstances).toHaveLength(0);
+    expect(interaction.user).toBe(interaction.user);
+    expect(interaction.channel).toBe(interaction.channel);
+    expect(interaction.message).toBe(interaction.message);
+    expect(interaction.reactable).toBe(true);
+    expect(adapterMocks.userInstances).toHaveLength(1);
+    expect(adapterMocks.channelInstances).toHaveLength(1);
+    await adapterMocks.messageSenders[0].send({ content: 'reply' });
+    expect(raw.reply).toHaveBeenCalledWith({ content: 'reply' });
+
+    await interaction.getCommand();
+    expect(parser.parseCommand).toHaveBeenCalledWith('play', UserPermission.User, undefined);
   });
 });
