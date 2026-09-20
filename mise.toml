@@ -1,17 +1,15 @@
 [tools]
 node = "20.19.6"
-
-[settings.node]
-corepack = true
+"aqua:yarnpkg/berry" = "4.4.1"
 
 [tasks.setup]
 description = "Install the locked Yarn dependency tree"
-run = "corepack yarn install --immutable"
+run = "yarn install --immutable"
 
 [tasks.lint]
 description = "Check TypeScript formatting"
-run = "corepack yarn lint"
+run = "yarn lint"
 
 [tasks.build]
 description = "Build the production bundle"
-run = "corepack yarn build"
+run = "yarn build"
