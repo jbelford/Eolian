@@ -76,6 +76,9 @@ export class SlashCommandOptionParser {
       if (!groupSet.has(keyword.group)) {
         const value = this.optionProvider.getString(keyword.group) ?? '';
         found = KEYWORDS[value.toUpperCase()];
+        if (value && !found) {
+          throw new EolianUserError(`Unrecognized keyword \`${value.toUpperCase()}\`.`);
+        }
         groupSet.add(keyword.group);
       }
     } else if (this.optionProvider.getBoolean(keyword.name.toLowerCase())) {

@@ -102,3 +102,7 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 ## 🚀 Performance Improvements
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
+
+## Development
+
+See [Testing Eolian](docs/testing.md) for the local test workflow and test-suite design.

@@ -99,7 +99,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
       );
       connection.close();
     }
-    this.audioPlayer?.stop();
+    this._audioPlayer?.stop();
     this.songStream?.close();
     this.audioResource = null;
     this.songStream = null;
@@ -143,6 +143,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async close(): Promise<void> {
     this.stop();
+    this._audioPlayer?.removeAllListeners();
     this._audioPlayer = null;
   }
 
@@ -196,7 +197,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
       if (size > 0) {
         await this.songStream?.close();
         this.songStream = null;
-        await this.startNewStream(progress);
+        try {
+          await this.startNewStream(progress);
+        } catch (e: any) {
+          this.streamErrorHandler(e);
+        }
       } else {
         this.stop();
       }
@@ -238,22 +243,18 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   private async startNewStream(progress?: ProgressUpdater<string>): Promise<void> {
-    try {
-      const input = await this.getStream(progress);
-      if (!input) {
-        throw new Error('Missing stream!');
-      }
-
-      this.audioResource = createAudioResource(input, {
-        inputType: StreamType.Raw,
-        inlineVolume: false,
-        silencePaddingFrames: 30,
-      });
-
-      this.audioPlayer.play(this.audioResource);
-    } catch (e: any) {
-      this.streamErrorHandler(e);
+    const input = await this.getStream(progress);
+    if (!input) {
+      throw new Error('Missing stream!');
     }
+
+    this.audioResource = createAudioResource(input, {
+      inputType: StreamType.Raw,
+      inlineVolume: false,
+      silencePaddingFrames: 30,
+    });
+
+    this.audioPlayer.play(this.audioResource);
   }
 
   private async getStream(progress?: ProgressUpdater<string>): Promise<Readable | null> {
@@ -329,7 +330,9 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   private emitError() {
-    this.emit('error');
+    if (this.listenerCount('error')) {
+      this.emit('error');
+    }
   }
 
   private emitTrackFailure(track: Track) {

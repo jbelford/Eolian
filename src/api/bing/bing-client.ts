@@ -2,8 +2,7 @@ import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
 import { fuzzyMatch } from '@eolian/common/util';
 import { httpRequest } from '@eolian/http';
-import { parse } from 'dotenv';
-import { toSeconds } from 'iso8601-duration';
+import { parse, toSeconds } from 'iso8601-duration';
 import { Track, TrackSource } from '../@types';
 import { IBingApi, BingVideo } from './@types';
 

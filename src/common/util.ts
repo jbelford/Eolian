@@ -21,27 +21,22 @@ export function convertRangeToAbsolute(
   max: number,
   reverse?: boolean,
 ): AbsRangeArgument {
-  let newStart = 0;
-  let newStop = max;
-
-  if (range.stop) {
-    newStart = Math.min(max - 1, Math.max(1, range.start) - 1);
-    newStop =
-      range.stop < 0 ? max + range.stop + 1 : Math.min(max - 1, Math.max(1, range.stop) - 1);
-
-    if (reverse) {
-      newStart = max - newStart;
-      if (range.stop) {
-        newStop = max - newStop;
-      }
-    }
-  } else if (reverse) {
-    newStart = max - Math.min(max, Math.max(1, range.start));
-  } else {
-    newStop = range.start;
+  if (max <= 0) {
+    return { start: 0, stop: 0 };
   }
 
-  return { start: Math.min(newStart, newStop), stop: Math.max(newStart, newStop) };
+  const clampPosition = (value: number) => Math.min(max, Math.max(1, value));
+  if (range.stop === undefined) {
+    const count = clampPosition(range.start);
+    return reverse ? { start: max - count, stop: max } : { start: 0, stop: count };
+  }
+
+  const positionToIndex = (position: number, fromEnd: boolean) =>
+    fromEnd ? max - clampPosition(position) : clampPosition(position) - 1;
+  const start = positionToIndex(range.start, !!reverse);
+  const stop = positionToIndex(Math.abs(range.stop), range.stop < 0 ? !reverse : !!reverse);
+
+  return { start: Math.min(start, stop), stop: Math.max(start, stop) + 1 };
 }
 
 export function sleep(ms: number): Promise<void> {
@@ -49,10 +44,11 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export function promiseTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
   const timeout = new Promise<T>((_resolve, reject) => {
-    setTimeout(() => reject('timeout'), ms);
+    timer = setTimeout(() => reject('timeout'), ms);
   });
-  return Promise.race([promise, timeout]);
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 export function fuzzyMatch(
@@ -139,8 +135,8 @@ export function cleanupOnExit(resources: Closable[]) {
 
 export function clampLength(str: string, length: number) {
   if (str.length > length) {
-    str = str.substring(0, length - 2);
-    str += '..';
+    const safeLength = Math.max(0, length);
+    str = safeLength <= 2 ? '.'.repeat(safeLength) : `${str.substring(0, safeLength - 2)}..`;
   }
   return str;
 }

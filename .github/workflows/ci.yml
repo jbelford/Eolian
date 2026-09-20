@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -28,6 +32,15 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Run unit tests with coverage
+        run: yarn test:coverage
+
+      - name: Run FFmpeg integration tests
+        run: yarn test:integration
 
       - name: Build
         run: yarn build
