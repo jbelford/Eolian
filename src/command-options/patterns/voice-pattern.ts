@@ -29,7 +29,7 @@ export const VOICE_PATTERN: Pattern<'VOICE'> = {
     const reg = getVoicePatternReg(type);
     const match = matchText(text, reg);
     let args: number | undefined;
-    if (match.matches && match.args && match.args.length >= 3) {
+    if (match.matches && match.args && match.args.length >= 2) {
       args = +match.args[1];
     }
     return { matches: match.matches, newText: match.newText, args };

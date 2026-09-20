@@ -18,6 +18,7 @@ export class DiscordQueueDisplay implements QueueDisplay {
   private sendable?: ContextSendable;
   private start = 0;
   private updating = false;
+  private updatePending = false;
 
   constructor(private readonly queue: ContextMusicQueue) {
     this.queue.on('update', this.updateHandler);
@@ -96,9 +97,15 @@ export class DiscordQueueDisplay implements QueueDisplay {
   }
 
   private updateHandler = async () => {
-    if (!this.updating) {
-      this.updating = true;
-      try {
+    if (this.updating) {
+      this.updatePending = true;
+      return;
+    }
+
+    this.updating = true;
+    try {
+      do {
+        this.updatePending = false;
         if (this.message) {
           const size = await this.queue.size();
           if (this.start >= size) {
@@ -111,18 +118,33 @@ export class DiscordQueueDisplay implements QueueDisplay {
             const pagingButtonsDisabled = size <= QUEUE_PAGE_LENGTH;
             const newEmbed = createQueueEmbed(tracks, loop, this.start, size, this.queue.loop);
             newEmbed.buttons = [
-              { emoji: '🔀', onClick: this.shuffleHandler, disabled: size <= 1 },
-              { emoji: '⬅', onClick: this.prevPageHandler, disabled: pagingButtonsDisabled },
-              { emoji: '➡', onClick: this.nextPageHandler, disabled: pagingButtonsDisabled },
+              {
+                emoji: '🔀',
+                onClick: this.shuffleHandler,
+                disabled: size <= 1,
+                permission: UserPermission.DJ,
+              },
+              {
+                emoji: '⬅',
+                onClick: this.prevPageHandler,
+                disabled: pagingButtonsDisabled,
+                permission: UserPermission.DJLimited,
+              },
+              {
+                emoji: '➡',
+                onClick: this.nextPageHandler,
+                disabled: pagingButtonsDisabled,
+                permission: UserPermission.DJLimited,
+              },
             ];
             await this.message.editEmbed(newEmbed);
           } else {
             await this.delete();
           }
         }
-      } finally {
-        this.updating = false;
-      }
+      } while (this.updatePending);
+    } finally {
+      this.updating = false;
     }
   };
 

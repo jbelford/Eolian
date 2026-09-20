@@ -119,8 +119,8 @@ export class InMemoryQueueCache<T> implements QueueCache<T> {
     } else {
       let tracks = await this.cache.get(this.prevKey(key));
       tracks.push(track);
-      if (tracks.length >= MAX_PREV) {
-        tracks = tracks.slice(tracks.length - MAX_PREV + 1);
+      if (tracks.length > MAX_PREV) {
+        tracks = tracks.slice(tracks.length - MAX_PREV);
       }
       await this.cache.set(this.prevKey(key), tracks);
     }

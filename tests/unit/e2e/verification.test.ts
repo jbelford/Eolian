@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-import { evaluatePlayback } from './verification';
+import { expect, it } from 'vitest';
+import { evaluatePlayback } from '../../../test/e2e/verification';
 
 const thresholds = {
   minPackets: 5,
@@ -8,7 +7,7 @@ const thresholds = {
   minRms: 50,
 };
 
-test('requires Discord response, voice state, and audio signals', () => {
+it('requires Discord response, voice state, and audio signals', () => {
   const result = evaluatePlayback(
     {
       discordResponseObserved: true,
@@ -19,10 +18,10 @@ test('requires Discord response, voice state, and audio signals', () => {
     },
     thresholds,
   );
-  assert.equal(result.passed, true);
+  expect(result.passed).toBe(true);
 });
 
-test('accepts decoded audio energy when packet threshold is not reached', () => {
+it('accepts decoded audio energy when packet threshold is not reached', () => {
   const result = evaluatePlayback(
     {
       discordResponseObserved: true,
@@ -33,10 +32,10 @@ test('accepts decoded audio energy when packet threshold is not reached', () => 
     },
     thresholds,
   );
-  assert.equal(result.passed, true);
+  expect(result.passed).toBe(true);
 });
 
-test('fails without a Discord response', () => {
+it('fails without a Discord response', () => {
   const result = evaluatePlayback(
     {
       discordResponseObserved: false,
@@ -47,6 +46,6 @@ test('fails without a Discord response', () => {
     },
     thresholds,
   );
-  assert.equal(result.passed, false);
-  assert.equal(result.checks.discordResponse, false);
+  expect(result.passed).toBe(false);
+  expect(result.checks.discordResponse).toBe(false);
 });

@@ -125,7 +125,7 @@ class YouTubeApi implements IYouTubeApi {
         logger.info(`YouTube HTTP: playlistItems.list %s`, id);
         response = await this.youtube.playlistItems.list({
           playlistId: id,
-          part: ['id', 'snippet', 'contentDetails'],
+          part: ['id', 'snippet', 'contentDetails', 'status'],
           pageToken: response.data.nextPageToken,
           maxResults: 50,
         });

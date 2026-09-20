@@ -9,6 +9,9 @@ multi-signal playback verification with a separate compliant test bot.
 
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
+See [Development setup](docs/development.md) to configure the repository toolchain and
+run local validation.
+
 # [📩 Invite Link](https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216)
 
 > Click the link to invite the bot directly
@@ -105,3 +108,7 @@ I also include the `shuffle` keyword which will shuffle these songs before addin
 ## 🚀 Performance Improvements
 
 Music playback has been greatly optimized over ShuffleBot and songs will transition with less delay.
+
+## Development
+
+See [Testing Eolian](docs/testing.md) for the local test workflow and test-suite design.

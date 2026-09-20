@@ -25,10 +25,34 @@ const FFMPEG_ARGUMENTS = [
 const FFMPEG_NIGHTCORE_FILTERS = 'asetrate=48000*1.25,atempo=1.06';
 const FFMPEG_BASS_BOOSTED_FILTERS = 'equalizer=f=150:width_type=h:width=100:g=15';
 
-type StreamOptions = {
+export type StreamOptions = {
   nightcore?: boolean;
   bass?: boolean;
 };
+
+export type SongStreamDependencies = {
+  getTrackStream: typeof getTrackStream;
+  createFfmpeg: (args: string[]) => prism.FFmpeg;
+  createVolumeTransformer: (volume: number) => prism.VolumeTransformer;
+  sleepAlgorithm: RetrySleepAlgorithm;
+  now: () => number;
+};
+
+export function buildFfmpegArguments(isLive?: boolean, options?: StreamOptions): string[] {
+  const filters: string[] = [];
+  if (!isLive && options) {
+    if (options.nightcore) {
+      filters.push(FFMPEG_NIGHTCORE_FILTERS);
+    }
+    if (options.bass) {
+      filters.push(FFMPEG_BASS_BOOSTED_FILTERS);
+    }
+  }
+
+  return filters.length
+    ? FFMPEG_ARGUMENTS.concat(['-af', filters.join(', ')])
+    : [...FFMPEG_ARGUMENTS];
+}
 
 export class SongStream extends EventEmitter implements Closable {
   private output: prism.VolumeTransformer;
@@ -37,15 +61,26 @@ export class SongStream extends EventEmitter implements Closable {
   private track?: Track;
   private options?: StreamOptions;
   private source?: StreamSource;
-  private sleepAlg: RetrySleepAlgorithm = new ExponentialSleep();
   private start?: number;
+  private generation = 0;
+  private readonly dependencies: SongStreamDependencies;
 
   constructor(
     volume: number,
     private readonly retries = 1,
+    dependencies: Partial<SongStreamDependencies> = {},
   ) {
     super();
-    this.output = new prism.VolumeTransformer({ type: 's16le', volume: volume });
+    this.dependencies = {
+      getTrackStream,
+      createFfmpeg: args => new prism.FFmpeg({ args }),
+      createVolumeTransformer: initialVolume =>
+        new prism.VolumeTransformer({ type: 's16le', volume: initialVolume }),
+      sleepAlgorithm: new ExponentialSleep(),
+      now: Date.now,
+      ...dependencies,
+    };
+    this.output = this.dependencies.createVolumeTransformer(volume);
     this.output.on('close', () => logger.debug(`Song output closed`));
   }
 
@@ -68,13 +103,26 @@ export class SongStream extends EventEmitter implements Closable {
     seek?: number,
     progress?: ProgressUpdater<string>,
   ): Promise<boolean> {
-    let source: StreamSource | undefined;
-    if (!this.source) {
-      source = await getTrackStream(track, progress);
-      this.source = source;
-    } else {
-      source = retry ? this.source : await getTrackStream(track, progress);
-    }
+    return this.setStreamTrackInternal(
+      track,
+      options,
+      retry,
+      seek,
+      progress,
+      retry ? this.generation : undefined,
+    );
+  }
+
+  private async setStreamTrackInternal(
+    track: Track,
+    options: StreamOptions | undefined,
+    retry: boolean,
+    seek: number | undefined,
+    progress: ProgressUpdater<string> | undefined,
+    expectedGeneration: number | undefined,
+  ): Promise<boolean> {
+    const source =
+      retry && this.source ? this.source : await this.dependencies.getTrackStream(track, progress);
     if (!source) {
       logger.warn('Failed to get stream source!');
       return false;
@@ -84,58 +132,51 @@ export class SongStream extends EventEmitter implements Closable {
     try {
       stream = await source.get(seek);
     } catch (e) {
-      logger.warn('Failed to get create stream!\n%s', e);
+      logger.warn('Failed to create stream!\n%s', e);
       return false;
     }
 
-    stream = stream
-      .once('error', this.onSongErrorHandler)
-      .once('close', () => logger.debug(`Song stream closed`));
-
-    const ffmpeg = this.createFfmpeg(track.live, options);
-    stream
-      .pipe(ffmpeg)
-      .once('error', (err: Error) => this.cleanup(err))
-      .once('end', () => this.emit('end'));
-
-    if (this.pcmTransform) {
-      this.pcmTransform.unpipe(this.output);
-      ffmpeg.pipe(this.output, { end: false });
-      this.songStream?.destroy();
-      this.pcmTransform.destroy();
-    } else {
-      ffmpeg.pipe(this.output, { end: false });
+    if (expectedGeneration !== undefined && this.generation !== expectedGeneration) {
+      stream.destroy();
+      return false;
     }
+
+    const ffmpeg = this.dependencies.createFfmpeg(buildFfmpegArguments(track.live, options));
+    const previousSongStream = this.songStream;
+    const previousPcmTransform = this.pcmTransform;
+
+    stream.once('error', (err: HttpRequestStreamError) => this.onSongError(stream, err));
+    stream.once('close', () => logger.debug(`Song stream closed`));
+    ffmpeg.once('error', (err: Error) => {
+      if (this.pcmTransform === ffmpeg) {
+        this.cleanup(err);
+      }
+    });
+    ffmpeg.once('end', () => {
+      if (this.pcmTransform === ffmpeg) {
+        this.emit('end');
+      }
+    });
 
     if (!retry) {
-      this.sleepAlg.reset();
+      this.dependencies.sleepAlgorithm.reset();
     }
 
-    this.start = Date.now();
+    previousPcmTransform?.unpipe(this.output);
+    this.start = this.dependencies.now();
     this.source = source;
     this.track = track;
     this.options = options;
     this.songStream = stream;
     this.pcmTransform = ffmpeg;
+    this.generation++;
+
+    stream.pipe(ffmpeg);
+    ffmpeg.pipe(this.output, { end: false });
+    previousSongStream?.destroy();
+    previousPcmTransform?.destroy();
 
     return true;
-  }
-
-  private createFfmpeg(isLive?: boolean, options?: StreamOptions) {
-    const filters: string[] = [];
-    if (!isLive && options) {
-      if (options.nightcore) {
-        filters.push(FFMPEG_NIGHTCORE_FILTERS);
-      }
-      if (options.bass) {
-        filters.push(FFMPEG_BASS_BOOSTED_FILTERS);
-      }
-    }
-
-    const args = filters.length
-      ? FFMPEG_ARGUMENTS.concat(['-af', filters.join(', ')])
-      : FFMPEG_ARGUMENTS;
-    return new prism.FFmpeg({ args });
   }
 
   end() {
@@ -143,42 +184,70 @@ export class SongStream extends EventEmitter implements Closable {
   }
 
   async close(): Promise<void> {
+    this.generation++;
     this.cleanup();
   }
 
   private cleanup(err?: Error): void {
-    if (err) {
-      this.emit('error', err);
-    }
-    this.songStream?.destroy();
-    this.pcmTransform?.destroy();
+    const songStream = this.songStream;
+    const pcmTransform = this.pcmTransform;
     this.songStream = undefined;
     this.pcmTransform = undefined;
+    songStream?.destroy();
+    pcmTransform?.destroy();
+
+    if (err) {
+      if (this.listenerCount('error')) {
+        this.emit('error', err);
+      } else {
+        logger.warn('Unhandled song stream error: %s', err);
+      }
+    }
   }
 
-  private onSongErrorHandler = (err: HttpRequestStreamError) => {
+  private onSongError(stream: Readable, err: HttpRequestStreamError): void {
+    if (this.songStream !== stream) {
+      return;
+    }
     if (err.code === RequestErrorCodes.ABORTED) {
       return;
     }
-    if (this.sleepAlg.count < this.retries) {
+    if (this.dependencies.sleepAlgorithm.count < this.retries) {
       logger.warn('Retry after song stream error: %s', err.message);
-      this.retryStream();
+      const generation = this.generation;
+      this.cleanup();
+      void this.retryStream(generation);
       this.emit('retry');
     } else {
       this.cleanup(err);
     }
-  };
+  }
 
-  private async retryStream(): Promise<void> {
+  private async retryStream(generation: number): Promise<void> {
     try {
-      await this.sleepAlg.sleep();
-      const seek = this.start && Math.max(0, Date.now() - this.start - 5000);
-      const success = await this.setStreamTrack(this.track!, this.options, true, seek);
+      await this.dependencies.sleepAlgorithm.sleep();
+      if (this.generation !== generation) {
+        return;
+      }
+      const seek = this.start && Math.max(0, this.dependencies.now() - this.start - 5000);
+      const success = await this.setStreamTrackInternal(
+        this.track!,
+        this.options,
+        true,
+        seek,
+        undefined,
+        generation,
+      );
       if (!success) {
+        if (this.generation !== generation) {
+          return;
+        }
         throw new Error('Failed to retry stream');
       }
     } catch (e: any) {
-      this.cleanup(e);
+      if (this.generation === generation) {
+        this.cleanup(e);
+      }
     }
   }
 }

@@ -1,17 +1,18 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "allowJs": false,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "checkJs": false,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "baseUrl": ".",
+    "noEmit": true,
     "paths": {
       "@eolian/*": ["src/*"]
     },
-    "skipLibCheck": true,
-    "noEmit": true
+    "target": "ES2021",
+    "types": ["node"]
   },
-  "include": ["test/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "test/e2e/**/*.ts", "tests/**/*.ts", "vitest*.ts", "vitest*.mts"]
 }
