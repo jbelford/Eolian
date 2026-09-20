@@ -7,8 +7,8 @@ description = "Install the locked Yarn dependency tree"
 run = "yarn install --immutable"
 
 [tasks.lint]
-description = "Check TypeScript formatting"
-run = "yarn lint"
+description = "Check repository formatting"
+run = "yarn format:check"
 
 [tasks.build]
 description = "Build the production bundle"

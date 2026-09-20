@@ -29,7 +29,7 @@ export class DiscordVoiceConnection implements ContextVoiceConnection {
   async awaitReconnect(): Promise<boolean> {
     try {
       // Seems to be reconnecting to a new channel - ignore disconnect if no error thrown
-      await Promise.race([
+      await Promise.any([
         entersState(this.discordConnection, VoiceConnectionStatus.Signalling, 5000),
         entersState(this.discordConnection, VoiceConnectionStatus.Connecting, 5000),
       ]);
