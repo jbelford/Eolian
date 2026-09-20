@@ -5,11 +5,11 @@ only through the Vitest test runner.
 
 ## Setup
 
-Use Node.js 20.19.6 and the repository's Yarn 4 release through Corepack:
+Complete the repository's [development setup](development.md), then install the locked
+dependency tree:
 
 ```bash
-corepack enable
-yarn install --immutable
+mise run setup
 ```
 
 ## Commands
