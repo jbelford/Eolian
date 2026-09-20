@@ -20,15 +20,15 @@ FROM dependencies AS build
 
 ARG COMMIT_DATE
 
-COPY public/ public/
+COPY index.html ./
 COPY src/ src/
+COPY tests/ tests/
 COPY web/ web/
-COPY tsconfig.json ./
-COPY webpack.prod.js webpack.web.js ./
+COPY tsconfig.json tsconfig.test.json ./
+COPY vite.node.config.mts vite.web.config.mts vitest.config.mts vitest.integration.config.mts vitest.shared.mts ./
 
 RUN test -n "$COMMIT_DATE" \
-    && COMMIT_DATE="$COMMIT_DATE" yarn build \
-    && yarn build-web --env production
+    && COMMIT_DATE="$COMMIT_DATE" yarn build
 
 FROM dependencies AS production-dependencies
 
