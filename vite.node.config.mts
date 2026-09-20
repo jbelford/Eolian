@@ -25,6 +25,9 @@ function isRuntimeDependency(id: string): boolean {
 }
 
 function getCommitDate(): string {
+  if (process.env.COMMIT_DATE) {
+    return process.env.COMMIT_DATE;
+  }
   return execFileSync('git', ['log', '-1', '--date=format:%d.%m.%y', '--format=%ad'], {
     encoding: 'utf8',
   }).trim();

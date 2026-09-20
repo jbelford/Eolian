@@ -1,8 +1,14 @@
+.env
+.env.*
+.git
 .github/
 .vscode
+Dockerfile*
+README.md
 dist
 node_modules
 pics
+*.log
 
 .yarn/*
 !.yarn/patches
