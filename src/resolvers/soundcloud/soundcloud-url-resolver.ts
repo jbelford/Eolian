@@ -19,6 +19,9 @@ export class SoundCloudUrlResolver implements SourceResolver {
 
   async resolve(): Promise<ResolvedResource> {
     const resource = await soundcloud.resolve(this.url);
+    if (!resource) {
+      throw new EolianUserError('The SoundCloud URL is not valid!');
+    }
     switch (resource.kind) {
       case SoundCloudResourceType.PLAYLIST:
         return createSoundCloudPlaylist(resource as SoundCloudPlaylist, soundcloud);

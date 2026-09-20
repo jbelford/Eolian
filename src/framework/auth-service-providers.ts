@@ -48,7 +48,10 @@ class AuthServiceProvider implements IAuthServiceProvider {
       const key = `${api}_${userId}`;
       await this.requestCache.del(key);
     } else {
-      await this.removeUserRequest(userId, TrackSource.Spotify);
+      await Promise.all([
+        this.removeUserRequest(userId, TrackSource.Spotify),
+        this.removeUserRequest(userId, TrackSource.SoundCloud),
+      ]);
     }
   }
 

@@ -49,7 +49,7 @@ export function createCommandListEmbed(
   embed.description += `\`\`\`
 ${commands.join('\n')}
 \`\`\`
-Use \`help <command\` to see more information for that command.
+Use \`help <command>\` to see more information for that command.
 
 ${helpFooter}
 `;

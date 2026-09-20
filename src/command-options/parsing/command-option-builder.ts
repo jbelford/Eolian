@@ -60,7 +60,7 @@ export class CommandOptionBuilder implements ICommandOptionBuilder {
 
   withTextArgs(text: string) {
     if (text.trim().length > 0) {
-      this.options.ARG = text.trim().split(' ');
+      this.options.ARG = text.trim().split(/\s+/);
     }
   }
 

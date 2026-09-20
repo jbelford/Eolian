@@ -62,7 +62,7 @@ export class SpotifyUrlResolver implements SourceResolver {
       }
     }
     const playlist = await client.getPlaylist(id);
-    return createSpotifyPlaylist(spotify, playlist, this.params, channel);
+    return createSpotifyPlaylist(client, playlist, this.params, channel);
   }
 }
 
