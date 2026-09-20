@@ -7,7 +7,7 @@
       "group": "build",
       "problemMatcher": [],
       "label": "npm: build-dev",
-      "detail": "webpack --config webpack.dev.config.js"
+      "detail": "Build the Node and browser applications with Vite"
     }
   ]
 }

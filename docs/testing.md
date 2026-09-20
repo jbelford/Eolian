@@ -1,7 +1,6 @@
 # Testing Eolian
 
-Eolian uses Vitest for automated tests. Production bundles continue to use Webpack; Vite is used
-only through the Vitest test runner.
+Eolian uses Vitest for automated tests and Vite for the production Node and browser builds.
 
 ## Setup
 
@@ -20,7 +19,7 @@ yarn test:watch        # Rerun affected unit tests while developing
 yarn test:coverage     # Run unit tests and enforce coverage thresholds
 yarn test:integration  # Run real integration tests, including FFmpeg
 yarn typecheck         # Typecheck production and test TypeScript
-yarn build             # Build the production Webpack bundle
+yarn build             # Build the production Node and browser applications
 ```
 
 ## Suite organization
