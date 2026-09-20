@@ -81,8 +81,10 @@ function getOpenAi() {
   return { apiKey, ttsModel, audioModel };
 }
 
+const prod = getEnv('NODE_ENV') === 'production';
+
 export const environment: AppEnv = {
-  prod: getEnv('NODE_ENV') === 'production',
+  prod,
   debug: getEnvFlag('DEBUG_ENABLED'),
   cmdToken: getEnv('COMMAND_TOKEN', '!'),
   owners: getArrayEnv('OWNERS'),
@@ -130,6 +132,7 @@ export const environment: AppEnv = {
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
+  e2eBotId: getEnvOpt('E2E_BOT_ID'),
   flags: {
     spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),

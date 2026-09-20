@@ -72,6 +72,7 @@ export interface AppEnv {
     youtubeCacheLimit: number;
     guildCacheTTL: number;
   };
+  e2eBotId?: string;
   flags: {
     spotifyUserAuth: boolean;
     soundcloudUserAuth: boolean;

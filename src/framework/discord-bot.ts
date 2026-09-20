@@ -281,7 +281,8 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onMessageHandler = async (message: Message): Promise<void> => {
-    if (message.author.bot || !this.isTextOrDm(message)) {
+    const allowedBot = message.author.bot && message.author.id === environment.e2eBotId;
+    if ((message.author.bot && !allowedBot) || !this.isTextOrDm(message)) {
       return;
     }
 

@@ -4,6 +4,9 @@
 
 Eolian is a Discord music bot that aims to be easy to use and provide a very powerful API for queuing songs from a variety of sources such as entire albums, playlists, artist discography, and more.
 
+See [Discord end-to-end playback harness](docs/e2e-discord-harness.md) for local-first,
+multi-signal playback verification with a separate compliant test bot.
+
 This is successor for my older project [ShuffleBot](https://github.com/jbelford/ShuffleBot) which was most known for it's emoji button interactable player and support for Spotify playlists.
 
 See [Development setup](docs/development.md) to configure the repository toolchain and

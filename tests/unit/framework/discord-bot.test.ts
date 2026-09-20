@@ -114,9 +114,9 @@ vi.mock('@eolian/framework/discord-slash-commands', () => ({
 
 import { DiscordEolianBot } from '@eolian/framework/discord-bot';
 
-function createBot() {
+function createBot(parser: Record<string, unknown> = {}) {
   return new DiscordEolianBot({
-    parser: {} as never,
+    parser: parser as never,
     db: { users: {}, servers: {} } as never,
     auth: {} as never,
   });
@@ -156,6 +156,7 @@ describe('DiscordEolianBot', () => {
     mocks.buttonInteractions.length = 0;
     mocks.buttonUserPermission = UserPermission.User;
     mocks.registerGuild.mockResolvedValue(true);
+    (environment as { e2eBotId?: string }).e2eBotId = undefined;
   });
 
   it('registers handlers without connecting and supports start/close lifecycle', async () => {
@@ -170,6 +171,26 @@ describe('DiscordEolianBot', () => {
     await bot.close();
     expect(mocks.guildStores[0].close).toHaveBeenCalledOnce();
     expect(client.destroy).toHaveBeenCalledOnce();
+  });
+
+  it('ignores ordinary bots but allows the configured E2E bot through invocation detection', async () => {
+    const messageInvokesBot = vi.fn().mockReturnValue(false);
+    createBot({ messageInvokesBot });
+    const handler = mocks.clients[0].handlers.get('messageCreate')!;
+    const message = {
+      author: { bot: true, id: 'test-bot' },
+      channel: { type: 0 },
+      content: '!play',
+      guild: undefined,
+      mentions: { has: vi.fn().mockReturnValue(false) },
+    };
+
+    await handler(message as never);
+    expect(messageInvokesBot).not.toHaveBeenCalled();
+
+    (environment as { e2eBotId?: string }).e2eBotId = 'test-bot';
+    await handler(message as never);
+    expect(messageInvokesBot).toHaveBeenCalledWith('!play', undefined);
   });
 
   it('executes a DM-capable command and returns its default-reply contract', async () => {
