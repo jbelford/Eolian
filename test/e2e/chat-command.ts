@@ -16,6 +16,7 @@ export function createPlayCommand(request: E2EChatRequest): string {
   return `${mention} play (${value}) ${request.source} fast`;
 }
 
-export function createCleanupCommand(eolianBotId: string, runId: string): string {
-  return `<@${eolianBotId}> e2e-cleanup ${runId}`;
+export function createCleanupCommands(eolianBotId: string): string[] {
+  const mention = `<@${eolianBotId}>`;
+  return [`${mention} stop`, `${mention} list clear`];
 }

@@ -8,8 +8,6 @@ const base = {
   E2E_TEXT_CHANNEL_ID: 'text',
   E2E_VOICE_CHANNEL_ID: 'voice',
   E2E_EOLIAN_BOT_ID: 'eolian',
-  E2E_STATE_URL: 'http://127.0.0.1:8080',
-  E2E_STATE_TOKEN: 'state',
   E2E_REQUEST: 'https://www.youtube.com/watch?v=test',
 };
 
@@ -36,7 +34,6 @@ test('requires two explicit production confirmations', () => {
   );
 });
 
-test('human mode does not require a state endpoint', () => {
-  const { E2E_STATE_URL, E2E_STATE_TOKEN, ...human } = base;
-  assert.equal(loadHarnessConfig({ ...human, E2E_TRIGGER_MODE: 'human' }).triggerMode, 'human');
+test('supports human-triggered mode without extra configuration', () => {
+  assert.equal(loadHarnessConfig({ ...base, E2E_TRIGGER_MODE: 'human' }).triggerMode, 'human');
 });

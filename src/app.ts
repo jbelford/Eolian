@@ -16,7 +16,7 @@ process.stdout.write(LOGGER_HEADER);
     const db: AppDatabase = await createDatabase();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
     const bot = new DiscordEolianBot({ db, parser, auth });
-    const server = new WebServer(environment.port, auth, bot.e2eTest);
+    const server = new WebServer(environment.port, auth);
 
     cleanupOnExit([auth, db, bot, server]);
 

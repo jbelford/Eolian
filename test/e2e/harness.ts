@@ -15,22 +15,9 @@ import {
 } from 'discord.js';
 import prism from 'prism-media';
 import { once } from 'node:events';
-import { createCleanupCommand, createPlayCommand } from './chat-command';
+import { createCleanupCommands, createPlayCommand } from './chat-command';
 import { loadHarnessConfig } from './harness-config';
 import { evaluatePlayback, VerificationSignals } from './verification';
-
-interface TestState {
-  runId?: string;
-  streaming: boolean;
-  queueSize: number;
-  voiceChannelId?: string;
-  eolianVoiceChannelId?: string;
-  currentTrack?: {
-    title: string;
-    url: string;
-    source: number;
-  };
-}
 
 const config = loadHarnessConfig(process.env);
 const client = new Client({
@@ -47,7 +34,6 @@ const signals: VerificationSignals = {
   pcmBytes: 0,
   rms: 0,
 };
-let runId: string | undefined;
 let commandChannel: TextChannel | VoiceChannel | undefined;
 let commandSent = false;
 
@@ -85,6 +71,11 @@ try {
   const eolian = await guild.members.fetch(config.eolianBotId);
   if (!eolian.user.bot || eolian.id === me.id) {
     throw new Error('E2E_EOLIAN_BOT_ID must identify the separate Eolian bot application');
+  }
+  if (config.triggerMode === 'chat' && eolian.voice.channelId) {
+    throw new Error(
+      `Eolian is already connected to voice channel ${eolian.voice.channelId}; refusing to disrupt it`,
+    );
   }
   const voicePermissions = voiceChannel.permissionsFor(me);
   if (
@@ -149,35 +140,20 @@ try {
     );
   }
 
-  if (config.triggerMode === 'chat') {
-    const state = await getTestState();
-    signals.localState = state;
-    runId = state.runId;
-  }
-
   const deadline = Date.now() + config.timeoutMs;
   let result = evaluatePlayback(signals, {
     minPackets: config.minPackets,
     minPcmBytes: config.minPcmBytes,
     minRms: config.minRms,
-    voiceChannelId: config.voiceChannelId,
-    requireLocalState: config.triggerMode === 'chat',
   });
   while (!result.passed && Date.now() < deadline) {
     await sleep(500);
-    if (config.triggerMode === 'chat') {
-      const state = await getTestState();
-      signals.localState = state;
-      runId ??= state.runId;
-    }
     signals.voiceStateObserved ||=
       guild.members.cache.get(config.eolianBotId)?.voice.channelId === config.voiceChannelId;
     result = evaluatePlayback(signals, {
       minPackets: config.minPackets,
       minPcmBytes: config.minPcmBytes,
       minRms: config.minRms,
-      voiceChannelId: config.voiceChannelId,
-      requireLocalState: config.triggerMode === 'chat',
     });
   }
 
@@ -192,12 +168,14 @@ try {
 } finally {
   if (commandSent && config.triggerMode === 'chat') {
     try {
-      runId ??= (await getTestState()).runId;
-      if (!runId || !commandChannel) {
-        throw new Error('The Eolian state endpoint did not return an active run ID');
+      if (!commandChannel) {
+        throw new Error('Missing the configured command channel');
       }
-      await commandChannel.send(createCleanupCommand(config.eolianBotId, runId));
-      await waitForCleanup(runId);
+      for (const command of createCleanupCommands(config.eolianBotId)) {
+        await commandChannel.send(command);
+        await sleep(500);
+      }
+      await waitForVoiceDisconnect();
     } catch (error) {
       process.stderr.write(`Cleanup failed: ${error instanceof Error ? error.message : error}\n`);
       process.exitCode = 1;
@@ -208,31 +186,16 @@ try {
   client.destroy();
 }
 
-async function getTestState(): Promise<TestState> {
-  const response = await fetch(`${config.stateUrl!.replace(/\/$/, '')}/test-state`, {
-    method: 'GET',
-    headers: {
-      authorization: `Bearer ${config.stateToken}`,
-    },
-    signal: AbortSignal.timeout(Math.min(config.timeoutMs, 30000)),
-  });
-  const result = (await response.json()) as TestState & { error?: string };
-  if (!response.ok) {
-    throw new Error(result.error ?? `State request failed with ${response.status}`);
-  }
-  return result;
-}
-
-async function waitForCleanup(cleanedRunId: string): Promise<void> {
+async function waitForVoiceDisconnect(): Promise<void> {
   const deadline = Date.now() + Math.min(config.timeoutMs, 10000);
   while (Date.now() < deadline) {
-    const state = await getTestState();
-    if (state.runId !== cleanedRunId && !state.streaming && state.queueSize === 0) {
+    const guild = client.guilds.cache.get(config.guildId);
+    if (guild?.members.cache.get(config.eolianBotId)?.voice.channelId === null) {
       return;
     }
     await sleep(250);
   }
-  throw new Error(`Timed out waiting for cleanup of run ${cleanedRunId}`);
+  throw new Error('Timed out waiting for Eolian to leave the voice channel');
 }
 
 function calculateRms(pcm: Buffer): number {

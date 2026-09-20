@@ -11,8 +11,6 @@ export interface HarnessConfig {
   textChannelId: string;
   voiceChannelId: string;
   eolianBotId: string;
-  stateUrl?: string;
-  stateToken?: string;
   source: E2ESource;
   requestType: E2ERequestType;
   request: string;
@@ -34,12 +32,6 @@ export function loadHarnessConfig(env: NodeJS.ProcessEnv): HarnessConfig {
     );
   }
 
-  const stateUrl = optional(env.E2E_STATE_URL);
-  const stateToken = optional(env.E2E_STATE_TOKEN);
-  if (triggerMode === 'chat' && (!stateUrl || !stateToken)) {
-    throw new Error('Chat mode requires E2E_STATE_URL and E2E_STATE_TOKEN');
-  }
-
   return {
     target,
     triggerMode,
@@ -48,8 +40,6 @@ export function loadHarnessConfig(env: NodeJS.ProcessEnv): HarnessConfig {
     textChannelId: required(env, 'E2E_TEXT_CHANNEL_ID'),
     voiceChannelId: required(env, 'E2E_VOICE_CHANNEL_ID'),
     eolianBotId: required(env, 'E2E_EOLIAN_BOT_ID'),
-    stateUrl,
-    stateToken,
     source: enumValue(env.E2E_SOURCE ?? 'youtube', ['youtube', 'spotify', 'soundcloud'] as const),
     requestType: enumValue(env.E2E_REQUEST_TYPE ?? 'url', ['url', 'search'] as const),
     request: required(env, 'E2E_REQUEST'),

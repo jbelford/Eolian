@@ -46,23 +46,6 @@ function getEnvFlag(name: string): boolean {
   return getEnvOpt(name) === 'true';
 }
 
-function getE2ETest(prod: boolean): AppEnv['e2eTest'] {
-  if (!getEnvFlag('E2E_TEST_ENABLED')) {
-    return undefined;
-  }
-  if (prod && !getEnvFlag('E2E_TEST_ALLOW_PRODUCTION')) {
-    throw new Error('E2E testing is disabled in production unless E2E_TEST_ALLOW_PRODUCTION=true');
-  }
-  return {
-    stateToken: getEnv('E2E_TEST_STATE_TOKEN'),
-    guildId: getEnv('E2E_TEST_GUILD_ID'),
-    textChannelId: getEnv('E2E_TEST_TEXT_CHANNEL_ID'),
-    voiceChannelId: getEnv('E2E_TEST_VOICE_CHANNEL_ID'),
-    actorId: getEnv('E2E_TEST_ACTOR_ID'),
-    allowRemote: getEnvFlag('E2E_TEST_ALLOW_REMOTE_STATE'),
-  };
-}
-
 function getProxyEnv(): AppEnv['proxy'] {
   const proxyUser = getEnvOpt('HTTP_PROXY_USER');
   const proxyPass = getEnvOpt('HTTP_PROXY_PASSWORD');
@@ -150,7 +133,7 @@ export const environment: AppEnv = {
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
-  e2eTest: getE2ETest(prod),
+  e2eBotId: getEnvOpt('E2E_BOT_ID'),
   flags: {
     spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),
