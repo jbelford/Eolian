@@ -2,32 +2,6 @@
 
 lockfile_version = 2
 
-[[tools."aqua:yarnpkg/berry"]]
-version = "4.4.1"
-backend = "aqua:yarnpkg/berry"
-specifiers = ["4.4.1"]
-
-[tools."aqua:yarnpkg/berry"."platforms.linux-arm64"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.linux-arm64-musl"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.linux-x64"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.linux-x64-musl"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.macos-arm64"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.macos-x64"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
-[tools."aqua:yarnpkg/berry"."platforms.windows-x64"]
-url = "https://repo.yarnpkg.com/4.4.1/packages/yarnpkg-cli/bin/yarn.js"
-
 [[tools.node]]
 version = "20.19.6"
 backend = "core:node"

@@ -1,6 +1,8 @@
 [tools]
 node = "20.19.6"
-"aqua:yarnpkg/berry" = "4.4.1"
+
+[settings.node]
+corepack = true
 
 [tasks.setup]
 description = "Install the locked Yarn dependency tree"

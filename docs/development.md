@@ -13,7 +13,8 @@ Install these non-secret prerequisites before onboarding:
   from source
 - Docker only when building the container image
 
-mise manages Node.js 20.19.6 and Yarn 4.4.1 for this repository. It does not install
+mise manages Node.js 20.19.6 and enables Corepack for this repository. Corepack selects
+the checksum-pinned Yarn 4.4.1 release declared in `package.json`. mise does not install
 Docker or operating-system build dependencies.
 
 ## Onboarding
@@ -22,7 +23,7 @@ Docker or operating-system build dependencies.
 git clone https://github.com/jbelford/Eolian.git
 cd Eolian
 mise trust
-mise install --locked node aqua:yarnpkg/berry
+mise install --locked node
 mise run setup
 ```
 
