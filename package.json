@@ -4,9 +4,9 @@
   "description": "A bot for music enthusiasts",
   "private": true,
   "scripts": {
-    "build-web": "webpack --config webpack.web.js",
-    "build": "webpack --config webpack.prod.js",
-    "build-dev": "webpack --config webpack.dev.js",
+    "build-web": "tsc --noEmit -p web/tsconfig.json && vite build --config vite.web.config.mts",
+    "build": "yarn typecheck && vite build --config vite.node.config.mts && vite build --config vite.web.config.mts",
+    "build-dev": "yarn typecheck && vite build --mode development --config vite.node.config.mts && vite build --mode development --config vite.web.config.mts",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
     "e2e": "tsx test/e2e/harness.ts",
@@ -15,9 +15,9 @@
     "test:watch": "vitest --config vitest.config.mts",
     "test:integration": "vitest run --config vitest.integration.config.mts --passWithNoTests",
     "test:coverage": "vitest run --config vitest.config.mts --coverage",
-    "typecheck": "tsc -p src/tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "format": "prettier --write README.md package.json \"docs/**/*.md\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\"",
-    "format:check": "prettier --check README.md package.json \"docs/**/*.md\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\""
+    "typecheck": "tsc -p src/tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "format": "prettier --write README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\""
   },
   "keywords": [
     "music",
@@ -78,19 +78,13 @@
     "@types/node-fetch": "^2.6.12",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
-    "@types/webpack-node-externals": "^2.5.3",
     "@types/winston": "^2.4.4",
     "@vitest/coverage-v8": "^4.1.11",
-    "copy-webpack-plugin": "^11.0.0",
     "prettier": "^3.4.2",
-    "ts-loader": "^9.5.4",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vite": "^8.0.0",
-    "vitest": "^4.1.11",
-    "webpack": "^5.104.1",
-    "webpack-cli": "^6.0.1",
-    "webpack-node-externals": "^3.0.0"
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11"
   },
   "packageManager": "yarn@4.4.1+sha224.fd21d9eb5fba020083811af1d4953acc21eeb9f6ff97efd1b3f9d4de"
 }

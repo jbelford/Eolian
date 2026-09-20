@@ -13,5 +13,5 @@ description = "Check repository formatting"
 run = "yarn format:check"
 
 [tasks.build]
-description = "Build the production bundle"
+description = "Build the production Node and browser applications"
 run = "yarn build"

@@ -7,8 +7,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "(Webpack) Launch Program",
-      "program": "${workspaceFolder}/src/app.ts",
+      "name": "Launch Eolian",
+      "program": "${workspaceFolder}/dist/bundle.js",
       "outFiles": ["${workspaceFolder}/dist/bundle.js"],
       "preLaunchTask": "npm: build-dev",
       "envFile": "${workspaceFolder}/.env",
