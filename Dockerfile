@@ -23,6 +23,7 @@ ARG COMMIT_DATE
 COPY public/ public/
 COPY src/ src/
 COPY web/ web/
+COPY tsconfig.json ./
 COPY webpack.prod.js webpack.web.js ./
 
 RUN test -n "$COMMIT_DATE" \
