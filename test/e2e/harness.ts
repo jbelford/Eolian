@@ -4,15 +4,25 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import { ChannelType, Client, GatewayIntentBits, Message, PermissionFlagsBits } from 'discord.js';
+import {
+  ChannelType,
+  Client,
+  GatewayIntentBits,
+  Message,
+  PermissionFlagsBits,
+  TextChannel,
+  VoiceChannel,
+} from 'discord.js';
 import prism from 'prism-media';
 import { once } from 'node:events';
+import { createCleanupCommand, createPlayCommand } from './chat-command';
 import { loadHarnessConfig } from './harness-config';
 import { evaluatePlayback, VerificationSignals } from './verification';
 
-interface ControlState {
+interface TestState {
   runId?: string;
   streaming: boolean;
+  queueSize: number;
   voiceChannelId?: string;
   eolianVoiceChannelId?: string;
   currentTrack?: {
@@ -38,6 +48,8 @@ const signals: VerificationSignals = {
   rms: 0,
 };
 let runId: string | undefined;
+let commandChannel: TextChannel | VoiceChannel | undefined;
+let commandSent = false;
 
 client.on('messageCreate', (message: Message) => {
   if (message.channelId === config.textChannelId && message.author.id === config.eolianBotId) {
@@ -84,6 +96,13 @@ try {
   if (!textChannel.permissionsFor(me).has(PermissionFlagsBits.ViewChannel)) {
     throw new Error('The E2E bot requires View Channel in the configured text channel');
   }
+  if (
+    config.triggerMode === 'chat' &&
+    !textChannel.permissionsFor(me).has(PermissionFlagsBits.SendMessages)
+  ) {
+    throw new Error('The E2E bot requires Send Messages in the configured text channel');
+  }
+  commandChannel = textChannel;
 
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
@@ -115,18 +134,25 @@ try {
   });
   opus.pipe(decoder);
 
-  if (config.triggerMode === 'control') {
-    const state = await controlRequest<ControlState>('/play', {
-      source: config.source,
-      requestType: config.requestType,
-      request: config.request,
-    });
-    runId = state.runId;
-    signals.localState = state;
+  const playCommand = createPlayCommand({
+    eolianBotId: config.eolianBotId,
+    source: config.source,
+    requestType: config.requestType,
+    request: config.request,
+  });
+  if (config.triggerMode === 'chat') {
+    await textChannel.send(playCommand);
+    commandSent = true;
   } else {
     process.stdout.write(
-      `Human trigger mode: issue the Eolian play command in <#${config.textChannelId}> for ${config.request}\n`,
+      `Human trigger mode: have a real user send this command in <#${config.textChannelId}>:\n${playCommand}\n`,
     );
+  }
+
+  if (config.triggerMode === 'chat') {
+    const state = await getTestState();
+    signals.localState = state;
+    runId = state.runId;
   }
 
   const deadline = Date.now() + config.timeoutMs;
@@ -135,12 +161,14 @@ try {
     minPcmBytes: config.minPcmBytes,
     minRms: config.minRms,
     voiceChannelId: config.voiceChannelId,
-    requireLocalState: config.triggerMode === 'control',
+    requireLocalState: config.triggerMode === 'chat',
   });
   while (!result.passed && Date.now() < deadline) {
     await sleep(500);
-    if (config.triggerMode === 'control') {
-      signals.localState = await controlRequest<ControlState>('/state');
+    if (config.triggerMode === 'chat') {
+      const state = await getTestState();
+      signals.localState = state;
+      runId ??= state.runId;
     }
     signals.voiceStateObserved ||=
       guild.members.cache.get(config.eolianBotId)?.voice.channelId === config.voiceChannelId;
@@ -149,7 +177,7 @@ try {
       minPcmBytes: config.minPcmBytes,
       minRms: config.minRms,
       voiceChannelId: config.voiceChannelId,
-      requireLocalState: config.triggerMode === 'control',
+      requireLocalState: config.triggerMode === 'chat',
     });
   }
 
@@ -162,32 +190,49 @@ try {
   decoder.destroy();
   connection.destroy();
 } finally {
-  if (runId && config.triggerMode === 'control') {
+  if (commandSent && config.triggerMode === 'chat') {
     try {
-      await controlRequest('/cleanup', { runId });
+      runId ??= (await getTestState()).runId;
+      if (!runId || !commandChannel) {
+        throw new Error('The Eolian state endpoint did not return an active run ID');
+      }
+      await commandChannel.send(createCleanupCommand(config.eolianBotId, runId));
+      await waitForCleanup(runId);
     } catch (error) {
       process.stderr.write(`Cleanup failed: ${error instanceof Error ? error.message : error}\n`);
       process.exitCode = 1;
     }
+  } else if (config.triggerMode === 'human') {
+    process.stdout.write('Human trigger mode: stop playback and clear the queue when finished.\n');
   }
   client.destroy();
 }
 
-async function controlRequest<T = unknown>(path: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${config.controlUrl!.replace(/\/$/, '')}/test-control${path}`, {
-    method: body ? 'POST' : 'GET',
+async function getTestState(): Promise<TestState> {
+  const response = await fetch(`${config.stateUrl!.replace(/\/$/, '')}/test-state`, {
+    method: 'GET',
     headers: {
-      authorization: `Bearer ${config.controlToken}`,
-      ...(body ? { 'content-type': 'application/json' } : {}),
+      authorization: `Bearer ${config.stateToken}`,
     },
-    body: body ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(Math.min(config.timeoutMs, 30000)),
   });
-  const result = (await response.json()) as T & { error?: string };
+  const result = (await response.json()) as TestState & { error?: string };
   if (!response.ok) {
-    throw new Error(result.error ?? `Control request failed with ${response.status}`);
+    throw new Error(result.error ?? `State request failed with ${response.status}`);
   }
   return result;
+}
+
+async function waitForCleanup(cleanedRunId: string): Promise<void> {
+  const deadline = Date.now() + Math.min(config.timeoutMs, 10000);
+  while (Date.now() < deadline) {
+    const state = await getTestState();
+    if (state.runId !== cleanedRunId && !state.streaming && state.queueSize === 0) {
+      return;
+    }
+    await sleep(250);
+  }
+  throw new Error(`Timed out waiting for cleanup of run ${cleanedRunId}`);
 }
 
 function calculateRms(pcm: Buffer): number {

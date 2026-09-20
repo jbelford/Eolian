@@ -72,8 +72,8 @@ export interface AppEnv {
     youtubeCacheLimit: number;
     guildCacheTTL: number;
   };
-  e2eControl?: {
-    token: string;
+  e2eTest?: {
+    stateToken: string;
     guildId: string;
     textChannelId: string;
     voiceChannelId: string;

@@ -8,8 +8,7 @@ import { Server } from 'http';
 import { IAuthServiceProvider } from './@types';
 import path from 'path';
 import { GITHUB_PAGE } from '@eolian/common/constants';
-import { E2ETestControl } from './e2e-test-control';
-import { isE2ETestPlayRequest } from './e2e-test-control-options';
+import { E2ETestSession } from './e2e-test-session';
 import { environment } from '@eolian/common/env';
 import crypto from 'crypto';
 
@@ -20,23 +19,23 @@ export class WebServer implements Closable {
   constructor(
     private readonly port: number,
     private readonly authProviders: IAuthServiceProvider,
-    e2eControl?: E2ETestControl,
+    e2eTest?: E2ETestSession,
   ) {
     this.app.get('/healthz', (req, res) => {
       res.status(200).send('OK');
     });
 
-    if (environment.e2eControl && e2eControl) {
-      const e2eConfig = environment.e2eControl;
+    if (environment.e2eTest && e2eTest) {
+      const e2eConfig = environment.e2eTest;
       const authorize: RequestHandler = (req, res, next) => {
         if (!e2eConfig.allowRemote && !isLoopback(req.ip)) {
-          res.status(403).json({ error: 'Remote E2E control access is disabled' });
+          res.status(403).json({ error: 'Remote E2E state access is disabled' });
           return;
         }
         const authorization = req.header('authorization');
-        const expected = `Bearer ${e2eConfig.token}`;
+        const expected = `Bearer ${e2eConfig.stateToken}`;
         if (!safeEqual(authorization, expected)) {
-          res.status(401).json({ error: 'Invalid E2E control authorization' });
+          res.status(401).json({ error: 'Invalid E2E state authorization' });
           return;
         }
         next();
@@ -46,36 +45,18 @@ export class WebServer implements Closable {
           try {
             res.status(200).json(await operation(req));
           } catch (error) {
-            logger.warn('E2E control request failed: %s', error);
+            logger.warn('E2E state request failed: %s', error);
             res.status(409).json({
-              error: error instanceof Error ? error.message : 'E2E control request failed',
+              error: error instanceof Error ? error.message : 'E2E state request failed',
             });
           }
         };
       };
 
-      this.app.use('/test-control', authorize, express.json({ limit: '4kb' }));
-      this.app.post(
-        '/test-control/play',
-        handle(async req => {
-          if (!isE2ETestPlayRequest(req.body)) {
-            throw new Error('Invalid E2E play request');
-          }
-          return await e2eControl.play(req.body);
-        }),
-      );
       this.app.get(
-        '/test-control/state',
-        handle(async () => await e2eControl.getState()),
-      );
-      this.app.post(
-        '/test-control/cleanup',
-        handle(async req => {
-          if (!req.body || typeof req.body.runId !== 'string') {
-            throw new Error('Cleanup requires a runId');
-          }
-          return await e2eControl.cleanup(req.body.runId);
-        }),
+        '/test-state',
+        authorize,
+        handle(async () => await e2eTest.getState()),
       );
     }
 

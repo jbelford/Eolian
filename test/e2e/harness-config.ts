@@ -1,5 +1,5 @@
 export type E2ETarget = 'local' | 'production';
-export type E2ETriggerMode = 'control' | 'human';
+export type E2ETriggerMode = 'chat' | 'human';
 export type E2ESource = 'youtube' | 'spotify' | 'soundcloud';
 export type E2ERequestType = 'url' | 'search';
 
@@ -11,8 +11,8 @@ export interface HarnessConfig {
   textChannelId: string;
   voiceChannelId: string;
   eolianBotId: string;
-  controlUrl?: string;
-  controlToken?: string;
+  stateUrl?: string;
+  stateToken?: string;
   source: E2ESource;
   requestType: E2ERequestType;
   request: string;
@@ -24,7 +24,7 @@ export interface HarnessConfig {
 
 export function loadHarnessConfig(env: NodeJS.ProcessEnv): HarnessConfig {
   const target = enumValue(env.E2E_TARGET ?? 'local', ['local', 'production'] as const);
-  const triggerMode = enumValue(env.E2E_TRIGGER_MODE ?? 'control', ['control', 'human'] as const);
+  const triggerMode = enumValue(env.E2E_TRIGGER_MODE ?? 'chat', ['chat', 'human'] as const);
   if (
     target === 'production' &&
     (env.E2E_ALLOW_PRODUCTION !== 'true' || env.E2E_PRODUCTION_CONFIRM !== 'EOLIAN_PRODUCTION_E2E')
@@ -34,10 +34,10 @@ export function loadHarnessConfig(env: NodeJS.ProcessEnv): HarnessConfig {
     );
   }
 
-  const controlUrl = optional(env.E2E_CONTROL_URL);
-  const controlToken = optional(env.E2E_CONTROL_TOKEN);
-  if (triggerMode === 'control' && (!controlUrl || !controlToken)) {
-    throw new Error('Control mode requires E2E_CONTROL_URL and E2E_CONTROL_TOKEN');
+  const stateUrl = optional(env.E2E_STATE_URL);
+  const stateToken = optional(env.E2E_STATE_TOKEN);
+  if (triggerMode === 'chat' && (!stateUrl || !stateToken)) {
+    throw new Error('Chat mode requires E2E_STATE_URL and E2E_STATE_TOKEN');
   }
 
   return {
@@ -48,8 +48,8 @@ export function loadHarnessConfig(env: NodeJS.ProcessEnv): HarnessConfig {
     textChannelId: required(env, 'E2E_TEXT_CHANNEL_ID'),
     voiceChannelId: required(env, 'E2E_VOICE_CHANNEL_ID'),
     eolianBotId: required(env, 'E2E_EOLIAN_BOT_ID'),
-    controlUrl,
-    controlToken,
+    stateUrl,
+    stateToken,
     source: enumValue(env.E2E_SOURCE ?? 'youtube', ['youtube', 'spotify', 'soundcloud'] as const),
     requestType: enumValue(env.E2E_REQUEST_TYPE ?? 'url', ['url', 'search'] as const),
     request: required(env, 'E2E_REQUEST'),

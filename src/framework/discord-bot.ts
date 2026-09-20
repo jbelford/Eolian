@@ -40,7 +40,7 @@ import {
 import { registerGuildSlashCommands } from './discord-slash-commands';
 import { DiscordGuildStore } from './state/discord-guild-store';
 import { ServerState } from './state/@types';
-import { E2ETestControl } from './e2e-test-control';
+import { E2ETestSession } from './e2e-test-session';
 
 const enum DiscordEvents {
   READY = 'clientReady',
@@ -98,7 +98,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly db: AppDatabase;
   private readonly auth: IAuthServiceProvider;
   private readonly lockManager: LockManager = new LockManager(USER_COMMAND_LOCK_TIMEOUT);
-  readonly e2eControl?: E2ETestControl;
+  readonly e2eTest?: E2ETestSession;
 
   constructor({ parser, db, auth }: DiscordEolianBotArgs) {
     this.parser = parser;
@@ -136,11 +136,8 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     this.guildStore = new DiscordGuildStore(this.client, this.db.servers);
-    if (environment.e2eControl) {
-      this.e2eControl = new E2ETestControl(this.client, this.guildStore, this.db, this.auth, {
-        ...environment.e2eControl,
-        production: environment.prod,
-      });
+    if (environment.e2eTest) {
+      this.e2eTest = new E2ETestSession(this.client, this.guildStore, environment.e2eTest);
     }
   }
 
@@ -289,12 +286,17 @@ export class DiscordEolianBot implements EolianBot {
   };
 
   private onMessageHandler = async (message: Message): Promise<void> => {
-    if (message.author.bot || !this.isTextOrDm(message)) {
+    const e2eActor = this.e2eTest?.matchesActor(message) ?? false;
+    if ((message.author.bot && !e2eActor) || !this.isTextOrDm(message)) {
       return;
     }
 
     try {
-      if (!(await this.isBotInvoked(message))) {
+      if (e2eActor && !message.mentions.has(this.client.user!, { ignoreEveryone: true })) {
+        return;
+      }
+      const cleanupRunId = this.e2eTest?.getCleanupRunId(message);
+      if (!cleanupRunId && !(await this.isBotInvoked(message))) {
         return;
       }
       const locked = await this.lockManager.isLocked(message.author.id);
@@ -305,6 +307,19 @@ export class DiscordEolianBot implements EolianBot {
 
       try {
         await this.lockManager.lock(message.author.id);
+        if (cleanupRunId) {
+          try {
+            await this.e2eTest!.cleanup(cleanupRunId);
+            await message.reply({ content: `E2E cleanup complete for run ${cleanupRunId}` });
+          } catch (error) {
+            await message.reply({
+              content: `E2E cleanup failed: ${
+                error instanceof Error ? error.message : 'unknown error'
+              }`,
+            });
+          }
+          return;
+        }
         const interaction = new DiscordMessageInteraction(
           message,
           this.parser,
@@ -313,7 +328,7 @@ export class DiscordEolianBot implements EolianBot {
           this.auth,
         );
 
-        await this.onBotInvoked(interaction, message.guild ?? undefined);
+        await this.onBotInvoked(interaction, message.guild ?? undefined, e2eActor);
       } finally {
         await this.lockManager.unlock(message.author.id);
       }
@@ -361,6 +376,7 @@ export class DiscordEolianBot implements EolianBot {
   private async onBotInvoked(
     interaction: ContextCommandInteraction,
     guild?: Guild,
+    e2eActor = false,
   ): Promise<boolean> {
     const start = Date.now();
     let noDefaultReply = false;
@@ -392,6 +408,12 @@ export class DiscordEolianBot implements EolianBot {
       await interaction.user.updatePermissions(server?.details);
 
       const { command, options } = await interaction.getCommand(server?.details);
+      if (!e2eActor && guild && this.e2eTest?.blocksGuild(guild.id)) {
+        throw new EolianUserError('An E2E playback test is currently using this guild');
+      }
+      if (e2eActor && command.name !== 'play') {
+        throw new EolianUserError('The configured E2E bot may only run the play command');
+      }
       if (interaction.channel.isDm && !command.dmAllowed) {
         await interaction.send(
           `Sorry, this command is not allowed via DM. Try again in a guild channel.`,
@@ -399,7 +421,21 @@ export class DiscordEolianBot implements EolianBot {
         return false;
       }
 
-      await command.execute({ interaction, server, client }, options);
+      let e2eRunId: string | undefined;
+      try {
+        if (e2eActor) {
+          e2eRunId = await this.e2eTest!.begin();
+        }
+        await command.execute({ interaction, server, client }, options);
+        if (e2eRunId) {
+          await this.e2eTest!.complete(e2eRunId);
+        }
+      } catch (error) {
+        if (e2eRunId) {
+          await this.e2eTest!.abort(e2eRunId);
+        }
+        throw error;
+      }
 
       await server?.details.updateUsage(interaction.channel.id);
 

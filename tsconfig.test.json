@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["test/**/*.ts", "src/framework/e2e-test-control-options.ts"],
+  "include": ["test/**/*.ts"],
   "exclude": ["node_modules"]
 }

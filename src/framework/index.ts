@@ -8,4 +8,4 @@ export * from './discord-user';
 export * from './webserver';
 export * from './auth-service-providers';
 export * from './downloader-display';
-export * from './e2e-test-control';
+export * from './e2e-test-session';

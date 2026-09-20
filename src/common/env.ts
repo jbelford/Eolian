@@ -46,22 +46,20 @@ function getEnvFlag(name: string): boolean {
   return getEnvOpt(name) === 'true';
 }
 
-function getE2EControl(prod: boolean): AppEnv['e2eControl'] {
-  if (!getEnvFlag('E2E_CONTROL_ENABLED')) {
+function getE2ETest(prod: boolean): AppEnv['e2eTest'] {
+  if (!getEnvFlag('E2E_TEST_ENABLED')) {
     return undefined;
   }
-  if (prod && !getEnvFlag('E2E_CONTROL_ALLOW_PRODUCTION')) {
-    throw new Error(
-      'E2E control is disabled in production unless E2E_CONTROL_ALLOW_PRODUCTION=true',
-    );
+  if (prod && !getEnvFlag('E2E_TEST_ALLOW_PRODUCTION')) {
+    throw new Error('E2E testing is disabled in production unless E2E_TEST_ALLOW_PRODUCTION=true');
   }
   return {
-    token: getEnv('E2E_CONTROL_TOKEN'),
-    guildId: getEnv('E2E_CONTROL_GUILD_ID'),
-    textChannelId: getEnv('E2E_CONTROL_TEXT_CHANNEL_ID'),
-    voiceChannelId: getEnv('E2E_CONTROL_VOICE_CHANNEL_ID'),
-    actorId: getEnv('E2E_CONTROL_ACTOR_ID'),
-    allowRemote: getEnvFlag('E2E_CONTROL_ALLOW_REMOTE'),
+    stateToken: getEnv('E2E_TEST_STATE_TOKEN'),
+    guildId: getEnv('E2E_TEST_GUILD_ID'),
+    textChannelId: getEnv('E2E_TEST_TEXT_CHANNEL_ID'),
+    voiceChannelId: getEnv('E2E_TEST_VOICE_CHANNEL_ID'),
+    actorId: getEnv('E2E_TEST_ACTOR_ID'),
+    allowRemote: getEnvFlag('E2E_TEST_ALLOW_REMOTE_STATE'),
   };
 }
 
@@ -152,7 +150,7 @@ export const environment: AppEnv = {
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
   },
-  e2eControl: getE2EControl(prod),
+  e2eTest: getE2ETest(prod),
   flags: {
     spotifyUserAuth: getEnvFlag('FLAG_SPOTIFY_OAUTH'),
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),

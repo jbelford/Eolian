@@ -48,7 +48,7 @@ test('accepts decoded audio energy when packet threshold is not reached', () => 
   assert.equal(result.passed, true);
 });
 
-test('fails without a current local track in control mode', () => {
+test('fails without a current local track in chat mode', () => {
   const result = evaluatePlayback(
     {
       discordResponseObserved: true,
