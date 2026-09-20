@@ -7,7 +7,6 @@ import { cleanupOnExit } from './common/util';
 import { createDatabase } from './data';
 import { AppDatabase } from './data/@types';
 import { createAuthProviders, DiscordEolianBot, WebServer } from './framework';
-import { EolianBot } from './framework/@types';
 
 process.stdout.write(LOGGER_HEADER);
 
@@ -16,7 +15,7 @@ process.stdout.write(LOGGER_HEADER);
     const auth = createAuthProviders();
     const db: AppDatabase = await createDatabase();
     const parser: CommandParsingStrategy = createCommandParsingStrategy();
-    const bot: EolianBot = new DiscordEolianBot({ db, parser, auth });
+    const bot = new DiscordEolianBot({ db, parser, auth });
     const server = new WebServer(environment.port, auth);
 
     cleanupOnExit([auth, db, bot, server]);

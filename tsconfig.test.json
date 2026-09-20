@@ -14,5 +14,5 @@
     "target": "ES2021",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest*.ts", "vitest*.mts"]
+  "include": ["src/**/*.ts", "test/e2e/**/*.ts", "tests/**/*.ts", "vitest*.ts", "vitest*.mts"]
 }

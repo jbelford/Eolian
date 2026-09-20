@@ -9,14 +9,15 @@
     "build-dev": "yarn typecheck && vite build --mode development --config vite.node.config.mts && vite build --mode development --config vite.web.config.mts",
     "start": "node -r dotenv/config ./dist/bundle.js -gi",
     "start-debug": "node -r dotenv/config --inspect-brk ./dist/bundle.js -gi",
+    "e2e": "tsx test/e2e/harness.ts",
     "test": "yarn test:unit",
     "test:unit": "vitest run --config vitest.config.mts",
     "test:watch": "vitest --config vitest.config.mts",
     "test:integration": "vitest run --config vitest.integration.config.mts --passWithNoTests",
     "test:coverage": "vitest run --config vitest.config.mts --coverage",
     "typecheck": "tsc -p src/tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "format": "prettier --write README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\""
+    "format": "prettier --write README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\""
   },
   "keywords": [
     "music",
@@ -81,6 +82,7 @@
     "prettier": "^3.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^8.3.0",
     "vitest": "^4.1.11"
