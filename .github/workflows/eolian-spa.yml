@@ -1,0 +1,160 @@
+name: Release production SPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      smoke_target:
+        description: Front Door host used for post-release smoke checks
+        required: true
+        type: choice
+        options:
+          - front-door-default
+          - canonical
+        default: front-door-default
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: eolian-production-spa
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  FRONT_DOOR_ENDPOINT_NAME: ${{ vars.FRONT_DOOR_ENDPOINT_NAME }}
+  FRONT_DOOR_PROFILE_NAME: ${{ vars.FRONT_DOOR_PROFILE_NAME }}
+  SPA_STORAGE_ACCOUNT_NAME: ${{ vars.SPA_STORAGE_ACCOUNT_NAME }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+          cache: yarn
+
+      - name: Enable pinned Yarn
+        run: |
+          corepack enable
+          test "$(yarn --version)" = "4.4.1"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run browser UI tests
+        run: yarn test:web
+
+      - name: Typecheck browser application
+        run: yarn typecheck:web
+
+      - name: Build browser application
+        run: yarn build:web
+
+      - name: Validate release configuration
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+        run: |
+          : "${AZURE_CLIENT_ID:?AZURE_CLIENT_ID production variable is required}"
+          : "${AZURE_TENANT_ID:?AZURE_TENANT_ID production variable is required}"
+          : "${AZURE_SUBSCRIPTION_ID:?AZURE_SUBSCRIPTION_ID production variable is required}"
+          : "${AZURE_RESOURCE_GROUP:?AZURE_RESOURCE_GROUP production variable is required}"
+          : "${SPA_STORAGE_ACCOUNT_NAME:?SPA_STORAGE_ACCOUNT_NAME production variable is required}"
+          : "${FRONT_DOOR_PROFILE_NAME:?FRONT_DOOR_PROFILE_NAME production variable is required}"
+          : "${FRONT_DOOR_ENDPOINT_NAME:?FRONT_DOOR_ENDPOINT_NAME production variable is required}"
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Front Door CLI extension
+        run: az extension add --name cdn --version 1.0.0b3 --allow-preview true --upgrade --yes
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          SMOKE_TARGET: ${{ inputs.smoke_target }}
+        run: |
+          source_sha="$(git rev-parse HEAD)"
+          build_digest="$(
+            find dist/public -type f -print0 |
+              sort -z |
+              xargs -0 sha256sum |
+              sha256sum |
+              cut -d' ' -f1
+          )"
+          if [[ "$SMOKE_TARGET" == "canonical" ]]; then
+            smoke_base_url="https://www.eolianbot.com"
+          else
+            endpoint_host="$(az afd endpoint show \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --profile-name "$FRONT_DOOR_PROFILE_NAME" \
+              --endpoint-name "$FRONT_DOOR_ENDPOINT_NAME" \
+              --query hostName \
+              --output tsv)"
+            test -n "$endpoint_host"
+            smoke_base_url="https://${endpoint_host}"
+          fi
+
+          echo "source-sha=$source_sha" >>"$GITHUB_OUTPUT"
+          echo "build-digest=$build_digest" >>"$GITHUB_OUTPUT"
+          echo "smoke-base-url=$smoke_base_url" >>"$GITHUB_OUTPUT"
+
+      - name: Upload content-hashed assets
+        env:
+          SPA_UPLOAD_GROUP: immutable
+        run: ./scripts/upload-spa.sh
+
+      - name: Upload non-hashed shell files
+        env:
+          SPA_UPLOAD_GROUP: shell
+        run: ./scripts/upload-spa.sh
+
+      - name: Upload index last
+        env:
+          SPA_UPLOAD_GROUP: index
+        run: ./scripts/upload-spa.sh
+
+      - name: Purge Front Door cache
+        run: |
+          az afd endpoint purge \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --profile-name "$FRONT_DOOR_PROFILE_NAME" \
+            --endpoint-name "$FRONT_DOOR_ENDPOINT_NAME" \
+            --content-paths '/*'
+
+      - name: Smoke test production routing
+        env:
+          SMOKE_BASE_URL: ${{ steps.release.outputs.smoke-base-url }}
+        run: ./scripts/smoke-production-spa.sh
+
+      - name: Publish release summary
+        env:
+          BUILD_DIGEST: ${{ steps.release.outputs.build-digest }}
+          SMOKE_BASE_URL: ${{ steps.release.outputs.smoke-base-url }}
+          SOURCE_SHA: ${{ steps.release.outputs.source-sha }}
+        run: |
+          {
+            echo "## Production SPA release"
+            echo
+            echo "- **Status:** Succeeded"
+            echo "- **Source commit:** \`$SOURCE_SHA\`"
+            echo "- **Build SHA-256:** \`$BUILD_DIGEST\`"
+            echo "- **Workflow run:** [${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+            echo "- **Storage account:** \`$SPA_STORAGE_ACCOUNT_NAME\` (\`\$web\`)"
+            echo "- **Front Door profile / endpoint:** \`$FRONT_DOOR_PROFILE_NAME\` / \`$FRONT_DOOR_ENDPOINT_NAME\`"
+            echo "- **Smoke target:** \`$SMOKE_BASE_URL\`"
+            echo "- **Cache policy:** hashed assets are immutable for one year; shell files revalidate; \`index.html\` is not stored"
+          } >>"$GITHUB_STEP_SUMMARY"

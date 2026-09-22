@@ -73,6 +73,10 @@ development Node builds use the same output path, so PM2, Docker, and local star
 execute `dist/bundle.js`. The production Docker build runs only the Node build and copies only
 that bundle into the runtime image.
 
+Production browser deployment is also independent from the image release. See
+[Production SPA release](spa-release.md) for the Azure Storage and Front Door release contract,
+cache policy, smoke checks, and rollback procedure.
+
 ## Commands
 
 ```bash
