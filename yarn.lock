@@ -4968,7 +4968,7 @@ __metadata:
     vitest: "npm:^4.1.11"
     winston: "npm:^3.8.2"
     youtubei.js: "npm:^16.0.1"
-    zlib-sync: "npm:^0.1.9"
+    zlib-sync: "npm:^0.1.10"
   languageName: unknown
   linkType: soft
 
@@ -6879,11 +6879,11 @@ __metadata:
   linkType: hard
 
 "nan@npm:^2.18.0":
-  version: 2.20.0
-  resolution: "nan@npm:2.20.0"
+  version: 2.29.0
+  resolution: "nan@npm:2.29.0"
   dependencies:
     node-gyp: "npm:latest"
-  checksum: 10/5f16e4c9953075d9920229c703c1d781c0b74118ce3d9e926b448a4eef92b7d8be5ac6adc748a13a5fafb594436cbfe63250e3471aefdd78e3a0cd14603b9ba7
+  checksum: 10/feed70f1358b1c469745d27bfaa0e0d5d307471a8f929a2833822574fe944b3646fca09d36d90bb91eea0cc4a74e4a288e84847d945c8d77d5044378fed7f57e
   languageName: node
   linkType: hard
 
@@ -9069,12 +9069,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zlib-sync@npm:^0.1.9":
-  version: 0.1.9
-  resolution: "zlib-sync@npm:0.1.9"
+"zlib-sync@npm:^0.1.10":
+  version: 0.1.10
+  resolution: "zlib-sync@npm:0.1.10"
   dependencies:
     nan: "npm:^2.18.0"
     node-gyp: "npm:latest"
-  checksum: 10/b65cf31af2c960a826fa5d9820f5d46715ba4d46e1960605009518ca2074f48633c36262496d4098c884baec2fb37775fe5329183ca83562752967ab605eed74
+  checksum: 10/76c4a1f3608dc806c6cea83605a8e3d05e751425f04b336c8cd6cdbe8d549962a23fb7bbd7dea20dbfd000e8bf1dd20f426454899c4fbbb36eff811839841673
   languageName: node
   linkType: hard
