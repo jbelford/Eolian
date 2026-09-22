@@ -6,7 +6,7 @@ Object.assign(process.env, {
   DISCORD_CLIENT_ID: 'test-client',
   DISCORD_CLIENT_SECRET: 'test-secret',
   DISCORD_TOKEN: 'test',
-  SESSION_SECRET: 'test-session-secret',
+  SESSION_SECRET: 'test-session-secret-at-least-32-bytes',
   YOUTUBE_TOKEN: 'test',
   SOUNDCLOUD_CLIENT_ID: 'test',
   SOUNDCLOUD_CLIENT_SECRET: 'test',

@@ -21,6 +21,16 @@ function response(payload: unknown, statusCode = 200) {
   };
 }
 
+function guild(id: string, permissions = '0', owner = false) {
+  return {
+    id,
+    name: `Guild ${id}`,
+    icon: null,
+    owner,
+    permissions,
+  };
+}
+
 describe('UndiciDiscordOAuthClient', () => {
   beforeEach(() => {
     environment.baseUri = 'https://eolian.example/base';
@@ -108,44 +118,75 @@ describe('UndiciDiscordOAuthClient', () => {
   it('returns only guilds the user can manage', async () => {
     mocks.request.mockResolvedValue(
       response([
-        {
-          id: 'owner',
-          name: 'Owned',
-          icon: null,
-          owner: true,
-          permissions: '0',
-        },
-        {
-          id: 'admin',
-          name: 'Admin',
-          icon: 'icon',
-          owner: false,
-          permissions: PermissionFlagsBits.Administrator.toString(),
-        },
-        {
-          id: 'manager',
-          name: 'Manager',
-          icon: null,
-          owner: false,
-          permissions: PermissionFlagsBits.ManageGuild.toString(),
-        },
-        {
-          id: 'member',
-          name: 'Member',
-          icon: null,
-          owner: false,
-          permissions: PermissionFlagsBits.ViewChannel.toString(),
-        },
+        guild('1', '0', true),
+        guild('2', PermissionFlagsBits.Administrator.toString()),
+        guild('3', PermissionFlagsBits.ManageGuild.toString()),
+        guild('4', PermissionFlagsBits.ViewChannel.toString()),
       ]),
     );
     const client = new UndiciDiscordOAuthClient();
 
     const guilds = await client.getCurrentUserGuilds('access');
 
-    expect(guilds.map(guild => guild.id)).toEqual(['owner', 'admin', 'manager']);
-    expect(mocks.request).toHaveBeenCalledWith('https://discord.com/api/v10/users/@me/guilds', {
-      headers: { authorization: 'Bearer access' },
-    });
+    expect(guilds.map(value => value.id)).toEqual(['1', '2', '3']);
+    expect(mocks.request).toHaveBeenCalledWith(
+      'https://discord.com/api/v10/users/@me/guilds?limit=200',
+      { headers: { authorization: 'Bearer access' } },
+    );
+  });
+
+  it('paginates every guild page with an advancing after cursor', async () => {
+    const firstPage = Array.from({ length: 200 }, (_, index) =>
+      guild((index + 1).toString(), '0', true),
+    );
+    const secondPage = [guild('201', PermissionFlagsBits.ManageGuild.toString())];
+    mocks.request
+      .mockResolvedValueOnce(response(firstPage))
+      .mockResolvedValueOnce(response(secondPage));
+    const client = new UndiciDiscordOAuthClient();
+
+    const guilds = await client.getCurrentUserGuilds('access');
+
+    expect(guilds).toHaveLength(201);
+    expect(mocks.request).toHaveBeenNthCalledWith(
+      1,
+      'https://discord.com/api/v10/users/@me/guilds?limit=200',
+      { headers: { authorization: 'Bearer access' } },
+    );
+    expect(mocks.request).toHaveBeenNthCalledWith(
+      2,
+      'https://discord.com/api/v10/users/@me/guilds?limit=200&after=200',
+      { headers: { authorization: 'Bearer access' } },
+    );
+  });
+
+  it.each([
+    ['non-array page', { guilds: [] }],
+    ['malformed guild', [guild('not-a-snowflake')]],
+    ['oversized page', Array.from({ length: 201 }, (_, index) => guild((index + 1).toString()))],
+  ])('rejects a %s response', async (_description, payload) => {
+    mocks.request.mockResolvedValue(response(payload));
+    const client = new UndiciDiscordOAuthClient();
+
+    await expect(client.getCurrentUserGuilds('access')).rejects.toThrow(
+      'Invalid Discord guild response',
+    );
+  });
+
+  it('rejects a full page whose pagination cursor does not advance', async () => {
+    const firstPage = Array.from({ length: 200 }, (_, index) => guild((index + 1).toString()));
+    const repeatedCursorPage = Array.from({ length: 200 }, (_, index) =>
+      guild(index === 199 ? '200' : (index + 201).toString()),
+    );
+    mocks.request
+      .mockResolvedValueOnce(response(firstPage))
+      .mockResolvedValueOnce(response(repeatedCursorPage));
+    const client = new UndiciDiscordOAuthClient();
+
+    await expect(client.getCurrentUserGuilds('access')).rejects.toThrow(
+      'Discord guild pagination cursor did not advance',
+    );
+    expect(mocks.request).toHaveBeenCalledTimes(2);
   });
 
   it('rejects malformed provider responses without returning their contents', async () => {

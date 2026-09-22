@@ -12,12 +12,13 @@ configuration:
 - `DISCORD_CLIENT_ID`: Discord application client ID.
 - `DISCORD_CLIENT_SECRET`: Discord application client secret.
 - `SESSION_SECRET`: private application secret used to authenticate OAuth state and derive stored
-  session keys.
+  session keys. Its UTF-8 encoding must contain at least 32 bytes.
 - `BASE_URI`: public application origin. The registered Discord redirect URI must be
   `<BASE_URI origin>/api/auth/discord/callback`.
 
-Use a high-entropy `SESSION_SECRET` and store all secrets outside the repository. Production must
-serve `BASE_URI` over HTTPS so the session cookie can use the `Secure` attribute.
+Use a high-entropy, randomly generated `SESSION_SECRET` that satisfies the 32-byte minimum and
+store all secrets outside the repository. Production must serve `BASE_URI` over HTTPS so the
+session cookie can use the `Secure` attribute.
 
 ## API contract
 
@@ -37,7 +38,9 @@ with persistence writes bounded to at most one renewal per day.
 MongoDB stores a keyed digest of the session ID, the required Discord identity fields, Discord
 token refresh metadata, manageable-guild claims, the CSRF token, and timestamps. The `sessions`
 collection has an absolute-expiry TTL index on `expiresAt`; expired and logged-out records are
-also removed explicitly when encountered.
+also removed explicitly when encountered. Guild claims are collected through Discord's
+cursor-based pagination. Token and guild-claim refresh work is serialized per session so
+concurrent requests share rotated credentials safely.
 
 ## Protected API routes
 

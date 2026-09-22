@@ -20,6 +20,8 @@ import {
 } from './@types';
 
 export class PersistentAuthSessionService implements AuthSessionService {
+  private readonly refreshFlights = new Map<string, Promise<SessionDTO | null>>();
+
   constructor(
     private readonly sessions: SessionsDb,
     private readonly oauthClient: DiscordOAuthClient,
@@ -54,8 +56,59 @@ export class PersistentAuthSessionService implements AuthSessionService {
 
   async resolve(rawId: string): Promise<AuthSession | null> {
     const id = sessionKey(rawId, environment.sessionSecret);
-    const record = await this.sessions.get(id);
+    let record = await this.sessions.get(id);
     const now = this.now();
+    if (!record) {
+      return null;
+    }
+    if (record.expiresAt.getTime() <= now.getTime()) {
+      await this.sessions.delete(id);
+      return null;
+    }
+
+    if (this.requiresRefresh(record, now)) {
+      record = await this.refreshSingleFlight(id, now);
+      if (!record) {
+        return null;
+      }
+    }
+
+    const renewedBefore = new Date(now.getTime() - SESSION_RENEW_INTERVAL_MS);
+    const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
+    const renewed = await this.sessions.renew(id, renewedBefore, now, expiresAt);
+    if (renewed) {
+      record.renewedAt = now;
+      record.expiresAt = expiresAt;
+    }
+    return { id: rawId, record, renewed };
+  }
+
+  private requiresRefresh(record: SessionDTO, now: Date): boolean {
+    return (
+      record.tokens.expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_LEEWAY_MS ||
+      record.guildsRefreshedAt.getTime() <= now.getTime() - GUILD_CLAIMS_MAX_AGE_MS
+    );
+  }
+
+  private async refreshSingleFlight(id: string, now: Date): Promise<SessionDTO | null> {
+    const current = this.refreshFlights.get(id);
+    if (current) {
+      return current;
+    }
+
+    const refresh = this.refreshRecord(id, now);
+    this.refreshFlights.set(id, refresh);
+    try {
+      return await refresh;
+    } finally {
+      if (this.refreshFlights.get(id) === refresh) {
+        this.refreshFlights.delete(id);
+      }
+    }
+  }
+
+  private async refreshRecord(id: string, now: Date): Promise<SessionDTO | null> {
+    const record = await this.sessions.get(id);
     if (!record) {
       return null;
     }
@@ -81,21 +134,16 @@ export class PersistentAuthSessionService implements AuthSessionService {
       changed = true;
     }
     if (changed) {
-      await this.sessions.update(id, {
+      const updated = await this.sessions.update(id, {
         tokens: record.tokens,
         guilds: record.guilds,
         guildsRefreshedAt: record.guildsRefreshedAt,
       });
+      if (!updated) {
+        return null;
+      }
     }
-
-    const renewedAt = new Date(now.getTime() - SESSION_RENEW_INTERVAL_MS);
-    const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
-    const renewed = await this.sessions.renew(id, renewedAt, now, expiresAt);
-    if (renewed) {
-      record.renewedAt = now;
-      record.expiresAt = expiresAt;
-    }
-    return { id: rawId, record, renewed };
+    return record;
   }
 
   private tokenRecord(token: DiscordTokenResponse, now: Date): SessionDTO['tokens'] {

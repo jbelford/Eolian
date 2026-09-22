@@ -16,6 +16,15 @@ function getEnv(name: string, defaultValue?: string): string {
   process.exit(1);
 }
 
+function getSecretEnv(name: string, minimumBytes: number): string {
+  const value = getEnv(name);
+  if (Buffer.byteLength(value, 'utf8') >= minimumBytes) {
+    return value;
+  }
+  console.log(`Invalid env: ${name} must be at least ${minimumBytes} UTF-8 bytes`);
+  process.exit(1);
+}
+
 function getNumberEnv(name: string, defaultValue?: number): number {
   if (name in process.env) {
     const value = +(process.env[name] as string);
@@ -124,7 +133,7 @@ export const environment: AppEnv = {
     uri: getEnv('MONGO_URI'),
     db_name: getEnv('MONGO_DB_NAME'),
   },
-  sessionSecret: getEnv('SESSION_SECRET'),
+  sessionSecret: getSecretEnv('SESSION_SECRET', 32),
   config: {
     queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,

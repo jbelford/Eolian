@@ -1,4 +1,5 @@
 import { environment } from '@eolian/common/env';
+import { DiscordSessionGuild } from '@eolian/data/@types';
 import { PermissionFlagsBits } from 'discord.js';
 import { request } from 'undici';
 import { DiscordOAuthClient, DiscordTokenResponse } from './@types';
@@ -6,6 +7,7 @@ import { DiscordOAuthClient, DiscordTokenResponse } from './@types';
 const DISCORD_API = 'https://discord.com/api/v10';
 const DISCORD_AUTHORIZE = 'https://discord.com/oauth2/authorize';
 const DISCORD_SCOPES = 'identify guilds';
+const DISCORD_GUILD_PAGE_SIZE = 200;
 
 interface DiscordTokenPayload {
   access_token?: unknown;
@@ -27,6 +29,39 @@ interface DiscordGuildPayload {
   icon?: unknown;
   owner?: unknown;
   permissions?: unknown;
+}
+
+function parseGuildPage(payload: unknown): DiscordSessionGuild[] {
+  if (!Array.isArray(payload) || payload.length > DISCORD_GUILD_PAGE_SIZE) {
+    throw new Error('Invalid Discord guild response');
+  }
+  return payload.map(guild => {
+    if (
+      !guild ||
+      typeof guild !== 'object' ||
+      !('id' in guild) ||
+      typeof guild.id !== 'string' ||
+      !/^\d+$/.test(guild.id) ||
+      !('name' in guild) ||
+      typeof guild.name !== 'string' ||
+      !('icon' in guild) ||
+      (guild.icon !== null && typeof guild.icon !== 'string') ||
+      !('owner' in guild) ||
+      typeof guild.owner !== 'boolean' ||
+      !('permissions' in guild) ||
+      typeof guild.permissions !== 'string' ||
+      !/^\d+$/.test(guild.permissions)
+    ) {
+      throw new Error('Invalid Discord guild response');
+    }
+    return {
+      id: guild.id,
+      name: guild.name,
+      icon: guild.icon,
+      owner: guild.owner,
+      permissions: guild.permissions,
+    };
+  });
 }
 
 function callbackUrl(): string {
@@ -120,40 +155,37 @@ export class UndiciDiscordOAuthClient implements DiscordOAuthClient {
   }
 
   async getCurrentUserGuilds(accessToken: string) {
-    const response = await request(`${DISCORD_API}/users/@me/guilds`, {
-      headers: { authorization: `Bearer ${accessToken}` },
-    });
-    const payload = await readJson<DiscordGuildPayload[]>(response);
-    if (!Array.isArray(payload)) {
-      throw new Error('Invalid Discord guild response');
-    }
-    return payload
-      .map(guild => {
-        if (
-          typeof guild.id !== 'string' ||
-          typeof guild.name !== 'string' ||
-          (guild.icon !== null && typeof guild.icon !== 'string') ||
-          typeof guild.owner !== 'boolean' ||
-          typeof guild.permissions !== 'string'
-        ) {
-          throw new Error('Invalid Discord guild response');
-        }
-        return {
-          id: guild.id,
-          name: guild.name,
-          icon: guild.icon,
-          owner: guild.owner,
-          permissions: guild.permissions,
-        };
-      })
-      .filter(guild => {
-        const permissions = BigInt(guild.permissions);
-        return (
-          guild.owner ||
-          (permissions & PermissionFlagsBits.Administrator) !== 0n ||
-          (permissions & PermissionFlagsBits.ManageGuild) !== 0n
-        );
+    const guilds: DiscordSessionGuild[] = [];
+    let after: string | undefined;
+
+    while (true) {
+      const query = new URLSearchParams({ limit: DISCORD_GUILD_PAGE_SIZE.toString() });
+      if (after) {
+        query.set('after', after);
+      }
+      const response = await request(`${DISCORD_API}/users/@me/guilds?${query}`, {
+        headers: { authorization: `Bearer ${accessToken}` },
       });
+      const page = parseGuildPage(await readJson<DiscordGuildPayload[]>(response));
+      guilds.push(...page);
+      if (page.length < DISCORD_GUILD_PAGE_SIZE) {
+        break;
+      }
+      const nextAfter = page.at(-1)!.id;
+      if (after && BigInt(nextAfter) <= BigInt(after)) {
+        throw new Error('Discord guild pagination cursor did not advance');
+      }
+      after = nextAfter;
+    }
+
+    return guilds.filter(guild => {
+      const permissions = BigInt(guild.permissions);
+      return (
+        guild.owner ||
+        (permissions & PermissionFlagsBits.Administrator) !== 0n ||
+        (permissions & PermissionFlagsBits.ManageGuild) !== 0n
+      );
+    });
   }
 
   private async requestToken(form: Record<string, string>): Promise<DiscordTokenResponse> {
