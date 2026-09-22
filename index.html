@@ -3,7 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eolian</title>
+    <meta
+      name="description"
+      content="Eolian is a Discord music bot for shared queues, flexible commands, and effortless listening sessions."
+    />
+    <meta name="theme-color" content="#f7f7fb" />
+    <title>Eolian — Discord music for the whole room</title>
+    <script>
+      (() => {
+        const storedTheme = localStorage.getItem('eolian-theme');
+        const theme =
+          storedTheme === 'light' || storedTheme === 'dark'
+            ? storedTheme
+            : matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+
+        document.documentElement.classList.add(theme);
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
