@@ -13,7 +13,7 @@ Install these non-secret prerequisites before onboarding:
   from source
 - Docker only when building the container image
 
-mise manages Node.js 20.19.6 and enables Corepack for this repository. Corepack selects
+mise manages Node.js 24.21.0 and enables Corepack for this repository. Corepack selects
 the checksum-pinned Yarn 4.4.1 release declared in `package.json`. mise does not install
 Docker or operating-system build dependencies.
 

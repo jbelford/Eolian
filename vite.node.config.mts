@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     ssr: resolve(sourceDirectory, 'app.ts'),
-    target: 'node20',
+    target: 'node24',
     outDir: resolve(root, 'dist'),
     emptyOutDir: true,
     sourcemap: mode === 'development',

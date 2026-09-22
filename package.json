@@ -28,7 +28,7 @@
     "soundcloud"
   ],
   "engines": {
-    "node": ">=20.19.6"
+    "node": ">=24.21.0"
   },
   "author": "Jack Belford",
   "license": "GPL-3.0+",
@@ -64,7 +64,7 @@
     "utf-8-validate": "^6.0.4",
     "winston": "^3.8.2",
     "youtubei.js": "^16.0.1",
-    "zlib-sync": "^0.1.9"
+    "zlib-sync": "^0.1.10"
   },
   "devDependencies": {
     "@fluentui/react-components": "^9.43.3",

@@ -2,7 +2,7 @@
 
 ## Toolchain and validation
 
-- Use the repository-pinned Node.js 20.19.6 and Yarn 4.4.1 toolchain. Run `mise trust`,
+- Use the repository-pinned Node.js 24.21.0 and Yarn 4.4.1 toolchain. Run `mise trust`,
   `mise install --locked node`, and `mise run setup` for initial setup; the setup task runs
   `yarn install --immutable`.
 - `yarn typecheck` checks the Node application, browser application, test suites, and E2E harness.
