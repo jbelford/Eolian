@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TrackSource } from '@eolian/api/@types';
 import { SyntaxType } from '@eolian/command-options/@types';
-import { FeatureFlag } from '@eolian/data/@types';
 import { IDENTIFY_COMMAND } from '@eolian/commands/account/identify-command';
 import { LINK_COMMAND } from '@eolian/commands/account/link-command';
 import { ME_COMMAND } from '@eolian/commands/account/me-command';
@@ -146,7 +145,7 @@ describe('account commands', () => {
 
   describe('link', () => {
     it('authenticates enabled Spotify and SoundCloud accounts', async () => {
-      mocks.enabled.mockImplementation((flag: FeatureFlag) => flag !== FeatureFlag.WEBSITE);
+      mocks.enabled.mockReturnValue(true);
       mocks.spotifyGetMe.mockResolvedValue({ id: 'spotify-id', display_name: 'Spotify User' });
       mocks.soundcloudGetMe.mockResolvedValue({ id: 42, username: 'SoundCloud User' });
       const user = createUser();

@@ -6,7 +6,8 @@ import { logger } from './common/logger';
 import { cleanupOnExit } from './common/util';
 import { createDatabase } from './data';
 import { AppDatabase } from './data/@types';
-import { createAuthProviders, DiscordEolianBot, WebServer } from './framework';
+import { createAuthProviders, DiscordEolianBot } from './framework';
+import { WebServer } from './webserver';
 
 process.stdout.write(LOGGER_HEADER);
 
@@ -21,7 +22,7 @@ process.stdout.write(LOGGER_HEADER);
     cleanupOnExit([auth, db, bot, server]);
 
     await bot.start();
-    server.start();
+    await server.start();
   } catch (e: any) {
     logger.error(`Something went horribly wrong: %s`, e);
   }

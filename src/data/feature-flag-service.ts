@@ -5,7 +5,6 @@ const flagsLocal: Record<FeatureFlag, boolean> = {
   [FeatureFlag.SPOTIFY_AUTH]: environment.flags.spotifyUserAuth,
   [FeatureFlag.SOUNDCLOUD_AUTH]: environment.flags.soundcloudUserAuth,
   [FeatureFlag.DISCORD_OLD_LEAVE]: environment.flags.discordOldLeave,
-  [FeatureFlag.WEBSITE]: environment.flags.enableWebsite,
 };
 
 class SimpleFeatureFlagService implements FeatureFlagService {

@@ -21,15 +21,12 @@ FROM dependencies AS build
 
 ARG COMMIT_DATE
 
-COPY index.html ./
 COPY src/ src/
-COPY tests/ tests/
-COPY web/ web/
-COPY tsconfig.json tsconfig.test.json ./
-COPY vite.node.config.mts vite.web.config.mts vitest.config.mts vitest.integration.config.mts vitest.shared.mts ./
+COPY tsconfig.json ./
+COPY vite.node.config.mts ./
 
 RUN test -n "$COMMIT_DATE" \
-    && COMMIT_DATE="$COMMIT_DATE" yarn build
+    && COMMIT_DATE="$COMMIT_DATE" yarn build:node
 
 FROM dependencies AS production-dependencies
 
@@ -60,7 +57,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=production-dependencies /usr/src/app/node_modules/ node_modules/
-COPY --from=build /usr/src/app/dist/ dist/
+COPY --from=build /usr/src/app/dist/bundle.js dist/bundle.js
 COPY package.json ./
 COPY docker/sshd_config /etc/ssh/sshd_config
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

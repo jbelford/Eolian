@@ -75,7 +75,6 @@ export interface AppEnv {
     spotifyUserAuth: boolean;
     soundcloudUserAuth: boolean;
     discordOldLeave: boolean;
-    enableWebsite: boolean;
   };
 }
 
