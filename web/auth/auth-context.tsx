@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
     void getAuthSession(controller.signal)
       .then(session => {
+        if (controller.signal.aborted) return;
         setState(
           session.authenticated
             ? { status: 'authenticated', session, isLoggingOut: false }
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         );
       })
       .catch(error => {
-        if (error instanceof ApiError && error.kind === 'aborted') {
+        if (controller.signal.aborted || (error instanceof ApiError && error.kind === 'aborted')) {
           return;
         }
         if (error instanceof ApiError && error.kind === 'unauthorized') {

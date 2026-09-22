@@ -8,7 +8,7 @@ interface JsonResponseOptions {
 interface FetchRoute {
   method: string;
   path: string;
-  respond: () => Response | Promise<Response>;
+  respond: (init?: RequestInit) => Response | Promise<Response>;
 }
 
 export const jsonResponse = (body: unknown, options: JsonResponseOptions = {}) =>
@@ -80,7 +80,7 @@ export const installFetchRouter = (routes: FetchRoute[]) => {
       throw new Error(`Unexpected fetch request: ${method} ${path}`);
     }
     const [route] = remaining.splice(index, 1);
-    return route.respond();
+    return route.respond(init);
   });
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;

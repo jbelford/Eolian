@@ -1,6 +1,6 @@
 import { Alert, Avatar, Button, Card, Chip, Spinner } from '@heroui/react';
 import { UsersRound } from 'lucide-react';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import {
@@ -44,9 +44,16 @@ export const GuildsSettingsPage = () => {
     const controller = new AbortController();
     setError(undefined);
     void getGuilds(controller.signal)
-      .then(result => setGuilds(result.guilds))
+      .then(result => {
+        if (!controller.signal.aborted) setGuilds(result.guilds);
+      })
       .catch(caught => {
-        if (caught instanceof ApiError && caught.kind === 'aborted') return;
+        if (
+          controller.signal.aborted ||
+          (caught instanceof ApiError && caught.kind === 'aborted')
+        ) {
+          return;
+        }
         if (handleSessionError(caught)) return;
         setError(
           caught instanceof ApiError
@@ -214,6 +221,8 @@ export const GuildSettingsPage = () => {
   const [feedback, setFeedback] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const saveController = useRef<AbortController | null>(null);
+  const formErrorRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(
     async (signal?: AbortSignal, preserveDraft = false) => {
@@ -221,10 +230,11 @@ export const GuildSettingsPage = () => {
       setLoadError(undefined);
       try {
         const next = await getGuild(guildId, signal);
+        if (signal?.aborted) return;
         setGuild(next);
         if (!preserveDraft) setDraft(draftFromGuild(next));
       } catch (error) {
-        if (error instanceof ApiError && error.kind === 'aborted') return;
+        if (signal?.aborted || (error instanceof ApiError && error.kind === 'aborted')) return;
         if (handleSessionError(error)) return;
         setLoadError(
           error instanceof ApiError
@@ -241,8 +251,15 @@ export const GuildSettingsPage = () => {
     setGuild(undefined);
     setDraft(undefined);
     void load(controller.signal);
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      saveController.current?.abort();
+    };
   }, [load, reloadKey]);
+
+  useEffect(() => {
+    if (formError) formErrorRef.current?.focus();
+  }, [formError]);
 
   if (state.status !== 'authenticated') return null;
 
@@ -299,16 +316,19 @@ export const GuildSettingsPage = () => {
   const save = async (event: FormEvent) => {
     event.preventDefault();
     if (!guildId || !isDirty || prefixError || volumeError || isSaving) return;
+    const controller = new AbortController();
+    saveController.current = controller;
     setIsSaving(true);
     setFormError(undefined);
     setFeedback(undefined);
     try {
-      const next = await updateGuild(guildId, update, state.session.csrfToken);
+      const next = await updateGuild(guildId, update, state.session.csrfToken, controller.signal);
+      if (controller.signal.aborted) return;
       setGuild(next);
       setDraft(draftFromGuild(next));
       setFeedback('Server settings were saved.');
     } catch (error) {
-      if (handleSessionError(error)) return;
+      if (controller.signal.aborted || handleSessionError(error)) return;
       if (
         error instanceof ApiError &&
         (error.code === 'channel_not_found' || error.code === 'role_not_found')
@@ -316,12 +336,12 @@ export const GuildSettingsPage = () => {
         setFormError(
           `${error.message} The available options were refreshed; review and try again.`,
         );
-        await load(undefined, true);
+        await load(controller.signal, true);
       } else {
         setFormError(errorMessage(error));
       }
     } finally {
-      setIsSaving(false);
+      if (!controller.signal.aborted) setIsSaving(false);
     }
   };
 
@@ -348,7 +368,7 @@ export const GuildSettingsPage = () => {
           </Alert>
         )}
         {formError && (
-          <Alert role="alert" status="danger">
+          <Alert ref={formErrorRef} role="alert" status="danger" tabIndex={-1}>
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Settings were not saved</Alert.Title>
@@ -392,7 +412,7 @@ export const GuildSettingsPage = () => {
                 The one-Unicode-character prefix used for traditional message commands.
               </span>
               {prefixError && (
-                <span className="mt-1 block text-sm text-danger" id="prefix-error">
+                <span className="mt-1 block text-sm text-danger" id="prefix-error" role="alert">
                   {prefixError}
                 </span>
               )}
@@ -428,7 +448,7 @@ export const GuildSettingsPage = () => {
                 Displayed as 0–100%; saved as the API’s 0–1 volume value.
               </span>
               {volumeError && (
-                <span className="mt-1 block text-sm text-danger" id="volume-error">
+                <span className="mt-1 block text-sm text-danger" id="volume-error" role="alert">
                   {volumeError}
                 </span>
               )}

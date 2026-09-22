@@ -5,6 +5,7 @@ import { App } from '../../web/app';
 import {
   emptyRoute,
   installFetchRouter,
+  jsonResponse,
   jsonRoute,
   networkErrorRoute,
   requestJsonBody,
@@ -251,6 +252,156 @@ describe('account settings', () => {
     expect(await screen.findByText('Provider linking could not be started.')).toBeInTheDocument();
     expect(open).not.toHaveBeenCalled();
   });
+
+  it('retains an existing continuation link when restarting the flow fails', async () => {
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/account', account()),
+      jsonRoute(
+        'POST',
+        '/api/account/providers/spotify/link',
+        { authorizationUrl: 'https://provider.example/original' },
+        { status: 201 },
+      ),
+      jsonRoute(
+        'POST',
+        '/api/account/providers/spotify/link',
+        errorBody('provider_unavailable', 'Spotify is temporarily unavailable.'),
+        { status: 503 },
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/account');
+
+    await user.click(await screen.findByRole('button', { name: 'Link Spotify' }));
+    const continuation = screen.getByRole('link', { name: 'Continue linking Spotify' });
+    expect(continuation).toHaveAttribute('href', 'https://provider.example/original');
+
+    await user.click(screen.getByRole('button', { name: 'Restart Spotify link' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Spotify is temporarily unavailable.');
+    expect(alert).toHaveFocus();
+    expect(continuation).toHaveAttribute('href', 'https://provider.example/original');
+  });
+
+  it('clears stale continuation instructions after an unlinked status refresh', async () => {
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/account', account()),
+      jsonRoute(
+        'POST',
+        '/api/account/providers/spotify/link',
+        { authorizationUrl: 'https://provider.example/authorize' },
+        { status: 201 },
+      ),
+      jsonRoute('GET', '/api/account', account()),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/account');
+
+    await user.click(await screen.findByRole('button', { name: 'Link Spotify' }));
+    expect(screen.getByRole('link', { name: 'Continue linking Spotify' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Refresh status' }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('link', { name: 'Continue linking Spotify' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: 'Link Spotify' })).toBeEnabled();
+  });
+
+  it('prevents duplicate provider-link requests while one is pending', async () => {
+    let resolveLink: (response: Response) => void = () => undefined;
+    const pendingLink = new Promise<Response>(resolve => {
+      resolveLink = resolve;
+    });
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/account', account()),
+      {
+        method: 'POST',
+        path: '/api/account/providers/spotify/link',
+        respond: () => pendingLink,
+      },
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/account');
+
+    const link = await screen.findByRole('button', { name: 'Link Spotify' });
+    await user.dblClick(link);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(screen.getByRole('button', { name: 'Preparing…' })).toBeDisabled();
+
+    resolveLink(
+      jsonResponse({ authorizationUrl: 'https://provider.example/authorize' }, { status: 201 }),
+    );
+    expect(
+      await screen.findByRole('link', { name: 'Continue linking Spotify' }),
+    ).toBeInTheDocument();
+  });
+
+  it('retries a transient account read failure', async () => {
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute(
+        'GET',
+        '/api/account',
+        errorBody('upstream_unavailable', 'Settings are temporarily unavailable.'),
+        { status: 502 },
+      ),
+      jsonRoute('GET', '/api/account', account()),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/account');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Settings are temporarily unavailable.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByRole('heading', { name: 'Command syntax' })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['syntax save', 'PATCH', '/api/account/syntax'],
+    ['provider link', 'POST', '/api/account/providers/spotify/link'],
+    ['provider unlink', 'DELETE', '/api/account/providers/soundcloud'],
+  ])(
+    'expires the session on a 401 during %s without success feedback',
+    async (_name, method, path) => {
+      installFetchRouter([
+        jsonRoute('GET', '/api/auth/session', session()),
+        jsonRoute('GET', '/api/account', account()),
+        jsonRoute(
+          method,
+          path,
+          errorBody('authentication_required', 'Authentication is required.'),
+          { status: 401 },
+        ),
+      ]);
+      const user = userEvent.setup();
+      renderAt('/app/account');
+
+      if (method === 'PATCH') {
+        await user.click(await screen.findByRole('radio', { name: /traditional/i }));
+        await user.click(screen.getByRole('button', { name: 'Save preference' }));
+      } else if (method === 'POST') {
+        await user.click(await screen.findByRole('button', { name: 'Link Spotify' }));
+      } else {
+        const provider = await screen.findByRole('region', { name: 'SoundCloud' });
+        await user.click(within(provider).getByRole('button', { name: 'Disconnect' }));
+        await user.click(within(provider).getByRole('button', { name: 'Confirm disconnect' }));
+      }
+
+      expect(
+        await screen.findByRole('heading', { name: 'Your session has expired' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/was saved|authorization is ready|was disconnected/i),
+      ).not.toBeInTheDocument();
+    },
+  );
 
   it('moves account API authentication failures through the existing expired-session UX', async () => {
     installFetchRouter([
@@ -603,9 +754,223 @@ describe('guild settings', () => {
     await user.type(prefix, '?');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
-    expect(await screen.findByText('The request is invalid.')).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('The request is invalid.');
+    expect(alert).toHaveFocus();
     expect(prefix).toHaveValue('?');
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+  });
+
+  it('announces local validation errors and keeps invalid input focused for correction', async () => {
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    await user.click(prefix);
+    await user.keyboard('{Control>}a{/Control}{Backspace}');
+
+    const error = screen.getByText('Enter exactly one Unicode character.');
+    expect(error).toHaveTextContent('Enter exactly one Unicode character.');
+    expect(error).toHaveAttribute('role', 'alert');
+    expect(prefix).toHaveFocus();
+    expect(prefix).toHaveAttribute('aria-invalid', 'true');
+    expect(prefix).toHaveAccessibleDescription(
+      expect.stringContaining('Enter exactly one Unicode character.'),
+    );
+  });
+
+  it('supports a keyboard-only Unicode prefix save with an exact partial payload', async () => {
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        guild({ settings: { ...guild().settings, prefix: '界' } }),
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    prefix.focus();
+    await user.keyboard('{Control>}a{/Control}界');
+    await user.keyboard('{Enter}');
+
+    expect(await screen.findByText('Server settings were saved.')).toBeInTheDocument();
+    expect(requestJsonBody(fetchMock, 3)).toEqual({ prefix: '界' });
+  });
+
+  it('uses API-returned normalization as the new clean baseline', async () => {
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        guild({
+          settings: {
+            ...guild().settings,
+            prefix: '?',
+            volume: 0.33,
+            djRoleIds: ['201'],
+          },
+        }),
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    await user.clear(prefix);
+    await user.type(prefix, '?');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByText('Server settings were saved.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Default volume percentage')).toHaveValue('33');
+    expect(screen.getByRole('checkbox', { name: 'Moderator' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'DJ' })).not.toBeChecked();
+    expect(screen.getByText('Up to date')).toBeInTheDocument();
+    expect(requestJsonBody(fetchMock, 3)).toEqual({ prefix: '?' });
+  });
+
+  it('expires the session on a guild-save 401 and never reports success', async () => {
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        errorBody('authentication_required', 'Authentication is required.'),
+        { status: 401 },
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    await user.clear(prefix);
+    await user.type(prefix, '?');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Your session has expired' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Server settings were saved.')).not.toBeInTheDocument();
+  });
+
+  it('recovers from a transient guild-save failure without losing the dirty draft', async () => {
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        errorBody('upstream_unavailable', 'The service is temporarily unavailable.'),
+        { status: 503 },
+      ),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        guild({ settings: { ...guild().settings, prefix: '?' } }),
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    await user.clear(prefix);
+    await user.type(prefix, '?');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The service is temporarily unavailable.',
+    );
+    expect(prefix).toHaveValue('?');
+    expect(screen.queryByText('Server settings were saved.')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText('Server settings were saved.')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
+  it('aborts a late guild read during rapid route changes and ignores its completion', async () => {
+    let resolveGuild: (response: Response) => void = () => undefined;
+    const guildSignal: { current: AbortSignal | null } = { current: null };
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      {
+        method: 'GET',
+        path: '/api/guilds/100',
+        respond: init => {
+          guildSignal.current = init?.signal as AbortSignal;
+          return new Promise<Response>(resolve => {
+            resolveGuild = resolve;
+          });
+        },
+      },
+      jsonRoute('GET', '/api/account', account()),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Workspace navigation' })).getByRole('link', {
+        name: 'Account',
+      }),
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Command syntax' })).toBeInTheDocument();
+    expect(guildSignal.current?.aborted).toBe(true);
+
+    resolveGuild(jsonResponse(guild({ name: 'Late stale server' })));
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Late stale server' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('aborts an in-flight save on navigation and ignores the late mutation response', async () => {
+    let resolveSave: (response: Response) => void = () => undefined;
+    const saveSignal: { current: AbortSignal | null } = { current: null };
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      {
+        method: 'PATCH',
+        path: '/api/guilds/100',
+        respond: init => {
+          saveSignal.current = init?.signal as AbortSignal;
+          return new Promise<Response>(resolve => {
+            resolveSave = resolve;
+          });
+        },
+      },
+      jsonRoute('GET', '/api/account', account()),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
+    await user.clear(prefix);
+    await user.type(prefix, '?');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Workspace navigation' })).getByRole('link', {
+        name: 'Account',
+      }),
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Command syntax' })).toBeInTheDocument();
+    expect(saveSignal.current?.aborted).toBe(true);
+    resolveSave(jsonResponse(guild({ settings: { ...guild().settings, prefix: '?' } })));
+    await waitFor(() =>
+      expect(screen.queryByText('Server settings were saved.')).not.toBeInTheDocument(),
+    );
   });
 
   it('retries a transient detail load failure', async () => {

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../web/app';
@@ -49,6 +49,7 @@ const renderAt = (path: string) => {
 
 describe('public web experience', () => {
   beforeEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     window.localStorage.clear();
     window.history.replaceState({}, '', '/');
@@ -159,6 +160,7 @@ describe('public web experience', () => {
 
 describe('authenticated application shell', () => {
   beforeEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     window.localStorage.clear();
     window.history.replaceState({}, '', '/');
@@ -284,6 +286,23 @@ describe('authenticated application shell', () => {
     ).toBeInTheDocument();
   });
 
+  it('expires an active session exactly when its server-provided deadline elapses', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-22T09:00:00.000Z'));
+    const fetchMock = installFetchMock();
+    queueJson(fetchMock, authenticatedSession({ expiresAt: '2026-09-22T09:00:30.000Z' }));
+
+    renderAt('/app');
+    await act(async () => undefined);
+    expect(screen.getByRole('heading', { name: 'Welcome back, Music Admin.' })).toBeInTheDocument();
+
+    await act(() => vi.advanceTimersByTimeAsync(29_999));
+    expect(screen.getByRole('heading', { name: 'Welcome back, Music Admin.' })).toBeInTheDocument();
+
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByRole('heading', { name: 'Your session has expired' })).toBeInTheDocument();
+  });
+
   it('navigates account and guild route outlets from the workspace navigation', async () => {
     const fetchMock = installFetchMock();
     queueJson(fetchMock, authenticatedSession());
@@ -397,6 +416,44 @@ describe('authenticated application shell', () => {
     expect(screen.getByRole('heading', { name: 'Welcome back, Music Admin.' })).toBeInTheDocument();
   });
 
+  it('prevents duplicate logout requests and allows retry after a transient failure', async () => {
+    const fetchMock = installFetchMock();
+    queueJson(fetchMock, authenticatedSession());
+    let resolveLogout: (response: Response) => void = () => undefined;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise<Response>(resolve => {
+          resolveLogout = resolve;
+        }),
+    );
+    const user = userEvent.setup();
+    renderAt('/app');
+
+    await screen.findByRole('heading', { name: 'Welcome back, Music Admin.' });
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    await user.dblClick(signOut);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeDisabled();
+
+    resolveLogout(
+      jsonResponse(
+        { error: { code: 'logout_failed', message: 'Discord logout is temporarily unavailable.' } },
+        { status: 502 },
+      ),
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Discord logout is temporarily unavailable.',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
+    const retrySignOut = screen.getByRole('button', { name: 'Sign out' });
+    expect(retrySignOut).toBeEnabled();
+    queueResponse(fetchMock, emptyResponse());
+    await user.click(retrySignOut);
+    expect(await screen.findByRole('heading', { name: 'Sign in to Eolian' })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
   it('shows the no-manageable-guild state without inventing server access', async () => {
     const fetchMock = installFetchMock();
     queueJson(fetchMock, authenticatedSession({ guilds: [] }));
@@ -418,5 +475,20 @@ describe('authenticated application shell', () => {
     const alert = await screen.findByRole('alert');
     expect(within(alert).getByText('We could not load your workspace')).toBeInTheDocument();
     expect(within(alert).getByText(/unexpected content type/i)).toBeInTheDocument();
+  });
+
+  it('returns unknown routes to the public home page', async () => {
+    const fetchMock = installFetchMock();
+    queueJson(fetchMock, { authenticated: false });
+
+    renderAt('/definitely-not-a-route');
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: /turn a voice channel into the place everyone stays/i,
+      }),
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/');
   });
 });

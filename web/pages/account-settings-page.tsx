@@ -1,5 +1,5 @@
 import { Alert, Button, Card, Chip, Link, Spinner } from '@heroui/react';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import {
   getAccountSettings,
   startProviderLink,
@@ -32,24 +32,21 @@ export const AccountSettingsPage = () => {
     {},
   );
   const [reloadKey, setReloadKey] = useState(0);
+  const mutationController = useRef<AbortController | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(
     (signal?: AbortSignal) => {
       setLoadError(undefined);
       return getAccountSettings(signal)
         .then(next => {
+          if (signal?.aborted) return;
           setSettings(next);
           setSyntax(next.syntax);
-          setAuthorizationUrls(current =>
-            Object.fromEntries(
-              Object.entries(current).filter(
-                ([provider]) => !next.providers[provider as ProviderName].linked,
-              ),
-            ),
-          );
+          setAuthorizationUrls({});
         })
         .catch(error => {
-          if (error instanceof ApiError && error.kind === 'aborted') return;
+          if (signal?.aborted || (error instanceof ApiError && error.kind === 'aborted')) return;
           if (handleSessionError(error)) return;
           setLoadError(errorMessage(error));
         });
@@ -63,6 +60,17 @@ export const AccountSettingsPage = () => {
     return () => controller.abort();
   }, [load, reloadKey]);
 
+  useEffect(
+    () => () => {
+      mutationController.current?.abort();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (feedback?.status === 'danger') feedbackRef.current?.focus();
+  }, [feedback]);
+
   if (state.status !== 'authenticated') return null;
 
   const { csrfToken } = state.session;
@@ -71,46 +79,57 @@ export const AccountSettingsPage = () => {
   const saveSyntax = async (event: FormEvent) => {
     event.preventDefault();
     if (!settings || !isDirty || pendingAction) return;
+    const controller = new AbortController();
+    mutationController.current = controller;
     setPendingAction('syntax');
     setFeedback(undefined);
     try {
-      const next = await updateAccountSyntax(syntax, csrfToken);
+      const next = await updateAccountSyntax(syntax, csrfToken, controller.signal);
+      if (controller.signal.aborted) return;
       setSettings(next);
       setSyntax(next.syntax);
       setFeedback({ status: 'success', message: 'Your command syntax preference was saved.' });
     } catch (error) {
-      if (!handleSessionError(error)) {
+      if (!controller.signal.aborted && !handleSessionError(error)) {
         setFeedback({ status: 'danger', message: errorMessage(error) });
       }
     } finally {
-      setPendingAction(undefined);
+      if (!controller.signal.aborted) setPendingAction(undefined);
     }
   };
 
   const linkProvider = async (provider: ProviderName) => {
+    if (pendingAction) return;
+    const controller = new AbortController();
+    mutationController.current = controller;
     setPendingAction(`link-${provider}`);
     setFeedback(undefined);
     try {
-      const { authorizationUrl } = await startProviderLink(provider, csrfToken);
+      const { authorizationUrl } = await startProviderLink(provider, csrfToken, controller.signal);
+      if (controller.signal.aborted) return;
       setAuthorizationUrls(current => ({ ...current, [provider]: authorizationUrl }));
       setFeedback({
         status: 'success',
         message: `${providerLabels[provider]} authorization is ready. Continue in a new tab, then refresh the connection status when you finish.`,
       });
     } catch (error) {
-      if (!handleSessionError(error)) {
+      if (!controller.signal.aborted && !handleSessionError(error)) {
         setFeedback({ status: 'danger', message: errorMessage(error) });
       }
     } finally {
-      setPendingAction(undefined);
+      if (!controller.signal.aborted) setPendingAction(undefined);
     }
   };
 
   const removeProvider = async (provider: ProviderName) => {
+    if (pendingAction) return;
+    const controller = new AbortController();
+    mutationController.current = controller;
     setPendingAction(`unlink-${provider}`);
     setFeedback(undefined);
     try {
-      await unlinkProvider(provider, csrfToken);
+      await unlinkProvider(provider, csrfToken, controller.signal);
+      if (controller.signal.aborted) return;
       setSettings(current =>
         current
           ? {
@@ -128,11 +147,11 @@ export const AccountSettingsPage = () => {
         message: `${providerLabels[provider]} was disconnected.`,
       });
     } catch (error) {
-      if (!handleSessionError(error)) {
+      if (!controller.signal.aborted && !handleSessionError(error)) {
         setFeedback({ status: 'danger', message: errorMessage(error) });
       }
     } finally {
-      setPendingAction(undefined);
+      if (!controller.signal.aborted) setPendingAction(undefined);
     }
   };
 
@@ -163,7 +182,12 @@ export const AccountSettingsPage = () => {
   return (
     <div className="mt-10 grid max-w-4xl gap-6">
       {feedback && (
-        <Alert role="status" status={feedback.status}>
+        <Alert
+          ref={feedbackRef}
+          role={feedback.status === 'danger' ? 'alert' : 'status'}
+          status={feedback.status}
+          tabIndex={feedback.status === 'danger' ? -1 : undefined}
+        >
           <Alert.Indicator />
           <Alert.Content>
             <Alert.Description>{feedback.message}</Alert.Description>
