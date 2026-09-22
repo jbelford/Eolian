@@ -17,8 +17,8 @@
     "test:integration": "vitest run --config vitest.integration.config.mts --passWithNoTests",
     "test:coverage": "vitest run --config vitest.config.mts --coverage",
     "typecheck": "tsc -p src/tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "format": "prettier --write README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\"",
-    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"test/**/*.ts\" \"tests/**/*.ts\""
+    "format": "prettier --write README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.ts\""
   },
   "keywords": [
     "music",
