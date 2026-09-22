@@ -57,14 +57,24 @@ for legacy message commands.
 
 ## Run locally
 
-Copy `test/e2e/.env.example` to `test/e2e/.env`, fill in the separate test application, guild, and
+Copy `tests/e2e/.env.example` to `tests/e2e/.env`, fill in the separate test application, guild, and
 channel IDs, then run:
 
 ```bash
 set -a
-source test/e2e/.env
+source tests/e2e/.env
 set +a
 yarn e2e
+```
+
+The command builds the TypeScript harness as a Node-targeted ESM bundle with Vite, then runs the
+generated `dist/e2e/harness.mjs` entry with Node.js.
+
+Alternatively, keep the harness configuration outside the repository at
+`~/.config/eolian/profiles/e2e-test.env` and run:
+
+```bash
+mise run e2e-test
 ```
 
 The default request type is a YouTube URL. The harness sends a normal message equivalent to:
@@ -117,6 +127,12 @@ that the queue is empty.
 
 `E2E_BOT_ID` is itself the server-side opt-in. Remove it from the production Eolian environment
 outside deliberate test windows.
+
+To load `~/.config/eolian/profiles/e2e-prod.env` and run the production-gated harness:
+
+```bash
+mise run e2e-prod
+```
 
 ## Human-triggered mode
 

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { evaluatePlayback } from '../../../test/e2e/verification';
+import { evaluatePlayback } from '../../e2e/verification';
 
 const thresholds = {
   minPackets: 5,
