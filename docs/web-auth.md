@@ -77,3 +77,13 @@ preHandler: [security.guards.authenticate, security.guards.origin, security.guar
 The authenticated record is then available as `request.authSession`. API DTOs must select safe
 fields explicitly and must not return the stored access token, refresh token, session key, or raw
 Discord SDK objects.
+
+## Browser integration
+
+The React application bootstraps its in-memory auth state from `GET /api/auth/session`. Browser API
+requests use same-origin credentials, and the CSRF token is held only in that auth state for
+authenticated mutations such as logout. The token is never written to browser storage.
+
+Protected routes preserve the requested same-origin path while sending unauthenticated users
+through `/api/auth/discord`. The authenticated shell exposes nested account and guild route outlets;
+guild children receive the selected manageable guild as router outlet context.
