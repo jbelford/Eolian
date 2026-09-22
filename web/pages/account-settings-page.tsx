@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Chip, Spinner } from '@heroui/react';
+import { Alert, Button, Card, Chip, Link, Spinner } from '@heroui/react';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import {
   getAccountSettings,
@@ -28,6 +28,9 @@ export const AccountSettingsPage = () => {
   const [feedback, setFeedback] = useState<{ status: 'success' | 'danger'; message: string }>();
   const [pendingAction, setPendingAction] = useState<string>();
   const [confirmProvider, setConfirmProvider] = useState<ProviderName>();
+  const [authorizationUrls, setAuthorizationUrls] = useState<Partial<Record<ProviderName, string>>>(
+    {},
+  );
   const [reloadKey, setReloadKey] = useState(0);
 
   const load = useCallback(
@@ -37,6 +40,13 @@ export const AccountSettingsPage = () => {
         .then(next => {
           setSettings(next);
           setSyntax(next.syntax);
+          setAuthorizationUrls(current =>
+            Object.fromEntries(
+              Object.entries(current).filter(
+                ([provider]) => !next.providers[provider as ProviderName].linked,
+              ),
+            ),
+          );
         })
         .catch(error => {
           if (error instanceof ApiError && error.kind === 'aborted') return;
@@ -82,10 +92,10 @@ export const AccountSettingsPage = () => {
     setFeedback(undefined);
     try {
       const { authorizationUrl } = await startProviderLink(provider, csrfToken);
-      window.open(authorizationUrl, '_blank', 'noopener,noreferrer');
+      setAuthorizationUrls(current => ({ ...current, [provider]: authorizationUrl }));
       setFeedback({
         status: 'success',
-        message: `Finish linking ${providerLabels[provider]} in the new tab, then refresh the connection status.`,
+        message: `${providerLabels[provider]} authorization is ready. Continue in a new tab, then refresh the connection status when you finish.`,
       });
     } catch (error) {
       if (!handleSessionError(error)) {
@@ -226,7 +236,10 @@ export const AccountSettingsPage = () => {
             isDisabled={Boolean(pendingAction)}
             size="sm"
             variant="secondary"
-            onPress={() => setReloadKey(key => key + 1)}
+            onPress={() => {
+              setFeedback(undefined);
+              setReloadKey(key => key + 1);
+            }}
           >
             Refresh status
           </Button>
@@ -236,6 +249,7 @@ export const AccountSettingsPage = () => {
             {(Object.keys(providerLabels) as ProviderName[]).map(provider => {
               const status = settings.providers[provider];
               const isPending = pendingAction?.endsWith(provider);
+              const authorizationUrl = authorizationUrls[provider];
               return (
                 <section
                   aria-labelledby={`${provider}-heading`}
@@ -299,13 +313,35 @@ export const AccountSettingsPage = () => {
                           Disconnect
                         </Button>
                       ) : (
-                        <Button
-                          isDisabled={!status.linkAvailable || Boolean(pendingAction)}
-                          size="sm"
-                          onPress={() => void linkProvider(provider)}
-                        >
-                          {isPending ? 'Opening…' : `Link ${providerLabels[provider]}`}
-                        </Button>
+                        <div className="grid justify-items-start gap-3">
+                          <Button
+                            isDisabled={!status.linkAvailable || Boolean(pendingAction)}
+                            size="sm"
+                            onPress={() => void linkProvider(provider)}
+                          >
+                            {isPending
+                              ? 'Preparing…'
+                              : authorizationUrl
+                                ? `Restart ${providerLabels[provider]} link`
+                                : `Link ${providerLabels[provider]}`}
+                          </Button>
+                          {authorizationUrl && (
+                            <div className="grid gap-2">
+                              <Link
+                                className="font-semibold"
+                                href={authorizationUrl}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                              >
+                                Continue linking {providerLabels[provider]}
+                              </Link>
+                              <p className="text-sm leading-6 text-muted">
+                                Complete authorization in the new tab, return here, and choose
+                                Refresh status.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}

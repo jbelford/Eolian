@@ -88,7 +88,7 @@ const isGuildSettings = (value: unknown): value is GuildSettings =>
     'djAllowLimited',
   ]) &&
   typeof value.prefix === 'string' &&
-  value.prefix.length === 1 &&
+  Array.from(value.prefix).length === 1 &&
   typeof value.volume === 'number' &&
   Number.isFinite(value.volume) &&
   value.volume >= 0 &&

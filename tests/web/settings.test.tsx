@@ -110,7 +110,7 @@ describe('account settings', () => {
     );
   });
 
-  it('starts provider linking in a new tab and refreshes status', async () => {
+  it('preserves provider authorization as an explicit new-tab action and refreshes status', async () => {
     const open = vi.fn();
     vi.stubGlobal('open', open);
     installFetchRouter([
@@ -131,24 +131,64 @@ describe('account settings', () => {
         { authorizationUrl: 'https://provider.example/authorize' },
         { status: 201 },
       ),
-      jsonRoute('GET', '/api/account', account()),
+      jsonRoute(
+        'GET',
+        '/api/account',
+        account({
+          providers: {
+            spotify: { linked: true, linkAvailable: true },
+            soundcloud: { linked: true, linkAvailable: true },
+          },
+        }),
+      ),
     ]);
     const user = userEvent.setup();
     renderAt('/app/account');
 
     await user.click(await screen.findByRole('button', { name: 'Link Spotify' }));
-    expect(open).toHaveBeenCalledWith(
-      'https://provider.example/authorize',
-      '_blank',
-      'noopener,noreferrer',
-    );
-    expect(
-      screen.getByText(/finish linking spotify in the new tab, then refresh/i),
-    ).toBeInTheDocument();
+    const continueLink = screen.getByRole('link', { name: 'Continue linking Spotify' });
+    expect(continueLink).toHaveAttribute('href', 'https://provider.example/authorize');
+    expect(continueLink).toHaveAttribute('target', '_blank');
+    expect(continueLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(continueLink).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
+    expect(screen.getByText(/complete authorization in the new tab/i)).toBeInTheDocument();
+    expect(open).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Link SoundCloud' })).toBeDisabled();
 
     await user.click(screen.getByRole('button', { name: 'Refresh status' }));
-    expect(await screen.findByText('Connected to your Eolian account.')).toBeInTheDocument();
+    const spotify = screen.getByRole('region', { name: 'Spotify' });
+    expect(
+      await within(spotify).findByText('Connected to your Eolian account.'),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        within(spotify).queryByRole('link', { name: 'Continue linking Spotify' }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it('retains the continuation URL when no popup window is available', async () => {
+    const open = vi.fn(() => null);
+    vi.stubGlobal('open', open);
+    installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/account', account()),
+      jsonRoute(
+        'POST',
+        '/api/account/providers/spotify/link',
+        { authorizationUrl: 'https://provider.example/blocked' },
+        { status: 201 },
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/account');
+
+    await user.click(await screen.findByRole('button', { name: 'Link Spotify' }));
+    expect(screen.getByRole('link', { name: 'Continue linking Spotify' })).toHaveAttribute(
+      'href',
+      'https://provider.example/blocked',
+    );
+    expect(open).not.toHaveBeenCalled();
   });
 
   it('confirms unlinking and preserves linked state when the mutation fails', async () => {
@@ -300,7 +340,7 @@ describe('guild settings', () => {
 
     expect(await screen.findByRole('heading', { name: 'Listening Room' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Command prefix/ })).toHaveValue('!');
-    expect(screen.getByLabelText('Default volume percentage')).toHaveValue(25);
+    expect(screen.getByLabelText('Default volume percentage')).toHaveValue('25');
     expect(screen.getByRole('radio', { name: /keyword/i })).toBeChecked();
     expect(screen.getByRole('combobox', { name: /Preferred text channel/ })).toHaveValue('300');
     expect(screen.getByRole('checkbox', { name: 'DJ' })).toBeChecked();
@@ -317,7 +357,11 @@ describe('guild settings', () => {
 
     const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
     await user.clear(prefix);
-    expect(screen.getByText('Enter exactly one character.')).toBeInTheDocument();
+    expect(screen.getByText('Enter exactly one Unicode character.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+
+    await user.type(prefix, 'ab');
+    expect(screen.getByText('Enter exactly one Unicode character.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
 
     await user.click(screen.getByRole('button', { name: 'Reset changes' }));
@@ -359,7 +403,7 @@ describe('guild settings', () => {
       jsonRoute(
         'PATCH',
         '/api/guilds/100',
-        guild({ settings: { ...guild().settings, prefix: '?' } }),
+        guild({ settings: { ...guild().settings, prefix: '🎵' } }),
       ),
     ]);
     const user = userEvent.setup();
@@ -367,11 +411,12 @@ describe('guild settings', () => {
 
     const prefix = await screen.findByRole('textbox', { name: /Command prefix/ });
     await user.clear(prefix);
-    await user.type(prefix, '?');
+    await user.click(prefix);
+    await user.paste('🎵');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     expect(await screen.findByText('Server settings were saved.')).toBeInTheDocument();
-    expect(requestJsonBody(fetchMock, 3)).toEqual({ prefix: '?' });
+    expect(requestJsonBody(fetchMock, 3)).toEqual({ prefix: '🎵' });
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
       '/api/guilds/100',
@@ -420,6 +465,51 @@ describe('guild settings', () => {
       djRoleIds: ['200', '201'],
       djAllowLimited: true,
     });
+  });
+
+  it('rejects blank and nonnumeric volume while accepting 0 and 100 boundaries', async () => {
+    const fetchMock = installFetchRouter([
+      jsonRoute('GET', '/api/auth/session', session()),
+      jsonRoute('GET', '/api/guilds/100', guild()),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        guild({ settings: { ...guild().settings, volume: 0 } }),
+      ),
+      jsonRoute(
+        'PATCH',
+        '/api/guilds/100',
+        guild({ settings: { ...guild().settings, volume: 1 } }),
+      ),
+    ]);
+    const user = userEvent.setup();
+    renderAt('/app/guilds/100');
+
+    const volume = await screen.findByLabelText('Default volume percentage');
+    await user.clear(volume);
+    expect(screen.getByText('Enter a volume from 0 to 100.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+
+    await user.type(volume, '   ');
+    expect(screen.getByText('Enter a volume from 0 to 100.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+
+    await user.clear(volume);
+    await user.type(volume, 'not-a-number');
+    expect(screen.getByText('Enter a volume from 0 to 100.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+
+    await user.clear(volume);
+    await user.type(volume, '0');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByText('Server settings were saved.');
+    expect(requestJsonBody(fetchMock, 3)).toEqual({ volume: 0 });
+
+    await user.clear(volume);
+    await user.type(volume, '100');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByText('Server settings were saved.');
+    expect(requestJsonBody(fetchMock, 4)).toEqual({ volume: 1 });
   });
 
   it.each([

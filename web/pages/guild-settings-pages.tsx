@@ -170,11 +170,19 @@ const draftFromGuild = (guild: GuildDetail): GuildDraft => ({
 const sameIds = (left: string[], right: string[]) =>
   left.length === right.length && left.every((id, index) => id === right[index]);
 
+const parseVolumePercent = (value: string): number | undefined => {
+  if (value.trim() === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? parsed : undefined;
+};
+
 const updateFromDraft = (draft: GuildDraft, baseline: GuildDetail): GuildSettingsUpdate => {
   const update: GuildSettingsUpdate = {};
-  const volume = Number(draft.volumePercent) / 100;
+  const volumePercent = parseVolumePercent(draft.volumePercent);
   if (draft.prefix !== baseline.settings.prefix) update.prefix = draft.prefix;
-  if (volume !== baseline.settings.volume) update.volume = volume;
+  if (volumePercent !== undefined && volumePercent / 100 !== baseline.settings.volume) {
+    update.volume = volumePercent / 100;
+  }
   if (draft.syntax !== baseline.settings.syntax) update.syntax = draft.syntax;
   if ((draft.preferredChannelId || null) !== baseline.settings.preferredChannelId) {
     update.preferredChannelId = draft.preferredChannelId || null;
@@ -264,12 +272,10 @@ export const GuildSettingsPage = () => {
 
   const update = updateFromDraft(draft, guild);
   const isDirty = Object.keys(update).length > 0;
-  const volume = Number(draft.volumePercent);
-  const prefixError = draft.prefix.length !== 1 ? 'Enter exactly one character.' : undefined;
-  const volumeError =
-    !Number.isFinite(volume) || volume < 0 || volume > 100
-      ? 'Enter a volume from 0 to 100.'
-      : undefined;
+  const volumePercent = parseVolumePercent(draft.volumePercent);
+  const prefixError =
+    Array.from(draft.prefix).length !== 1 ? 'Enter exactly one Unicode character.' : undefined;
+  const volumeError = volumePercent === undefined ? 'Enter a volume from 0 to 100.' : undefined;
   const roleIds = new Set(guild.roles.map(role => role.id));
   const staleRoles = draft.djRoleIds.filter(id => !roleIds.has(id));
   const channelIds = new Set(guild.channels.map(channel => channel.id));
@@ -377,14 +383,13 @@ export const GuildSettingsPage = () => {
                 aria-invalid={Boolean(prefixError)}
                 className="mt-2 min-h-11 w-full rounded-xl border border-separator bg-background px-4 text-lg outline-none focus-visible:ring-2 focus-visible:ring-focus"
                 disabled={isSaving}
-                maxLength={1}
                 value={draft.prefix}
                 onChange={event =>
                   setDraft(current => current && { ...current, prefix: event.target.value })
                 }
               />
               <span className="mt-2 block text-sm text-muted" id="prefix-description">
-                The one-character prefix used for traditional message commands.
+                The one-Unicode-character prefix used for traditional message commands.
               </span>
               {prefixError && (
                 <span className="mt-1 block text-sm text-danger" id="prefix-error">
@@ -412,9 +417,8 @@ export const GuildSettingsPage = () => {
                 aria-label="Default volume percentage"
                 className="mt-2 min-h-11 w-28 rounded-xl border border-separator bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-focus"
                 disabled={isSaving}
-                max="100"
-                min="0"
-                type="number"
+                inputMode="decimal"
+                type="text"
                 value={draft.volumePercent}
                 onChange={event =>
                   setDraft(current => current && { ...current, volumePercent: event.target.value })
