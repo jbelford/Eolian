@@ -2,7 +2,11 @@ import { afterEach, vi } from 'vitest';
 
 Object.assign(process.env, {
   NODE_ENV: 'test',
+  BASE_URI: 'http://localhost:8080',
+  DISCORD_CLIENT_ID: 'test-client',
+  DISCORD_CLIENT_SECRET: 'test-secret',
   DISCORD_TOKEN: 'test',
+  SESSION_SECRET: 'test-session-secret',
   YOUTUBE_TOKEN: 'test',
   SOUNDCLOUD_CLIENT_ID: 'test',
   SOUNDCLOUD_CLIENT_SECRET: 'test',

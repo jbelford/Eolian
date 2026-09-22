@@ -1,5 +1,6 @@
 import { Closable } from '@eolian/common/@types';
 import { logger } from '@eolian/common/logger';
+import { AppDatabase } from '@eolian/data/@types';
 import { IAuthServiceProvider } from '@eolian/framework/@types';
 import { FastifyInstance } from 'fastify';
 import { createWebServerInstance } from './instance';
@@ -10,7 +11,8 @@ export class WebServer implements Closable {
   constructor(
     private readonly port: number,
     authProviders: IAuthServiceProvider,
-    private readonly server: FastifyInstance = createWebServerInstance(authProviders),
+    database: AppDatabase,
+    private readonly server: FastifyInstance = createWebServerInstance(authProviders, database),
   ) {}
 
   async start(): Promise<void> {

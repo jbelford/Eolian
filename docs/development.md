@@ -53,6 +53,10 @@ process variables precedence over `web/.env.production` and embeds the value at 
 The variable is public and must not contain a token or secret. A missing or malformed client ID
 fails the browser build with a configuration error; there is no fallback.
 
+Discord web login additionally requires `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`,
+`SESSION_SECRET`, and the authoritative public `BASE_URI`. See
+[Web authentication](web-auth.md) for the callback, session, and protected-route contracts.
+
 ## Build architecture
 
 The application has two Vite targets:

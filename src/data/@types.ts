@@ -18,6 +18,7 @@ export interface MemoryCache<T> {
 export interface AppDatabase extends Closable {
   readonly users: UsersDb;
   readonly servers: ServersDb;
+  readonly sessions: SessionsDb;
 }
 
 export interface CollectionDb<T> {
@@ -52,6 +53,13 @@ export interface ServersDb extends CollectionDb<ServerDTO> {
   setDjAllowLimited(id: string, allow: boolean): Promise<void>;
 }
 
+export interface SessionsDb extends CollectionDb<SessionDTO> {
+  initialize(): Promise<void>;
+  create(session: SessionDTO): Promise<void>;
+  update(id: string, values: Partial<Omit<SessionDTO, '_id'>>): Promise<boolean>;
+  renew(id: string, renewedBefore: Date, renewedAt: Date, expiresAt: Date): Promise<boolean>;
+}
+
 export interface DocDTO {
   _id: string;
 }
@@ -77,6 +85,37 @@ export interface UserDTO extends DocDTO {
   };
   identifiers?: Record<string, Identifier>;
   syntax?: SyntaxType;
+}
+
+export interface DiscordSessionUser {
+  id: string;
+  username: string;
+  globalName: string | null;
+  avatar: string | null;
+}
+
+export interface DiscordSessionGuild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner: boolean;
+  permissions: string;
+}
+
+export interface SessionDTO extends DocDTO {
+  user: DiscordSessionUser;
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+    scope: string;
+    expiresAt: Date;
+  };
+  guilds: DiscordSessionGuild[];
+  guildsRefreshedAt: Date;
+  csrfToken: string;
+  createdAt: Date;
+  renewedAt: Date;
+  expiresAt: Date;
 }
 
 export interface Identifier {

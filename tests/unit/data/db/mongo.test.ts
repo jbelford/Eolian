@@ -6,7 +6,10 @@ import { ResourceType } from '@eolian/data/@types';
 const { connect, close, collection, db, MongoClient } = vi.hoisted(() => {
   const connect = vi.fn();
   const close = vi.fn();
-  const collection = vi.fn((name: string) => ({ name }));
+  const collection = vi.fn((name: string) => ({
+    name,
+    createIndex: vi.fn().mockResolvedValue('sessions_expires_at_ttl'),
+  }));
   const db = vi.fn(() => ({ collection }));
   const MongoClient = vi.fn(function () {
     return { connect, close, db };
@@ -112,6 +115,7 @@ describe('createDatabase', () => {
   beforeEach(() => {
     connect.mockReset();
     close.mockReset();
+    close.mockResolvedValue(undefined);
     collection.mockClear();
     db.mockClear();
     MongoClient.mockClear();
@@ -121,7 +125,11 @@ describe('createDatabase', () => {
     connect.mockResolvedValue(undefined);
     const database = await createDatabase();
     expect(MongoClient).toHaveBeenCalledWith('mongodb://localhost/test');
-    expect(collection.mock.calls.map(args => args[0])).toEqual(['users', 'servers']);
+    expect(collection.mock.calls.map(args => args[0])).toEqual(['users', 'servers', 'sessions']);
+    expect(collection.mock.results[2].value.createIndex).toHaveBeenCalledWith(
+      { expiresAt: 1 },
+      { name: 'sessions_expires_at_ttl', expireAfterSeconds: 0 },
+    );
     await database.close();
     expect(close).toHaveBeenCalledOnce();
   });
