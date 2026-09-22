@@ -25,3 +25,21 @@ run = "yarn start"
 description = "Start the built application with the debugger and shared local environment"
 env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
 run = "yarn start-debug"
+
+[tasks.e2e-test]
+description = "Run the Discord playback harness against the test bot"
+run = """
+set -a
+. "$HOME/.config/eolian/profiles/e2e-test.env"
+set +a
+yarn e2e
+"""
+
+[tasks.e2e-prod]
+description = "Run the Discord playback harness against the production bot"
+run = """
+set -a
+. "$HOME/.config/eolian/profiles/e2e-prod.env"
+set +a
+yarn e2e
+"""

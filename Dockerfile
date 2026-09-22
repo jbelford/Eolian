@@ -22,7 +22,6 @@ ARG COMMIT_DATE
 
 COPY index.html ./
 COPY src/ src/
-COPY test/ test/
 COPY tests/ tests/
 COPY web/ web/
 COPY tsconfig.json tsconfig.test.json ./

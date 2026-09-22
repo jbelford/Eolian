@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { loadHarnessConfig } from '../../../test/e2e/harness-config';
+import { loadHarnessConfig } from '../../e2e/harness-config';
 
 const base = {
   E2E_DISCORD_TOKEN: 'token',

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createCleanupCommands, createPlayCommand } from '../../../test/e2e/chat-command';
+import { createCleanupCommands, createPlayCommand } from '../../e2e/chat-command';
 
 it('creates a mention-based URL play command', () => {
   expect(
