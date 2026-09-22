@@ -3,10 +3,10 @@
 The harness uses a separate Discord bot application to test Eolian through Discord. It never uses
 a user token or self-bot.
 
-Eolian normally ignores bot-authored messages to prevent bot loops. Setting `E2E_BOT_ID` allows
-one bot account through that existing guard. The allowlisted bot otherwise follows exactly the
-same command path as a human: invocation detection, parsing, permissions, resolvers, queue, player,
-and Discord voice.
+Eolian normally ignores bot-authored messages and bot-only voice channels to prevent bot loops and
+idle playback. Setting `E2E_BOT_ID` allows one bot account through the message guard and counts it
+as a voice listener. The allowlisted bot otherwise follows exactly the same command path as a
+human: invocation detection, parsing, permissions, resolvers, queue, player, and Discord voice.
 
 There is no test control API, special cleanup protocol, configured test guild, or internal test
 session in Eolian.

@@ -214,6 +214,8 @@ All config loaded via `src/common/env.ts` from environment variables:
 - `BASE_URI` - OAuth callback base URL
 - `DISCORD_TOKEN_OLD` - Old bot token for migration
 - `YOUTUBE_ALLOWLIST` - Guild IDs allowed to use YouTube
+- `YTDLP_PATH` - Override the yt-dlp executable path
+- `YTDLP_COOKIES_PATH` - Netscape-format YouTube cookie file for restricted content
 - `OPENAI_API_KEY`, `OPENAI_TTS_MODEL`, `OPENAI_AUDIO_MODEL` - OpenAI integration
 - `AZURE_OPENAI_*` - Azure OpenAI alternative
 
@@ -223,7 +225,6 @@ All config loaded via `src/common/env.ts` from environment variables:
 - `FLAG_SOUNDCLOUD_OAUTH=true` - Enable SoundCloud user OAuth
 - `FLAG_DISCORD_OLD_LEAVE=true` - Auto-leave servers with old token
 - `FLAG_ENABLE_WEBSITE=true` - Enable website routes
-- `FLAG_ENABLE_POTOKEN_GEN=true` - Enable YouTube PO token generation
 
 **Build-time injection:**
 
@@ -304,6 +305,7 @@ Pattern priority determines parse order (higher priority parsed first). See `src
 
 Common issues:
 
-- **YouTube 403**: PO token expired or quota exceeded
+- **YouTube extraction/403 errors**: Update the pinned yt-dlp release first and verify the
+  residential proxy is configured
 - **Spotify 401**: Refresh token invalid, user needs to re-link account
 - **Voice connection stuck**: Check if anyone listening (`hasPeopleListening()`), connection auto-closes if empty

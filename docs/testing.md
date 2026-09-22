@@ -74,6 +74,5 @@ V8 coverage is enforced globally at:
 - 85% lines
 
 Coverage includes production TypeScript. Exclusions are limited to the executable application
-bootstrap, type-only files, barrel exports, and the browser-backed YouTube proof-token integration.
-New exclusions should represent genuine external or generated boundaries rather than untested
-application behavior.
+bootstrap, type-only files, and barrel exports. New exclusions should represent genuine external
+or generated boundaries rather than untested application behavior.

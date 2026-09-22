@@ -1,134 +1,159 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Readable } from 'node:stream';
+import { EventEmitter, once } from 'node:events';
+import { PassThrough } from 'node:stream';
 
-const {
-  chooseFormat,
-  decipher,
-  getBasicInfo,
-  create,
-  createFetchFunction,
-  createProxyUrl,
-  generatePoToken,
-  httpRequest,
-  environment,
-  platform,
-} = vi.hoisted(() => {
-  const decipher = vi.fn();
-  const chooseFormat = vi.fn(() => ({ decipher }));
-  return {
-    chooseFormat,
-    decipher,
-    getBasicInfo: vi.fn(() => ({ chooseFormat })),
-    create: vi.fn(),
-    createFetchFunction: vi.fn(),
-    createProxyUrl: vi.fn(),
-    generatePoToken: vi.fn(),
-    httpRequest: vi.fn(),
-    environment: {
-      tokens: { youtube: { cookie: '' } },
-      flags: { enablePoTokenGen: false },
+const { environment } = vi.hoisted(() => ({
+  environment: {
+    config: {
+      ytDlpPath: '/tools/yt-dlp',
+      ytDlpCookiesPath: undefined as string | undefined,
     },
-    platform: { shim: {} as { eval?: (data: unknown, env: unknown) => Promise<unknown> } },
-  };
-});
+    proxy: undefined as
+      | {
+          user: string;
+          password: string;
+          name: string;
+        }
+      | undefined,
+  },
+}));
 
-vi.mock('youtubei.js', () => ({
-  Innertube: { create },
-  Platform: platform,
-  Types: {},
-  UniversalCache: vi.fn(),
-}));
-vi.mock('@eolian/api/youtube/potoken', () => ({
-  createFetchFunction,
-  createProxyUrl,
-  generatePoToken,
-}));
-vi.mock('@eolian/http', () => ({ httpRequest }));
 vi.mock('@eolian/common/env', () => ({ environment }));
 
 import { YouTubeStreamSource } from '@eolian/api/youtube/youtube-stream-source';
 
+type FakeChild = EventEmitter & {
+  stdout: PassThrough;
+  stderr: PassThrough;
+  exitCode: number | null;
+  signalCode: NodeJS.Signals | null;
+  kill: ReturnType<typeof vi.fn>;
+};
+
+function createChild(): FakeChild {
+  return Object.assign(new EventEmitter(), {
+    stdout: new PassThrough(),
+    stderr: new PassThrough(),
+    exitCode: null,
+    signalCode: null,
+    kill: vi.fn(),
+  });
+}
+
 describe('YouTubeStreamSource', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    environment.tokens.youtube.cookie = '';
-    environment.flags.enablePoTokenGen = false;
-    createProxyUrl.mockReturnValue('http://proxy.test');
-    createFetchFunction.mockReturnValue('fetch-function');
-    decipher.mockResolvedValue('https://stream.test/audio');
-    create.mockResolvedValue({
-      getBasicInfo,
-      session: { player: 'player' },
-    });
-    httpRequest.mockResolvedValue(Readable.from('audio'));
+    environment.config.ytDlpPath = '/tools/yt-dlp';
+    environment.config.ytDlpCookiesPath = undefined;
+    environment.proxy = undefined;
   });
 
-  it('evaluates player scripts with only the supplied signature helpers', async () => {
-    const result = await platform.shim.eval!(
-      {
-        output: `
-          const exportedVars = {
-            nFunction: value => "n-" + value,
-            sigFunction: value => "sig-" + value,
-          };`,
-      },
-      { n: 'one', sig: 'two' },
-    );
-
-    expect(result).toEqual({ n: 'n-one', sig: 'sig-two' });
-  });
-
-  it('creates an Innertube session, selects the best format, and requests its stream', async () => {
+  it('streams the best available audio from yt-dlp stdout', async () => {
+    const child = createChild();
+    const spawn = vi.fn(() => child);
     const progress = { update: vi.fn() };
     const source = new YouTubeStreamSource(
-      'https://youtube.test/watch?v=id',
+      'https://youtube.test/watch?v=video-id',
       'video-id',
       progress as never,
+      { spawn: spawn as never },
     );
 
-    const stream = await source.get(12_000);
+    queueMicrotask(() => child.emit('spawn'));
+    const stream = await source.get();
+    const data = once(stream, 'data');
+    child.stdout.write('audio');
 
-    expect(createFetchFunction).toHaveBeenCalledWith('http://proxy.test');
-    expect(create).toHaveBeenCalledWith({
-      cache: expect.anything(),
-      generate_session_locally: true,
-      cookie: undefined,
-      fetch: 'fetch-function',
-    });
-    expect(progress.update).toHaveBeenCalledWith('📺 Fetching information from YouTube...');
-    expect(getBasicInfo).toHaveBeenCalledWith('video-id');
-    expect(chooseFormat).toHaveBeenCalledWith({ quality: 'best' });
-    expect(decipher).toHaveBeenCalledWith('player');
-    expect(httpRequest).toHaveBeenCalledWith('https://stream.test/audio', {
-      proxy: 'http://proxy.test',
-    });
-    expect(stream).toBeInstanceOf(Readable);
-  });
-
-  it('adds cookies and generated proof-of-origin tokens when enabled', async () => {
-    environment.tokens.youtube.cookie = 'SID=cookie';
-    environment.flags.enablePoTokenGen = true;
-    generatePoToken.mockResolvedValue({ poToken: 'po-token', visitorData: 'visitor-data' });
-
-    await new YouTubeStreamSource('url', 'video-id').get();
-
-    expect(generatePoToken).toHaveBeenCalledWith('fetch-function', false);
-    expect(create).toHaveBeenCalledWith(
+    expect((await data)[0].toString()).toBe('audio');
+    expect(progress.update).toHaveBeenCalledWith('📺 Fetching stream from YouTube...');
+    expect(spawn).toHaveBeenCalledWith(
+      '/tools/yt-dlp',
+      [
+        '--no-config',
+        '--no-playlist',
+        '--no-progress',
+        '--js-runtimes',
+        `node:${process.execPath}`,
+        '--format',
+        'bestaudio/best',
+        '--output',
+        '-',
+        'https://youtube.test/watch?v=video-id',
+      ],
       expect.objectContaining({
-        cookie: 'SID=cookie',
-        po_token: 'po-token',
-        visitor_data: 'visitor-data',
+        stdio: ['ignore', 'pipe', 'pipe'],
       }),
     );
   });
 
-  it('propagates metadata and stream request failures', async () => {
-    const metadataError = new Error('metadata failed');
-    getBasicInfo.mockRejectedValueOnce(metadataError);
-    await expect(new YouTubeStreamSource('url', 'video-id').get()).rejects.toBe(metadataError);
+  it('configures cookies and proxy environment', async () => {
+    environment.config.ytDlpCookiesPath = '/run/secrets/youtube-cookies.txt';
+    environment.proxy = {
+      user: 'proxy-user',
+      password: 'proxy-password',
+      name: 'proxy.test',
+    };
+    const child = createChild();
+    const spawn = vi.fn(() => child);
 
-    const streamError = new Error('stream failed');
-    httpRequest.mockRejectedValueOnce(streamError);
-    await expect(new YouTubeStreamSource('url', 'video-id').get()).rejects.toBe(streamError);
+    queueMicrotask(() => child.emit('spawn'));
+    await new YouTubeStreamSource('url', 'video-id', undefined, {
+      spawn: spawn as never,
+    }).get();
+
+    const [, args, options] = spawn.mock.calls[0] as unknown as [
+      string,
+      string[],
+      { env: NodeJS.ProcessEnv },
+    ];
+    expect(args).toContain('/run/secrets/youtube-cookies.txt');
+    expect(options.env.HTTP_PROXY).toMatch(
+      /^http:\/\/proxy-user-cc-us-sessid-[^:]+:proxy-password@proxy\.test$/,
+    );
+    expect(options.env.HTTPS_PROXY).toBe(options.env.HTTP_PROXY);
+  });
+
+  it('rejects when yt-dlp cannot start', async () => {
+    const child = createChild();
+    const error = new Error('spawn failed');
+
+    queueMicrotask(() => child.emit('error', error));
+    await expect(
+      new YouTubeStreamSource('url', 'video-id', undefined, {
+        spawn: vi.fn(() => child) as never,
+      }).get(),
+    ).rejects.toBe(error);
+  });
+
+  it('reports bounded yt-dlp diagnostics for a failed process', async () => {
+    const child = createChild();
+    queueMicrotask(() => child.emit('spawn'));
+    const stream = await new YouTubeStreamSource('url', 'video-id', undefined, {
+      spawn: vi.fn(() => child) as never,
+    }).get();
+    const error = once(stream, 'error');
+
+    child.stderr.write('media unavailable');
+    child.exitCode = 1;
+    child.emit('close', 1);
+
+    await expect(error).resolves.toEqual([
+      expect.objectContaining({
+        message: 'yt-dlp exited with code 1: media unavailable',
+      }),
+    ]);
+  });
+
+  it('terminates yt-dlp when the consumer closes the stream', async () => {
+    const child = createChild();
+    queueMicrotask(() => child.emit('spawn'));
+    const stream = await new YouTubeStreamSource('url', 'video-id', undefined, {
+      spawn: vi.fn(() => child) as never,
+    }).get();
+
+    const closed = once(stream, 'close');
+    stream.destroy();
+    await closed;
+
+    expect(child.kill).toHaveBeenCalledWith('SIGTERM');
   });
 });

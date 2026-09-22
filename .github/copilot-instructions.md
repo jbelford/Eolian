@@ -3,8 +3,8 @@
 ## Toolchain and validation
 
 - Use the repository-pinned Node.js 24.21.0 and Yarn 4.4.1 toolchain. Run `mise trust`,
-  `mise install --locked node`, and `mise run setup` for initial setup; the setup task runs
-  `yarn install --immutable`.
+  `mise install --locked node`, and `mise run setup` for initial setup; the setup task installs
+  the immutable Yarn dependency tree and checksum-pinned yt-dlp executable.
 - `yarn typecheck` checks the Node application, browser application, test suites, and E2E harness.
 - `yarn build` typechecks and builds both Vite targets. `yarn build-dev` produces development
   builds with source maps, and `yarn build-web` checks and builds only the browser target.
@@ -46,6 +46,8 @@
 - Playback flows from a queued `Track` through its source stream, `SongStream`/FFmpeg filters,
   volume transformation and Opus encoding, then the Discord voice connection. The player
   advances the queue when Discord reports the audio resource idle.
+- YouTube playback uses the checksum-pinned yt-dlp executable installed by `mise run setup` and
+  streams its standard output into the existing `SongStream` pipeline.
 - The data layer combines MongoDB-backed users/servers with in-memory TTL caches. OAuth callbacks
   and the optional static website are served by the same Express process as `/healthz`.
 

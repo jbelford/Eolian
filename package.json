@@ -30,17 +30,20 @@
   "engines": {
     "node": ">=24.21.0"
   },
+  "resolutions": {
+    "@snazzah/davey": "0.1.12",
+    "detect-libc": "2.1.2"
+  },
   "author": "Jack Belford",
   "license": "GPL-3.0+",
   "dependencies": {
     "@discordjs/opus": "^0.10.0",
     "@discordjs/rest": "^2.6.0",
-    "@discordjs/voice": "^0.19.0",
-    "@snazzah/davey": "^0.1.9",
-    "bgutils-js": "^3.2.0",
+    "@discordjs/voice": "0.19.2",
+    "@snazzah/davey": "0.1.12",
     "bufferutil": "^4.0.8",
     "discord-api-types": "^0.38.37",
-    "discord.js": "^14.25.1",
+    "discord.js": "14.27.0",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
@@ -48,13 +51,10 @@
     "fuzzball": "^2.1.2",
     "googleapis": "^169.0.0",
     "html-entities": "^2.3.3",
-    "https-proxy-agent": "^7.0.5",
     "iso8601-duration": "^2.1.1",
-    "jsdom": "^27.3.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.41.0",
     "mongodb": "^4.11.0",
     "node-cache": "^5.1.2",
-    "node-fetch": "2",
     "node-gyp": "^10.2.0",
     "openai": "^6.15.0",
     "pm2": "7.0.4",
@@ -63,7 +63,6 @@
     "undici": "^7.16.0",
     "utf-8-validate": "^6.0.4",
     "winston": "^3.8.2",
-    "youtubei.js": "^16.0.1",
     "zlib-sync": "^0.1.10"
   },
   "devDependencies": {
@@ -72,10 +71,8 @@
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/express-session": "^1.17.10",
-    "@types/jsdom": "^21.1.7",
     "@types/node": "^22.12.0",
     "@types/node-cache": "^4.2.5",
-    "@types/node-fetch": "^2.6.12",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@types/winston": "^2.4.4",
