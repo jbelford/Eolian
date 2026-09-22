@@ -15,3 +15,13 @@ run = "yarn format:check"
 [tasks.build]
 description = "Build the production Node and browser applications"
 run = "yarn build"
+
+[tasks.start-local]
+description = "Start the built application with the shared local environment"
+env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
+run = "yarn start"
+
+[tasks.start-debug]
+description = "Start the built application with the debugger and shared local environment"
+env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
+run = "yarn start-debug"

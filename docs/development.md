@@ -28,7 +28,17 @@ mise run setup
 ```
 
 The application requires service credentials at runtime, but they are not needed to lint
-or build the project. Keep credentials in a local `.env` file and do not commit them.
+or build the project. Store the shared local runtime configuration outside the Git checkout:
+
+```bash
+mkdir -p ~/.config/eolian/profiles
+chmod 700 ~/.config/eolian ~/.config/eolian/profiles
+$EDITOR ~/.config/eolian/profiles/default.env
+chmod 600 ~/.config/eolian/profiles/default.env
+```
+
+All worktrees use this file through mise, so credentials do not need to be copied or linked into
+each checkout. Do not commit environment files or credentials.
 
 ## Build architecture
 
@@ -52,9 +62,13 @@ yarn build       # Typecheck and build the production Node and browser applicati
 yarn build-dev   # Build both targets with source maps and without minification
 yarn build-web   # Typecheck and build only the browser application
 yarn typecheck   # Check production, browser, and test TypeScript without emitting files
-yarn start       # Start the built bot and web server using environment variables from .env
-yarn start-debug # Start the built application with the Node inspector
+mise run start-local # Start the built bot and web server with the shared local environment
+mise run start-debug # Start the built application with the Node inspector
 ```
+
+The start tasks direct the application's dotenv loader to
+`~/.config/eolian/profiles/default.env`. Build, lint, and setup tasks do not receive runtime
+credentials.
 
 ## Validation
 

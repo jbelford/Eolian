@@ -11,7 +11,7 @@
       "program": "${workspaceFolder}/dist/bundle.js",
       "outFiles": ["${workspaceFolder}/dist/bundle.js"],
       "preLaunchTask": "npm: build-dev",
-      "envFile": "${workspaceFolder}/.env",
+      "envFile": "${env:HOME}/.config/eolian/profiles/default.env",
       "sourceMaps": true,
       "outputCapture": "std",
       "killBehavior": "polite"

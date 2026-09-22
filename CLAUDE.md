@@ -14,11 +14,11 @@ yarn build-dev
 # Build web frontend
 yarn build-web
 
-# Run the bot (requires .env file)
-yarn start
+# Run the bot with the shared local environment
+mise run start-local
 
 # Debug with inspector
-yarn start-debug
+mise run start-debug
 
 # Lint TypeScript
 yarn lint
@@ -292,8 +292,9 @@ Pattern priority determines parse order (higher priority parsed first). See `src
 
 ## Debugging
 
-- **Start with debugger**: `yarn start-debug` enables Node inspector (breakpoint-ready)
-- **Enable debug logging**: Set `DEBUG_ENABLED=true` in `.env`
+- **Start with debugger**: `mise run start-debug` enables Node inspector (breakpoint-ready)
+- **Enable debug logging**: Set `DEBUG_ENABLED=true` in
+  `~/.config/eolian/profiles/default.env`
 - **Check guild state**: `DiscordGuildStore.active` shows count of active guilds
 - **Voice connection issues**: Look for `AudioPlayerStatus` transitions in logs
 - **Command not found**: Check `CommandStore.get()` with user's permission level
