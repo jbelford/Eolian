@@ -3,7 +3,7 @@ import { SyntaxType } from '@eolian/command-options/@types';
 import { ParsedCommand } from '@eolian/commands/@types';
 import { Closable, Idleable } from '@eolian/common/@types';
 import { UserPermission } from '@eolian/common/constants';
-import { ServerDTO, UserDTO, Identifier } from '@eolian/data/@types';
+import { ServerDTO, ServerSettingsUpdate, UserDTO, Identifier } from '@eolian/data/@types';
 import { SelectionOption } from '@eolian/embed/@types';
 import { AuthorizationCodeProvider } from '@eolian/http';
 import { IAuthService, IOAuthHttpClient } from '@eolian/http/@types';
@@ -197,10 +197,11 @@ export interface ContextServer extends ContextServerInfo {
   setPrefix(prefix: string): Promise<void>;
   setVolume(volume: number): Promise<void>;
   setSyntax(type: SyntaxType): Promise<void>;
-  setChannel(channelId: string): Promise<void>;
+  setChannel(channelId: string | null): Promise<void>;
   addDjRole(id: string): Promise<boolean>;
   removeDjRole(id: string): Promise<boolean>;
   setDjLimited(allow: boolean): Promise<void>;
+  updateSettings(settings: ServerSettingsUpdate): Promise<void>;
   updateUsage(channelId?: string): Promise<void>;
 }
 

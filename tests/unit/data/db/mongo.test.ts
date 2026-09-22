@@ -90,6 +90,12 @@ describe('Mongo collections', () => {
     await servers.setSyntax('guild', SyntaxType.SLASH);
     await servers.addDjRole('guild', 'role');
     await expect(servers.removeDjRole('guild', 'role')).resolves.toBe(false);
+    await servers.updateSettings('guild', {
+      prefix: '?',
+      volume: 0.5,
+      preferredChannelId: null,
+      djRoleIds: ['role'],
+    });
 
     expect(collection.updateOne.mock.calls[0]).toEqual([
       { _id: 'guild' },
@@ -104,6 +110,15 @@ describe('Mongo collections', () => {
     expect(collection.updateOne.mock.calls[3]).toEqual([
       { _id: 'guild' },
       { $pull: { djRoleIds: 'role' } },
+    ]);
+    expect(collection.updateOne.mock.calls[4]).toEqual([
+      { _id: 'guild' },
+      {
+        $set: { prefix: '?', volume: 0.5, djRoleIds: ['role'] },
+        $unset: { preferredChannelId: true },
+        $setOnInsert: { _id: 'guild' },
+      },
+      { upsert: true },
     ]);
   });
 });

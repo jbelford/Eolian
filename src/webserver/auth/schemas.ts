@@ -1,6 +1,6 @@
 import { CSRF_HEADER } from './constants';
 
-const errorSchema = {
+export const errorSchema = {
   type: 'object',
   additionalProperties: false,
   required: ['error'],

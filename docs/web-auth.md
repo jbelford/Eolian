@@ -87,3 +87,85 @@ authenticated mutations such as logout. The token is never written to browser st
 Protected routes preserve the requested same-origin path while sending unauthenticated users
 through `/api/auth/discord`. The authenticated shell exposes nested account and guild route outlets;
 guild children receive the selected manageable guild as router outlet context.
+
+## Settings API
+
+Settings routes use the same session service and opaque cookie. Every guild request resolves the
+current session before checking the refreshed Discord guild claims. Guild access requires the
+Discord user to own the guild or have `Administrator` or `Manage Guild`, and the bot must still be
+present in its ready-client cache.
+
+Mutation hooks always run in this order:
+
+```ts
+preHandler: [security.guards.authenticate, security.guards.origin, security.guards.csrf];
+```
+
+All request objects are strict: unknown properties are rejected. Errors use
+`{ "error": { "code": string, "message": string } }`.
+
+### Personal settings
+
+| Method   | Route                                   | Response or behavior                                                                                    |
+| -------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/account`                          | Returns the syntax override and boolean-only Spotify/SoundCloud link status.                            |
+| `PATCH`  | `/api/account/syntax`                   | Accepts `{ "syntax": "keyword" \| "traditional" \| null }`; `null` restores the guild/default behavior. |
+| `POST`   | `/api/account/providers/:provider/link` | Returns `{ "authorizationUrl": string }` for an enabled existing OAuth provider flow.                   |
+| `DELETE` | `/api/account/providers/:provider`      | Removes cached authorization state, refresh tokens, and legacy provider identifiers.                    |
+
+`GET /api/account` returns:
+
+```json
+{
+  "syntax": null,
+  "providers": {
+    "spotify": { "linked": false, "linkAvailable": true },
+    "soundcloud": { "linked": true, "linkAvailable": true }
+  }
+}
+```
+
+Provider identifiers and refresh tokens are never returned. Provider authorization is suitable
+for a browser popup: open the returned URL and let the existing `/callback/spotify` or
+`/callback/soundcloud` page complete the flow.
+
+### Guild settings
+
+| Method  | Route                  | Response or behavior                                                                         |
+| ------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| `GET`   | `/api/guilds`          | Lists only manageable Discord guilds that are also in the bot's current cache.               |
+| `GET`   | `/api/guilds/:guildId` | Returns guild metadata, effective settings, configurable text channels, and available roles. |
+| `PATCH` | `/api/guilds/:guildId` | Applies one or more guild setting fields and returns the refreshed guild DTO.                |
+
+The guild detail DTO is:
+
+```json
+{
+  "id": "123",
+  "name": "Example",
+  "icon": null,
+  "memberCount": 42,
+  "settings": {
+    "prefix": "!",
+    "volume": 0.1,
+    "syntax": "keyword",
+    "preferredChannelId": null,
+    "djRoleIds": [],
+    "djAllowLimited": false
+  },
+  "channels": [{ "id": "456", "name": "music" }],
+  "roles": [{ "id": "789", "name": "DJ" }]
+}
+```
+
+`PATCH` accepts any non-empty subset of the `settings` fields. Prefixes are exactly one character,
+volume is between `0` and `1`, syntax is `keyword` or `traditional`, the preferred channel must be
+a listed text or announcement channel (or `null` to clear it), and DJ roles must be unique,
+belong to the guild, exclude `@everyone`, and contain at most ten IDs. Writes update the bot's
+active guild configuration immediately; an idle active player also receives a changed default
+volume.
+
+Stable settings error codes include `invalid_request`, `guild_forbidden`, `bot_not_ready`,
+`bot_not_in_guild`, `channel_not_found`, `role_not_found`, `provider_link_unavailable`,
+`provider_link_failed`, `persistence_failed`, `guild_load_failed`, `guild_list_failed`, and
+`settings_update_failed`.

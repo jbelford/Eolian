@@ -117,6 +117,10 @@ export class DiscordGuildStore implements Closable {
     return state;
   }
 
+  getCachedState(guildId: string): Promise<ServerState | undefined> {
+    return this.stateStore.get(guildId);
+  }
+
   async close(): Promise<void> {
     await this.stateStore.close();
   }

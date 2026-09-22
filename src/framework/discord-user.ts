@@ -29,6 +29,10 @@ import { DiscordVoiceChannel } from './voice';
 
 const USER_CACHE: MemoryCache<UserDTO> = new InMemoryLRUCache(1000);
 
+export function invalidateDiscordUserCache(id: string): void {
+  USER_CACHE.set(id, undefined);
+}
+
 export class DiscordUser implements ContextUser {
   private _dto?: UserDTO | null = null;
   private _permission: UserPermission;

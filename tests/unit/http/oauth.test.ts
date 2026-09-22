@@ -160,6 +160,63 @@ describe('OAuth providers and client', () => {
     expect(cache.del).toHaveBeenCalledWith('state-id');
   });
 
+  it('awaits web authorization completion before accepting the callback', async () => {
+    let cached:
+      | { resolve: (value: unknown) => Promise<void>; reject: (reason?: unknown) => void }
+      | undefined;
+    const cache = {
+      set: vi.fn((_key, value) => {
+        cached = value;
+        return Promise.resolve(true);
+      }),
+      get: vi.fn(() => Promise.resolve(cached)),
+      del: vi.fn(() => Promise.resolve(true)),
+    };
+    httpRequest.mockResolvedValue(token('access', 'refresh'));
+    const complete = vi.fn().mockResolvedValue(undefined);
+    const service = new AuthService(
+      'API',
+      '/authorize',
+      '/token',
+      { client_id: 'client', redirect_uri: '/callback' },
+      {},
+      cache as never,
+    );
+
+    const result = service.authorize(complete);
+    await expect(service.callback({ state: 'state-id', code: 'code-value' })).resolves.toBe(true);
+    await expect(result.response).resolves.toMatchObject({ refresh_token: 'refresh' });
+    expect(complete).toHaveBeenCalledWith(expect.objectContaining({ refresh_token: 'refresh' }));
+  });
+
+  it('rejects provider completion when persistence fails', async () => {
+    let cached:
+      | { resolve: (value: unknown) => Promise<void>; reject: (reason?: unknown) => void }
+      | undefined;
+    const cache = {
+      set: vi.fn((_key, value) => {
+        cached = value;
+        return Promise.resolve(true);
+      }),
+      get: vi.fn(() => Promise.resolve(cached)),
+      del: vi.fn(() => Promise.resolve(true)),
+    };
+    httpRequest.mockResolvedValue(token('access', 'refresh'));
+    const failure = new Error('database failed');
+    const service = new AuthService(
+      'API',
+      '/authorize',
+      '/token',
+      { client_id: 'client', redirect_uri: '/callback' },
+      {},
+      cache as never,
+    );
+
+    const result = service.authorize(vi.fn().mockRejectedValue(failure));
+    await expect(service.callback({ state: 'state-id', code: 'code-value' })).rejects.toBe(failure);
+    await expect(result.response).rejects.toBe(failure);
+  });
+
   it('rejects missing callback codes and ignores unknown states', async () => {
     let cached:
       | { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }

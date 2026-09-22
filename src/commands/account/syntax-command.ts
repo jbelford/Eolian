@@ -1,6 +1,7 @@
 import { CommandOptions, SyntaxType } from '@eolian/command-options/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
+import { parseSyntaxName } from '@eolian/common/settings';
 import { syntaxTypeToName } from '@eolian/embed';
 import { Command, CommandArgs, CommandContext } from '../@types';
 import { ACCOUNT_CATEGORY } from '../category';
@@ -20,21 +21,15 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
   }
 
   const syntax = options.ARG[0];
-  let type: SyntaxType | null;
-  switch (syntax.toLowerCase()) {
-    case 'keyword':
-      type = SyntaxType.KEYWORD;
-      break;
-    case 'traditional':
-      type = SyntaxType.TRADITIONAL;
-      break;
-    case 'clear':
-      type = null;
-      break;
-    default:
+  let type: SyntaxType | null = null;
+  if (syntax.toLowerCase() !== 'clear') {
+    try {
+      type = parseSyntaxName(syntax);
+    } catch {
       throw new EolianUserError(
         `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`,
       );
+    }
   }
 
   await context.interaction.user.setSyntax(type);

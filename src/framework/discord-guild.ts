@@ -2,7 +2,8 @@ import { SyntaxType } from '@eolian/command-options/@types';
 import { DEFAULT_VOLUME } from '@eolian/common/constants';
 import { environment } from '@eolian/common/env';
 import { logger } from '@eolian/common/logger';
-import { ServerDTO, ServersDb } from '@eolian/data/@types';
+import { normalizeDjRoleIds, validatePrefix, validateVolume } from '@eolian/common/settings';
+import { ServerDTO, ServersDb, ServerSettingsUpdate } from '@eolian/data/@types';
 import { Guild } from 'discord.js';
 import { ContextServer } from './@types';
 
@@ -57,9 +58,7 @@ export class DiscordGuild implements ContextServer {
   }
 
   async setPrefix(prefix: string): Promise<void> {
-    if (prefix.length !== 1) {
-      throw new Error('Prefix must be length 1');
-    }
+    validatePrefix(prefix);
 
     if (this.configCache) {
       this.configCache.prefix = prefix;
@@ -68,9 +67,7 @@ export class DiscordGuild implements ContextServer {
   }
 
   async setVolume(volume: number): Promise<void> {
-    if (volume < 0 || volume > 1) {
-      throw new Error('Volume must be between 0 and 1');
-    }
+    validateVolume(volume);
 
     if (this.configCache) {
       this.configCache.volume = volume;
@@ -78,11 +75,15 @@ export class DiscordGuild implements ContextServer {
     await this.servers.setVolume(this.id, volume);
   }
 
-  async setChannel(channelId: string): Promise<void> {
+  async setChannel(channelId: string | null): Promise<void> {
     if (this.configCache) {
-      this.configCache.preferredChannelId = channelId;
+      this.configCache.preferredChannelId = channelId ?? undefined;
     }
-    await this.servers.setPreferredChannel(this.id, channelId);
+    if (channelId === null) {
+      await this.servers.removePreferredChannel(this.id);
+    } else {
+      await this.servers.setPreferredChannel(this.id, channelId);
+    }
   }
 
   async setSyntax(type: SyntaxType): Promise<void> {
@@ -127,6 +128,37 @@ export class DiscordGuild implements ContextServer {
       this.configCache.djAllowLimited = allow;
     }
     await this.servers.setDjAllowLimited(this.id, allow);
+  }
+
+  async updateSettings(settings: ServerSettingsUpdate): Promise<void> {
+    if (settings.prefix !== undefined) {
+      validatePrefix(settings.prefix);
+    }
+    if (settings.volume !== undefined) {
+      validateVolume(settings.volume);
+    }
+    if (
+      settings.syntax !== undefined &&
+      settings.syntax !== SyntaxType.KEYWORD &&
+      settings.syntax !== SyntaxType.TRADITIONAL
+    ) {
+      throw new Error('Unsupported syntax type');
+    }
+    const roleIds =
+      settings.djRoleIds === undefined ? undefined : normalizeDjRoleIds(settings.djRoleIds);
+    if (roleIds?.some(id => !this.guild.roles.cache.has(id))) {
+      throw new Error('DJ role does not exist');
+    }
+
+    const normalizedSettings =
+      roleIds === undefined ? settings : { ...settings, djRoleIds: roleIds };
+    await this.servers.updateSettings(this.id, normalizedSettings);
+    if (this.configCache) {
+      Object.assign(this.configCache, normalizedSettings);
+      if (settings.preferredChannelId === null) {
+        delete this.configCache.preferredChannelId;
+      }
+    }
   }
 
   async updateUsage(channelId: string): Promise<void> {

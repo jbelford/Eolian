@@ -32,12 +32,23 @@ export class AuthService implements IAuthService {
     };
   }
 
-  authorize(): AuthResult {
+  authorize(complete?: (token: TokenResponseWithRefresh) => Promise<void>): AuthResult {
     const state = randomUUID();
     const params = { ...this.authorizeParams, response_type: 'code', state };
     const link = `${this.authorizeUrl}?${querystringify(params)}`;
     const promise = new Promise<TokenResponseWithRefresh>((resolve, reject) => {
-      this.cache.set(state, { resolve, reject });
+      this.cache.set(state, {
+        resolve: async response => {
+          try {
+            await complete?.(response);
+            resolve(response);
+          } catch (error) {
+            reject(error);
+            throw error;
+          }
+        },
+        reject,
+      });
     });
     return { link, response: promiseTimeout(promise, 60000) };
   }
@@ -50,7 +61,7 @@ export class AuthService implements IAuthService {
         item.reject(data.err);
       } else if (data.code) {
         const resp = await this.getToken(data.code);
-        item.resolve(resp);
+        await item.resolve(resp);
         success = true;
       } else {
         item.reject('Missing authorization code!');

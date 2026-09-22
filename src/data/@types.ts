@@ -44,12 +44,23 @@ export interface ServersDb extends CollectionDb<ServerDTO> {
   getIdleServers(minDate: Date): Promise<ServerDTO[]>;
   setLastUsage(id: string, usageDate: Date, channelId: string): Promise<void>;
   setPreferredChannel(id: string, channelId: string): Promise<void>;
+  removePreferredChannel(id: string): Promise<void>;
   setPrefix(id: string, prefix: string): Promise<void>;
   setVolume(id: string, volume: number): Promise<void>;
   setSyntax(id: string, type: SyntaxType): Promise<void>;
   addDjRole(id: string, roleId: string): Promise<void>;
   removeDjRole(id: string, roleId: string): Promise<boolean>;
   setDjAllowLimited(id: string, allow: boolean): Promise<void>;
+  updateSettings(id: string, settings: ServerSettingsUpdate): Promise<void>;
+}
+
+export interface ServerSettingsUpdate {
+  prefix?: string;
+  volume?: number;
+  syntax?: SyntaxType;
+  preferredChannelId?: string | null;
+  djRoleIds?: string[];
+  djAllowLimited?: boolean;
 }
 
 export interface DocDTO {

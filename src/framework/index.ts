@@ -1,4 +1,5 @@
 export * from './discord-bot';
+export * from './discord-management';
 export * from './button-registry';
 export * from './discord-channel';
 export * from './discord-client';
