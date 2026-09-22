@@ -21,7 +21,7 @@ const authenticatedSession = (overrides: Record<string, unknown> = {}) => ({
   },
   guilds: [
     {
-      id: 'guild-1',
+      id: '100',
       name: 'Listening Room',
       icon: 'guild-icon',
       owner: true,
@@ -287,6 +287,29 @@ describe('authenticated application shell', () => {
   it('navigates account and guild route outlets from the workspace navigation', async () => {
     const fetchMock = installFetchMock();
     queueJson(fetchMock, authenticatedSession());
+    queueJson(fetchMock, {
+      syntax: null,
+      providers: {
+        spotify: { linked: false, linkAvailable: true },
+        soundcloud: { linked: false, linkAvailable: true },
+      },
+    });
+    queueJson(fetchMock, {
+      id: '100',
+      name: 'Listening Room',
+      icon: null,
+      memberCount: 12,
+      settings: {
+        prefix: '!',
+        volume: 0.1,
+        syntax: 'keyword',
+        preferredChannelId: null,
+        djRoleIds: [],
+        djAllowLimited: false,
+      },
+      channels: [],
+      roles: [],
+    });
     const user = userEvent.setup();
     renderAt('/app');
 
@@ -295,20 +318,25 @@ describe('authenticated application shell', () => {
 
     await user.click(within(workspaceNav).getByRole('link', { name: 'Account' }));
     expect(screen.getByRole('heading', { name: 'Music Admin' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Account connections are ready for B3' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Command syntax' })).toBeInTheDocument();
 
     await user.click(within(workspaceNav).getByRole('link', { name: /Listening Room/ }));
-    expect(screen.getByRole('heading', { name: 'Listening Room' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Listening Room' })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: 'Server settings are ready for B3' }),
+      screen.getByRole('heading', { name: 'Commands and playback defaults' }),
     ).toBeInTheDocument();
   });
 
   it('opens the HeroUI mobile workspace drawer and closes it after navigation', async () => {
     const fetchMock = installFetchMock();
     queueJson(fetchMock, authenticatedSession());
+    queueJson(fetchMock, {
+      syntax: null,
+      providers: {
+        spotify: { linked: false, linkAvailable: true },
+        soundcloud: { linked: false, linkAvailable: true },
+      },
+    });
     const user = userEvent.setup();
     renderAt('/app');
 

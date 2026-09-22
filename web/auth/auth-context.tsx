@@ -26,6 +26,7 @@ interface AuthContextValue {
   retry: () => void;
   logout: () => Promise<void>;
   clearLogoutError: () => void;
+  handleSessionError: (error: unknown) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -132,9 +133,17 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     );
   }, []);
 
+  const handleSessionError = useCallback((error: unknown) => {
+    if (error instanceof ApiError && error.kind === 'unauthorized') {
+      setState({ status: 'expired' });
+      return true;
+    }
+    return false;
+  }, []);
+
   const value = useMemo(
-    () => ({ state, retry, logout, clearLogoutError }),
-    [clearLogoutError, logout, retry, state],
+    () => ({ state, retry, logout, clearLogoutError, handleSessionError }),
+    [clearLogoutError, handleSessionError, logout, retry, state],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

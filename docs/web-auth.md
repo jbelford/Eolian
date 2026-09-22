@@ -82,11 +82,15 @@ Discord SDK objects.
 
 The React application bootstraps its in-memory auth state from `GET /api/auth/session`. Browser API
 requests use same-origin credentials, and the CSRF token is held only in that auth state for
-authenticated mutations such as logout. The token is never written to browser storage.
+authenticated mutations such as logout and settings updates. The token is never written to browser
+storage. A `401` from any authenticated browser API request transitions the shared auth state to
+the existing expired-session experience.
 
 Protected routes preserve the requested same-origin path while sending unauthenticated users
-through `/api/auth/discord`. The authenticated shell exposes nested account and guild route outlets;
-guild children receive the selected manageable guild as router outlet context.
+through `/api/auth/discord`. Account settings expose personal syntax and provider connections.
+Server settings load the bot's current shared-guild list, then edit effective command, playback,
+channel, and DJ-role settings. Browser responses are validated before they are rendered, requests
+are cancelled when their route unmounts, and mutations send only changed server fields.
 
 ## Settings API
 
