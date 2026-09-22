@@ -1,64 +1,134 @@
-import { logger } from '@eolian/common/logger';
-import { Readable } from 'stream';
 import { StreamSource } from '../@types';
-import { Innertube, Platform, Types, UniversalCache } from 'youtubei.js';
-import { createFetchFunction, createProxyUrl, generatePoToken } from './potoken';
-import { httpRequest } from '@eolian/http';
-import { environment } from '@eolian/common/env';
 import { ProgressUpdater } from '@eolian/common/@types';
+import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
+import { randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { PassThrough, Readable } from 'node:stream';
 
-Platform.shim.eval = async (
-  data: Types.BuildScriptResult,
-  env: Record<string, Types.VMPrimative>,
-) => {
-  const properties = [];
+const MAX_ERROR_LENGTH = 16_384;
 
-  if (env.n) {
-    properties.push(`n: exportedVars.nFunction("${env.n}")`);
-  }
-
-  if (env.sig) {
-    properties.push(`sig: exportedVars.sigFunction("${env.sig}")`);
-  }
-
-  const code = `${data.output}\nreturn { ${properties.join(', ')} }`;
-
-  return new Function(code)();
+export type YouTubeStreamSourceDependencies = {
+  spawn: typeof spawn;
 };
 
-const cache = new UniversalCache(true);
-
 export class YouTubeStreamSource implements StreamSource {
+  private readonly dependencies: YouTubeStreamSourceDependencies;
+
   constructor(
     private readonly url: string,
     private readonly id: string,
     private readonly progress?: ProgressUpdater<string>,
-  ) {}
-
-  async get(seek?: number): Promise<Readable> {
-    logger.info('Getting youtube stream %s - %s', this.url, this.id);
-
-    const proxy = createProxyUrl();
-    const fetch = createFetchFunction(proxy);
-    const config: Types.InnerTubeConfig = {
-      cache,
-      generate_session_locally: true,
-      cookie: environment.tokens.youtube.cookie || undefined,
-      fetch,
-    };
-    if (environment.flags.enablePoTokenGen) {
-      const { poToken, visitorData } = await generatePoToken(fetch, false);
-      config.po_token = poToken;
-      config.visitor_data = visitorData;
-    }
-
-    this.progress?.update('📺 Fetching information from YouTube...');
-    const innertube = await Innertube.create(config);
-
-    const info = await innertube.getBasicInfo(this.id);
-    const audioStreamingURL = await info
-      .chooseFormat({ quality: 'best' })
-      .decipher(innertube.session.player);
-    return httpRequest(audioStreamingURL, { proxy });
+    dependencies: Partial<YouTubeStreamSourceDependencies> = {},
+  ) {
+    this.dependencies = { spawn, ...dependencies };
   }
+
+  async get(): Promise<Readable> {
+    const startedAt = performance.now();
+    logger.info('Getting youtube stream %s - %s', this.url, this.id);
+    this.progress?.update('📺 Fetching stream from YouTube...');
+
+    const child = this.dependencies.spawn(environment.config.ytDlpPath, this.getArguments(), {
+      env: this.getEnvironment(),
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const output = new PassThrough();
+    let errorOutput = '';
+    let spawned = false;
+    let receivedDiagnostic = false;
+
+    child.stdout.pipe(output, { end: false });
+    child.stdout.once('data', () => {
+      logger.debug('yt-dlp produced its first media bytes after %d ms', elapsed(startedAt));
+    });
+    child.stdout.once('error', error => output.destroy(error));
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', data => {
+      if (!receivedDiagnostic) {
+        receivedDiagnostic = true;
+        logger.debug('yt-dlp produced its first diagnostic after %d ms', elapsed(startedAt));
+      }
+      if (errorOutput.length < MAX_ERROR_LENGTH) {
+        errorOutput += String(data).slice(0, MAX_ERROR_LENGTH - errorOutput.length);
+      }
+    });
+    child.once('close', code => {
+      logger.debug('yt-dlp exited after %d ms with code %s', elapsed(startedAt), code);
+      if (code === 0) {
+        output.end();
+      } else if (code && !output.destroyed) {
+        const details = errorOutput.trim();
+        output.destroy(
+          new Error(`yt-dlp exited with code ${code}${details ? `: ${details}` : ''}`),
+        );
+      }
+    });
+    output.once('close', () => {
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill('SIGTERM');
+      }
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      child.once('spawn', () => {
+        spawned = true;
+        resolve();
+      });
+      child.once('error', error => {
+        if (spawned) {
+          output.destroy(error);
+        } else {
+          reject(error);
+        }
+      });
+    });
+
+    return output;
+  }
+
+  private getArguments(): string[] {
+    const args = [
+      '--no-config',
+      '--no-playlist',
+      '--no-progress',
+      '--js-runtimes',
+      `node:${process.execPath}`,
+      '--format',
+      'bestaudio/best',
+      '--output',
+      '-',
+    ];
+
+    if (environment.config.ytDlpCookiesPath) {
+      args.push('--cookies', environment.config.ytDlpCookiesPath);
+    }
+    args.push(this.url);
+    return args;
+  }
+
+  private getEnvironment(): NodeJS.ProcessEnv {
+    const proxy = createProxyUrl();
+    if (!proxy) {
+      return process.env;
+    }
+    return {
+      ...process.env,
+      HTTP_PROXY: proxy,
+      HTTPS_PROXY: proxy,
+    };
+  }
+}
+
+function elapsed(startedAt: number): number {
+  return Math.round(performance.now() - startedAt);
+}
+
+function createProxyUrl(): string | undefined {
+  if (!environment.proxy) {
+    return undefined;
+  }
+  const sessionId = `sessid-${randomUUID()}`;
+  const { user, password, name } = environment.proxy;
+  return `http://${user}-cc-us-${sessionId}:${password}@${name}`;
 }

@@ -34,10 +34,6 @@ export interface AppEnv {
     };
     youtube: {
       token: string;
-      identityToken?: string;
-      cookie?: string;
-      poToken?: string;
-      visitorData?: string;
     };
     soundcloud: {
       clientId: string;
@@ -71,6 +67,8 @@ export interface AppEnv {
     queueLimit: number;
     youtubeCacheLimit: number;
     guildCacheTTL: number;
+    ytDlpPath: string;
+    ytDlpCookiesPath?: string;
   };
   e2eBotId?: string;
   flags: {
@@ -78,7 +76,6 @@ export interface AppEnv {
     soundcloudUserAuth: boolean;
     discordOldLeave: boolean;
     enableWebsite: boolean;
-    enablePoTokenGen: boolean;
   };
 }
 

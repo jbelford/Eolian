@@ -31,7 +31,6 @@ export const sharedConfig = {
         'src/**/@types.ts',
         'src/**/index.ts',
         // Browser-backed proof-token generation is an external integration boundary.
-        'src/api/youtube/potoken.ts',
       ],
       thresholds: {
         statements: 85,

@@ -121,6 +121,7 @@ export class SongStream extends EventEmitter implements Closable {
     progress: ProgressUpdater<string> | undefined,
     expectedGeneration: number | undefined,
   ): Promise<boolean> {
+    const startedAt = performance.now();
     const source =
       retry && this.source ? this.source : await this.dependencies.getTrackStream(track, progress);
     if (!source) {
@@ -131,6 +132,7 @@ export class SongStream extends EventEmitter implements Closable {
     let stream: Readable;
     try {
       stream = await source.get(seek);
+      logger.debug('Song source opened after %d ms', Math.round(performance.now() - startedAt));
     } catch (e) {
       logger.warn('Failed to create stream!\n%s', e);
       return false;
@@ -146,7 +148,19 @@ export class SongStream extends EventEmitter implements Closable {
     const previousPcmTransform = this.pcmTransform;
 
     stream.once('error', (err: HttpRequestStreamError) => this.onSongError(stream, err));
+    stream.once('data', () => {
+      logger.debug(
+        'Song source produced its first bytes after %d ms',
+        Math.round(performance.now() - startedAt),
+      );
+    });
     stream.once('close', () => logger.debug(`Song stream closed`));
+    ffmpeg.once('data', () => {
+      logger.debug(
+        'FFmpeg produced its first PCM after %d ms',
+        Math.round(performance.now() - startedAt),
+      );
+    });
     ffmpeg.once('error', (err: Error) => {
       if (this.pcmTransform === ffmpeg) {
         this.cleanup(err);

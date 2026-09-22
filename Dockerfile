@@ -12,6 +12,7 @@ RUN apt-get update \
 
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn/releases/ .yarn/releases/
+COPY scripts/install-ytdlp.sh scripts/install-ytdlp.sh
 
 RUN corepack enable \
     && yarn install --immutable
@@ -40,14 +41,20 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-# Keep Azure App Service's SSH contract while limiting the runtime packages to
-# certificates, SSH, and native-library support required by production modules.
+COPY scripts/install-ytdlp.sh /usr/local/bin/install-ytdlp
+
+# Keep Azure App Service's SSH contract while installing only the runtime support needed by
+# production modules and the pinned yt-dlp executable.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
         dialog \
         libstdc++6 \
         openssh-server \
+        python3 \
+    && /usr/local/bin/install-ytdlp /usr/local \
+    && rm /usr/local/bin/install-ytdlp \
     && echo "root:Docker!" | chpasswd \
     && mkdir -p /run/sshd \
     && rm -rf /var/lib/apt/lists/*

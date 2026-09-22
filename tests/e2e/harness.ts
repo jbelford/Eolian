@@ -20,6 +20,20 @@ import { loadHarnessConfig } from './harness-config';
 import { evaluatePlayback, VerificationSignals } from './verification';
 
 const config = loadHarnessConfig(process.env);
+const timings = {
+  startedAt: performance.now(),
+  discordReadyAt: undefined as number | undefined,
+  channelsValidatedAt: undefined as number | undefined,
+  receiverReadyAt: undefined as number | undefined,
+  verificationStartedAt: undefined as number | undefined,
+  discordResponseAt: undefined as number | undefined,
+  eolianVoiceAt: undefined as number | undefined,
+  firstPacketAt: undefined as number | undefined,
+  firstPcmAt: undefined as number | undefined,
+  playbackPassedAt: undefined as number | undefined,
+  cleanupStartedAt: undefined as number | undefined,
+  cleanupFinishedAt: undefined as number | undefined,
+};
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -40,6 +54,7 @@ let commandSent = false;
 client.on('messageCreate', (message: Message) => {
   if (message.channelId === config.textChannelId && message.author.id === config.eolianBotId) {
     signals.discordResponseObserved = true;
+    timings.discordResponseAt ??= performance.now();
   }
 });
 client.on('voiceStateUpdate', (_, state) => {
@@ -49,14 +64,17 @@ client.on('voiceStateUpdate', (_, state) => {
     state.channelId === config.voiceChannelId
   ) {
     signals.voiceStateObserved = true;
+    timings.eolianVoiceAt ??= performance.now();
   }
 });
 
+let result: ReturnType<typeof evaluatePlayback> | undefined;
 try {
   await client.login(config.discordToken);
   if (!client.isReady()) {
     await once(client, 'clientReady', { signal: AbortSignal.timeout(15000) });
   }
+  timings.discordReadyAt = performance.now();
 
   const guild = await client.guilds.fetch(config.guildId);
   const voiceChannel = await guild.channels.fetch(config.voiceChannelId);
@@ -94,6 +112,7 @@ try {
     throw new Error('The E2E bot requires Send Messages in the configured text channel');
   }
   commandChannel = textChannel;
+  timings.channelsValidatedAt = performance.now();
 
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
@@ -103,12 +122,14 @@ try {
     selfMute: true,
   });
   await entersState(connection, VoiceConnectionStatus.Ready, 15000);
+  timings.receiverReadyAt = performance.now();
 
   const opus = connection.receiver.subscribe(config.eolianBotId, {
     end: { behavior: EndBehaviorType.Manual },
   });
   const decoder = new prism.opus.Decoder({ rate: 48000, channels: 2, frameSize: 960 });
   opus.on('data', packet => {
+    timings.firstPacketAt ??= performance.now();
     signals.packetCount++;
     signals.voiceStateObserved ||=
       guild.members.cache.get(config.eolianBotId)?.voice.channelId === config.voiceChannelId;
@@ -117,6 +138,7 @@ try {
     process.stderr.write(`Opus receive warning: ${error.message}\n`);
   });
   decoder.on('data', (pcm: Buffer) => {
+    timings.firstPcmAt ??= performance.now();
     signals.pcmBytes += pcm.length;
     signals.rms = Math.max(signals.rms, calculateRms(pcm));
   });
@@ -131,6 +153,7 @@ try {
     requestType: config.requestType,
     request: config.request,
   });
+  timings.verificationStartedAt = performance.now();
   if (config.triggerMode === 'chat') {
     await textChannel.send(playCommand);
     commandSent = true;
@@ -141,7 +164,7 @@ try {
   }
 
   const deadline = Date.now() + config.timeoutMs;
-  let result = evaluatePlayback(signals, {
+  result = evaluatePlayback(signals, {
     minPackets: config.minPackets,
     minPcmBytes: config.minPcmBytes,
     minRms: config.minRms,
@@ -157,7 +180,9 @@ try {
     });
   }
 
-  process.stdout.write(`${JSON.stringify({ result, signals }, null, 2)}\n`);
+  if (result.passed) {
+    timings.playbackPassedAt = performance.now();
+  }
   if (!result.passed) {
     process.exitCode = 1;
   }
@@ -166,16 +191,13 @@ try {
   decoder.destroy();
   connection.destroy();
 } finally {
+  timings.cleanupStartedAt = performance.now();
   if (commandSent && config.triggerMode === 'chat') {
     try {
       if (!commandChannel) {
         throw new Error('Missing the configured command channel');
       }
-      for (const command of createCleanupCommands(config.eolianBotId)) {
-        await commandChannel.send(command);
-        await sleep(500);
-      }
-      await waitForVoiceDisconnect();
+      await cleanupPlayback(commandChannel);
     } catch (error) {
       process.stderr.write(`Cleanup failed: ${error instanceof Error ? error.message : error}\n`);
       process.exitCode = 1;
@@ -184,16 +206,27 @@ try {
     process.stdout.write('Human trigger mode: stop playback and clear the queue when finished.\n');
   }
   client.destroy();
+  timings.cleanupFinishedAt = performance.now();
 }
 
-async function waitForVoiceDisconnect(): Promise<void> {
-  const deadline = Date.now() + Math.min(config.timeoutMs, 10000);
+if (result) {
+  process.stdout.write(
+    `${JSON.stringify({ result, signals, timingsMs: formatTimings(timings) }, null, 2)}\n`,
+  );
+}
+
+async function cleanupPlayback(channel: TextChannel | VoiceChannel): Promise<void> {
+  const [stopCommand, clearCommand] = createCleanupCommands(config.eolianBotId);
+  const deadline = Date.now() + Math.min(config.timeoutMs, 15000);
   while (Date.now() < deadline) {
+    await channel.send(stopCommand);
+    await sleep(1000);
     const guild = client.guilds.cache.get(config.guildId);
     if (guild?.members.cache.get(config.eolianBotId)?.voice.channelId === null) {
+      await sleep(500);
+      await channel.send(clearCommand);
       return;
     }
-    await sleep(250);
   }
   throw new Error('Timed out waiting for Eolian to leave the voice channel');
 }
@@ -213,4 +246,26 @@ function calculateRms(pcm: Buffer): number {
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function formatTimings(values: typeof timings) {
+  return {
+    discordLogin: duration(values.startedAt, values.discordReadyAt),
+    channelValidation: duration(values.discordReadyAt, values.channelsValidatedAt),
+    harnessVoiceConnection: duration(values.channelsValidatedAt, values.receiverReadyAt),
+    verificationToDiscordResponse: duration(values.verificationStartedAt, values.discordResponseAt),
+    verificationToEolianVoice: duration(values.verificationStartedAt, values.eolianVoiceAt),
+    verificationToFirstPacket: duration(values.verificationStartedAt, values.firstPacketAt),
+    verificationToFirstPcm: duration(values.verificationStartedAt, values.firstPcmAt),
+    verificationToPlaybackPassed: duration(values.verificationStartedAt, values.playbackPassedAt),
+    cleanup: duration(values.cleanupStartedAt, values.cleanupFinishedAt),
+    total: duration(values.startedAt, values.cleanupFinishedAt),
+  };
+}
+
+function duration(start: number | undefined, end: number | undefined): number | null {
+  if (start === undefined || end === undefined) {
+    return null;
+  }
+  return Math.round(end - start);
 }

@@ -103,10 +103,6 @@ export const environment: AppEnv = {
     bing: getBing(),
     youtube: {
       token: getEnv('YOUTUBE_TOKEN'),
-      identityToken: getEnvOpt('YOUTUBE_IDENTITY_TOKEN'),
-      cookie: getEnvOpt('YOUTUBE_COOKIE'),
-      poToken: getEnvOpt('YOUTUBE_PO_TOKEN'),
-      visitorData: getEnvOpt('YOUTUBE_VISITOR_DATA'),
     },
     soundcloud: {
       clientId: getEnv('SOUNDCLOUD_CLIENT_ID'),
@@ -131,6 +127,8 @@ export const environment: AppEnv = {
     queueLimit: getNumberEnv('DEFAULT_QUEUE_LIMIT', 5000) || 5000,
     youtubeCacheLimit: getNumberEnv('YOUTUBE_CACHE_LIMIT', 1000) || 1000,
     guildCacheTTL: getNumberEnv('GUILD_CACHE_TTL', 60 * 15) || 60 * 15,
+    ytDlpPath: getEnv('YTDLP_PATH', 'yt-dlp'),
+    ytDlpCookiesPath: getEnvOpt('YTDLP_COOKIES_PATH'),
   },
   e2eBotId: getEnvOpt('E2E_BOT_ID'),
   flags: {
@@ -138,6 +136,5 @@ export const environment: AppEnv = {
     soundcloudUserAuth: getEnvFlag('FLAG_SOUNDCLOUD_OAUTH'),
     discordOldLeave: getEnvFlag('FLAG_DISCORD_OLD_LEAVE'),
     enableWebsite: getEnvFlag('FLAG_ENABLE_WEBSITE'),
-    enablePoTokenGen: getEnvFlag('FLAG_ENABLE_POTOKEN_GEN'),
   },
 };

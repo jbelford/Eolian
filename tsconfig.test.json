@@ -12,6 +12,7 @@
       "@eolian/*": ["src/*"]
     },
     "target": "ES2021",
+    "lib": ["ES2021", "DOM"],
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "vitest*.ts", "vitest*.mts"]

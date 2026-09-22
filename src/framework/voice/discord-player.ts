@@ -166,6 +166,7 @@ export class DiscordPlayer extends EventEmitter implements Player {
 
   async play(progress?: ProgressUpdater<string>): Promise<void> {
     if (!this.isStreaming) {
+      const startedAt = performance.now();
       progress?.init('⚡ Setting up player...');
       this._isStreaming = true;
       try {
@@ -179,11 +180,21 @@ export class DiscordPlayer extends EventEmitter implements Player {
         );
         this.timeoutCheck = setInterval(this.timeoutCheckHandler, PLAYER_TIMEOUT);
 
-        await this.startNewStream(progress);
+        await this.prepareNewStream(progress);
+        logger.debug(
+          'Audio resource prepared after %d ms',
+          Math.round(performance.now() - startedAt),
+        );
 
         if (!connection.subscribe(this.audioPlayer)) {
           throw new Error('Failed to subscribe!');
         }
+
+        this.audioPlayer.play(this.audioResource!);
+        logger.debug(
+          'Audio resource started after %d ms',
+          Math.round(performance.now() - startedAt),
+        );
       } catch (e: any) {
         this.streamErrorHandler(e);
       }
@@ -243,6 +254,11 @@ export class DiscordPlayer extends EventEmitter implements Player {
   }
 
   private async startNewStream(progress?: ProgressUpdater<string>): Promise<void> {
+    await this.prepareNewStream(progress);
+    this.audioPlayer.play(this.audioResource!);
+  }
+
+  private async prepareNewStream(progress?: ProgressUpdater<string>): Promise<void> {
     const input = await this.getStream(progress);
     if (!input) {
       throw new Error('Missing stream!');
@@ -253,8 +269,6 @@ export class DiscordPlayer extends EventEmitter implements Player {
       inlineVolume: false,
       silencePaddingFrames: 30,
     });
-
-    this.audioPlayer.play(this.audioResource);
   }
 
   private async getStream(progress?: ProgressUpdater<string>): Promise<Readable | null> {

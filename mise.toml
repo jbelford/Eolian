@@ -5,8 +5,11 @@ node = "24.21.0"
 corepack = true
 
 [tasks.setup]
-description = "Install the locked Yarn dependency tree"
-run = "yarn install --immutable"
+description = "Install the locked dependencies and yt-dlp tooling"
+run = """
+yarn install --immutable
+./scripts/install-ytdlp.sh
+"""
 
 [tasks.lint]
 description = "Check repository formatting"
@@ -19,12 +22,12 @@ run = "yarn build"
 [tasks.start-local]
 description = "Start the built application with the shared local environment"
 env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
-run = "yarn start"
+run = "YTDLP_PATH=\"$PWD/.tools/bin/yt-dlp\" yarn start"
 
 [tasks.start-debug]
 description = "Start the built application with the debugger and shared local environment"
 env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
-run = "yarn start-debug"
+run = "YTDLP_PATH=\"$PWD/.tools/bin/yt-dlp\" yarn start-debug"
 
 [tasks.e2e-test]
 description = "Run the Discord playback harness against the test bot"
