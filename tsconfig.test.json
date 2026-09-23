@@ -8,12 +8,21 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,
+    "jsx": "react-jsx",
     "paths": {
       "@eolian/*": ["src/*"]
     },
     "target": "ES2021",
-    "lib": ["ES2021", "DOM"],
+    "lib": ["ES2022", "ES2022.Intl", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest*.ts", "vitest*.mts"]
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "web/**/*.ts",
+    "web/**/*.tsx",
+    "vitest*.ts",
+    "vitest*.mts"
+  ]
 }

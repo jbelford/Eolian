@@ -39,7 +39,19 @@ chmod 600 ~/.config/eolian/profiles/default.env
 ```
 
 All worktrees use this file through mise, so credentials do not need to be copied or linked into
-each checkout. Do not commit environment files or credentials.
+each checkout. Do not commit runtime credentials.
+
+The public browser build has a separate, **non-secret** Discord application ID. Vite loads its
+browser environment files from `web/` (while `index.html` remains at the repository root).
+`web/.env.development` tracks the public test-bot client ID for local development;
+`web/.env.production` tracks the current public Eolian client ID for production builds. To use
+a different local application ID without editing the tracked file, put
+`VITE_DISCORD_CLIENT_ID=<your-numeric-application-id>` in `web/.env.development.local`.
+`.env.*.local` files are ignored by Git. A release job may override the production ID by setting
+`VITE_DISCORD_CLIENT_ID` in the process environment **before** `yarn build:web`; Vite gives
+process variables precedence over `web/.env.production` and embeds the value at build time.
+The variable is public and must not contain a token or secret. A missing or malformed client ID
+fails the browser build with a configuration error; there is no fallback.
 
 ## Build architecture
 
@@ -70,13 +82,16 @@ yarn typecheck        # Check Node, browser, and test TypeScript without emittin
 yarn typecheck:node   # Check only the Node application
 yarn typecheck:web    # Check only the browser application
 yarn typecheck:test   # Check the test suites and harness configuration
+yarn test:web         # Run the browser component and public configuration tests
 mise run start-local # Start the built bot and web server with the shared local environment
 mise run start-debug # Start the built application with the Node inspector
+mise run start-web   # Start the public SPA with the Vite development server
 ```
 
-The start tasks direct the application's dotenv loader to
-`~/.config/eolian/profiles/default.env`. Build, lint, and setup tasks do not receive runtime
-credentials.
+The bot start tasks direct the application's dotenv loader to
+`~/.config/eolian/profiles/default.env`; `start-web` runs Vite independently and uses the tracked
+public test-bot ID from `web/.env.development`. Build, lint, and setup tasks do not receive
+runtime credentials.
 
 ## YouTube streaming
 

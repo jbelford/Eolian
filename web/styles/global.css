@@ -1,0 +1,499 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-display: 'Avenir Next', 'Segoe UI Variable Display', Inter, ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+:root,
+[data-theme='light'] {
+  --accent: oklch(0.58 0.19 268);
+  --accent-foreground: oklch(0.99 0.01 260);
+  --background: oklch(0.985 0.006 268);
+  --foreground: oklch(0.19 0.025 268);
+  --surface: oklch(0.96 0.012 268);
+  --surface-foreground: var(--foreground);
+  --muted: oklch(0.49 0.03 268);
+  --separator: oklch(0.88 0.018 268);
+  --focus: oklch(0.62 0.2 255);
+}
+
+[data-theme='dark'] {
+  --accent: oklch(0.72 0.16 270);
+  --accent-foreground: oklch(0.16 0.025 270);
+  --background: oklch(0.145 0.025 270);
+  --foreground: oklch(0.94 0.012 270);
+  --surface: oklch(0.19 0.03 270);
+  --surface-foreground: var(--foreground);
+  --muted: oklch(0.72 0.025 270);
+  --separator: oklch(0.29 0.035 270);
+  --focus: oklch(0.76 0.16 245);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  min-width: 20rem;
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.brand-mark {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0.4rem 1.2rem oklch(0.44 0.1 70 / 0.24);
+}
+
+.hero-orb {
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(1px);
+  opacity: 0.42;
+}
+
+.hero-orb-one {
+  top: 7%;
+  left: -15rem;
+  width: 34rem;
+  height: 34rem;
+  background: radial-gradient(circle, oklch(0.8 0.13 210 / 0.45), transparent 70%);
+}
+
+.hero-orb-two {
+  right: -12rem;
+  bottom: -8rem;
+  width: 40rem;
+  height: 40rem;
+  background: radial-gradient(circle, oklch(0.68 0.2 300 / 0.32), transparent 68%);
+}
+
+.discord-scene-glow {
+  position: absolute;
+  inset: 8% 4%;
+  border-radius: 50%;
+  background: linear-gradient(120deg, oklch(0.7 0.14 210), oklch(0.66 0.19 305));
+  filter: blur(4rem);
+  opacity: 0.32;
+}
+
+.discord-window {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid oklch(0.62 0.05 265 / 0.25);
+  border-radius: 1.5rem;
+  background: oklch(0.18 0.028 270);
+  color: oklch(0.94 0.012 260);
+  box-shadow:
+    0 2rem 6rem oklch(0.15 0.08 275 / 0.3),
+    inset 0 1px oklch(1 0 0 / 0.1);
+}
+
+.discord-window-bar {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid oklch(1 0 0 / 0.08);
+  padding: 0.75rem clamp(0.85rem, 4vw, 1.5rem);
+  background: oklch(0.2 0.027 268);
+}
+
+.discord-channel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.discord-channel > span {
+  margin-right: 0.3rem;
+  color: oklch(0.7 0.02 260);
+}
+
+.discord-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: oklch(0.76 0.02 260);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.discord-presence-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: oklch(0.76 0.16 160);
+}
+
+.discord-message {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.8rem;
+  padding: clamp(1rem, 4vw, 1.7rem);
+}
+
+.discord-bot-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0.4rem 1.2rem oklch(0.45 0.1 70 / 0.28);
+}
+
+.discord-message-body {
+  min-width: 0;
+}
+
+.discord-message-meta {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+}
+
+.discord-message-meta strong {
+  font-size: 0.88rem;
+}
+
+.discord-message-meta > span {
+  border-radius: 0.2rem;
+  background: oklch(0.61 0.18 268);
+  padding: 0.12rem 0.35rem;
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.discord-message-meta small {
+  color: oklch(0.72 0.02 260);
+  font-size: 0.7rem;
+}
+
+.discord-embed {
+  margin-top: 0.35rem;
+  border-left: 0.25rem solid oklch(0.74 0.16 160);
+  border-radius: 0.25rem 0.85rem 0.85rem 0.25rem;
+  background: oklch(0.225 0.025 270);
+  padding: clamp(0.8rem, 3vw, 1.15rem);
+}
+
+.discord-embed-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.discord-source-icon {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 0.4rem;
+  background: oklch(0.74 0.16 160 / 0.16);
+  color: oklch(0.82 0.14 160);
+}
+
+.discord-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  color: oklch(0.78 0.02 260);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.discord-track-title {
+  margin-top: 0.75rem;
+  color: oklch(0.8 0.13 235);
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.discord-track-artist {
+  margin-top: 0.15rem;
+  color: oklch(0.83 0.015 260);
+  font-size: 0.8rem;
+}
+
+.discord-artwork {
+  position: relative;
+  width: min(10.5rem, 100%);
+  aspect-ratio: 1;
+  overflow: hidden;
+  margin-top: 0.9rem;
+  border-radius: 0.45rem;
+  background: radial-gradient(circle at 73% 28%, oklch(0.84 0.1 45), transparent 20%),
+    linear-gradient(145deg, oklch(0.28 0.09 255), oklch(0.53 0.15 310) 58%, oklch(0.8 0.11 35));
+}
+
+.discord-artwork::before {
+  position: absolute;
+  inset: 48% -25% -30%;
+  transform: rotate(-22deg);
+  background: linear-gradient(115deg, oklch(0.16 0.06 250), oklch(0.37 0.12 280));
+  content: '';
+}
+
+.discord-artwork::after {
+  position: absolute;
+  top: 10%;
+  right: 12%;
+  width: 30%;
+  aspect-ratio: 1;
+  border: 1px solid oklch(1 0 0 / 0.65);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.8rem oklch(1 0 0 / 0.06);
+  content: '';
+}
+
+.discord-artwork-line {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  clip-path: polygon(0 70%, 100% 30%, 100% 33%, 0 73%);
+  background: oklch(0.97 0.03 75 / 0.8);
+}
+
+.discord-transport {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.discord-transport-tile {
+  display: grid;
+  min-height: 2.35rem;
+  place-items: center;
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 0.6rem;
+  background: oklch(0.29 0.026 270);
+  color: oklch(0.89 0.015 260);
+}
+
+.discord-composer {
+  margin: 0 clamp(1rem, 4vw, 1.7rem) clamp(1rem, 4vw, 1.5rem);
+  border-radius: 0.6rem;
+  background: oklch(0.25 0.022 270);
+  padding: 0.7rem 1rem;
+  color: oklch(0.7 0.02 260);
+  font-size: 0.73rem;
+}
+
+.section-shell {
+  width: min(100%, 80rem);
+  margin-inline: auto;
+  padding: 6rem 1.25rem;
+}
+
+.section-heading {
+  max-width: 48rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.section-heading h2 {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 5vw, 3.7rem);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.052em;
+  text-wrap: balance;
+}
+
+.section-heading > p:last-child {
+  margin-top: 1.4rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.feature-card {
+  justify-content: flex-start;
+  gap: 1.5rem;
+  border-color: color-mix(in oklch, var(--separator), transparent 15%);
+  background: color-mix(in oklch, var(--surface), var(--background) 35%);
+  padding: 1.15rem;
+}
+
+.feature-card [data-slot='card-header'] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.feature-card [data-slot='card-footer'] {
+  margin-top: auto;
+}
+
+.feature-card [data-slot='card-title'] {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.feature-card [data-slot='card-description'] {
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.feature-icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: color-mix(in oklch, var(--accent), transparent 86%);
+  color: var(--accent);
+}
+
+.step-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.25rem;
+  border: 1px solid var(--separator);
+  border-radius: 1.5rem;
+  background: var(--background);
+  padding: 1.4rem;
+}
+
+.step-card > span {
+  display: grid;
+  width: 2.7rem;
+  height: 2.7rem;
+  place-items: center;
+  border-radius: 0.9rem;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.step-card h3,
+.command-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.step-card p,
+.command-card p {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.command-card {
+  border: 1px solid var(--separator);
+  border-radius: 1.5rem;
+  background: var(--surface);
+  padding: 1.4rem;
+}
+
+.command-card code {
+  display: block;
+  min-height: 5.5rem;
+  margin-top: 1.25rem;
+  border: 1px solid color-mix(in oklch, var(--separator), transparent 15%);
+  border-radius: 1rem;
+  background: var(--background);
+  padding: 1rem;
+  color: var(--accent);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.83rem;
+  line-height: 1.55;
+}
+
+.cta-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2.2rem;
+  background: radial-gradient(circle at 85% 20%, oklch(0.7 0.2 315 / 0.55), transparent 30%),
+    radial-gradient(circle at 70% 90%, oklch(0.68 0.16 215 / 0.4), transparent 36%),
+    linear-gradient(135deg, oklch(0.2 0.07 265), oklch(0.13 0.04 275));
+  padding: clamp(2rem, 6vw, 5rem);
+  box-shadow: 0 2rem 5rem oklch(0.15 0.08 275 / 0.2);
+}
+
+.cta-panel::after {
+  position: absolute;
+  top: -8rem;
+  right: -4rem;
+  width: 27rem;
+  height: 27rem;
+  border: 1px solid oklch(1 0 0 / 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4rem oklch(1 0 0 / 0.035),
+    0 0 0 8rem oklch(1 0 0 / 0.025);
+  content: '';
+}
+
+.footer-link {
+  color: var(--muted);
+  transition: color 160ms ease;
+}
+
+.footer-link:hover {
+  color: var(--foreground);
+}
+
+@media (min-width: 640px) {
+  .section-shell {
+    padding: 7rem 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

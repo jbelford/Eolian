@@ -29,6 +29,10 @@ description = "Start the built application with the debugger and shared local en
 env = { DOTENV_CONFIG_PATH = "{{env.HOME}}/.config/eolian/profiles/default.env" }
 run = "YTDLP_PATH=\"$PWD/.tools/bin/yt-dlp\" yarn start-debug"
 
+[tasks.start-web]
+description = "Start the Vite SPA development server"
+run = "yarn vite --config vite.web.config.mts"
+
 [tasks.e2e-test]
 description = "Run the Discord playback harness against the test bot"
 run = """
