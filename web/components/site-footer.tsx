@@ -9,8 +9,8 @@ export const SiteFooter = () => (
       <div className="max-w-sm">
         <BrandMark />
         <p className="mt-4 text-sm leading-6 text-muted">
-          A Discord music bot built for the moment between someone saying “play this” and the whole
-          channel singing along.
+          A Discord music bot for queuing songs, sharing playlists, and picking the next track
+          together.
         </p>
       </div>
       <div>

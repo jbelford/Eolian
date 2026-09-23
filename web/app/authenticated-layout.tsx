@@ -52,7 +52,7 @@ const WorkspaceNavigation = ({ guilds, onNavigate }: WorkspaceNavigationProps) =
     {guilds.length > 0 && (
       <div className="mt-6">
         <p className="px-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
-          Manageable servers
+          Servers you can manage
         </p>
         <div className="mt-2 flex flex-col gap-1">
           {guilds.map(guild => (

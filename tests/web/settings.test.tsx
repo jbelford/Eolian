@@ -96,9 +96,7 @@ describe('account settings', () => {
     await user.click(screen.getByRole('radio', { name: /traditional/i }));
     await user.click(screen.getByRole('button', { name: 'Save preference' }));
 
-    expect(
-      await screen.findByText('Your command syntax preference was saved.'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Command style saved.')).toBeInTheDocument();
     expect(requestJsonBody(fetchMock, 3)).toEqual({ syntax: 'traditional' });
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
@@ -152,15 +150,13 @@ describe('account settings', () => {
     expect(continueLink).toHaveAttribute('target', '_blank');
     expect(continueLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(continueLink).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
-    expect(screen.getByText(/complete authorization in the new tab/i)).toBeInTheDocument();
+    expect(screen.getByText(/finish linking in the new tab/i)).toBeInTheDocument();
     expect(open).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Link SoundCloud' })).toBeDisabled();
 
     await user.click(screen.getByRole('button', { name: 'Refresh status' }));
     const spotify = screen.getByRole('region', { name: 'Spotify' });
-    expect(
-      await within(spotify).findByText('Connected to your Eolian account.'),
-    ).toBeInTheDocument();
+    expect(await within(spotify).findByText('Linked to Eolian.')).toBeInTheDocument();
     await waitFor(() =>
       expect(
         within(spotify).queryByRole('link', { name: 'Continue linking Spotify' }),
@@ -228,7 +224,7 @@ describe('account settings', () => {
     await user.click(within(provider).getByRole('button', { name: 'Disconnect' }));
     await user.click(within(provider).getByRole('button', { name: 'Confirm disconnect' }));
 
-    expect(await screen.findByText('SoundCloud was disconnected.')).toBeInTheDocument();
+    expect(await screen.findByText('SoundCloud disconnected.')).toBeInTheDocument();
     expect(within(provider).getByText('Not linked')).toBeInTheDocument();
   });
 
@@ -398,7 +394,7 @@ describe('account settings', () => {
         await screen.findByRole('heading', { name: 'Your session has expired' }),
       ).toBeInTheDocument();
       expect(
-        screen.queryByText(/was saved|authorization is ready|was disconnected/i),
+        screen.queryByText(/command style saved|ready to link|disconnected/i),
       ).not.toBeInTheDocument();
     },
   );
@@ -458,7 +454,7 @@ describe('guild settings', () => {
     ]);
     renderAt('/app/guilds');
     expect(
-      await screen.findByRole('heading', { name: 'No shared manageable servers' }),
+      await screen.findByRole('heading', { name: 'No servers to set up' }),
     ).toBeInTheDocument();
   });
 
@@ -700,7 +696,7 @@ describe('guild settings', () => {
     renderAt('/app/guilds/100');
 
     expect(
-      await screen.findByText('Some saved Discord options are unavailable'),
+      await screen.findByText('A saved channel or role is no longer available'),
     ).toBeInTheDocument();
     await user.selectOptions(screen.getByRole('combobox', { name: /Preferred text channel/ }), '');
     await user.click(screen.getByRole('checkbox', { name: /unavailable role/i }));
@@ -729,7 +725,7 @@ describe('guild settings', () => {
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     expect(
-      await screen.findByText(/available options were refreshed; review and try again/i),
+      await screen.findByText(/channel and role lists have been refreshed.*try again/i),
     ).toBeInTheDocument();
     expect(prefix).toHaveValue('?');
     expect(screen.getByRole('checkbox', { name: /unavailable role/i })).toBeChecked();

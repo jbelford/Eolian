@@ -88,7 +88,7 @@ export const AccountSettingsPage = () => {
       if (controller.signal.aborted) return;
       setSettings(next);
       setSyntax(next.syntax);
-      setFeedback({ status: 'success', message: 'Your command syntax preference was saved.' });
+      setFeedback({ status: 'success', message: 'Command style saved.' });
     } catch (error) {
       if (!controller.signal.aborted && !handleSessionError(error)) {
         setFeedback({ status: 'danger', message: errorMessage(error) });
@@ -110,7 +110,7 @@ export const AccountSettingsPage = () => {
       setAuthorizationUrls(current => ({ ...current, [provider]: authorizationUrl }));
       setFeedback({
         status: 'success',
-        message: `${providerLabels[provider]} authorization is ready. Continue in a new tab, then refresh the connection status when you finish.`,
+        message: `Ready to link ${providerLabels[provider]}. Open the link below in a new tab, then refresh the status when you’re done.`,
       });
     } catch (error) {
       if (!controller.signal.aborted && !handleSessionError(error)) {
@@ -144,7 +144,7 @@ export const AccountSettingsPage = () => {
       setConfirmProvider(undefined);
       setFeedback({
         status: 'success',
-        message: `${providerLabels[provider]} was disconnected.`,
+        message: `${providerLabels[provider]} disconnected.`,
       });
     } catch (error) {
       if (!controller.signal.aborted && !handleSessionError(error)) {
@@ -199,18 +199,18 @@ export const AccountSettingsPage = () => {
         <Card.Header>
           <Card.Title>Command syntax</Card.Title>
           <Card.Description>
-            Choose how your personal commands are parsed. Inherit uses each server’s setting.
+            Pick how you write commands. Inherit uses the server’s setting.
           </Card.Description>
         </Card.Header>
         <Card.Content>
           <form className="grid gap-5" onSubmit={event => void saveSyntax(event)}>
             <fieldset disabled={pendingAction === 'syntax'}>
-              <legend className="text-sm font-semibold">Personal syntax preference</legend>
+              <legend className="text-sm font-semibold">Your command style</legend>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {[
-                  ['inherit', null, 'Inherit', 'Use the server or default syntax.'],
-                  ['keyword', 'keyword', 'Keyword', 'Natural language-style command options.'],
-                  ['traditional', 'traditional', 'Traditional', 'Flag-based command options.'],
+                  ['inherit', null, 'Inherit', 'Use the server’s command style.'],
+                  ['keyword', 'keyword', 'Keyword', 'Write options as words.'],
+                  ['traditional', 'traditional', 'Traditional', 'Use flags for options.'],
                 ].map(([id, value, label, description]) => (
                   <label
                     className="flex cursor-pointer gap-3 rounded-2xl border border-separator bg-background p-4 has-[:checked]:border-accent has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus"
@@ -253,7 +253,8 @@ export const AccountSettingsPage = () => {
           <div>
             <Card.Title>Music providers</Card.Title>
             <Card.Description>
-              Link an account to use personal playlists, likes, and provider libraries.
+              Link Spotify or SoundCloud to add your own playlists and likes. Spotify also supports
+              your top tracks.
             </Card.Description>
           </div>
           <Button
@@ -287,10 +288,10 @@ export const AccountSettingsPage = () => {
                       </h2>
                       <p className="mt-2 text-sm leading-6 text-muted">
                         {status.linked
-                          ? 'Connected to your Eolian account.'
+                          ? 'Linked to Eolian.'
                           : status.linkAvailable
-                            ? 'Available to connect.'
-                            : 'Linking is not enabled for this deployment.'}
+                            ? 'Not linked yet.'
+                            : 'Account linking is not available here.'}
                       </p>
                     </div>
                     <Chip color={status.linked ? 'success' : 'default'} variant="soft">
@@ -304,7 +305,8 @@ export const AccountSettingsPage = () => {
                         Disconnect {providerLabels[provider]}?
                       </p>
                       <p className="mt-1 text-sm text-muted">
-                        Provider playlists and likes will be unavailable until you link again.
+                        You won’t be able to add your playlists or likes from this account until you
+                        link it again.
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button
@@ -360,8 +362,8 @@ export const AccountSettingsPage = () => {
                                 Continue linking {providerLabels[provider]}
                               </Link>
                               <p className="text-sm leading-6 text-muted">
-                                Complete authorization in the new tab, return here, and choose
-                                Refresh status.
+                                Finish linking in the new tab, then come back and choose Refresh
+                                status.
                               </p>
                             </div>
                           )}
