@@ -8,7 +8,7 @@ const { connect, close, collection, db, MongoClient } = vi.hoisted(() => {
   const close = vi.fn();
   const collection = vi.fn((name: string) => ({
     name,
-    createIndex: vi.fn().mockResolvedValue('sessions_expires_at_ttl'),
+    createIndex: vi.fn().mockResolvedValue('sessions_last_modified_ttl'),
   }));
   const db = vi.fn(() => ({ collection }));
   const MongoClient = vi.fn(function () {
@@ -127,8 +127,8 @@ describe('createDatabase', () => {
     expect(MongoClient).toHaveBeenCalledWith('mongodb://localhost/test');
     expect(collection.mock.calls.map(args => args[0])).toEqual(['users', 'servers', 'sessions']);
     expect(collection.mock.results[2].value.createIndex).toHaveBeenCalledWith(
-      { expiresAt: 1 },
-      { name: 'sessions_expires_at_ttl', expireAfterSeconds: 0 },
+      { _ts: 1 },
+      { name: 'sessions_last_modified_ttl', expireAfterSeconds: 604800 },
     );
     await database.close();
     expect(close).toHaveBeenCalledOnce();

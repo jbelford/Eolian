@@ -9,8 +9,8 @@ export class MongoSessions extends MongoCollection<SessionDTO> implements Sessio
 
   async initialize(): Promise<void> {
     await this.collection.createIndex(
-      { expiresAt: 1 },
-      { name: 'sessions_expires_at_ttl', expireAfterSeconds: 0 },
+      { _ts: 1 },
+      { name: 'sessions_last_modified_ttl', expireAfterSeconds: 604800 },
     );
   }
 

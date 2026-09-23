@@ -393,11 +393,13 @@ describe('Discord auth routes', () => {
     expect(auth.sessions.update).toHaveBeenCalled();
   });
 
-  it('removes expired sessions and clears their cookie', async () => {
+  it('rejects and deletes an expired session still stored after a recent modification', async () => {
     const auth = await createServer();
     const loggedIn = await login(auth.server);
     const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    auth.sessions.records.get(key)!.expiresAt = new Date('2026-09-22T07:59:59.000Z');
+    const record = auth.sessions.records.get(key)!;
+    record.expiresAt = new Date('2026-09-22T07:59:59.000Z');
+    record.renewedAt = new Date('2026-09-22T08:00:00.000Z');
 
     const response = await auth.server.inject({
       method: 'GET',
@@ -408,6 +410,7 @@ describe('Discord auth routes', () => {
 
     expect(response.json()).toEqual({ authenticated: false });
     expect(auth.sessions.delete).toHaveBeenCalledWith(key);
+    expect(auth.sessions.records.has(key)).toBe(false);
     expect(cookies(response)[0]).toContain('Max-Age=0');
   });
 

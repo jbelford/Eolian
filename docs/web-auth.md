@@ -37,10 +37,13 @@ with persistence writes bounded to at most one renewal per day.
 
 MongoDB stores a keyed digest of the session ID, the required Discord identity fields, Discord
 token refresh metadata, manageable-guild claims, the CSRF token, and timestamps. The `sessions`
-collection has an absolute-expiry TTL index on `expiresAt`; expired and logged-out records are
-also removed explicitly when encountered. Guild claims are collected through Discord's
-cursor-based pagination. Token and guild-claim refresh work is serialized per session so
-concurrent requests share rotated credentials safely.
+collection has a seven-day TTL index on Cosmos DB for MongoDB's reserved `_ts` last-modification
+field. This index is for background cleanup only: writes (including token and guild-claim refresh)
+move `_ts`, and cleanup can lag. Every request checks the stored `expiresAt` before authenticating;
+expired and logged-out sessions are also deleted explicitly. Existing indexes are not removed
+automatically; index creation errors prevent startup. Guild claims are collected through Discord's
+cursor-based pagination. Token and guild-claim refresh work is serialized per session so concurrent
+requests share rotated credentials safely.
 
 ## Protected API routes
 
