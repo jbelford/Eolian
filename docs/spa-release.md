@@ -23,7 +23,7 @@ Create a protected GitHub environment named `production` and configure these Act
 | `FRONT_DOOR_PROFILE_NAME`  | Azure Front Door Standard or Premium profile.                    |
 | `FRONT_DOOR_ENDPOINT_NAME` | Front Door endpoint serving the production application routes.   |
 
-The browser build uses the public Discord client ID committed in `.env.production` by default.
+The browser build uses the public Discord client ID committed in `web/.env.production` by default.
 Optionally set the production-environment Actions variable `VITE_DISCORD_CLIENT_ID` to a valid
 Discord snowflake to override that default. The workflow passes a nonempty override to the build
 only after validation; an unset or blank variable leaves the committed value intact.
