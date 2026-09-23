@@ -110,143 +110,241 @@ a {
   background: radial-gradient(circle, oklch(0.68 0.2 300 / 0.32), transparent 68%);
 }
 
-.player-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid oklch(1 0 0 / 0.13);
-  border-radius: 2rem;
-  background: linear-gradient(145deg, oklch(0.22 0.055 270 / 0.96), oklch(0.11 0.03 260 / 0.98)),
-    oklch(0.15 0.03 270);
-  box-shadow:
-    0 2rem 6rem oklch(0.15 0.08 275 / 0.28),
-    inset 0 1px oklch(1 0 0 / 0.08);
-}
-
-.player-glow {
+.discord-scene-glow {
   position: absolute;
-  inset: 15% 8%;
+  inset: 8% 4%;
   border-radius: 50%;
-  background: linear-gradient(100deg, oklch(0.72 0.17 220), oklch(0.65 0.22 310));
+  background: linear-gradient(120deg, oklch(0.7 0.14 210), oklch(0.66 0.19 305));
   filter: blur(4rem);
-  opacity: 0.42;
+  opacity: 0.32;
 }
 
-.album-art {
+.discord-window {
   position: relative;
-  display: grid;
-  aspect-ratio: 1.35;
-  place-items: center;
   overflow: hidden;
-  border-radius: 1.35rem;
-  background: radial-gradient(circle at 25% 25%, oklch(0.8 0.15 205 / 0.65), transparent 28%),
-    radial-gradient(circle at 75% 70%, oklch(0.68 0.22 315 / 0.75), transparent 31%),
-    linear-gradient(135deg, oklch(0.22 0.08 240), oklch(0.2 0.08 300));
+  border: 1px solid oklch(0.62 0.05 265 / 0.25);
+  border-radius: 1.5rem;
+  background: oklch(0.18 0.028 270);
+  color: oklch(0.94 0.012 260);
+  box-shadow:
+    0 2rem 6rem oklch(0.15 0.08 275 / 0.3),
+    inset 0 1px oklch(1 0 0 / 0.1);
 }
 
-.album-ring {
-  position: absolute;
-  border: 1px solid oklch(1 0 0 / 0.24);
-  border-radius: 50%;
-}
-
-.album-ring-one {
-  width: 72%;
-  aspect-ratio: 1;
-}
-
-.album-ring-two {
-  width: 45%;
-  aspect-ratio: 1;
-}
-
-.album-core {
+.discord-window-bar {
   display: flex;
-  height: 5rem;
+  min-height: 3.5rem;
   align-items: center;
-  gap: 0.32rem;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid oklch(1 0 0 / 0.08);
+  padding: 0.75rem clamp(0.85rem, 4vw, 1.5rem);
+  background: oklch(0.2 0.027 268);
 }
 
-.album-core span,
-.equalizer span {
-  width: 0.34rem;
-  border-radius: 99px;
-  background: linear-gradient(to top, oklch(0.8 0.14 210), oklch(0.74 0.2 315));
-  animation: equalize 1.5s ease-in-out infinite alternate;
+.discord-channel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.album-core span:nth-child(1) {
-  height: 2rem;
+.discord-channel > span {
+  margin-right: 0.3rem;
+  color: oklch(0.7 0.02 260);
 }
 
-.album-core span:nth-child(2) {
-  height: 4rem;
-  animation-delay: -0.7s;
+.discord-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: oklch(0.76 0.02 260);
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 
-.album-core span:nth-child(3) {
-  height: 3rem;
-  animation-delay: -1.1s;
+.discord-presence-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: oklch(0.76 0.16 160);
 }
 
-.album-core span:nth-child(4) {
-  height: 4.5rem;
-  animation-delay: -0.35s;
+.discord-message {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.8rem;
+  padding: clamp(1rem, 4vw, 1.7rem);
 }
 
-.album-core span:nth-child(5) {
-  height: 2.6rem;
-  animation-delay: -0.9s;
-}
-
-.equalizer {
+.discord-bot-avatar {
   display: flex;
-  height: 1.8rem;
-  align-items: end;
-  gap: 0.2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.16rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(145deg, oklch(0.68 0.18 230), oklch(0.57 0.22 292));
 }
 
-.equalizer span {
-  width: 0.18rem;
-  height: 80%;
+.discord-bot-avatar span {
+  width: 0.15rem;
+  height: 0.55rem;
+  border-radius: 99px;
+  background: white;
 }
 
-.equalizer span:nth-child(2) {
-  height: 45%;
-  animation-delay: -0.8s;
+.discord-bot-avatar span:nth-child(2) {
+  height: 0.95rem;
 }
 
-.equalizer span:nth-child(3) {
-  height: 100%;
-  animation-delay: -0.4s;
+.discord-bot-avatar span:nth-child(3) {
+  height: 0.7rem;
 }
 
-.equalizer span:nth-child(4) {
-  height: 62%;
-  animation-delay: -1s;
+.discord-message-body {
+  min-width: 0;
 }
 
-.floating-note {
-  position: absolute;
-  z-index: 2;
-  border: 1px solid oklch(1 0 0 / 0.14);
-  border-radius: 999px;
-  background: oklch(0.18 0.035 270 / 0.88);
-  padding: 0.65rem 0.9rem;
-  color: oklch(0.95 0.01 270);
+.discord-message-meta {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+}
+
+.discord-message-meta strong {
+  font-size: 0.88rem;
+}
+
+.discord-message-meta > span {
+  border-radius: 0.2rem;
+  background: oklch(0.61 0.18 268);
+  padding: 0.12rem 0.35rem;
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.discord-message-meta small {
+  color: oklch(0.72 0.02 260);
+  font-size: 0.7rem;
+}
+
+.discord-embed {
+  margin-top: 0.35rem;
+  border-left: 0.25rem solid oklch(0.74 0.16 160);
+  border-radius: 0.25rem 0.85rem 0.85rem 0.25rem;
+  background: oklch(0.225 0.025 270);
+  padding: clamp(0.8rem, 3vw, 1.15rem);
+}
+
+.discord-embed-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.discord-source-icon {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 0.4rem;
+  background: oklch(0.74 0.16 160 / 0.16);
+  color: oklch(0.82 0.14 160);
+}
+
+.discord-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  color: oklch(0.78 0.02 260);
   font-size: 0.75rem;
-  font-weight: 650;
-  box-shadow: 0 0.8rem 2.5rem oklch(0.1 0.04 270 / 0.28);
-  backdrop-filter: blur(1rem);
+  font-weight: 600;
 }
 
-.floating-note-one {
-  top: 18%;
-  left: -2.5rem;
+.discord-track-title {
+  margin-top: 0.75rem;
+  color: oklch(0.8 0.13 235);
+  font-size: 1rem;
+  font-weight: 750;
 }
 
-.floating-note-two {
-  right: -1rem;
-  bottom: 18%;
+.discord-track-artist {
+  margin-top: 0.15rem;
+  color: oklch(0.83 0.015 260);
+  font-size: 0.8rem;
+}
+
+.discord-artwork {
+  position: relative;
+  width: min(10.5rem, 100%);
+  aspect-ratio: 1;
+  overflow: hidden;
+  margin-top: 0.9rem;
+  border-radius: 0.45rem;
+  background: radial-gradient(circle at 73% 28%, oklch(0.84 0.1 45), transparent 20%),
+    linear-gradient(145deg, oklch(0.28 0.09 255), oklch(0.53 0.15 310) 58%, oklch(0.8 0.11 35));
+}
+
+.discord-artwork::before {
+  position: absolute;
+  inset: 48% -25% -30%;
+  transform: rotate(-22deg);
+  background: linear-gradient(115deg, oklch(0.16 0.06 250), oklch(0.37 0.12 280));
+  content: '';
+}
+
+.discord-artwork::after {
+  position: absolute;
+  top: 10%;
+  right: 12%;
+  width: 30%;
+  aspect-ratio: 1;
+  border: 1px solid oklch(1 0 0 / 0.65);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.8rem oklch(1 0 0 / 0.06);
+  content: '';
+}
+
+.discord-artwork-line {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  clip-path: polygon(0 70%, 100% 30%, 100% 33%, 0 73%);
+  background: oklch(0.97 0.03 75 / 0.8);
+}
+
+.discord-transport {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.discord-transport-tile {
+  display: grid;
+  min-height: 2.35rem;
+  place-items: center;
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 0.6rem;
+  background: oklch(0.29 0.026 270);
+  color: oklch(0.89 0.015 260);
+}
+
+.discord-composer {
+  margin: 0 clamp(1rem, 4vw, 1.7rem) clamp(1rem, 4vw, 1.5rem);
+  border-radius: 0.6rem;
+  background: oklch(0.25 0.022 270);
+  padding: 0.7rem 1rem;
+  color: oklch(0.7 0.02 260);
+  font-size: 0.73rem;
 }
 
 .section-shell {
@@ -417,30 +515,9 @@ a {
   color: var(--foreground);
 }
 
-@keyframes equalize {
-  from {
-    transform: scaleY(0.55);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-
 @media (min-width: 640px) {
   .section-shell {
     padding: 7rem 2rem;
-  }
-}
-
-@media (max-width: 720px) {
-  .floating-note-one {
-    top: -1rem;
-    left: 0.5rem;
-  }
-
-  .floating-note-two {
-    right: 0.5rem;
-    bottom: -1rem;
   }
 }
 

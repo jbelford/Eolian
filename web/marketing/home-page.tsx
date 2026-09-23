@@ -1,32 +1,38 @@
 import { Card, Chip } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
+import {
+  ArrowUpRight,
+  Command,
+  Headphones,
+  ListMusic,
+  Music2,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Sparkles,
+  Square,
+  Volume2,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { discordInviteUrl } from '../config/discord-invite';
-import {
-  ArrowUpRightIcon,
-  CommandIcon,
-  HeadphonesIcon,
-  QueueIcon,
-  SparklesIcon,
-} from '../components/icons';
 
 const features = [
   {
-    icon: QueueIcon,
+    icon: ListMusic,
     title: 'A queue that keeps the room moving',
     description:
       'Bring in songs, albums, playlists, artist catalogs, likes, and top tracks without rebuilding the queue by hand.',
     detail: 'Spotify, SoundCloud, and YouTube-aware resolution',
   },
   {
-    icon: CommandIcon,
+    icon: Command,
     title: 'Commands that meet people where they are',
     description:
       'Use natural keywords, familiar flags, or Discord slash commands. Every mode reaches the same dependable command system.',
     detail: 'Keyword, traditional, and slash syntax',
   },
   {
-    icon: HeadphonesIcon,
+    icon: Headphones,
     title: 'Playback shaped for a shared channel',
     description:
       'Skip, shuffle, loop, adjust volume, and add audio effects while Eolian keeps controls and queue state close at hand.',
@@ -81,7 +87,7 @@ export const HomePage = () => (
       <div className="mx-auto grid min-h-[calc(100dvh-4.5rem)] max-w-7xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[1.08fr_0.92fr] lg:py-28">
         <div className="relative z-10 max-w-3xl">
           <Chip color="accent" variant="soft">
-            <SparklesIcon className="size-4" />
+            <Sparkles aria-hidden="true" className="size-4" />
             Discord music, without the friction
           </Chip>
           <h1 className="font-display mt-7 text-balance text-5xl font-bold leading-[0.94] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
@@ -97,7 +103,7 @@ export const HomePage = () => (
               href={discordInviteUrl}
             >
               Add Eolian to Discord
-              <ArrowUpRightIcon className="size-5" />
+              <ArrowUpRight aria-hidden="true" className="size-5" />
             </a>
             <a
               className={buttonVariants({ size: 'lg', variant: 'secondary' })}
@@ -111,53 +117,68 @@ export const HomePage = () => (
           </p>
         </div>
 
-        <div className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-hidden="true">
-          <div className="player-glow" />
-          <div className="player-card">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
-                  Now playing
-                </p>
-                <p className="mt-1 font-semibold text-white">Midnight drive mix</p>
+        <div className="discord-scene relative mx-auto w-full max-w-xl" aria-hidden="true">
+          <div className="discord-scene-glow" />
+          <div className="discord-window">
+            <div className="discord-window-bar">
+              <span className="discord-channel">
+                <span>#</span> listening-room
+              </span>
+              <span className="discord-presence">
+                <span className="discord-presence-dot" />
+                Music is on
+              </span>
+            </div>
+            <div className="discord-message">
+              <div className="discord-bot-avatar">
+                <span />
+                <span />
+                <span />
               </div>
-              <div className="flex gap-1.5">
-                <span className="size-2 rounded-full bg-cyan-300" />
-                <span className="size-2 rounded-full bg-violet-300" />
-                <span className="size-2 rounded-full bg-fuchsia-300" />
+              <div className="discord-message-body">
+                <div className="discord-message-meta">
+                  <strong>Eolian</strong>
+                  <span>BOT</span>
+                  <small>Today at 8:42 PM</small>
+                </div>
+                <div className="discord-embed">
+                  <div className="discord-embed-header">
+                    <span className="discord-source-icon">
+                      <Music2 aria-hidden="true" className="size-4" />
+                    </span>
+                    <span>Now Playing</span>
+                    <span className="discord-volume">
+                      <Volume2 aria-hidden="true" className="size-4" />
+                      78%
+                    </span>
+                  </div>
+                  <p className="discord-track-title">After the Rain</p>
+                  <p className="discord-track-artist">by Lowlight Atlas</p>
+                  <div className="discord-artwork">
+                    <span className="discord-artwork-line" />
+                  </div>
+                </div>
+                <div className="discord-transport">
+                  <span className="discord-transport-tile">
+                    <ListMusic aria-hidden="true" className="size-5" />
+                  </span>
+                  <span className="discord-transport-tile">
+                    <SkipBack aria-hidden="true" className="size-5" />
+                  </span>
+                  <span className="discord-transport-tile">
+                    <Pause aria-hidden="true" className="size-5" />
+                  </span>
+                  <span className="discord-transport-tile">
+                    <SkipForward aria-hidden="true" className="size-5" />
+                  </span>
+                  <span className="discord-transport-tile">
+                    <Square aria-hidden="true" className="size-5" />
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="p-5 sm:p-7">
-              <div className="album-art">
-                <div className="album-ring album-ring-one" />
-                <div className="album-ring album-ring-two" />
-                <div className="album-core">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-              </div>
-              <div className="mt-7 flex items-end justify-between gap-6">
-                <div>
-                  <p className="text-lg font-semibold text-white">A queue for the whole room</p>
-                  <p className="mt-1 text-sm text-white/55">12 tracks · shaped by 5 listeners</p>
-                </div>
-                <div className="equalizer">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-              </div>
-              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-[62%] rounded-full bg-gradient-to-r from-cyan-300 via-violet-400 to-fuchsia-400" />
-              </div>
-            </div>
+            <div className="discord-composer">Message #listening-room</div>
           </div>
-          <div className="floating-note floating-note-one">Spotify playlist added</div>
-          <div className="floating-note floating-note-two">Shuffle on</div>
         </div>
       </div>
     </section>
@@ -179,7 +200,7 @@ export const HomePage = () => (
             <Card className="feature-card" key={feature.title}>
               <Card.Header>
                 <div className="feature-icon">
-                  <Icon className="size-6" />
+                  <Icon aria-hidden="true" className="size-6" />
                 </div>
                 <Card.Title>{feature.title}</Card.Title>
                 <Card.Description>{feature.description}</Card.Description>
@@ -263,7 +284,7 @@ export const HomePage = () => (
               href={discordInviteUrl}
             >
               Add to Discord
-              <ArrowUpRightIcon className="size-5" />
+              <ArrowUpRight aria-hidden="true" className="size-5" />
             </a>
             <Link
               className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-6 font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"

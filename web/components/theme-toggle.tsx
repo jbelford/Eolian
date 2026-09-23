@@ -1,6 +1,6 @@
 import { Button } from '@heroui/react';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../app/providers';
-import { MoonIcon, SunIcon } from './icons';
 
 export const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
@@ -15,7 +15,11 @@ export const ThemeToggle = () => {
       variant="ghost"
       onPress={toggleTheme}
     >
-      {theme === 'dark' ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
+      {theme === 'dark' ? (
+        <Sun aria-hidden="true" className="size-5" />
+      ) : (
+        <Moon aria-hidden="true" className="size-5" />
+      )}
     </Button>
   );
 };

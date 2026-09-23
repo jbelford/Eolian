@@ -43,6 +43,30 @@ describe('public web experience', () => {
     expect(screen.getByRole('heading', { name: /speak naturally/i })).toBeInTheDocument();
   });
 
+  it('shows an illustrative now-playing embed without interactive transport controls', () => {
+    const { container } = renderAt('/');
+    const scene = container.querySelector('.discord-scene');
+    const tiles = scene?.querySelectorAll('.discord-transport-tile');
+
+    expect(scene).toHaveAttribute('aria-hidden', 'true');
+    expect(scene).toHaveTextContent('Now Playing');
+    expect(scene).toHaveTextContent('78%');
+    expect(scene).toHaveTextContent('After the Rain');
+    expect(scene).toHaveTextContent('by Lowlight Atlas');
+    expect(scene?.querySelector('.discord-embed')).toBeInTheDocument();
+    expect(scene?.querySelector('.discord-artwork')).toBeInTheDocument();
+    expect(tiles).toHaveLength(5);
+    expect(tiles?.[0].querySelector('.lucide-list-music')).toBeInTheDocument();
+    expect(tiles?.[1].querySelector('.lucide-skip-back')).toBeInTheDocument();
+    expect(tiles?.[2].querySelector('.lucide-pause')).toBeInTheDocument();
+    expect(tiles?.[3].querySelector('.lucide-skip-forward')).toBeInTheDocument();
+    expect(tiles?.[4].querySelector('.lucide-square')).toBeInTheDocument();
+    expect(scene?.querySelectorAll('button, a')).toHaveLength(0);
+    for (const icon of scene?.querySelectorAll('svg') ?? []) {
+      expect(icon).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
   it('navigates to the placeholder workspace without authentication', async () => {
     const user = userEvent.setup();
     renderAt('/');
@@ -60,7 +84,9 @@ describe('public web experience', () => {
     renderAt('/');
 
     await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'light'));
-    await user.click(screen.getByRole('button', { name: 'Switch to dark theme' }));
+    const themeButton = screen.getByRole('button', { name: 'Switch to dark theme' });
+    expect(themeButton.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    await user.click(themeButton);
 
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark');

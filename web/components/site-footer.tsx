@@ -1,7 +1,7 @@
 import { Link as HeroLink } from '@heroui/react';
+import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BrandMark } from './brand';
-import { ArrowUpRightIcon } from './icons';
 
 export const SiteFooter = () => (
   <footer className="border-t border-separator bg-surface">
@@ -32,11 +32,11 @@ export const SiteFooter = () => (
         <div className="mt-4 flex flex-col items-start gap-3 text-sm">
           <HeroLink href="https://github.com/jbelford/Eolian" target="_blank">
             GitHub
-            <ArrowUpRightIcon className="size-4" />
+            <ArrowUpRight aria-hidden="true" className="size-4" />
           </HeroLink>
           <HeroLink href="https://github.com/jbelford/Eolian/issues" target="_blank">
             Report an issue
-            <ArrowUpRightIcon className="size-4" />
+            <ArrowUpRight aria-hidden="true" className="size-4" />
           </HeroLink>
         </div>
       </div>

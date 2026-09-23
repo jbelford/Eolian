@@ -1,7 +1,7 @@
 import { Chip } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
+import { Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { SparklesIcon } from '../components/icons';
 
 interface WorkspacePlaceholderProps {
   section: 'overview' | 'guilds' | 'account';
@@ -32,7 +32,7 @@ export const WorkspacePlaceholder = ({ section }: WorkspacePlaceholderProps) => 
     <section className="mx-auto flex min-h-[70dvh] max-w-4xl items-center px-5 py-20 sm:px-8">
       <div className="w-full rounded-[2rem] border border-separator bg-surface p-7 shadow-sm sm:p-12">
         <Chip color="accent" variant="soft">
-          <SparklesIcon className="size-4" />
+          <Sparkles aria-hidden="true" className="size-4" />
           Authenticated entry point
         </Chip>
         <h1 className="font-display mt-7 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">

@@ -1,10 +1,10 @@
 import { Button } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
+import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { discordInviteUrl } from '../config/discord-invite';
 import { BrandMark } from './brand';
-import { CloseIcon, MenuIcon } from './icons';
 import { ThemeToggle } from './theme-toggle';
 
 const navigation = [
@@ -64,7 +64,11 @@ export const SiteHeader = () => {
             variant="ghost"
             onPress={() => setIsMenuOpen(open => !open)}
           >
-            {isMenuOpen ? <CloseIcon className="size-5" /> : <MenuIcon className="size-5" />}
+            {isMenuOpen ? (
+              <X aria-hidden="true" className="size-5" />
+            ) : (
+              <Menu aria-hidden="true" className="size-5" />
+            )}
           </Button>
         </div>
       </nav>
