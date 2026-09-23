@@ -1,13 +1,6 @@
 import { TrackSource } from '@eolian/api/@types';
 import { SyntaxType } from '@eolian/command-options/@types';
-import { environment } from '@eolian/common/env';
-import {
-  AppDatabase,
-  DiscordSessionGuild,
-  SessionDTO,
-  SessionsDb,
-  UserDTO,
-} from '@eolian/data/@types';
+import { AppDatabase, DiscordSessionGuild, UserDTO } from '@eolian/data/@types';
 import {
   DiscordManagement,
   DiscordManagementError,
@@ -15,9 +8,13 @@ import {
 } from '@eolian/framework/discord-management';
 import { IAuthServiceProvider } from '@eolian/framework/@types';
 import { TokenResponseWithRefresh } from '@eolian/http/@types';
-import { DiscordOAuthClient } from '@eolian/webserver/auth/@types';
-import { CSRF_HEADER, SESSION_COOKIE } from '@eolian/webserver/auth/constants';
-import { sessionKey } from '@eolian/webserver/auth/crypto';
+import { DiscordOAuthClient, DiscordTokenResponse } from '@eolian/webserver/auth/@types';
+import {
+  CSRF_HEADER,
+  SESSION_COOKIE,
+  SESSION_DURATION_SECONDS,
+} from '@eolian/webserver/auth/constants';
+import { registerSecureSession } from '@eolian/webserver/auth/secure-session';
 import { createAuthSecurity } from '@eolian/webserver/auth/security';
 import { registerSettingsRoutes } from '@eolian/webserver/settings/routes';
 import fastify, { FastifyInstance } from 'fastify';
@@ -42,30 +39,10 @@ vi.mock('@eolian/common/logger', () => ({
 }));
 
 const now = new Date('2026-09-22T08:00:00.000Z');
-const rawSessionId = 'settings-session';
-const csrfToken = 'settings-csrf';
+let sessionCookie: string;
+let csrfToken: string;
 const userId = '500';
 const guildId = '100';
-
-class MemorySessions implements SessionsDb {
-  records = new Map<string, SessionDTO>();
-  initialize = vi.fn(async () => undefined);
-  create = vi.fn(async (record: SessionDTO) => {
-    this.records.set(record._id, structuredClone(record));
-  });
-  get = vi.fn(async (id: string) => {
-    const record = this.records.get(id);
-    return record ? structuredClone(record) : null;
-  });
-  delete = vi.fn(async (id: string) => this.records.delete(id));
-  update = vi.fn(async (id: string, values: Partial<Omit<SessionDTO, '_id'>>) => {
-    const record = this.records.get(id);
-    if (!record) return false;
-    Object.assign(record, structuredClone(values));
-    return true;
-  });
-  renew = vi.fn(async () => false);
-}
 
 function claim(
   id = guildId,
@@ -75,29 +52,17 @@ function claim(
   return { id, name: `Guild ${id}`, icon: null, owner, permissions };
 }
 
-function session(guilds = [claim()], refreshedAt = now): SessionDTO {
-  return {
-    _id: sessionKey(rawSessionId, environment.sessionSecret),
-    user: {
-      id: userId,
-      username: 'settings-user',
-      globalName: 'Settings User',
-      avatar: null,
-    },
-    tokens: {
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
-      scope: 'identify guilds',
-      expiresAt: new Date('2026-09-22T10:00:00.000Z'),
-    },
-    guilds,
-    guildsRefreshedAt: refreshedAt,
-    csrfToken,
-    createdAt: now,
-    renewedAt: now,
-    expiresAt: new Date('2026-09-29T08:00:00.000Z'),
-  };
-}
+const discordUser = {
+  id: userId,
+  username: 'settings-user',
+  globalName: 'Settings User',
+  avatar: null,
+};
+const discordToken: DiscordTokenResponse = {
+  accessToken: 'access-token',
+  scope: 'identify guilds',
+  expiresIn: SESSION_DURATION_SECONDS + 60,
+};
 
 function managedGuild(overrides: Partial<ManagedGuild> = {}): ManagedGuild {
   return {
@@ -119,7 +84,7 @@ function managedGuild(overrides: Partial<ManagedGuild> = {}): ManagedGuild {
   };
 }
 
-function createDatabase(sessions: MemorySessions, user: UserDTO | null = null): AppDatabase {
+function createDatabase(user: UserDTO | null = null): AppDatabase {
   const users = {
     get: vi.fn().mockResolvedValue(user),
     delete: vi.fn(),
@@ -139,18 +104,16 @@ function createDatabase(sessions: MemorySessions, user: UserDTO | null = null): 
   return {
     users,
     servers: {} as AppDatabase['servers'],
-    sessions,
     close: vi.fn(),
   };
 }
 
-function createOAuthClient(refreshedGuilds = [claim()]): DiscordOAuthClient {
+function createOAuthClient(guilds = [claim()]): DiscordOAuthClient {
   return {
     authorizationUrl: vi.fn(),
     exchangeCode: vi.fn(),
-    refreshToken: vi.fn(),
     getCurrentUser: vi.fn(),
-    getCurrentUserGuilds: vi.fn().mockResolvedValue(refreshedGuilds),
+    getCurrentUserGuilds: vi.fn().mockResolvedValue(guilds),
   };
 }
 
@@ -192,23 +155,20 @@ function createAuthProviders() {
 
 async function createServer(
   options: {
-    record?: SessionDTO;
     user?: UserDTO | null;
-    refreshedGuilds?: DiscordSessionGuild[];
+    guilds?: DiscordSessionGuild[];
     management?: DiscordManagement;
   } = {},
 ) {
-  const sessions = new MemorySessions();
-  sessions.records.set(
-    sessionKey(rawSessionId, environment.sessionSecret),
-    options.record ?? session(),
-  );
-  const database = createDatabase(sessions, options.user);
-  const oauthClient = createOAuthClient(options.refreshedGuilds);
-  const security = createAuthSecurity(sessions, oauthClient, () => now);
+  let currentTime = now;
+  vi.spyOn(Date, 'now').mockImplementation(() => currentTime.getTime());
+  const database = createDatabase(options.user);
+  const oauthClient = createOAuthClient(options.guilds);
   const auth = createAuthProviders();
   const management = options.management ?? createManagement();
   const server = fastify({ ajv: { customOptions: { removeAdditional: false } } });
+  registerSecureSession(server);
+  const security = createAuthSecurity(server, oauthClient, () => currentTime);
   server.decorateRequest('authSession');
   await server.register(registerSettingsRoutes, {
     database,
@@ -217,12 +177,23 @@ async function createServer(
     authProviders: auth.provider,
   });
   await server.ready();
-  return { auth, database, management, oauthClient, server, sessions };
+  sessionCookie = security.sessionService.create(discordToken, discordUser, now).cookie;
+  csrfToken = (await security.sessionService.resolveForLogout(sessionCookie))!.record.csrfToken;
+  return {
+    auth,
+    database,
+    management,
+    oauthClient,
+    server,
+    setNow: (value: Date) => {
+      currentTime = value;
+    },
+  };
 }
 
 function authHeaders(mutation = false) {
   return {
-    cookie: `${SESSION_COOKIE}=${rawSessionId}`,
+    cookie: `${SESSION_COOKIE}=${encodeURIComponent(sessionCookie)}`,
     ...(mutation ? { origin: 'http://localhost:8080', [CSRF_HEADER]: csrfToken } : undefined),
   };
 }
@@ -279,7 +250,7 @@ describe('settings routes', () => {
       (
         await server.inject({
           ...request,
-          headers: { cookie: `${SESSION_COOKIE}=${rawSessionId}`, origin: 'https://evil.test' },
+          headers: { cookie: authHeaders().cookie, origin: 'https://evil.test' },
         })
       ).json().error.code,
     ).toBe('invalid_origin');
@@ -288,7 +259,7 @@ describe('settings routes', () => {
         await server.inject({
           ...request,
           headers: {
-            cookie: `${SESSION_COOKIE}=${rawSessionId}`,
+            cookie: authHeaders().cookie,
             origin: 'http://localhost:8080',
           },
         })
@@ -384,11 +355,9 @@ describe('settings routes', () => {
     expect(failed.json().error.code).toBe('persistence_failed');
   });
 
-  it('refreshes stale claims and filters guilds shared with the bot', async () => {
-    const stale = session([claim('999', '0')], new Date('2026-09-22T07:00:00.000Z'));
+  it('fetches current claims per request and filters guilds shared with the bot', async () => {
     const { oauthClient, server } = await createServer({
-      record: stale,
-      refreshedGuilds: [claim(guildId), claim('999', '0')],
+      guilds: [claim(guildId), claim('999', '0')],
     });
 
     const response = await server.inject({
@@ -396,16 +365,24 @@ describe('settings routes', () => {
       url: '/api/guilds',
       headers: authHeaders(),
     });
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockResolvedValueOnce([claim('999', '0')]);
+    const changed = await server.inject({
+      method: 'GET',
+      url: '/api/guilds',
+      headers: authHeaders(),
+    });
     await close(server);
 
-    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledWith('access-token');
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(2);
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledWith(discordToken.accessToken);
     expect(response.json()).toEqual({
       guilds: [{ id: guildId, name: 'Guild', icon: null }],
     });
+    expect(changed.json()).toEqual({ guilds: [] });
   });
 
   it('requires current manage claims before each guild read or mutation', async () => {
-    const { management, server } = await createServer({ record: session([claim(guildId, '0')]) });
+    const { management, server } = await createServer({ guilds: [claim(guildId, '0')] });
 
     const read = await server.inject({
       method: 'GET',
@@ -424,6 +401,72 @@ describe('settings routes', () => {
     expect(mutation.statusCode).toBe(403);
     expect(management.getGuild).not.toHaveBeenCalled();
     expect(management.updateGuild).not.toHaveBeenCalled();
+  });
+
+  it('checks current Discord permissions on each guild read and mutation', async () => {
+    const { management, oauthClient, server } = await createServer();
+    const allowed = await server.inject({
+      method: 'GET',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(),
+    });
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockResolvedValue([claim(guildId, '0')]);
+    const deniedRead = await server.inject({
+      method: 'GET',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(),
+    });
+    const deniedWrite = await server.inject({
+      method: 'PATCH',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(true),
+      payload: { prefix: '?' },
+    });
+    await close(server);
+
+    expect(allowed.statusCode).toBe(200);
+    expect(deniedRead.json().error.code).toBe('guild_forbidden');
+    expect(deniedWrite.json().error.code).toBe('guild_forbidden');
+    expect(management.getGuild).toHaveBeenCalledOnce();
+    expect(management.updateGuild).not.toHaveBeenCalled();
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(3);
+  });
+
+  it('rejects the encrypted cookie at its fixed deadline without renewal', async () => {
+    const { oauthClient, server, setNow } = await createServer();
+    const before = await server.inject({
+      method: 'GET',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(),
+    });
+    setNow(new Date(now.getTime() + SESSION_DURATION_SECONDS * 1000));
+    const after = await server.inject({
+      method: 'GET',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(),
+    });
+    await close(server);
+
+    expect(before.statusCode).toBe(200);
+    expect(before.headers['set-cookie']).toBeUndefined();
+    expect(after.statusCode).toBe(401);
+    expect(after.json().error.code).toBe('unauthenticated');
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce();
+  });
+
+  it('does not return guild settings when Discord claims cannot be fetched', async () => {
+    const { management, oauthClient, server } = await createServer();
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockRejectedValueOnce(new Error('Discord down'));
+    const response = await server.inject({
+      method: 'GET',
+      url: `/api/guilds/${guildId}`,
+      headers: authHeaders(),
+    });
+    await close(server);
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe('session_refresh_failed');
+    expect(management.getGuild).not.toHaveBeenCalled();
   });
 
   it('returns guild metadata and effective settings without internal fields', async () => {

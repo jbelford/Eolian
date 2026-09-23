@@ -90,16 +90,11 @@ guild children receive the selected manageable guild as router outlet context.
 
 ## Settings API
 
-Settings routes use the same session service and opaque cookie. Every guild request resolves the
-current session before checking the refreshed Discord guild claims. Guild access requires the
-Discord user to own the guild or have `Administrator` or `Manage Guild`, and the bot must still be
-present in its ready-client cache.
-
-Mutation hooks always run in this order:
-
-```ts
-preHandler: [security.guards.authenticate, security.guards.origin, security.guards.csrf];
-```
+Settings routes share the authenticated, encrypted cookie and guards described above. The cookie
+has an absolute, non-rolling lifetime of approximately 24 hours. Each authenticated guild request
+fetches current Discord guild claims using its sealed access token; guild access requires the user
+to own the guild or have `Administrator` or `Manage Guild`, and the bot must still be present in
+its ready-client cache. Guild reads and mutations use the same claim and bot-membership checks.
 
 All request objects are strict: unknown properties are rejected. Errors use
 `{ "error": { "code": string, "message": string } }`.
