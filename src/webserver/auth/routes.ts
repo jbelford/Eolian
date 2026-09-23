@@ -80,10 +80,7 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
       try {
         const issuedAt = now();
         const token = await oauthClient.exchangeCode(request.query.code);
-        const [user] = await Promise.all([
-          oauthClient.getCurrentUser(token.accessToken),
-          oauthClient.getCurrentUserGuilds(token.accessToken),
-        ]);
+        const user = await oauthClient.getCurrentUser(token.accessToken);
         const session = sessionService.create(token, user, issuedAt);
         const remainingSeconds = Math.floor((session.expiresAt.getTime() - now().getTime()) / 1000);
         if (remainingSeconds <= 0) {

@@ -212,6 +212,7 @@ describe('stateless Discord auth routes', () => {
     expect(cookieHeader).toContain('HttpOnly');
     expect(cookieHeader).toContain('SameSite=Lax');
     expect(cookieHeader).toContain(`Max-Age=${SESSION_DURATION_SECONDS}`);
+    expect(auth.oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
   });
 
   it('sets Secure on production cookies', async () => {
@@ -259,7 +260,7 @@ describe('stateless Discord auth routes', () => {
     expect(cookies(repeated)).toHaveLength(0);
     expect(expired.json()).toEqual({ authenticated: false });
     expect(cookies(expired)[0]).toContain('Max-Age=0');
-    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(3);
+    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(2);
   });
 
   it('uses fresh manageable-guild claims without storing the guild list in the cookie', async () => {
@@ -279,6 +280,7 @@ describe('stateless Discord auth routes', () => {
     expect(response.json().guilds).toHaveLength(250);
     expect(sessionCookie.length).toBeLessThan(4096);
     expect(response.body).not.toContain('access-token');
+    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce();
   });
 
   it('accepts a session cookie on another server instance without shared storage', async () => {
@@ -312,7 +314,7 @@ describe('stateless Discord auth routes', () => {
     expect(auth.oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
   });
 
-  it.each(['exchangeCode', 'getCurrentUser', 'getCurrentUserGuilds'] as const)(
+  it.each(['exchangeCode', 'getCurrentUser'] as const)(
     'returns a sanitized callback failure when %s fails',
     async method => {
       const oauthClient = createOAuthClient();

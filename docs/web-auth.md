@@ -12,8 +12,8 @@ configuration:
 
 - `DISCORD_CLIENT_ID`: Discord application client ID.
 - `DISCORD_CLIENT_SECRET`: Discord application client secret.
-- `SESSION_SECRET`: private application secret used to authenticate OAuth state and derive stored
-  session keys. Its UTF-8 encoding must contain at least 32 bytes.
+- `SESSION_SECRET`: private application secret used to authenticate OAuth state and derive the
+  secure-session encryption key. Its UTF-8 encoding must contain at least 32 bytes.
 - `BASE_URI`: public application origin. The registered Discord redirect URI must be
   `<BASE_URI origin>/api/auth/discord/callback`.
 
@@ -41,9 +41,10 @@ cookie's matching maximum age. A Discord access token must remain valid througho
 or login fails. Expiry is absolute from login: reads never touch or reissue the session cookie.
 
 The browser receives only a sanitized user, manageable guilds, CSRF token, and expiry. The server
-fetches manageable-guild claims with the sealed access token on every authenticated request; the
-full guild list is not stored in the cookie, so large lists do not exceed browser limits. Discord
-lookup failures return a sanitized retryable error. The protected settings API additionally checks
+fetches manageable-guild claims with the sealed access token on every authenticated request, not
+during the OAuth callback. The full guild list is not stored in the cookie, so large lists do not
+exceed browser limits. Guild lookup failures return a sanitized retryable error. The protected
+settings API additionally checks
 live bot membership and permissions for each guild request. There is no MongoDB session collection
 or TTL index; other bot/account data remains in MongoDB.
 
