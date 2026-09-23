@@ -39,6 +39,9 @@ jobs:
       - name: Run unit tests with coverage
         run: yarn test:coverage
 
+      - name: Run browser UI tests
+        run: yarn test:web
+
       - name: Run FFmpeg integration tests
         run: yarn test:integration
 

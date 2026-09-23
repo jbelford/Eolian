@@ -3,6 +3,7 @@ import { GITHUB_PAGE } from '@eolian/common/constants';
 import { FeatureFlag } from '@eolian/data/@types';
 import { AppDatabase } from '@eolian/data/@types';
 import { IAuthServiceProvider } from '@eolian/framework/@types';
+import { DiscordManagement } from '@eolian/framework/discord-management';
 import { createWebServerInstance, WebServer } from '@eolian/webserver';
 import { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,14 +11,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   enabledFlags: new Set<FeatureFlag>(),
   info: vi.fn(),
+  warn: vi.fn(),
 }));
 
-vi.mock('@eolian/data', () => ({
-  feature: { enabled: vi.fn((flag: FeatureFlag) => mocks.enabledFlags.has(flag)) },
-}));
+vi.mock('@eolian/data', async importOriginal => {
+  const actual = await importOriginal<typeof import('@eolian/data')>();
+  return {
+    ...actual,
+    feature: { enabled: vi.fn((flag: FeatureFlag) => mocks.enabledFlags.has(flag)) },
+  };
+});
 
 vi.mock('@eolian/common/logger', () => ({
-  logger: { info: mocks.info },
+  logger: { info: mocks.info, warn: mocks.warn },
 }));
 
 function createAuthProviders() {
@@ -42,6 +48,14 @@ function createDatabase(): AppDatabase {
   };
 }
 
+function createManagement(): DiscordManagement {
+  return {
+    listGuilds: vi.fn().mockReturnValue([]),
+    getGuild: vi.fn(),
+    updateGuild: vi.fn(),
+  };
+}
+
 describe('web server routes', () => {
   beforeEach(() => {
     mocks.enabledFlags.clear();
@@ -49,7 +63,7 @@ describe('web server routes', () => {
 
   it('exposes the health check and temporary root redirect', async () => {
     const { provider } = createAuthProviders();
-    const server = createWebServerInstance(provider, createDatabase());
+    const server = createWebServerInstance(provider, createDatabase(), createManagement());
 
     const health = await server.inject({ method: 'GET', url: '/healthz' });
     const root = await server.inject({ method: 'GET', url: '/' });
@@ -65,7 +79,7 @@ describe('web server routes', () => {
   it('registers only enabled auth callbacks', async () => {
     mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
     const { provider } = createAuthProviders();
-    const server = createWebServerInstance(provider, createDatabase());
+    const server = createWebServerInstance(provider, createDatabase(), createManagement());
 
     const spotify = await server.inject({
       method: 'GET',
@@ -86,7 +100,7 @@ describe('web server routes', () => {
     async url => {
       mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
       const { provider, spotify } = createAuthProviders();
-      const server = createWebServerInstance(provider, createDatabase());
+      const server = createWebServerInstance(provider, createDatabase(), createManagement());
 
       const response = await server.inject({ method: 'GET', url });
       await server.close();
@@ -104,7 +118,7 @@ describe('web server routes', () => {
     mocks.enabledFlags.add(FeatureFlag.SOUNDCLOUD_AUTH);
     const { provider, soundcloud } = createAuthProviders();
     soundcloud.callback.mockResolvedValueOnce(success);
-    const server = createWebServerInstance(provider, createDatabase());
+    const server = createWebServerInstance(provider, createDatabase(), createManagement());
 
     const response = await server.inject({
       method: 'GET',
@@ -120,6 +134,23 @@ describe('web server routes', () => {
     expect(response.statusCode).toBe(statusCode);
     expect(response.body).toBe(expected);
   });
+
+  it('returns a stable provider error when callback completion fails', async () => {
+    mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
+    const { provider, spotify } = createAuthProviders();
+    spotify.callback.mockRejectedValueOnce(new Error('persistence failed'));
+    const server = createWebServerInstance(provider, createDatabase(), createManagement());
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/callback/spotify?state=state&code=code',
+    });
+    await server.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe('provider_link_failed');
+    expect(mocks.warn).toHaveBeenCalled();
+  });
 });
 
 describe('WebServer lifecycle', () => {
@@ -134,7 +165,7 @@ describe('WebServer lifecycle', () => {
     return {
       close,
       listen,
-      server: new WebServer(9876, provider, createDatabase(), instance),
+      server: new WebServer(9876, provider, createDatabase(), createManagement(), instance),
     };
   }
 

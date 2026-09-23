@@ -3,14 +3,9 @@ import { ProtectedRoute, SignInPage } from '../auth/auth-views';
 import { MarketingLayout } from './layout';
 import { AuthenticatedLayout } from './authenticated-layout';
 import { HomePage } from '../marketing/home-page';
-import {
-  AccountOverviewPage,
-  AccountRouteLayout,
-  GuildOverviewPage,
-  GuildRouteLayout,
-  GuildsPage,
-  WorkspaceOverviewPage,
-} from '../pages/workspace-pages';
+import { AccountRouteLayout, WorkspaceOverviewPage } from '../pages/workspace-pages';
+import { AccountSettingsPage } from '../pages/account-settings-page';
+import { GuildSettingsPage, GuildsSettingsPage } from '../pages/guild-settings-pages';
 
 export const AppRouter = () => (
   <BrowserRouter>
@@ -23,13 +18,11 @@ export const AppRouter = () => (
         <Route path="app" element={<AuthenticatedLayout />}>
           <Route index element={<WorkspaceOverviewPage />} />
           <Route path="guilds">
-            <Route index element={<GuildsPage />} />
-            <Route path=":guildId" element={<GuildRouteLayout />}>
-              <Route index element={<GuildOverviewPage />} />
-            </Route>
+            <Route index element={<GuildsSettingsPage />} />
+            <Route path=":guildId" element={<GuildSettingsPage />} />
           </Route>
           <Route path="account" element={<AccountRouteLayout />}>
-            <Route index element={<AccountOverviewPage />} />
+            <Route index element={<AccountSettingsPage />} />
           </Route>
         </Route>
       </Route>

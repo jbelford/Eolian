@@ -40,6 +40,7 @@ import {
 import { registerGuildSlashCommands } from './discord-slash-commands';
 import { DiscordGuildStore } from './state/discord-guild-store';
 import { ServerState } from './state/@types';
+import { DiscordBotManagement, DiscordManagement } from './discord-management';
 
 const enum DiscordEvents {
   READY = 'clientReady',
@@ -90,6 +91,7 @@ export class DiscordEolianBot implements EolianBot {
   private readonly client: Client;
   private readonly parser: CommandParsingStrategy;
   private readonly guildStore: DiscordGuildStore;
+  readonly management: DiscordManagement;
   private readonly registry = new ButtonRegistry();
   private oldClient?: Client;
   private invite?: string;
@@ -134,6 +136,7 @@ export class DiscordEolianBot implements EolianBot {
     }
 
     this.guildStore = new DiscordGuildStore(this.client, this.db.servers);
+    this.management = new DiscordBotManagement(this.client, this.guildStore);
   }
 
   async start(): Promise<void> {

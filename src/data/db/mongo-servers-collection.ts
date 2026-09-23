@@ -1,5 +1,5 @@
 import { SyntaxType } from '@eolian/command-options/@types';
-import { ServerDTO, ServersDb } from '../@types';
+import { ServerDTO, ServersDb, ServerSettingsUpdate } from '../@types';
 import { MongoCollection } from './mongo-collection';
 
 export class MongoServers extends MongoCollection<ServerDTO> implements ServersDb {
@@ -33,6 +33,10 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
 
   async setPreferredChannel(id: string, channelId: string): Promise<void> {
     await this.setProperty(id, 'preferredChannelId', channelId);
+  }
+
+  async removePreferredChannel(id: string): Promise<void> {
+    await this.unsetProperty(id, 'preferredChannelId');
   }
 
   async setPrefix(id: string, prefix: string): Promise<void> {
@@ -82,5 +86,22 @@ export class MongoServers extends MongoCollection<ServerDTO> implements ServersD
 
   async setDjAllowLimited(id: string, allow: boolean): Promise<void> {
     await this.setProperty(id, 'djAllowLimited', allow);
+  }
+
+  async updateSettings(id: string, settings: ServerSettingsUpdate): Promise<void> {
+    const { preferredChannelId, ...values } = settings;
+    const clearPreferredChannel = preferredChannelId === null;
+    if (typeof preferredChannelId === 'string') {
+      Object.assign(values, { preferredChannelId });
+    }
+    await this.collection.updateOne(
+      { _id: id },
+      {
+        ...(Object.keys(values).length > 0 ? { $set: values } : {}),
+        ...(clearPreferredChannel ? { $unset: { preferredChannelId: true } } : {}),
+        $setOnInsert: { _id: id },
+      },
+      { upsert: true },
+    );
   }
 }

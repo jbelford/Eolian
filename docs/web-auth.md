@@ -82,8 +82,89 @@ Discord SDK objects.
 
 The React application bootstraps its in-memory auth state from `GET /api/auth/session`. Browser API
 requests use same-origin credentials, and the CSRF token is held only in that auth state for
-authenticated mutations such as logout. The token is never written to browser storage.
+authenticated mutations such as logout and settings updates. The token is never written to browser
+storage. A `401` from any authenticated browser API request transitions the shared auth state to
+the existing expired-session experience.
 
 Protected routes preserve the requested same-origin path while sending unauthenticated users
-through `/api/auth/discord`. The authenticated shell exposes nested account and guild route outlets;
-guild children receive the selected manageable guild as router outlet context.
+through `/api/auth/discord`. Account settings expose personal syntax and provider connections.
+Server settings load the bot's current shared-guild list, then edit effective command, playback,
+channel, and DJ-role settings. Browser responses are validated before they are rendered, requests
+are cancelled when their route unmounts, and mutations send only changed server fields.
+
+## Settings API
+
+Settings routes share the authenticated, encrypted cookie and guards described above. The cookie
+has an absolute, non-rolling lifetime of approximately 24 hours. Each authenticated guild request
+fetches current Discord guild claims using its sealed access token; guild access requires the user
+to own the guild or have `Administrator` or `Manage Guild`, and the bot must still be present in
+its ready-client cache. Guild reads and mutations use the same claim and bot-membership checks.
+
+All request objects are strict: unknown properties are rejected. Errors use
+`{ "error": { "code": string, "message": string } }`.
+
+### Personal settings
+
+| Method   | Route                                   | Response or behavior                                                                                    |
+| -------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/account`                          | Returns the syntax override and boolean-only Spotify/SoundCloud link status.                            |
+| `PATCH`  | `/api/account/syntax`                   | Accepts `{ "syntax": "keyword" \| "traditional" \| null }`; `null` restores the guild/default behavior. |
+| `POST`   | `/api/account/providers/:provider/link` | Returns `{ "authorizationUrl": string }` for an enabled existing OAuth provider flow.                   |
+| `DELETE` | `/api/account/providers/:provider`      | Removes cached authorization state, refresh tokens, and legacy provider identifiers.                    |
+
+`GET /api/account` returns:
+
+```json
+{
+  "syntax": null,
+  "providers": {
+    "spotify": { "linked": false, "linkAvailable": true },
+    "soundcloud": { "linked": true, "linkAvailable": true }
+  }
+}
+```
+
+Provider identifiers and refresh tokens are never returned. Provider authorization is suitable
+for a browser popup: open the returned URL and let the existing `/callback/spotify` or
+`/callback/soundcloud` page complete the flow.
+
+### Guild settings
+
+| Method  | Route                  | Response or behavior                                                                         |
+| ------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| `GET`   | `/api/guilds`          | Lists only manageable Discord guilds that are also in the bot's current cache.               |
+| `GET`   | `/api/guilds/:guildId` | Returns guild metadata, effective settings, configurable text channels, and available roles. |
+| `PATCH` | `/api/guilds/:guildId` | Applies one or more guild setting fields and returns the refreshed guild DTO.                |
+
+The guild detail DTO is:
+
+```json
+{
+  "id": "123",
+  "name": "Example",
+  "icon": null,
+  "memberCount": 42,
+  "settings": {
+    "prefix": "!",
+    "volume": 0.1,
+    "syntax": "keyword",
+    "preferredChannelId": null,
+    "djRoleIds": [],
+    "djAllowLimited": false
+  },
+  "channels": [{ "id": "456", "name": "music" }],
+  "roles": [{ "id": "789", "name": "DJ" }]
+}
+```
+
+`PATCH` accepts any non-empty subset of the `settings` fields. Prefixes are exactly one character,
+volume is between `0` and `1`, syntax is `keyword` or `traditional`, the preferred channel must be
+a listed text or announcement channel (or `null` to clear it), and DJ roles must be unique,
+belong to the guild, exclude `@everyone`, and contain at most ten IDs. Writes update the bot's
+active guild configuration immediately; an idle active player also receives a changed default
+volume.
+
+Stable settings error codes include `invalid_request`, `guild_forbidden`, `bot_not_ready`,
+`bot_not_in_guild`, `channel_not_found`, `role_not_found`, `provider_link_unavailable`,
+`provider_link_failed`, `persistence_failed`, `guild_load_failed`, `guild_list_failed`, and
+`settings_update_failed`.

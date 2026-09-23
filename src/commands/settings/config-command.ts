@@ -1,6 +1,12 @@
 import { CommandOptions, SyntaxType } from '@eolian/command-options/@types';
 import { UserPermission } from '@eolian/common/constants';
 import { EolianUserError } from '@eolian/common/errors';
+import {
+  DJ_ROLE_LIMIT,
+  parseSyntaxName,
+  validatePrefix,
+  validateVolume,
+} from '@eolian/common/settings';
 import { createServerDetailsEmbed } from '@eolian/embed';
 import { CommandContext, CommandArgs, Command } from '../@types';
 import { SETTINGS_CATEGORY } from '../category';
@@ -28,8 +34,6 @@ const configSetMap = new Map<CONFIG_OPTION, ConfigSetFunc>([
   [CONFIG_OPTION.DJ_LIMITED, setDjLimited],
 ]);
 
-const DJ_ROLE_LIMIT = 10;
-
 async function execute(context: CommandContext, options: CommandOptions): Promise<void> {
   if (!options.ARG || options.ARG.length === 0) {
     const server = await context.server!.details.get();
@@ -54,7 +58,9 @@ async function execute(context: CommandContext, options: CommandOptions): Promis
 }
 
 async function setPrefix(context: CommandContext, prefix: string) {
-  if (prefix.length !== 1) {
+  try {
+    validatePrefix(prefix);
+  } catch {
     throw new EolianUserError('Please specify a prefix that is only 1 character in length!');
   }
 
@@ -64,7 +70,9 @@ async function setPrefix(context: CommandContext, prefix: string) {
 
 async function setVolume(context: CommandContext, volume: string) {
   let value = +volume;
-  if (isNaN(value) || value < 0 || value > 100) {
+  try {
+    validateVolume(value / 100);
+  } catch {
     throw new EolianUserError('Volume must be a number between 0 and 100!');
   }
 
@@ -80,17 +88,12 @@ async function setVolume(context: CommandContext, volume: string) {
 
 async function setSyntax(context: CommandContext, syntax: string) {
   let type: SyntaxType;
-  switch (syntax.toLowerCase()) {
-    case 'keyword':
-      type = SyntaxType.KEYWORD;
-      break;
-    case 'traditional':
-      type = SyntaxType.TRADITIONAL;
-      break;
-    default:
-      throw new EolianUserError(
-        `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`,
-      );
+  try {
+    type = parseSyntaxName(syntax);
+  } catch {
+    throw new EolianUserError(
+      `Unrecognized syntax type! Available types are 'keyword' or 'traditional'.`,
+    );
   }
 
   await context.server!.details.setSyntax(type);

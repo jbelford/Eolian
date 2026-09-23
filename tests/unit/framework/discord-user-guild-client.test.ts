@@ -53,6 +53,8 @@ function createServers() {
     addDjRole: vi.fn().mockResolvedValue(undefined),
     removeDjRole: vi.fn().mockResolvedValue(true),
     setDjAllowLimited: vi.fn().mockResolvedValue(undefined),
+    removePreferredChannel: vi.fn().mockResolvedValue(undefined),
+    updateSettings: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -140,6 +142,42 @@ describe('DiscordGuild', () => {
       djRoleIds: [],
     });
     expect(servers.addDjRole).toHaveBeenCalledWith('guild', 'dj');
+  });
+
+  it('atomically updates web settings and changes the cache only after persistence', async () => {
+    const servers = createServers();
+    const wrapper = new DiscordGuild(servers as never, guild() as never);
+    const config = await wrapper.get();
+
+    await wrapper.updateSettings({
+      prefix: '?',
+      volume: 0.5,
+      syntax: SyntaxType.TRADITIONAL,
+      preferredChannelId: null,
+      djRoleIds: ['dj'],
+      djAllowLimited: true,
+    });
+
+    expect(servers.updateSettings).toHaveBeenCalledWith('guild', {
+      prefix: '?',
+      volume: 0.5,
+      syntax: SyntaxType.TRADITIONAL,
+      preferredChannelId: null,
+      djRoleIds: ['dj'],
+      djAllowLimited: true,
+    });
+    expect(config).toMatchObject({
+      prefix: '?',
+      volume: 0.5,
+      syntax: SyntaxType.TRADITIONAL,
+      djRoleIds: ['dj'],
+      djAllowLimited: true,
+    });
+    expect(config.preferredChannelId).toBeUndefined();
+
+    servers.updateSettings.mockRejectedValueOnce(new Error('database failed'));
+    await expect(wrapper.updateSettings({ prefix: '$' })).rejects.toThrow('database failed');
+    expect(config.prefix).toBe('?');
   });
 
   it('throttles usage writes for one hour', async () => {

@@ -15,6 +15,7 @@ mise run setup
 
 ```bash
 yarn test              # Run unit tests once
+yarn test:web          # Run React Testing Library browser UI tests in jsdom
 yarn test:watch        # Rerun affected unit tests while developing
 yarn test:coverage     # Run unit tests and enforce coverage thresholds
 yarn test:integration  # Run real integration tests, including FFmpeg
@@ -31,6 +32,12 @@ requiring Discord, network services, MongoDB, or credentials.
 Integration tests live under `tests/integration`. They are reserved for behavior that benefits from
 using a real local dependency rather than a mock.
 
+Browser UI tests live under `tests/web` and use React Testing Library with
+`@testing-library/user-event`. They exercise rendered routes through semantic roles, accessible
+names, keyboard interactions, live regions, focus movement, and mocked same-origin API boundaries.
+The suite also verifies request cancellation and ignores late responses so route changes remain
+deterministic.
+
 ## Test boundaries
 
 Tests should exercise Eolian's observable behavior while mocking external boundaries:
@@ -39,10 +46,18 @@ Tests should exercise Eolian's observable behavior while mocking external bounda
 - Mock HTTP, SDK, OAuth, and database clients without recreating their internal implementations.
 - Use fake timers only in tests that control time, and restore them after each test.
 - Prefer explicit structural assertions over broad snapshots.
+- Await every `user-event` interaction and every asynchronous UI transition.
+- Query by role, accessible name, label, or visible text before using DOM structure.
 - Avoid live network requests, credentials, and shared external state.
 
 Production dependencies may be injected when deterministic control is needed, but their default
 implementations must preserve the normal runtime path.
+
+Automated axe checks are not part of the jsdom suite. Axe can run in jsdom, but rules that depend on
+layout, rendering, or color contrast require browser behavior and are commonly disabled there.
+The component suite therefore favors deterministic semantic assertions for names, roles,
+descriptions, live regions, focus, disabled states, and keyboard operation. Browser-level visual
+and assistive-technology checks remain a manual or future browser-automation boundary.
 
 ## Parallel execution
 

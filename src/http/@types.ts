@@ -46,7 +46,7 @@ export type AuthResult = {
 };
 
 export type AuthCacheItem = {
-  resolve: (resp: TokenResponseWithRefresh) => void;
+  resolve: (resp: TokenResponseWithRefresh) => Promise<void>;
   reject: (err?: any) => void;
 };
 
@@ -63,7 +63,7 @@ export type AuthCallbackData = {
 };
 
 export interface IAuthService {
-  authorize(): AuthResult;
+  authorize(complete?: (token: TokenResponseWithRefresh) => Promise<void>): AuthResult;
   callback(data: AuthCallbackData): Promise<boolean>;
 }
 

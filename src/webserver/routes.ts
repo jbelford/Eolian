@@ -1,5 +1,6 @@
 import { TrackSource } from '@eolian/api/@types';
 import { GITHUB_PAGE } from '@eolian/common/constants';
+import { logger } from '@eolian/common/logger';
 import { feature } from '@eolian/data';
 import { FeatureFlag } from '@eolian/data/@types';
 import { IAuthServiceProvider } from '@eolian/framework/@types';
@@ -34,11 +35,22 @@ export const registerWebServerRoutes: FastifyPluginAsync<WebServerRoutesOptions>
         return reply.status(400).type('text/plain').send('Missing state query param!');
       }
 
-      const success = await authProviders.getService(source).callback({
-        state,
-        code,
-        err: error,
-      });
+      let success: boolean;
+      try {
+        success = await authProviders.getService(source).callback({
+          state,
+          code,
+          err: error,
+        });
+      } catch (callbackError) {
+        logger.warn('Provider OAuth callback failed: %s', callbackError);
+        return reply.status(502).send({
+          error: {
+            code: 'provider_link_failed',
+            message: 'Provider linking could not be completed.',
+          },
+        });
+      }
       if (!success) {
         return reply
           .status(400)
