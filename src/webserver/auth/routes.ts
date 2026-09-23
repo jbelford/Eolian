@@ -136,7 +136,7 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
     '/logout',
     {
       schema: logoutSchema,
-      preHandler: [guards.authenticate, guards.origin, guards.csrf],
+      preHandler: [guards.authenticateForLogout, guards.origin, guards.csrf],
     },
     async (request, reply) => {
       await sessionService.delete(request.authSession!.id);

@@ -19,7 +19,7 @@ import { sessionKey } from '@eolian/webserver/auth/crypto';
 import { registerDiscordAuthRoutes } from '@eolian/webserver/auth/routes';
 
 vi.mock('@eolian/common/logger', () => ({
-  logger: { warn: vi.fn() },
+  logger: { warn: vi.fn(), error: vi.fn() },
 }));
 
 const user: DiscordSessionUser = {
@@ -399,9 +399,7 @@ describe('Discord auth routes', () => {
     const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
     const record = auth.sessions.records.get(key)!;
     record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
-    vi.mocked(auth.sessions.update)
-      .mockRejectedValueOnce(new Error('database unavailable'))
-      .mockRejectedValueOnce(new Error('database unavailable'));
+    vi.mocked(auth.sessions.update).mockRejectedValueOnce(new Error('database unavailable'));
 
     const response = await auth.server.inject({
       method: 'GET',
@@ -427,10 +425,90 @@ describe('Discord auth routes', () => {
       },
     });
     expect(response.body).not.toContain('database unavailable');
-    expect(logout.statusCode).toBe(401);
-    expect(logout.json().error.code).toBe('reauthentication_required');
-    expect(auth.sessions.delete).not.toHaveBeenCalled();
+    expect(logout.statusCode).toBe(204);
+    expect(auth.sessions.delete).toHaveBeenCalledWith(key);
     expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns a retryable error for a transient Discord refresh failure', async () => {
+    const auth = await createServer();
+    const loggedIn = await login(auth.server);
+    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
+    auth.sessions.records.get(key)!.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
+    vi.mocked(auth.oauthClient.refreshToken).mockRejectedValueOnce(
+      new Error('provider response with token or private detail'),
+    );
+
+    const failed = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+    });
+    expect(failed.statusCode).toBe(502);
+    expect(failed.json().error.code).toBe('session_refresh_failed');
+    expect(failed.body).not.toContain('provider response');
+    expect(auth.sessions.records.get(key)?.tokens.refreshToken).toBe('refresh-token');
+    expect(auth.sessions.delete).not.toHaveBeenCalled();
+
+    const retried = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+    });
+    await auth.server.close();
+
+    expect(retried.statusCode).toBe(200);
+    expect(retried.json().authenticated).toBe(true);
+    expect(retried.body).not.toContain('refreshed-refresh-token');
+    expect(auth.oauthClient.refreshToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs out with a valid CSRF token while Discord refresh is unavailable', async () => {
+    const auth = await createServer();
+    const loggedIn = await login(auth.server);
+    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
+    const record = auth.sessions.records.get(key)!;
+    record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
+    vi.mocked(auth.oauthClient.refreshToken).mockRejectedValue(new Error('Discord unavailable'));
+
+    const response = await auth.server.inject({
+      method: 'POST',
+      url: '/api/auth/logout',
+      headers: {
+        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        origin: 'http://localhost:8080',
+        [CSRF_HEADER]: record.csrfToken,
+      },
+    });
+    await auth.server.close();
+
+    expect(response.statusCode).toBe(204);
+    expect(auth.oauthClient.refreshToken).not.toHaveBeenCalled();
+    expect(auth.sessions.records.has(key)).toBe(false);
+  });
+
+  it('rejects logout for an expired stored session without contacting Discord', async () => {
+    const auth = await createServer();
+    const loggedIn = await login(auth.server);
+    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
+    const record = auth.sessions.records.get(key)!;
+    record.expiresAt = new Date('2026-09-22T07:59:59.000Z');
+
+    const response = await auth.server.inject({
+      method: 'POST',
+      url: '/api/auth/logout',
+      headers: {
+        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        origin: 'http://localhost:8080',
+        [CSRF_HEADER]: record.csrfToken,
+      },
+    });
+    await auth.server.close();
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json().error.code).toBe('unauthenticated');
+    expect(auth.sessions.records.has(key)).toBe(false);
+    expect(auth.oauthClient.refreshToken).not.toHaveBeenCalled();
   });
 
   it('rejects and deletes an expired session still stored after a recent modification', async () => {

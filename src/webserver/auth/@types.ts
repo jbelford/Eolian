@@ -40,6 +40,7 @@ export interface AuthSessionService {
   ): Promise<AuthSession>;
   delete(rawId: string): Promise<boolean>;
   resolve(rawId: string): Promise<AuthSession | null>;
+  resolveForLogout(rawId: string): Promise<AuthSession | null>;
 }
 
 export interface AuthPluginOptions {
@@ -55,6 +56,7 @@ export interface AuthenticatedRequest extends FastifyRequest {
 
 export interface AuthGuards {
   authenticate: preHandlerHookHandler;
+  authenticateForLogout: preHandlerHookHandler;
   csrf: preHandlerHookHandler;
   origin: preHandlerHookHandler;
 }

@@ -8,6 +8,10 @@ import {
 } from '@eolian/webserver/auth/session-service';
 import { describe, expect, it, vi } from 'vitest';
 
+const logs = vi.hoisted(() => ({ error: vi.fn() }));
+
+vi.mock('@eolian/common/logger', () => ({ logger: logs }));
+
 const now = new Date('2026-09-22T08:00:00.000Z');
 const rawId = 'raw-session-id';
 
@@ -138,7 +142,7 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
     expect(secondResult?.record.tokens.refreshToken).toBe('new-refresh');
   });
 
-  it('shares refresh failure, deletes once, and clears the flight for a later attempt', async () => {
+  it('shares a transient refresh failure, retains the session, and retries later', async () => {
     let failRefresh!: (error: Error) => void;
     const refresh = new Promise<DiscordTokenResponse>((_resolve, reject) => {
       failRefresh = reject;
@@ -158,12 +162,15 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
 
     expect(results.map(result => result.status)).toEqual(['rejected', 'rejected']);
     expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
-    expect(database.store.delete).toHaveBeenCalledOnce();
+    expect(database.store.delete).not.toHaveBeenCalled();
+    expect(database.read()?.tokens.refreshToken).toBe('old-refresh');
 
-    database.set(session());
     vi.mocked(oauthClient.refreshToken).mockResolvedValueOnce(refreshedToken());
-    await expect(service.resolve(rawId)).resolves.not.toBeNull();
+    await expect(service.resolve(rawId)).resolves.toMatchObject({
+      record: { tokens: { refreshToken: 'new-refresh' } },
+    });
     expect(oauthClient.refreshToken).toHaveBeenCalledTimes(2);
+    expect(database.store.delete).not.toHaveBeenCalled();
   });
 
   it('keeps a rotated token when guild lookup fails and retries claims without rotating again', async () => {
@@ -220,7 +227,9 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
       const oauthClient = createOAuthClient();
       vi.mocked(oauthClient.refreshToken).mockResolvedValue(refreshedToken());
       if (failureMode === 'rejected write') {
-        vi.mocked(database.store.update).mockRejectedValueOnce(new Error('database unavailable'));
+        vi.mocked(database.store.update).mockRejectedValueOnce(
+          new Error('mongodb://private.example/secret?password=unsafe old-access old-refresh'),
+        );
       } else {
         vi.mocked(database.store.update).mockResolvedValueOnce(false);
       }
@@ -231,6 +240,23 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
       expect(oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
       expect(database.store.delete).not.toHaveBeenCalled();
       expect(database.store.renew).not.toHaveBeenCalled();
+      expect(logs.error).toHaveBeenCalledExactlyOnceWith(
+        failureMode === 'rejected write'
+          ? 'Failed to persist refreshed Discord credentials: database write failed'
+          : 'Failed to persist refreshed Discord credentials: session record missing',
+      );
+      const logged = JSON.stringify(logs.error.mock.calls);
+      for (const secret of [
+        'mongodb://',
+        'old-access',
+        'old-refresh',
+        'new-access',
+        'new-refresh',
+        rawId,
+        sessionKey(rawId, environment.sessionSecret),
+      ]) {
+        expect(logged).not.toContain(secret);
+      }
     },
   );
 

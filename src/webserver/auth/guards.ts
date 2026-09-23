@@ -1,5 +1,5 @@
 import { environment } from '@eolian/common/env';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, preHandlerHookHandler } from 'fastify';
 import { AuthGuards, AuthSessionService } from './@types';
 import { CSRF_HEADER, SESSION_COOKIE, SESSION_DURATION_MS } from './constants';
 import { getCookie, setPrivateCookie } from './cookies';
@@ -16,15 +16,18 @@ export function sendAuthError(
 }
 
 export function createAuthGuards(sessionService: AuthSessionService): AuthGuards {
-  return {
-    authenticate: async (request, reply) => {
+  const authenticate =
+    (forLogout: boolean): preHandlerHookHandler =>
+    async (request, reply) => {
       const rawId = getCookie(request, SESSION_COOKIE);
       if (!rawId) {
         sendAuthError(reply, 401, 'unauthenticated', 'Authentication is required.');
         return;
       }
       try {
-        const session = await sessionService.resolve(rawId);
+        const session = forLogout
+          ? await sessionService.resolveForLogout(rawId)
+          : await sessionService.resolve(rawId);
         if (!session) {
           sendAuthError(reply, 401, 'unauthenticated', 'Authentication is required.');
           return;
@@ -40,7 +43,11 @@ export function createAuthGuards(sessionService: AuthSessionService): AuthGuards
         }
         sendAuthError(reply, 502, 'session_refresh_failed', 'Unable to refresh the session.');
       }
-    },
+    };
+
+  return {
+    authenticate: authenticate(false),
+    authenticateForLogout: authenticate(true),
     origin: async (request, reply) => {
       const origin = request.headers.origin;
       if (origin !== new URL(environment.baseUri).origin) {

@@ -1,4 +1,5 @@
 import { environment } from '@eolian/common/env';
+import { logger } from '@eolian/common/logger';
 import {
   DiscordSessionGuild,
   DiscordSessionUser,
@@ -62,13 +63,9 @@ export class PersistentAuthSessionService implements AuthSessionService {
 
   async resolve(rawId: string): Promise<AuthSession | null> {
     const id = sessionKey(rawId, environment.sessionSecret);
-    let record = await this.sessions.get(id);
     const now = this.now();
+    let record = await this.readActive(id, now);
     if (!record) {
-      return null;
-    }
-    if (record.expiresAt.getTime() <= now.getTime()) {
-      await this.sessions.delete(id);
       return null;
     }
 
@@ -87,6 +84,20 @@ export class PersistentAuthSessionService implements AuthSessionService {
       record.expiresAt = expiresAt;
     }
     return { id: rawId, record, renewed };
+  }
+
+  async resolveForLogout(rawId: string): Promise<AuthSession | null> {
+    const record = await this.readActive(sessionKey(rawId, environment.sessionSecret), this.now());
+    return record ? { id: rawId, record, renewed: false } : null;
+  }
+
+  private async readActive(id: string, now: Date): Promise<SessionDTO | null> {
+    const record = await this.sessions.get(id);
+    if (record && record.expiresAt.getTime() <= now.getTime()) {
+      await this.sessions.delete(id);
+      return null;
+    }
+    return record;
   }
 
   private requiresRefresh(record: SessionDTO, now: Date): boolean {
@@ -114,31 +125,23 @@ export class PersistentAuthSessionService implements AuthSessionService {
   }
 
   private async refreshRecord(id: string, now: Date): Promise<SessionDTO | null> {
-    const record = await this.sessions.get(id);
+    const record = await this.readActive(id, now);
     if (!record) {
-      return null;
-    }
-    if (record.expiresAt.getTime() <= now.getTime()) {
-      await this.sessions.delete(id);
       return null;
     }
 
     if (record.tokens.expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_LEEWAY_MS) {
-      let refreshed: DiscordTokenResponse;
-      try {
-        refreshed = await this.oauthClient.refreshToken(record.tokens.refreshToken);
-      } catch (error) {
-        await this.sessions.delete(id);
-        throw error;
-      }
+      const refreshed = await this.oauthClient.refreshToken(record.tokens.refreshToken);
       const tokens = this.tokenRecord(refreshed, now);
       let saved: boolean;
       try {
         saved = await this.sessions.update(id, { tokens });
       } catch {
+        logger.error('Failed to persist refreshed Discord credentials: database write failed');
         throw new SessionReauthenticationRequiredError();
       }
       if (!saved) {
+        logger.error('Failed to persist refreshed Discord credentials: session record missing');
         throw new SessionReauthenticationRequiredError();
       }
       record.tokens = tokens;

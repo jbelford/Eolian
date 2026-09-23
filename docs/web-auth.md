@@ -50,6 +50,10 @@ Guild claims are saved separately; a failed claim refresh returns an error witho
 session, so the next request can retry using the saved token. If saving rotated credentials fails,
 the API returns `401 reauthentication_required` rather than authenticating with a possibly stale
 credential; the user must sign in again because the old refresh token may already be invalid.
+Unclassified Discord token-refresh failures return a retryable `502 session_refresh_failed` and
+leave the session record intact; a later request can retry. Logout validates the stored session and
+CSRF without refreshing Discord credentials, so a provider outage does not block sign-out.
+Credential-persistence failures emit only fixed, non-sensitive server log messages.
 Single-flight coordination is process-local, not a cross-replica lock; the current deployment has
 one application process.
 
