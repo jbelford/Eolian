@@ -55,6 +55,22 @@ jobs:
       - name: Typecheck browser application
         run: yarn typecheck:web
 
+      - name: Configure optional public Discord client ID
+        env:
+          DISCORD_CLIENT_ID_OVERRIDE: ${{ vars.VITE_DISCORD_CLIENT_ID }}
+        run: |
+          if [[ -n "$DISCORD_CLIENT_ID_OVERRIDE" ]]; then
+            # Compare 20-digit IDs as strings because they may exceed signed shell arithmetic.
+            # shellcheck disable=SC2071
+            if [[ ! "$DISCORD_CLIENT_ID_OVERRIDE" =~ ^[1-9][0-9]{16,19}$ ]] ||
+              { [[ ${#DISCORD_CLIENT_ID_OVERRIDE} -eq 20 ]] &&
+                [[ "$DISCORD_CLIENT_ID_OVERRIDE" > 18446744073709551615 ]]; }; then
+              echo "VITE_DISCORD_CLIENT_ID must be a valid Discord snowflake" >&2
+              exit 1
+            fi
+            printf 'VITE_DISCORD_CLIENT_ID=%s\n' "$DISCORD_CLIENT_ID_OVERRIDE" >>"$GITHUB_ENV"
+          fi
+
       - name: Build browser application
         run: yarn build:web
 
