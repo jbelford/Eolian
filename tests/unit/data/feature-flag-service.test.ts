@@ -11,7 +11,6 @@ describe('feature flag service', () => {
           spotifyUserAuth: true,
           soundcloudUserAuth: false,
           discordOldLeave: true,
-          enableWebsite: false,
         },
       },
     }));
@@ -21,7 +20,6 @@ describe('feature flag service', () => {
     expect(feature.enabled(FeatureFlag.SPOTIFY_AUTH)).toBe(true);
     expect(feature.enabled(FeatureFlag.SOUNDCLOUD_AUTH)).toBe(false);
     expect(feature.enabled(FeatureFlag.DISCORD_OLD_LEAVE)).toBe(true);
-    expect(feature.enabled(FeatureFlag.WEBSITE)).toBe(false);
   });
 
   it('takes a stable snapshot when the service module is initialized', async () => {
@@ -30,7 +28,6 @@ describe('feature flag service', () => {
         spotifyUserAuth: false,
         soundcloudUserAuth: false,
         discordOldLeave: false,
-        enableWebsite: false,
       },
     };
     vi.doMock('@eolian/common/env', () => ({ environment }));

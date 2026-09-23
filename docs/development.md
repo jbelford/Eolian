@@ -48,21 +48,28 @@ The application has two Vite targets:
 - `vite.node.config.mts` creates the CommonJS bot/server entry at `dist/bundle.js`. Application
   modules are bundled, while runtime packages and Node built-ins remain external so native
   dependencies load from `node_modules`.
-- `vite.web.config.mts` processes `index.html` and `web/index.tsx` into `dist/public`. The Express
-  server serves this directory when the website feature flag is enabled.
+- `vite.web.config.mts` processes `index.html` and `web/index.tsx` into `dist/public`. The Fastify
+  backend does not serve these assets; browser deployment is separate from the Node runtime.
 
 The Node build injects `__COMMIT_DATE__` from the latest Git commit. It also maps the
 `@eolian/*` import alias to `src/*`, matching the TypeScript configuration. Production and
-development builds use the same output paths, so PM2, Docker, and local startup commands all
-execute `dist/bundle.js`.
+development Node builds use the same output path, so PM2, Docker, and local startup commands all
+execute `dist/bundle.js`. The production Docker build runs only the Node build and copies only
+that bundle into the runtime image.
 
 ## Commands
 
 ```bash
-yarn build       # Typecheck and build the production Node and browser applications
-yarn build-dev   # Build both targets with source maps and without minification
-yarn build-web   # Typecheck and build only the browser application
-yarn typecheck   # Check production, browser, and test TypeScript without emitting files
+yarn build            # Typecheck and build the production Node and browser applications
+yarn build:node       # Typecheck and build only the Node application
+yarn build:web        # Typecheck and build only the browser application
+yarn build-dev        # Build both targets with source maps and without minification
+yarn build-dev:node   # Build only the development Node application
+yarn build-dev:web    # Build only the development browser application
+yarn typecheck        # Check Node, browser, and test TypeScript without emitting files
+yarn typecheck:node   # Check only the Node application
+yarn typecheck:web    # Check only the browser application
+yarn typecheck:test   # Check the test suites and harness configuration
 mise run start-local # Start the built bot and web server with the shared local environment
 mise run start-debug # Start the built application with the Node inspector
 ```
