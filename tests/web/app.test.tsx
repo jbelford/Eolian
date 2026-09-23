@@ -55,6 +55,12 @@ describe('public web experience', () => {
     expect(scene).toHaveTextContent('by Lowlight Atlas');
     expect(scene?.querySelector('.discord-embed')).toBeInTheDocument();
     expect(scene?.querySelector('.discord-artwork')).toBeInTheDocument();
+    const brandMarks = container.querySelectorAll('img.brand-mark');
+    const playerAvatar = scene?.querySelector('img.discord-bot-avatar');
+    expect(brandMarks).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: 'Eolian home' })).toHaveLength(2);
+    expect(playerAvatar).toHaveAttribute('src', brandMarks[0].getAttribute('src'));
+    expect(playerAvatar).toHaveAttribute('alt', '');
     expect(tiles).toHaveLength(5);
     expect(tiles?.[0].querySelector('.lucide-list-music')).toBeInTheDocument();
     expect(tiles?.[1].querySelector('.lucide-skip-back')).toBeInTheDocument();

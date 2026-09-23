@@ -57,33 +57,13 @@ a {
 }
 
 .brand-mark {
-  display: inline-flex;
-  width: 2rem;
-  height: 2rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.14rem;
-  border-radius: 0.72rem;
-  background: linear-gradient(145deg, oklch(0.68 0.18 230), oklch(0.57 0.22 292));
-  box-shadow: 0 0.4rem 1.2rem color-mix(in oklch, var(--accent), transparent 72%);
-}
-
-.brand-mark span {
-  width: 0.16rem;
-  border-radius: 99px;
-  background: white;
-}
-
-.brand-mark span:nth-child(1) {
-  height: 0.55rem;
-}
-
-.brand-mark span:nth-child(2) {
-  height: 1rem;
-}
-
-.brand-mark span:nth-child(3) {
-  height: 0.72rem;
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0.4rem 1.2rem oklch(0.44 0.1 70 / 0.24);
 }
 
 .hero-orb {
@@ -177,29 +157,11 @@ a {
 }
 
 .discord-bot-avatar {
-  display: flex;
   width: 2.5rem;
   height: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.16rem;
-  border-radius: 0.85rem;
-  background: linear-gradient(145deg, oklch(0.68 0.18 230), oklch(0.57 0.22 292));
-}
-
-.discord-bot-avatar span {
-  width: 0.15rem;
-  height: 0.55rem;
-  border-radius: 99px;
-  background: white;
-}
-
-.discord-bot-avatar span:nth-child(2) {
-  height: 0.95rem;
-}
-
-.discord-bot-avatar span:nth-child(3) {
-  height: 0.7rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0.4rem 1.2rem oklch(0.45 0.1 70 / 0.28);
 }
 
 .discord-message-body {

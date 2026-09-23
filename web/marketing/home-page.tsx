@@ -14,6 +14,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logoUrl from '../assets/eolian-logo.png';
 import { discordInviteUrl } from '../config/discord-invite';
 
 const features = [
@@ -130,11 +131,7 @@ export const HomePage = () => (
               </span>
             </div>
             <div className="discord-message">
-              <div className="discord-bot-avatar">
-                <span />
-                <span />
-                <span />
-              </div>
+              <img alt="" className="discord-bot-avatar" height="40" src={logoUrl} width="40" />
               <div className="discord-message-body">
                 <div className="discord-message-meta">
                   <strong>Eolian</strong>
