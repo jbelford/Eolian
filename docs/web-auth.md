@@ -45,6 +45,14 @@ automatically; index creation errors prevent startup. Guild claims are collected
 cursor-based pagination. Token and guild-claim refresh work is serialized per session so concurrent
 requests share rotated credentials safely.
 
+After a Discord token refresh, the rotated credentials are saved before guild claims are fetched.
+Guild claims are saved separately; a failed claim refresh returns an error without deleting the
+session, so the next request can retry using the saved token. If saving rotated credentials fails,
+the API returns `401 reauthentication_required` rather than authenticating with a possibly stale
+credential; the user must sign in again because the old refresh token may already be invalid.
+Single-flight coordination is process-local, not a cross-replica lock; the current deployment has
+one application process.
+
 ## Protected API routes
 
 Future mutating routes should share one `AuthSecurity` instance created by `createAuthSecurity`.

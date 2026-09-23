@@ -2,7 +2,10 @@ import { environment } from '@eolian/common/env';
 import { SessionDTO, SessionsDb } from '@eolian/data/@types';
 import { DiscordOAuthClient, DiscordTokenResponse } from '@eolian/webserver/auth/@types';
 import { sessionKey } from '@eolian/webserver/auth/crypto';
-import { PersistentAuthSessionService } from '@eolian/webserver/auth/session-service';
+import {
+  PersistentAuthSessionService,
+  SessionReauthenticationRequiredError,
+} from '@eolian/webserver/auth/session-service';
 import { describe, expect, it, vi } from 'vitest';
 
 const now = new Date('2026-09-22T08:00:00.000Z');
@@ -59,6 +62,7 @@ function createStore(initial: SessionDTO | null) {
     set: (value: SessionDTO) => {
       record = value;
     },
+    read: () => (record ? structuredClone(record) : null),
   };
 }
 
@@ -110,7 +114,25 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
 
     expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
     expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce();
-    expect(database.store.update).toHaveBeenCalledOnce();
+    expect(database.store.update).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(database.store.update).mock.calls).toEqual([
+      [
+        sessionKey(rawId, environment.sessionSecret),
+        {
+          tokens: expect.objectContaining({ refreshToken: 'new-refresh' }),
+        },
+      ],
+      [
+        sessionKey(rawId, environment.sessionSecret),
+        {
+          guilds: expect.any(Array),
+          guildsRefreshedAt: now,
+        },
+      ],
+    ]);
+    expect(vi.mocked(database.store.update).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(oauthClient.getCurrentUserGuilds).mock.invocationCallOrder[0],
+    );
     expect(database.store.delete).not.toHaveBeenCalled();
     expect(firstResult?.record.tokens.refreshToken).toBe('new-refresh');
     expect(secondResult?.record.tokens.refreshToken).toBe('new-refresh');
@@ -142,5 +164,178 @@ describe('PersistentAuthSessionService refresh single-flight', () => {
     vi.mocked(oauthClient.refreshToken).mockResolvedValueOnce(refreshedToken());
     await expect(service.resolve(rawId)).resolves.not.toBeNull();
     expect(oauthClient.refreshToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a rotated token when guild lookup fails and retries claims without rotating again', async () => {
+    const database = createStore(session());
+    const oauthClient = createOAuthClient();
+    vi.mocked(oauthClient.refreshToken).mockResolvedValue(refreshedToken());
+    const failure = new Error('Discord guild lookup failed');
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockImplementationOnce(async accessToken => {
+      expect(accessToken).toBe('new-access');
+      expect(database.read()?.tokens.refreshToken).toBe('new-refresh');
+      throw failure;
+    });
+    const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+    await expect(service.resolve(rawId)).rejects.toBe(failure);
+    expect(database.read()?.tokens.refreshToken).toBe('new-refresh');
+    expect(database.store.update).toHaveBeenCalledExactlyOnceWith(
+      sessionKey(rawId, environment.sessionSecret),
+      { tokens: expect.objectContaining({ refreshToken: 'new-refresh' }) },
+    );
+    expect(database.store.delete).not.toHaveBeenCalled();
+
+    await expect(service.resolve(rawId)).resolves.toMatchObject({
+      record: { guilds: [{ id: 'guild' }], tokens: { refreshToken: 'new-refresh' } },
+    });
+    expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains a valid session when only its guild claims refresh fails', async () => {
+    const record = session();
+    record.tokens.expiresAt = new Date('2026-09-22T09:00:00.000Z');
+    const database = createStore(record);
+    const oauthClient = createOAuthClient();
+    const failure = new Error('Discord guild lookup unavailable');
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockRejectedValueOnce(failure);
+    const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+    await expect(service.resolve(rawId)).rejects.toBe(failure);
+    expect(database.read()?.tokens.refreshToken).toBe('old-refresh');
+    expect(database.store.delete).not.toHaveBeenCalled();
+    expect(database.store.update).not.toHaveBeenCalled();
+
+    await expect(service.resolve(rawId)).resolves.toMatchObject({
+      record: { guilds: [{ id: 'guild' }] },
+    });
+    expect(oauthClient.refreshToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['rejected write', 'unmatched write'] as const)(
+    'requires reauthentication if the rotated token has a %s',
+    async failureMode => {
+      const database = createStore(session());
+      const oauthClient = createOAuthClient();
+      vi.mocked(oauthClient.refreshToken).mockResolvedValue(refreshedToken());
+      if (failureMode === 'rejected write') {
+        vi.mocked(database.store.update).mockRejectedValueOnce(new Error('database unavailable'));
+      } else {
+        vi.mocked(database.store.update).mockResolvedValueOnce(false);
+      }
+      const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+      await expect(service.resolve(rawId)).rejects.toThrow(SessionReauthenticationRequiredError);
+      expect(database.read()?.tokens.refreshToken).toBe('old-refresh');
+      expect(oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
+      expect(database.store.delete).not.toHaveBeenCalled();
+      expect(database.store.renew).not.toHaveBeenCalled();
+    },
+  );
+
+  it('shares a token-save failure across concurrent resolves and clears the flight', async () => {
+    let failWrite!: (error: Error) => void;
+    const write = new Promise<boolean>((_resolve, reject) => {
+      failWrite = reject;
+    });
+    const database = createStore(session());
+    vi.mocked(database.store.update).mockReturnValueOnce(write);
+    const oauthClient = createOAuthClient();
+    vi.mocked(oauthClient.refreshToken)
+      .mockResolvedValueOnce(refreshedToken())
+      .mockRejectedValueOnce(new Error('rotated token no longer works'));
+    const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+    const first = service.resolve(rawId);
+    await vi.waitFor(() => expect(database.store.update).toHaveBeenCalledOnce());
+    const second = service.resolve(rawId);
+    await vi.waitFor(() => expect(database.store.get).toHaveBeenCalledTimes(3));
+    failWrite(new Error('database unavailable'));
+
+    const results = await Promise.allSettled([first, second]);
+    expect(
+      results.every(
+        result =>
+          result.status === 'rejected' &&
+          result.reason instanceof SessionReauthenticationRequiredError,
+      ),
+    ).toBe(true);
+    expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
+    expect(oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
+    expect(database.store.delete).not.toHaveBeenCalled();
+
+    await expect(service.resolve(rawId)).rejects.toThrow('rotated token no longer works');
+    expect(oauthClient.refreshToken).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['rejected write', 'unmatched write'] as const)(
+    'surfaces a %s for guild claims without deleting the saved token',
+    async failureMode => {
+      const database = createStore(session());
+      const oauthClient = createOAuthClient();
+      vi.mocked(oauthClient.refreshToken).mockResolvedValue(refreshedToken());
+      const saveToken = async (
+        _id: string,
+        values: Partial<Omit<SessionDTO, '_id'>>,
+      ): Promise<boolean> => {
+        database.set({ ...database.read()!, ...structuredClone(values) });
+        return true;
+      };
+      if (failureMode === 'rejected write') {
+        vi.mocked(database.store.update).mockImplementationOnce(saveToken);
+        vi.mocked(database.store.update).mockRejectedValueOnce(new Error('database unavailable'));
+      } else {
+        vi.mocked(database.store.update).mockImplementationOnce(saveToken);
+        vi.mocked(database.store.update).mockResolvedValueOnce(false);
+      }
+      const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+      await expect(service.resolve(rawId)).rejects.toThrow(
+        failureMode === 'rejected write'
+          ? 'database unavailable'
+          : 'Failed to save Discord guild claims',
+      );
+      expect(database.read()?.tokens.refreshToken).toBe('new-refresh');
+      expect(database.store.delete).not.toHaveBeenCalled();
+      expect(database.store.renew).not.toHaveBeenCalled();
+
+      await expect(service.resolve(rawId)).resolves.toMatchObject({
+        record: { guilds: [{ id: 'guild' }], tokens: { refreshToken: 'new-refresh' } },
+      });
+      expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
+      expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it('shares a claim-refresh failure and retries after the in-flight work clears', async () => {
+    let failClaims!: (error: Error) => void;
+    const claims = new Promise<SessionDTO['guilds']>((_resolve, reject) => {
+      failClaims = reject;
+    });
+    const database = createStore(session());
+    const oauthClient = createOAuthClient();
+    vi.mocked(oauthClient.refreshToken).mockResolvedValue(refreshedToken());
+    vi.mocked(oauthClient.getCurrentUserGuilds).mockReturnValueOnce(claims);
+    const service = new PersistentAuthSessionService(database.store, oauthClient, () => now);
+
+    const first = service.resolve(rawId);
+    await vi.waitFor(() => expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce());
+    expect(database.read()?.tokens.refreshToken).toBe('new-refresh');
+    const second = service.resolve(rawId);
+    await vi.waitFor(() => expect(database.store.get).toHaveBeenCalledTimes(3));
+    failClaims(new Error('temporary guild failure'));
+
+    const results = await Promise.allSettled([first, second]);
+    expect(results.map(result => result.status)).toEqual(['rejected', 'rejected']);
+    expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce();
+    expect(database.store.delete).not.toHaveBeenCalled();
+
+    await expect(service.resolve(rawId)).resolves.toMatchObject({
+      record: { guilds: [{ id: 'guild' }] },
+    });
+    expect(oauthClient.refreshToken).toHaveBeenCalledOnce();
+    expect(oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(2);
   });
 });

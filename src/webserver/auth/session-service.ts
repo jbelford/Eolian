@@ -19,6 +19,12 @@ import {
   DiscordTokenResponse,
 } from './@types';
 
+export class SessionReauthenticationRequiredError extends Error {
+  constructor() {
+    super('Discord credentials could not be saved. Sign in again.');
+  }
+}
+
 export class PersistentAuthSessionService implements AuthSessionService {
   private readonly refreshFlights = new Map<string, Promise<SessionDTO | null>>();
 
@@ -117,31 +123,37 @@ export class PersistentAuthSessionService implements AuthSessionService {
       return null;
     }
 
-    let changed = false;
     if (record.tokens.expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_LEEWAY_MS) {
+      let refreshed: DiscordTokenResponse;
       try {
-        const refreshed = await this.oauthClient.refreshToken(record.tokens.refreshToken);
-        record.tokens = this.tokenRecord(refreshed, now);
-        changed = true;
+        refreshed = await this.oauthClient.refreshToken(record.tokens.refreshToken);
       } catch (error) {
         await this.sessions.delete(id);
         throw error;
       }
+      const tokens = this.tokenRecord(refreshed, now);
+      let saved: boolean;
+      try {
+        saved = await this.sessions.update(id, { tokens });
+      } catch {
+        throw new SessionReauthenticationRequiredError();
+      }
+      if (!saved) {
+        throw new SessionReauthenticationRequiredError();
+      }
+      record.tokens = tokens;
     }
     if (record.guildsRefreshedAt.getTime() <= now.getTime() - GUILD_CLAIMS_MAX_AGE_MS) {
-      record.guilds = await this.oauthClient.getCurrentUserGuilds(record.tokens.accessToken);
-      record.guildsRefreshedAt = now;
-      changed = true;
-    }
-    if (changed) {
+      const guilds = await this.oauthClient.getCurrentUserGuilds(record.tokens.accessToken);
       const updated = await this.sessions.update(id, {
-        tokens: record.tokens,
-        guilds: record.guilds,
-        guildsRefreshedAt: record.guildsRefreshedAt,
+        guilds,
+        guildsRefreshedAt: now,
       });
       if (!updated) {
-        return null;
+        throw new Error('Failed to save Discord guild claims');
       }
+      record.guilds = guilds;
+      record.guildsRefreshedAt = now;
     }
     return record;
   }

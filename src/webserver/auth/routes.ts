@@ -12,6 +12,7 @@ import { UndiciDiscordOAuthClient } from './discord-oauth-client';
 import { sendAuthError } from './guards';
 import { callbackSchema, loginSchema, logoutSchema, sessionSchema } from './schemas';
 import { createAuthSecurity } from './security';
+import { SessionReauthenticationRequiredError } from './session-service';
 import { createOAuthState, readOAuthState, safeReturnPath } from './state';
 
 interface LoginQuery {
@@ -123,7 +124,10 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
         csrfToken: session.record.csrfToken,
         expiresAt: session.record.expiresAt.toISOString(),
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof SessionReauthenticationRequiredError) {
+        return sendAuthError(reply, 401, 'reauthentication_required', error.message);
+      }
       return sendAuthError(reply, 502, 'session_refresh_failed', 'Unable to refresh the session.');
     }
   });

@@ -393,6 +393,46 @@ describe('Discord auth routes', () => {
     expect(auth.sessions.update).toHaveBeenCalled();
   });
 
+  it('requires a fresh login when rotated credentials cannot be persisted', async () => {
+    const auth = await createServer();
+    const loggedIn = await login(auth.server);
+    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
+    const record = auth.sessions.records.get(key)!;
+    record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
+    vi.mocked(auth.sessions.update)
+      .mockRejectedValueOnce(new Error('database unavailable'))
+      .mockRejectedValueOnce(new Error('database unavailable'));
+
+    const response = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+    });
+    const logout = await auth.server.inject({
+      method: 'POST',
+      url: '/api/auth/logout',
+      headers: {
+        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        origin: 'http://localhost:8080',
+        [CSRF_HEADER]: record.csrfToken,
+      },
+    });
+    await auth.server.close();
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: {
+        code: 'reauthentication_required',
+        message: 'Discord credentials could not be saved. Sign in again.',
+      },
+    });
+    expect(response.body).not.toContain('database unavailable');
+    expect(logout.statusCode).toBe(401);
+    expect(logout.json().error.code).toBe('reauthentication_required');
+    expect(auth.sessions.delete).not.toHaveBeenCalled();
+    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects and deletes an expired session still stored after a recent modification', async () => {
     const auth = await createServer();
     const loggedIn = await login(auth.server);
