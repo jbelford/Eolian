@@ -67,7 +67,7 @@ export const WorkspaceOverviewPage = () => {
               to={`/app/guilds/${guild.id}`}
             >
               <Card className="h-full transition-transform hover:-translate-y-0.5">
-                <Card.Header className="flex-row items-center">
+                <Card.Header className="flex-row items-center gap-3">
                   <Avatar>
                     <Avatar.Image alt="" src={discordGuildIconUrl(guild)} />
                     <Avatar.Fallback>
