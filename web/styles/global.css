@@ -348,18 +348,22 @@ a {
 }
 
 .feature-card {
-  min-height: 22rem;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1.5rem;
   border-color: color-mix(in oklch, var(--separator), transparent 15%);
   background: color-mix(in oklch, var(--surface), var(--background) 35%);
-  padding: 0.4rem;
+  padding: 1.15rem;
 }
 
 .feature-card [data-slot='card-header'] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+.feature-card [data-slot='card-footer'] {
+  margin-top: auto;
 }
 
 .feature-card [data-slot='card-title'] {
