@@ -1,5 +1,6 @@
 import { environment } from '@eolian/common/env';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { SESSION_COOKIE } from './constants';
 
 interface CookieOptions {
   httpOnly?: boolean;
@@ -54,16 +55,17 @@ export function setPrivateCookie(
   maxAgeSeconds: number,
   path = '/',
 ): void {
-  appendCookie(
-    reply,
-    serializeCookie(name, value, {
-      httpOnly: true,
-      maxAge: maxAgeSeconds,
-      path,
-      sameSite: 'Lax',
-      secure: environment.prod,
-    }),
-  );
+  const cookie = serializeCookie(name, value, {
+    httpOnly: true,
+    maxAge: maxAgeSeconds,
+    path,
+    sameSite: 'Lax',
+    secure: environment.prod,
+  });
+  if (name === SESSION_COOKIE && Buffer.byteLength(cookie, 'utf8') > 4096) {
+    throw new Error('Session cookie exceeds browser size limit');
+  }
+  appendCookie(reply, cookie);
 }
 
 export function clearCookie(reply: FastifyReply, name: string, path = '/'): void {
@@ -80,12 +82,5 @@ export function clearCookie(reply: FastifyReply, name: string, path = '/'): void
 }
 
 function appendCookie(reply: FastifyReply, value: string): void {
-  const existing = reply.getHeader('set-cookie');
-  if (!existing) {
-    reply.header('set-cookie', value);
-  } else if (Array.isArray(existing)) {
-    reply.header('set-cookie', [...existing, value]);
-  } else {
-    reply.header('set-cookie', [existing.toString(), value]);
-  }
+  reply.header('set-cookie', value);
 }

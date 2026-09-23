@@ -1,10 +1,9 @@
 import { environment } from '@eolian/common/env';
 import { FastifyReply, preHandlerHookHandler } from 'fastify';
 import { AuthGuards, AuthSessionService } from './@types';
-import { CSRF_HEADER, SESSION_COOKIE, SESSION_DURATION_MS } from './constants';
-import { getCookie, setPrivateCookie } from './cookies';
+import { CSRF_HEADER, SESSION_COOKIE } from './constants';
+import { getCookie } from './cookies';
 import { constantTimeEqual } from './crypto';
-import { SessionReauthenticationRequiredError } from './session-service';
 
 export function sendAuthError(
   reply: FastifyReply,
@@ -33,14 +32,7 @@ export function createAuthGuards(sessionService: AuthSessionService): AuthGuards
           return;
         }
         request.authSession = session;
-        if (session.renewed) {
-          setPrivateCookie(reply, SESSION_COOKIE, session.id, SESSION_DURATION_MS / 1000);
-        }
-      } catch (error) {
-        if (error instanceof SessionReauthenticationRequiredError) {
-          sendAuthError(reply, 401, 'reauthentication_required', error.message);
-          return;
-        }
+      } catch {
         sendAuthError(reply, 502, 'session_refresh_failed', 'Unable to refresh the session.');
       }
     };

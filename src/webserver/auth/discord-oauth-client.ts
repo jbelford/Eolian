@@ -11,7 +11,6 @@ const DISCORD_GUILD_PAGE_SIZE = 200;
 
 interface DiscordTokenPayload {
   access_token?: unknown;
-  refresh_token?: unknown;
   scope?: unknown;
   expires_in?: unknown;
 }
@@ -79,7 +78,6 @@ function clientId(): string {
 function parseToken(payload: DiscordTokenPayload): DiscordTokenResponse {
   if (
     typeof payload.access_token !== 'string' ||
-    typeof payload.refresh_token !== 'string' ||
     typeof payload.scope !== 'string' ||
     typeof payload.expires_in !== 'number'
   ) {
@@ -91,7 +89,6 @@ function parseToken(payload: DiscordTokenPayload): DiscordTokenResponse {
   }
   return {
     accessToken: payload.access_token,
-    refreshToken: payload.refresh_token,
     scope: payload.scope,
     expiresIn: payload.expires_in,
   };
@@ -123,13 +120,6 @@ export class UndiciDiscordOAuthClient implements DiscordOAuthClient {
       grant_type: 'authorization_code',
       code,
       redirect_uri: callbackUrl(),
-    });
-  }
-
-  async refreshToken(refreshToken: string): Promise<DiscordTokenResponse> {
-    return this.requestToken({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
     });
   }
 

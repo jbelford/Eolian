@@ -1,172 +1,127 @@
-import { environment } from '@eolian/common/env';
-import { logger } from '@eolian/common/logger';
-import {
-  DiscordSessionGuild,
-  DiscordSessionUser,
-  SessionDTO,
-  SessionsDb,
-} from '@eolian/data/@types';
-import {
-  GUILD_CLAIMS_MAX_AGE_MS,
-  SESSION_DURATION_MS,
-  SESSION_RENEW_INTERVAL_MS,
-  TOKEN_REFRESH_LEEWAY_MS,
-} from './constants';
-import { randomToken, sessionKey } from './crypto';
+import { DiscordSessionUser } from '@eolian/data/@types';
+import { FastifyInstance } from 'fastify';
 import {
   AuthSession,
   AuthSessionService,
   DiscordOAuthClient,
   DiscordTokenResponse,
 } from './@types';
+import { SESSION_DURATION_SECONDS } from './constants';
+import { randomToken } from './crypto';
 
-export class SessionReauthenticationRequiredError extends Error {
-  constructor() {
-    super('Discord credentials could not be saved. Sign in again.');
+interface SessionClaims {
+  accessToken: string;
+  user: DiscordSessionUser;
+  csrfToken: string;
+}
+
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    claims: SessionClaims;
   }
 }
 
-export class PersistentAuthSessionService implements AuthSessionService {
-  private readonly refreshFlights = new Map<string, Promise<SessionDTO | null>>();
-
+export class StatelessAuthSessionService implements AuthSessionService {
   constructor(
-    private readonly sessions: SessionsDb,
+    private readonly server: FastifyInstance,
     private readonly oauthClient: DiscordOAuthClient,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async create(
+  create(
     token: DiscordTokenResponse,
     user: DiscordSessionUser,
-    guilds: DiscordSessionGuild[],
-  ): Promise<AuthSession> {
-    const now = this.now();
-    const rawId = randomToken();
-    const record: SessionDTO = {
-      _id: sessionKey(rawId, environment.sessionSecret),
-      user,
-      tokens: this.tokenRecord(token, now),
-      guilds,
-      guildsRefreshedAt: now,
-      csrfToken: randomToken(),
-      createdAt: now,
-      renewedAt: now,
-      expiresAt: new Date(now.getTime() + SESSION_DURATION_MS),
-    };
-    await this.sessions.create(record);
-    return { id: rawId, record, renewed: true };
+    tokenIssuedAt: Date,
+  ): { cookie: string; expiresAt: Date } {
+    const session = this.server.createSecureSession({
+      claims: { accessToken: token.accessToken, user, csrfToken: randomToken() },
+    });
+    const timestamp: unknown = session.get('__ts');
+    if (typeof timestamp !== 'number' || !Number.isSafeInteger(timestamp)) {
+      throw new Error('Invalid secure-session timestamp');
+    }
+    const expiresAt = new Date((timestamp + SESSION_DURATION_SECONDS) * 1000);
+    if (
+      !token.accessToken ||
+      !Number.isFinite(token.expiresIn) ||
+      tokenIssuedAt.getTime() + token.expiresIn * 1000 < expiresAt.getTime()
+    ) {
+      throw new Error('Discord access token cannot support the session lifetime');
+    }
+    return { cookie: this.server.encodeSecureSession(session), expiresAt };
   }
 
-  async delete(rawId: string): Promise<boolean> {
-    return this.sessions.delete(sessionKey(rawId, environment.sessionSecret));
-  }
-
-  async resolve(rawId: string): Promise<AuthSession | null> {
-    const id = sessionKey(rawId, environment.sessionSecret);
-    const now = this.now();
-    let record = await this.readActive(id, now);
-    if (!record) {
+  async resolve(cookie: string): Promise<AuthSession | null> {
+    const session = this.read(cookie);
+    if (!session) {
       return null;
     }
+    const guilds = await this.oauthClient.getCurrentUserGuilds(session.claims.accessToken);
+    return {
+      id: cookie,
+      record: {
+        user: session.claims.user,
+        guilds,
+        csrfToken: session.claims.csrfToken,
+        expiresAt: session.expiresAt,
+      },
+    };
+  }
 
-    if (this.requiresRefresh(record, now)) {
-      record = await this.refreshSingleFlight(id, now);
-      if (!record) {
+  async resolveForLogout(cookie: string): Promise<AuthSession | null> {
+    const session = this.read(cookie);
+    return session
+      ? {
+          id: cookie,
+          record: {
+            user: session.claims.user,
+            guilds: [],
+            csrfToken: session.claims.csrfToken,
+            expiresAt: session.expiresAt,
+          },
+        }
+      : null;
+  }
+
+  private read(cookie: string): { claims: SessionClaims; expiresAt: Date } | null {
+    if (cookie.length > 4096) {
+      return null;
+    }
+    try {
+      const session = this.server.decodeSecureSession(cookie);
+      const claims: unknown = session?.get('claims');
+      const timestamp: unknown = session?.get('__ts');
+      if (
+        !isSessionClaims(claims) ||
+        typeof timestamp !== 'number' ||
+        !Number.isSafeInteger(timestamp)
+      ) {
         return null;
       }
-    }
-
-    const renewedBefore = new Date(now.getTime() - SESSION_RENEW_INTERVAL_MS);
-    const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
-    const renewed = await this.sessions.renew(id, renewedBefore, now, expiresAt);
-    if (renewed) {
-      record.renewedAt = now;
-      record.expiresAt = expiresAt;
-    }
-    return { id: rawId, record, renewed };
-  }
-
-  async resolveForLogout(rawId: string): Promise<AuthSession | null> {
-    const record = await this.readActive(sessionKey(rawId, environment.sessionSecret), this.now());
-    return record ? { id: rawId, record, renewed: false } : null;
-  }
-
-  private async readActive(id: string, now: Date): Promise<SessionDTO | null> {
-    const record = await this.sessions.get(id);
-    if (record && record.expiresAt.getTime() <= now.getTime()) {
-      await this.sessions.delete(id);
+      const expiresAt = new Date((timestamp + SESSION_DURATION_SECONDS) * 1000);
+      return this.now().getTime() < expiresAt.getTime() ? { claims, expiresAt } : null;
+    } catch {
       return null;
     }
-    return record;
   }
+}
 
-  private requiresRefresh(record: SessionDTO, now: Date): boolean {
-    return (
-      record.tokens.expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_LEEWAY_MS ||
-      record.guildsRefreshedAt.getTime() <= now.getTime() - GUILD_CLAIMS_MAX_AGE_MS
-    );
+function isSessionClaims(value: unknown): value is SessionClaims {
+  if (typeof value !== 'object' || value === null) {
+    return false;
   }
-
-  private async refreshSingleFlight(id: string, now: Date): Promise<SessionDTO | null> {
-    const current = this.refreshFlights.get(id);
-    if (current) {
-      return current;
-    }
-
-    const refresh = this.refreshRecord(id, now);
-    this.refreshFlights.set(id, refresh);
-    try {
-      return await refresh;
-    } finally {
-      if (this.refreshFlights.get(id) === refresh) {
-        this.refreshFlights.delete(id);
-      }
-    }
-  }
-
-  private async refreshRecord(id: string, now: Date): Promise<SessionDTO | null> {
-    const record = await this.readActive(id, now);
-    if (!record) {
-      return null;
-    }
-
-    if (record.tokens.expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_LEEWAY_MS) {
-      const refreshed = await this.oauthClient.refreshToken(record.tokens.refreshToken);
-      const tokens = this.tokenRecord(refreshed, now);
-      let saved: boolean;
-      try {
-        saved = await this.sessions.update(id, { tokens });
-      } catch {
-        logger.error('Failed to persist refreshed Discord credentials: database write failed');
-        throw new SessionReauthenticationRequiredError();
-      }
-      if (!saved) {
-        logger.error('Failed to persist refreshed Discord credentials: session record missing');
-        throw new SessionReauthenticationRequiredError();
-      }
-      record.tokens = tokens;
-    }
-    if (record.guildsRefreshedAt.getTime() <= now.getTime() - GUILD_CLAIMS_MAX_AGE_MS) {
-      const guilds = await this.oauthClient.getCurrentUserGuilds(record.tokens.accessToken);
-      const updated = await this.sessions.update(id, {
-        guilds,
-        guildsRefreshedAt: now,
-      });
-      if (!updated) {
-        throw new Error('Failed to save Discord guild claims');
-      }
-      record.guilds = guilds;
-      record.guildsRefreshedAt = now;
-    }
-    return record;
-  }
-
-  private tokenRecord(token: DiscordTokenResponse, now: Date): SessionDTO['tokens'] {
-    return {
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      scope: token.scope,
-      expiresAt: new Date(now.getTime() + token.expiresIn * 1000),
-    };
-  }
+  const claims = value as Partial<SessionClaims>;
+  const user = claims.user;
+  return (
+    typeof claims.accessToken === 'string' &&
+    claims.accessToken.length > 0 &&
+    typeof claims.csrfToken === 'string' &&
+    /^[A-Za-z0-9_-]{43}$/.test(claims.csrfToken) &&
+    typeof user === 'object' &&
+    user !== null &&
+    typeof user.id === 'string' &&
+    typeof user.username === 'string' &&
+    (user.globalName === null || typeof user.globalName === 'string') &&
+    (user.avatar === null || typeof user.avatar === 'string')
+  );
 }

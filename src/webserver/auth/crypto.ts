@@ -14,10 +14,6 @@ export function verifyValue(value: string, signature: string, secret: string): b
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
-export function sessionKey(rawId: string, secret: string): string {
-  return signValue(rawId, secret);
-}
-
 export function constantTimeEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);

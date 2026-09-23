@@ -38,14 +38,6 @@ function createDatabase(): AppDatabase {
   return {
     users: {} as AppDatabase['users'],
     servers: {} as AppDatabase['servers'],
-    sessions: {
-      initialize: vi.fn().mockResolvedValue(undefined),
-      create: vi.fn().mockResolvedValue(undefined),
-      get: vi.fn().mockResolvedValue(null),
-      update: vi.fn().mockResolvedValue(false),
-      renew: vi.fn().mockResolvedValue(false),
-      delete: vi.fn().mockResolvedValue(false),
-    },
     close: vi.fn().mockResolvedValue(undefined),
   };
 }

@@ -53,37 +53,21 @@ describe('UndiciDiscordOAuthClient', () => {
     });
   });
 
-  it('exchanges and refreshes tokens with form encoding and HTTP Basic auth', async () => {
-    mocks.request
-      .mockResolvedValueOnce(
-        response({
-          access_token: 'access',
-          refresh_token: 'refresh',
-          scope: 'identify guilds',
-          expires_in: 3600,
-        }),
-      )
-      .mockResolvedValueOnce(
-        response({
-          access_token: 'next-access',
-          refresh_token: 'next-refresh',
-          scope: 'guilds identify',
-          expires_in: 7200,
-        }),
-      );
+  it('exchanges a token without retaining the refresh credential', async () => {
+    mocks.request.mockResolvedValueOnce(
+      response({
+        access_token: 'access',
+        refresh_token: 'provider-refresh-secret',
+        scope: 'identify guilds',
+        expires_in: 604800,
+      }),
+    );
     const client = new UndiciDiscordOAuthClient();
 
     await expect(client.exchangeCode('code')).resolves.toEqual({
       accessToken: 'access',
-      refreshToken: 'refresh',
       scope: 'identify guilds',
-      expiresIn: 3600,
-    });
-    await expect(client.refreshToken('refresh')).resolves.toEqual({
-      accessToken: 'next-access',
-      refreshToken: 'next-refresh',
-      scope: 'guilds identify',
-      expiresIn: 7200,
+      expiresIn: 604800,
     });
 
     const credentials = Buffer.from('discord-client:discord-secret').toString('base64');
@@ -103,16 +87,7 @@ describe('UndiciDiscordOAuthClient', () => {
         }).toString(),
       }),
     );
-    expect(mocks.request).toHaveBeenNthCalledWith(
-      2,
-      'https://discord.com/api/v10/oauth2/token',
-      expect.objectContaining({
-        body: new URLSearchParams({
-          grant_type: 'refresh_token',
-          refresh_token: 'refresh',
-        }).toString(),
-      }),
-    );
+    expect(mocks.request).toHaveBeenCalledTimes(1);
   });
 
   it('returns only guilds the user can manage', async () => {

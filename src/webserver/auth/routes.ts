@@ -1,18 +1,12 @@
 import { logger } from '@eolian/common/logger';
 import { FastifyPluginAsync } from 'fastify';
 import { AuthPluginOptions } from './@types';
-import {
-  OAUTH_STATE_COOKIE,
-  OAUTH_STATE_DURATION_MS,
-  SESSION_COOKIE,
-  SESSION_DURATION_MS,
-} from './constants';
+import { OAUTH_STATE_COOKIE, OAUTH_STATE_DURATION_MS, SESSION_COOKIE } from './constants';
 import { clearCookie, getCookie, setPrivateCookie } from './cookies';
 import { UndiciDiscordOAuthClient } from './discord-oauth-client';
 import { sendAuthError } from './guards';
 import { callbackSchema, loginSchema, logoutSchema, sessionSchema } from './schemas';
 import { createAuthSecurity } from './security';
-import { SessionReauthenticationRequiredError } from './session-service';
 import { createOAuthState, readOAuthState, safeReturnPath } from './state';
 
 interface LoginQuery {
@@ -31,7 +25,7 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
 ) => {
   const now = options.now ?? (() => new Date());
   const oauthClient = options.oauthClient ?? new UndiciDiscordOAuthClient();
-  const security = options.security ?? createAuthSecurity(options.sessions, oauthClient, now);
+  const security = options.security ?? createAuthSecurity(server, oauthClient, now);
   const { guards, sessionService } = security;
 
   if (!server.hasRequestDecorator('authSession')) {
@@ -84,17 +78,18 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
       }
 
       try {
+        const issuedAt = now();
         const token = await oauthClient.exchangeCode(request.query.code);
-        const [user, guilds] = await Promise.all([
+        const [user] = await Promise.all([
           oauthClient.getCurrentUser(token.accessToken),
           oauthClient.getCurrentUserGuilds(token.accessToken),
         ]);
-        const priorSession = getCookie(request, SESSION_COOKIE);
-        if (priorSession) {
-          await sessionService.delete(priorSession);
+        const session = sessionService.create(token, user, issuedAt);
+        const remainingSeconds = Math.floor((session.expiresAt.getTime() - now().getTime()) / 1000);
+        if (remainingSeconds <= 0) {
+          throw new Error('Discord login took longer than the session lifetime');
         }
-        const session = await sessionService.create(token, user, guilds);
-        setPrivateCookie(reply, SESSION_COOKIE, session.id, SESSION_DURATION_MS / 1000);
+        setPrivateCookie(reply, SESSION_COOKIE, session.cookie, remainingSeconds);
         return reply.redirect(state.returnTo);
       } catch {
         logger.warn('Discord OAuth callback failed');
@@ -114,9 +109,6 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
         clearCookie(reply, SESSION_COOKIE);
         return { authenticated: false as const };
       }
-      if (session.renewed) {
-        setPrivateCookie(reply, SESSION_COOKIE, session.id, SESSION_DURATION_MS / 1000);
-      }
       return {
         authenticated: true as const,
         user: session.record.user,
@@ -124,10 +116,7 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
         csrfToken: session.record.csrfToken,
         expiresAt: session.record.expiresAt.toISOString(),
       };
-    } catch (error) {
-      if (error instanceof SessionReauthenticationRequiredError) {
-        return sendAuthError(reply, 401, 'reauthentication_required', error.message);
-      }
+    } catch {
       return sendAuthError(reply, 502, 'session_refresh_failed', 'Unable to refresh the session.');
     }
   });
@@ -139,7 +128,6 @@ export const registerDiscordAuthRoutes: FastifyPluginAsync<AuthPluginOptions> = 
       preHandler: [guards.authenticateForLogout, guards.origin, guards.csrf],
     },
     async (request, reply) => {
-      await sessionService.delete(request.authSession!.id);
       clearCookie(reply, SESSION_COOKIE);
       return reply.status(204).send();
     },

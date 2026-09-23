@@ -1,27 +1,22 @@
 import { environment } from '@eolian/common/env';
-import {
-  DiscordSessionGuild,
-  DiscordSessionUser,
-  SessionDTO,
-  SessionsDb,
-} from '@eolian/data/@types';
-import { FastifyInstance } from 'fastify';
-import fastify from 'fastify';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DiscordSessionGuild, DiscordSessionUser } from '@eolian/data/@types';
 import { DiscordOAuthClient, DiscordTokenResponse } from '@eolian/webserver/auth/@types';
 import {
   CSRF_HEADER,
   OAUTH_STATE_COOKIE,
   SESSION_COOKIE,
-  SESSION_DURATION_MS,
+  SESSION_DURATION_SECONDS,
 } from '@eolian/webserver/auth/constants';
-import { sessionKey } from '@eolian/webserver/auth/crypto';
 import { registerDiscordAuthRoutes } from '@eolian/webserver/auth/routes';
+import { registerSecureSession } from '@eolian/webserver/auth/secure-session';
+import fastify, { FastifyInstance } from 'fastify';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@eolian/common/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
 }));
 
+const start = new Date('2026-09-22T08:00:00.000Z');
 const user: DiscordSessionUser = {
   id: 'user-1',
   username: 'eolian-user',
@@ -29,56 +24,13 @@ const user: DiscordSessionUser = {
   avatar: 'avatar',
 };
 const guilds: DiscordSessionGuild[] = [
-  {
-    id: 'guild-1',
-    name: 'Guild',
-    icon: null,
-    owner: true,
-    permissions: '0',
-  },
+  { id: 'guild-1', name: 'Guild', icon: null, owner: true, permissions: '0' },
 ];
 const token: DiscordTokenResponse = {
   accessToken: 'access-token',
-  refreshToken: 'refresh-token',
   scope: 'identify guilds',
-  expiresIn: 3600,
+  expiresIn: 604800,
 };
-
-class MemorySessions implements SessionsDb {
-  readonly records = new Map<string, SessionDTO>();
-  readonly initialize = vi.fn(async () => undefined);
-  readonly create = vi.fn(async (session: SessionDTO) => {
-    this.records.set(session._id, structuredClone(session));
-  });
-  readonly get = vi.fn(async (id: string) => {
-    const record = this.records.get(id);
-    return record ? structuredClone(record) : null;
-  });
-  readonly delete = vi.fn(async (id: string) => this.records.delete(id));
-  readonly update = vi.fn(async (id: string, values: Partial<Omit<SessionDTO, '_id'>>) => {
-    const record = this.records.get(id);
-    if (!record) {
-      return false;
-    }
-    Object.assign(record, structuredClone(values));
-    return true;
-  });
-  readonly renew = vi.fn(
-    async (id: string, renewedBefore: Date, renewedAt: Date, expiresAt: Date) => {
-      const record = this.records.get(id);
-      if (
-        !record ||
-        record.renewedAt.getTime() > renewedBefore.getTime() ||
-        record.expiresAt.getTime() <= renewedAt.getTime()
-      ) {
-        return false;
-      }
-      record.renewedAt = renewedAt;
-      record.expiresAt = expiresAt;
-      return true;
-    },
-  );
-}
 
 function createOAuthClient(): DiscordOAuthClient {
   return {
@@ -93,61 +45,45 @@ function createOAuthClient(): DiscordOAuthClient {
         })}`,
     ),
     exchangeCode: vi.fn().mockResolvedValue(token),
-    refreshToken: vi.fn().mockResolvedValue({
-      ...token,
-      accessToken: 'refreshed-access-token',
-      refreshToken: 'refreshed-refresh-token',
-    }),
     getCurrentUser: vi.fn().mockResolvedValue(user),
     getCurrentUserGuilds: vi.fn().mockResolvedValue(guilds),
   };
 }
 
-async function createServer(
-  sessions = new MemorySessions(),
-  oauthClient = createOAuthClient(),
-  now = new Date('2026-09-22T08:00:00.000Z'),
-): Promise<{
-  server: FastifyInstance;
-  sessions: MemorySessions;
-  oauthClient: DiscordOAuthClient;
-  setNow: (value: Date) => void;
-}> {
-  let currentTime = now;
+async function createServer(oauthClient = createOAuthClient()) {
+  let currentTime = start;
   const server = fastify();
+  vi.spyOn(Date, 'now').mockImplementation(() => currentTime.getTime());
+  registerSecureSession(server);
   await server.register(registerDiscordAuthRoutes, {
     prefix: '/api/auth',
-    sessions,
     oauthClient,
     now: () => currentTime,
   });
   await server.ready();
   return {
     server,
-    sessions,
     oauthClient,
-    setNow: value => {
+    setNow: (value: Date) => {
       currentTime = value;
     },
   };
 }
 
-function cookies(response: {
-  headers: Record<string, string | string[] | number | undefined>;
-}): string[] {
+function cookies(response: { headers: Record<string, string | string[] | number | undefined> }) {
   const value = response.headers['set-cookie'];
-  if (!value) {
-    return [];
-  }
-  return Array.isArray(value) ? value : [value.toString()];
+  return value ? (Array.isArray(value) ? value : [value.toString()]) : [];
 }
 
 function cookieValue(
   response: { headers: Record<string, string | string[] | number | undefined> },
   name: string,
 ) {
-  const cookie = cookies(response).find(value => value.startsWith(`${name}=`));
-  return cookie?.split(';', 1)[0].slice(name.length + 1);
+  const encoded = cookies(response)
+    .find(value => value.startsWith(`${name}=`))
+    ?.split(';', 1)[0]
+    .slice(name.length + 1);
+  return encoded === undefined ? undefined : decodeURIComponent(encoded);
 }
 
 async function beginLogin(server: FastifyInstance, returnTo = '/settings') {
@@ -170,28 +106,28 @@ async function login(server: FastifyInstance, returnTo = '/settings') {
     url: `/api/auth/discord/callback?state=${started.state}&code=oauth-code`,
     headers: { cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}` },
   });
-  return {
-    response,
-    sessionCookie: cookieValue(response, SESSION_COOKIE)!,
-  };
+  return { response, sessionCookie: cookieValue(response, SESSION_COOKIE)! };
 }
 
-describe('Discord auth routes', () => {
+function sessionHeaders(cookie: string) {
+  return { cookie: `${SESSION_COOKIE}=${encodeURIComponent(cookie)}` };
+}
+
+describe('stateless Discord auth routes', () => {
   beforeEach(() => {
     environment.prod = false;
   });
 
-  it('redirects to Discord with only identify and guilds and a signed state cookie', async () => {
+  it('redirects with only identify and guilds and a signed, scoped state cookie', async () => {
     const { server } = await createServer();
-
     const { response } = await beginLogin(server);
-    const location = new URL(response.headers.location!);
     await server.close();
 
+    const location = new URL(response.headers.location!);
     expect(response.statusCode).toBe(302);
     expect(location.origin + location.pathname).toBe('https://discord.com/oauth2/authorize');
-    expect(location.searchParams.get('response_type')).toBe('code');
     expect(location.searchParams.get('scope')).toBe('identify guilds');
+    expect(location.searchParams.get('response_type')).toBe('code');
     expect(location.searchParams.get('state')).toBeTruthy();
     expect(cookies(response)[0]).toContain('HttpOnly');
     expect(cookies(response)[0]).toContain('SameSite=Lax');
@@ -207,382 +143,315 @@ describe('Discord auth routes', () => {
         url: `/api/auth/discord?returnTo=${encodeURIComponent(returnTo)}`,
       });
       await server.close();
-
       expect(response.statusCode).toBe(400);
       expect(response.json().error.code).toBe('invalid_return_path');
     },
   );
 
-  it('rejects missing, mismatched, and expired OAuth state', async () => {
-    const { server, setNow } = await createServer();
-    const started = await beginLogin(server);
-
-    const missing = await server.inject({
+  it('rejects absent, mismatched, and expired OAuth state', async () => {
+    const auth = await createServer();
+    const started = await beginLogin(auth.server);
+    const missing = await auth.server.inject({
       method: 'GET',
       url: '/api/auth/discord/callback?code=code',
     });
-    const mismatched = await server.inject({
+    const mismatched = await auth.server.inject({
       method: 'GET',
       url: '/api/auth/discord/callback?state=wrong&code=code',
       headers: { cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}` },
     });
-    setNow(new Date('2026-09-22T08:11:00.000Z'));
-    const expired = await server.inject({
+    auth.setNow(new Date(start.getTime() + 11 * 60 * 1000));
+    const expired = await auth.server.inject({
       method: 'GET',
       url: `/api/auth/discord/callback?state=${started.state}&code=code`,
       headers: { cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}` },
     });
-    await server.close();
-
+    await auth.server.close();
     expect(missing.statusCode).toBe(400);
     expect(mismatched.json().error.code).toBe('invalid_oauth_state');
     expect(expired.json().error.code).toBe('invalid_oauth_state');
+    expect(auth.oauthClient.exchangeCode).not.toHaveBeenCalled();
   });
 
-  it('handles denial and missing authorization codes explicitly', async () => {
-    const deniedServer = await createServer();
-    const deniedLogin = await beginLogin(deniedServer.server);
-    const denied = await deniedServer.server.inject({
+  it('reports denial and missing code without exchanging credentials', async () => {
+    const auth = await createServer();
+    const started = await beginLogin(auth.server);
+    const headers = { cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}` };
+    const denied = await auth.server.inject({
       method: 'GET',
-      url: `/api/auth/discord/callback?state=${deniedLogin.state}&error=access_denied`,
-      headers: { cookie: `${OAUTH_STATE_COOKIE}=${deniedLogin.stateCookie}` },
+      url: `/api/auth/discord/callback?state=${started.state}&error=access_denied`,
+      headers,
     });
-    await deniedServer.server.close();
-
-    const missingServer = await createServer();
-    const missingLogin = await beginLogin(missingServer.server);
-    const missing = await missingServer.server.inject({
+    const missing = await auth.server.inject({
       method: 'GET',
-      url: `/api/auth/discord/callback?state=${missingLogin.state}`,
-      headers: { cookie: `${OAUTH_STATE_COOKIE}=${missingLogin.stateCookie}` },
+      url: `/api/auth/discord/callback?state=${started.state}`,
+      headers,
     });
-    await missingServer.server.close();
-
+    await auth.server.close();
     expect(denied.json().error.code).toBe('oauth_denied');
     expect(missing.json().error.code).toBe('missing_oauth_code');
+    expect(auth.oauthClient.exchangeCode).not.toHaveBeenCalled();
   });
 
-  it('creates a rotated persistent session and redirects only to the retained path', async () => {
-    const { server, sessions } = await createServer();
-    const oldRawId = 'old-session';
-    sessions.records.set(sessionKey(oldRawId, environment.sessionSecret), {
-      _id: sessionKey(oldRawId, environment.sessionSecret),
-      user,
-      tokens: { ...token, expiresAt: new Date('2026-09-22T09:00:00.000Z') } as never,
-      guilds,
-      guildsRefreshedAt: new Date('2026-09-22T08:00:00.000Z'),
-      csrfToken: 'old-csrf',
-      createdAt: new Date('2026-09-22T08:00:00.000Z'),
-      renewedAt: new Date('2026-09-22T08:00:00.000Z'),
-      expiresAt: new Date('2026-09-29T08:00:00.000Z'),
-    });
-    const started = await beginLogin(server, '/settings?tab=guilds');
-
-    const response = await server.inject({
-      method: 'GET',
-      url: `/api/auth/discord/callback?state=${started.state}&code=oauth-code`,
-      headers: {
-        cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}; ${SESSION_COOKIE}=${oldRawId}`,
-      },
-    });
-    const sessionCookie = cookieValue(response, SESSION_COOKIE)!;
-    await server.close();
+  it('issues a fresh encrypted cookie, keeps the safe return path, and limits its size', async () => {
+    const auth = await createServer();
+    const { response, sessionCookie } = await login(auth.server, '/settings?tab=guilds');
+    await auth.server.close();
 
     expect(response.statusCode).toBe(302);
     expect(response.headers.location).toBe('/settings?tab=guilds');
-    expect(sessionCookie).toBeTruthy();
-    expect(sessionCookie).not.toBe(oldRawId);
-    expect(sessions.delete).toHaveBeenCalledWith(sessionKey(oldRawId, environment.sessionSecret));
-    const stored = [...sessions.records.values()][0];
-    expect(stored._id).not.toBe(sessionCookie);
-    expect(stored.tokens.accessToken).toBe('access-token');
-    expect(stored.csrfToken).toBeTruthy();
+    expect(sessionCookie).toMatch(/^[A-Za-z0-9+/=]+;[A-Za-z0-9+/=]+$/);
+    expect(sessionCookie).not.toContain(token.accessToken);
+    expect(cookies(response).map(value => value.split('=', 1)[0])).toEqual([
+      OAUTH_STATE_COOKIE,
+      SESSION_COOKIE,
+    ]);
+    const cookieHeader = cookies(response).find(value => value.startsWith(`${SESSION_COOKIE}=`))!;
+    expect(Buffer.byteLength(cookieHeader, 'utf8')).toBeLessThanOrEqual(4096);
+    expect(cookieHeader).toContain('Path=/');
+    expect(cookieHeader).toContain('HttpOnly');
+    expect(cookieHeader).toContain('SameSite=Lax');
+    expect(cookieHeader).toContain(`Max-Age=${SESSION_DURATION_SECONDS}`);
+  });
+
+  it('sets Secure on production cookies', async () => {
+    environment.prod = true;
+    const auth = await createServer();
+    const { response } = await login(auth.server);
+    await auth.server.close();
+    expect(cookies(response).find(value => value.startsWith(`${SESSION_COOKIE}=`))).toContain(
+      'Secure',
+    );
+  });
+
+  it('enforces the library default lifetime without renewal on repeated requests', async () => {
+    const auth = await createServer();
+    const { sessionCookie } = await login(auth.server);
+    const expiresAt = new Date(start.getTime() + SESSION_DURATION_SECONDS * 1000).toISOString();
+    auth.setNow(new Date(start.getTime() + SESSION_DURATION_SECONDS * 1000 - 1));
+    const beforeExpiry = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    const repeated = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    auth.setNow(new Date(start.getTime() + SESSION_DURATION_SECONDS * 1000));
+    const expired = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    await auth.server.close();
+
+    expect(beforeExpiry.json()).toEqual({
+      authenticated: true,
+      user,
+      guilds,
+      csrfToken: expect.any(String),
+      expiresAt,
+    });
+    expect(repeated.json().expiresAt).toBe(expiresAt);
+    expect(cookies(beforeExpiry)).toHaveLength(0);
+    expect(cookies(repeated)).toHaveLength(0);
+    expect(expired.json()).toEqual({ authenticated: false });
+    expect(cookies(expired)[0]).toContain('Max-Age=0');
+    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(3);
+  });
+
+  it('uses fresh manageable-guild claims without storing the guild list in the cookie', async () => {
+    const auth = await createServer();
+    const { sessionCookie } = await login(auth.server);
+    const manyGuilds = Array.from({ length: 250 }, (_, index) => ({
+      ...guilds[0],
+      id: `${index + 1}`,
+    }));
+    vi.mocked(auth.oauthClient.getCurrentUserGuilds).mockResolvedValue(manyGuilds);
+    const response = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    await auth.server.close();
+    expect(response.json().guilds).toHaveLength(250);
+    expect(sessionCookie.length).toBeLessThan(4096);
+    expect(response.body).not.toContain('access-token');
+  });
+
+  it('accepts a session cookie on another server instance without shared storage', async () => {
+    const first = await createServer();
+    const { sessionCookie } = await login(first.server);
+    await first.server.close();
+
+    const second = await createServer();
+    const response = await second.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    await second.server.close();
+
+    expect(response.json()).toMatchObject({ authenticated: true, user, guilds });
+  });
+
+  it('rejects tampered session cookies without calling Discord', async () => {
+    const auth = await createServer();
+    const { sessionCookie } = await login(auth.server);
+    const tampered = `${sessionCookie[0] === 'A' ? 'B' : 'A'}${sessionCookie.slice(1)}`;
+    vi.mocked(auth.oauthClient.getCurrentUserGuilds).mockClear();
+    const response = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(tampered),
+    });
+    await auth.server.close();
+    expect(response.json()).toEqual({ authenticated: false });
+    expect(auth.oauthClient.getCurrentUserGuilds).not.toHaveBeenCalled();
   });
 
   it.each(['exchangeCode', 'getCurrentUser', 'getCurrentUserGuilds'] as const)(
-    'returns a generic callback failure when %s fails',
+    'returns a sanitized callback failure when %s fails',
     async method => {
       const oauthClient = createOAuthClient();
-      vi.mocked(oauthClient[method]).mockRejectedValue(new Error('provider token body'));
-      const { server } = await createServer(new MemorySessions(), oauthClient);
-      const started = await beginLogin(server);
-
-      const response = await server.inject({
+      vi.mocked(oauthClient[method]).mockRejectedValue(new Error('private provider response'));
+      const auth = await createServer(oauthClient);
+      const started = await beginLogin(auth.server);
+      const response = await auth.server.inject({
         method: 'GET',
         url: `/api/auth/discord/callback?state=${started.state}&code=bad`,
         headers: { cookie: `${OAUTH_STATE_COOKIE}=${started.stateCookie}` },
       });
-      await server.close();
-
+      await auth.server.close();
       expect(response.statusCode).toBe(502);
-      expect(response.body).not.toContain('provider token body');
       expect(response.json().error.code).toBe('discord_oauth_failed');
+      expect(response.body).not.toContain('private provider response');
+      expect(cookieValue(response, SESSION_COOKIE)).toBeUndefined();
     },
   );
 
-  it('sets the production session cookie security attributes', async () => {
-    environment.prod = true;
-    const { server } = await createServer();
+  it('rejects tokens shorter than the library default and oversized cookies without truncation', async () => {
+    const shortClient = createOAuthClient();
+    vi.mocked(shortClient.exchangeCode).mockResolvedValue({
+      ...token,
+      expiresIn: SESSION_DURATION_SECONDS - 1,
+    });
+    const shortAuth = await createServer(shortClient);
+    const short = (await login(shortAuth.server)).response;
+    await shortAuth.server.close();
 
-    const { response } = await login(server);
-    const sessionHeader = cookies(response).find(value => value.startsWith(`${SESSION_COOKIE}=`))!;
-    await server.close();
+    const largeClient = createOAuthClient();
+    vi.mocked(largeClient.exchangeCode).mockResolvedValue({
+      ...token,
+      accessToken: 'x'.repeat(4000),
+    });
+    const largeAuth = await createServer(largeClient);
+    const large = (await login(largeAuth.server)).response;
+    await largeAuth.server.close();
 
-    expect(sessionHeader).toContain('Secure');
-    expect(sessionHeader).toContain('HttpOnly');
-    expect(sessionHeader).toContain('SameSite=Lax');
-    expect(sessionHeader).toContain('Path=/');
-    expect(sessionHeader).toContain(`Max-Age=${SESSION_DURATION_MS / 1000}`);
+    for (const response of [short, large]) {
+      expect(response.statusCode).toBe(502);
+      expect(response.json().error.code).toBe('discord_oauth_failed');
+      expect(cookieValue(response, SESSION_COOKIE)).toBeUndefined();
+    }
   });
 
-  it('returns only sanitized session data and renews expiry at most once per day', async () => {
+  it('returns a retryable failure without exposing provider details when guild lookup fails', async () => {
     const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.renewedAt = new Date('2026-09-20T08:00:00.000Z');
-
-    const response = await auth.server.inject({
-      method: 'GET',
-      url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
-    });
-    const second = await auth.server.inject({
-      method: 'GET',
-      url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
-    });
-    await auth.server.close();
-
-    const body = response.json();
-    expect(body).toEqual({
-      authenticated: true,
-      user,
-      guilds,
-      csrfToken: record.csrfToken,
-      expiresAt: new Date('2026-09-29T08:00:00.000Z').toISOString(),
-    });
-    expect(response.body).not.toContain('access-token');
-    expect(response.body).not.toContain('refresh-token');
-    expect(auth.sessions.renew).toHaveBeenCalledTimes(2);
-    expect(cookies(response).some(value => value.startsWith(`${SESSION_COOKIE}=`))).toBe(true);
-    expect(cookies(second)).toHaveLength(0);
-  });
-
-  it('refreshes expired Discord tokens and stale manageable guild claims', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
-    record.guildsRefreshedAt = new Date('2026-09-22T07:00:00.000Z');
-    const refreshedGuilds = [{ ...guilds[0], id: 'guild-2' }];
-    vi.mocked(auth.oauthClient.getCurrentUserGuilds).mockResolvedValue(refreshedGuilds);
-
-    const response = await auth.server.inject({
-      method: 'GET',
-      url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
-    });
-    await auth.server.close();
-
-    expect(response.statusCode).toBe(200);
-    expect(auth.oauthClient.refreshToken).toHaveBeenCalledWith('refresh-token');
-    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledWith('refreshed-access-token');
-    expect(response.json().guilds).toEqual(refreshedGuilds);
-    expect(auth.sessions.update).toHaveBeenCalled();
-  });
-
-  it('requires a fresh login when rotated credentials cannot be persisted', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
-    vi.mocked(auth.sessions.update).mockRejectedValueOnce(new Error('database unavailable'));
-
-    const response = await auth.server.inject({
-      method: 'GET',
-      url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
-    });
-    const logout = await auth.server.inject({
-      method: 'POST',
-      url: '/api/auth/logout',
-      headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
-        origin: 'http://localhost:8080',
-        [CSRF_HEADER]: record.csrfToken,
-      },
-    });
-    await auth.server.close();
-
-    expect(response.statusCode).toBe(401);
-    expect(response.json()).toEqual({
-      error: {
-        code: 'reauthentication_required',
-        message: 'Discord credentials could not be saved. Sign in again.',
-      },
-    });
-    expect(response.body).not.toContain('database unavailable');
-    expect(logout.statusCode).toBe(204);
-    expect(auth.sessions.delete).toHaveBeenCalledWith(key);
-    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns a retryable error for a transient Discord refresh failure', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    auth.sessions.records.get(key)!.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
-    vi.mocked(auth.oauthClient.refreshToken).mockRejectedValueOnce(
-      new Error('provider response with token or private detail'),
+    const { sessionCookie } = await login(auth.server);
+    vi.mocked(auth.oauthClient.getCurrentUserGuilds).mockRejectedValueOnce(
+      new Error('private provider response'),
     );
-
     const failed = await auth.server.inject({
       method: 'GET',
       url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+      headers: sessionHeaders(sessionCookie),
     });
-    expect(failed.statusCode).toBe(502);
-    expect(failed.json().error.code).toBe('session_refresh_failed');
-    expect(failed.body).not.toContain('provider response');
-    expect(auth.sessions.records.get(key)?.tokens.refreshToken).toBe('refresh-token');
-    expect(auth.sessions.delete).not.toHaveBeenCalled();
-
     const retried = await auth.server.inject({
       method: 'GET',
       url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+      headers: sessionHeaders(sessionCookie),
     });
     await auth.server.close();
-
-    expect(retried.statusCode).toBe(200);
+    expect(failed.statusCode).toBe(502);
+    expect(failed.json().error.code).toBe('session_refresh_failed');
+    expect(failed.body).not.toContain('private provider response');
     expect(retried.json().authenticated).toBe(true);
-    expect(retried.body).not.toContain('refreshed-refresh-token');
-    expect(auth.oauthClient.refreshToken).toHaveBeenCalledTimes(2);
   });
 
-  it('logs out with a valid CSRF token while Discord refresh is unavailable', async () => {
+  it('validates origin and CSRF on logout, then only clears the browser cookie', async () => {
     const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.tokens.expiresAt = new Date('2026-09-22T08:00:30.000Z');
-    vi.mocked(auth.oauthClient.refreshToken).mockRejectedValue(new Error('Discord unavailable'));
-
-    const response = await auth.server.inject({
-      method: 'POST',
-      url: '/api/auth/logout',
-      headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
-        origin: 'http://localhost:8080',
-        [CSRF_HEADER]: record.csrfToken,
-      },
-    });
-    await auth.server.close();
-
-    expect(response.statusCode).toBe(204);
-    expect(auth.oauthClient.refreshToken).not.toHaveBeenCalled();
-    expect(auth.sessions.records.has(key)).toBe(false);
-  });
-
-  it('rejects logout for an expired stored session without contacting Discord', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.expiresAt = new Date('2026-09-22T07:59:59.000Z');
-
-    const response = await auth.server.inject({
-      method: 'POST',
-      url: '/api/auth/logout',
-      headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
-        origin: 'http://localhost:8080',
-        [CSRF_HEADER]: record.csrfToken,
-      },
-    });
-    await auth.server.close();
-
-    expect(response.statusCode).toBe(401);
-    expect(response.json().error.code).toBe('unauthenticated');
-    expect(auth.sessions.records.has(key)).toBe(false);
-    expect(auth.oauthClient.refreshToken).not.toHaveBeenCalled();
-  });
-
-  it('rejects and deletes an expired session still stored after a recent modification', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-    record.expiresAt = new Date('2026-09-22T07:59:59.000Z');
-    record.renewedAt = new Date('2026-09-22T08:00:00.000Z');
-
-    const response = await auth.server.inject({
+    const { sessionCookie } = await login(auth.server);
+    const session = await auth.server.inject({
       method: 'GET',
       url: '/api/auth/session',
-      headers: { cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}` },
+      headers: sessionHeaders(sessionCookie),
     });
-    await auth.server.close();
-
-    expect(response.json()).toEqual({ authenticated: false });
-    expect(auth.sessions.delete).toHaveBeenCalledWith(key);
-    expect(auth.sessions.records.has(key)).toBe(false);
-    expect(cookies(response)[0]).toContain('Max-Age=0');
-  });
-
-  it('rejects logout without same-origin and matching CSRF headers', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const record = [...auth.sessions.records.values()][0];
-
+    const csrf = session.json().csrfToken;
     const badOrigin = await auth.server.inject({
       method: 'POST',
       url: '/api/auth/logout',
       headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        ...sessionHeaders(sessionCookie),
         origin: 'https://evil.example',
-        [CSRF_HEADER]: record.csrfToken,
+        [CSRF_HEADER]: csrf,
       },
     });
     const badCsrf = await auth.server.inject({
       method: 'POST',
       url: '/api/auth/logout',
       headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        ...sessionHeaders(sessionCookie),
         origin: 'http://localhost:8080',
         [CSRF_HEADER]: 'wrong',
       },
     });
-    await auth.server.close();
-
-    expect(badOrigin.statusCode).toBe(403);
-    expect(badOrigin.json().error.code).toBe('invalid_origin');
-    expect(badCsrf.statusCode).toBe(403);
-    expect(badCsrf.json().error.code).toBe('invalid_csrf');
-  });
-
-  it('logs out, deletes the session, and expires the cookie', async () => {
-    const auth = await createServer();
-    const loggedIn = await login(auth.server);
-    const key = sessionKey(loggedIn.sessionCookie, environment.sessionSecret);
-    const record = auth.sessions.records.get(key)!;
-
-    const response = await auth.server.inject({
+    vi.mocked(auth.oauthClient.getCurrentUserGuilds).mockClear();
+    const logout = await auth.server.inject({
       method: 'POST',
       url: '/api/auth/logout',
       headers: {
-        cookie: `${SESSION_COOKIE}=${loggedIn.sessionCookie}`,
+        ...sessionHeaders(sessionCookie),
         origin: 'http://localhost:8080',
-        [CSRF_HEADER]: record.csrfToken,
+        [CSRF_HEADER]: csrf,
+      },
+    });
+    const copiedCookie = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    await auth.server.close();
+    expect(badOrigin.json().error.code).toBe('invalid_origin');
+    expect(badCsrf.json().error.code).toBe('invalid_csrf');
+    expect(logout.statusCode).toBe(204);
+    expect(cookies(logout)[0]).toContain('Max-Age=0');
+    expect(auth.oauthClient.getCurrentUserGuilds).toHaveBeenCalledOnce();
+    expect(copiedCookie.json().authenticated).toBe(true);
+  });
+
+  it('rejects expired cookies for logout even when the caller supplies CSRF', async () => {
+    const auth = await createServer();
+    const { sessionCookie } = await login(auth.server);
+    const response = await auth.server.inject({
+      method: 'GET',
+      url: '/api/auth/session',
+      headers: sessionHeaders(sessionCookie),
+    });
+    auth.setNow(new Date(start.getTime() + SESSION_DURATION_SECONDS * 1000));
+    const logout = await auth.server.inject({
+      method: 'POST',
+      url: '/api/auth/logout',
+      headers: {
+        ...sessionHeaders(sessionCookie),
+        origin: 'http://localhost:8080',
+        [CSRF_HEADER]: response.json().csrfToken,
       },
     });
     await auth.server.close();
-
-    expect(response.statusCode).toBe(204);
-    expect(auth.sessions.records.has(key)).toBe(false);
-    expect(cookies(response).at(-1)).toContain(`${SESSION_COOKIE}=`);
-    expect(cookies(response).at(-1)).toContain('Max-Age=0');
+    expect(logout.statusCode).toBe(401);
+    expect(logout.json().error.code).toBe('unauthenticated');
   });
 });

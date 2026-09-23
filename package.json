@@ -47,6 +47,7 @@
     "@discordjs/opus": "^0.10.0",
     "@discordjs/rest": "^2.6.0",
     "@discordjs/voice": "0.19.2",
+    "@fastify/secure-session": "8.4.0",
     "@snazzah/davey": "0.1.12",
     "bufferutil": "^4.0.8",
     "discord-api-types": "^0.38.37",

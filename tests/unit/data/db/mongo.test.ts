@@ -6,10 +6,7 @@ import { ResourceType } from '@eolian/data/@types';
 const { connect, close, collection, db, MongoClient } = vi.hoisted(() => {
   const connect = vi.fn();
   const close = vi.fn();
-  const collection = vi.fn((name: string) => ({
-    name,
-    createIndex: vi.fn().mockResolvedValue('sessions_last_modified_ttl'),
-  }));
+  const collection = vi.fn((name: string) => ({ name }));
   const db = vi.fn(() => ({ collection }));
   const MongoClient = vi.fn(function () {
     return { connect, close, db };
@@ -125,11 +122,7 @@ describe('createDatabase', () => {
     connect.mockResolvedValue(undefined);
     const database = await createDatabase();
     expect(MongoClient).toHaveBeenCalledWith('mongodb://localhost/test');
-    expect(collection.mock.calls.map(args => args[0])).toEqual(['users', 'servers', 'sessions']);
-    expect(collection.mock.results[2].value.createIndex).toHaveBeenCalledWith(
-      { _ts: 1 },
-      { name: 'sessions_last_modified_ttl', expireAfterSeconds: 604800 },
-    );
+    expect(collection.mock.calls.map(args => args[0])).toEqual(['users', 'servers']);
     await database.close();
     expect(close).toHaveBeenCalledOnce();
   });
