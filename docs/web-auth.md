@@ -21,6 +21,19 @@ Use a high-entropy, randomly generated `SESSION_SECRET` that satisfies the 32-by
 store all secrets outside the repository. Production must serve `BASE_URI` over HTTPS so the
 session cookie can use the `Secure` attribute.
 
+## Local browser login
+
+Run the local bot API on port 8080 and the Vite SPA on `http://localhost:5173`. Vite proxies
+`/api/*` and `/callback/*` to the bot without rewriting paths; OAuth and settings requests must
+use the browser's origin rather than opening the API server directly. Set
+`BASE_URI=http://localhost:5173` in the bot's local profile. Register
+`http://localhost:5173/api/auth/discord/callback` with the local Discord application, and, when
+enabled, `http://localhost:5173/callback/spotify` and
+`http://localhost:5173/callback/soundcloud` with their respective providers. The development
+server holds port 5173 to avoid silently changing the OAuth origin.
+The Vite proxy is development-only; production hosting must route `/api/*` and `/callback/*` to
+the Node server on the browser's public origin.
+
 ## API contract
 
 All routes are under `/api/auth`:

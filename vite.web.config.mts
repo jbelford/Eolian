@@ -14,6 +14,18 @@ export default defineConfig(({ mode }) => {
     envDir,
     publicDir: false,
     plugins: [tailwindcss()],
+    server: {
+      port: 5173,
+      strictPort: true,
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8080',
+        },
+        '/callback/': {
+          target: 'http://127.0.0.1:8080',
+        },
+      },
+    },
     build: {
       target: 'es2022',
       outDir: resolve(root, 'dist/public'),
