@@ -1,6 +1,7 @@
 import { TrackSource } from '@eolian/api/@types';
 import { GITHUB_PAGE } from '@eolian/common/constants';
 import { FeatureFlag } from '@eolian/data/@types';
+import { AppDatabase } from '@eolian/data/@types';
 import { IAuthServiceProvider } from '@eolian/framework/@types';
 import { createWebServerInstance, WebServer } from '@eolian/webserver';
 import { FastifyInstance } from 'fastify';
@@ -33,6 +34,14 @@ function createAuthProviders() {
   };
 }
 
+function createDatabase(): AppDatabase {
+  return {
+    users: {} as AppDatabase['users'],
+    servers: {} as AppDatabase['servers'],
+    close: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe('web server routes', () => {
   beforeEach(() => {
     mocks.enabledFlags.clear();
@@ -40,7 +49,7 @@ describe('web server routes', () => {
 
   it('exposes the health check and temporary root redirect', async () => {
     const { provider } = createAuthProviders();
-    const server = createWebServerInstance(provider);
+    const server = createWebServerInstance(provider, createDatabase());
 
     const health = await server.inject({ method: 'GET', url: '/healthz' });
     const root = await server.inject({ method: 'GET', url: '/' });
@@ -56,7 +65,7 @@ describe('web server routes', () => {
   it('registers only enabled auth callbacks', async () => {
     mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
     const { provider } = createAuthProviders();
-    const server = createWebServerInstance(provider);
+    const server = createWebServerInstance(provider, createDatabase());
 
     const spotify = await server.inject({
       method: 'GET',
@@ -77,7 +86,7 @@ describe('web server routes', () => {
     async url => {
       mocks.enabledFlags.add(FeatureFlag.SPOTIFY_AUTH);
       const { provider, spotify } = createAuthProviders();
-      const server = createWebServerInstance(provider);
+      const server = createWebServerInstance(provider, createDatabase());
 
       const response = await server.inject({ method: 'GET', url });
       await server.close();
@@ -95,7 +104,7 @@ describe('web server routes', () => {
     mocks.enabledFlags.add(FeatureFlag.SOUNDCLOUD_AUTH);
     const { provider, soundcloud } = createAuthProviders();
     soundcloud.callback.mockResolvedValueOnce(success);
-    const server = createWebServerInstance(provider);
+    const server = createWebServerInstance(provider, createDatabase());
 
     const response = await server.inject({
       method: 'GET',
@@ -125,7 +134,7 @@ describe('WebServer lifecycle', () => {
     return {
       close,
       listen,
-      server: new WebServer(9876, provider, instance),
+      server: new WebServer(9876, provider, createDatabase(), instance),
     };
   }
 

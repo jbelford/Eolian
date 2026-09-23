@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { AuthProvider } from '../auth/auth-context';
 
 const THEME_STORAGE_KEY = 'eolian-theme';
 
@@ -55,7 +56,11 @@ export const AppProviders = ({ children }: PropsWithChildren) => {
     [theme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>
+      <AuthProvider>{children}</AuthProvider>
+    </ThemeContext.Provider>
+  );
 };
 
 export const useTheme = () => {

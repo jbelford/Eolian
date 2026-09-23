@@ -79,6 +79,21 @@ export interface UserDTO extends DocDTO {
   syntax?: SyntaxType;
 }
 
+export interface DiscordSessionUser {
+  id: string;
+  username: string;
+  globalName: string | null;
+  avatar: string | null;
+}
+
+export interface DiscordSessionGuild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner: boolean;
+  permissions: string;
+}
+
 export interface Identifier {
   type: ResourceType;
   src: TrackSource;

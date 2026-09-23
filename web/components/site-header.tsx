@@ -2,10 +2,11 @@ import { Button } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { discordInviteUrl } from '../config/discord-invite';
 import { BrandMark } from './brand';
 import { ThemeToggle } from './theme-toggle';
+import { discordLoginUrl } from '../api/auth';
 
 const navigation = [
   { label: 'Features', href: '/#features' },
@@ -42,12 +43,12 @@ export const SiteHeader = () => {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link
+          <a
             className="hidden rounded-full px-3 py-2 text-sm font-semibold text-foreground outline-none hover:text-accent focus-visible:ring-2 focus-visible:ring-focus sm:inline-flex"
-            to="/app"
+            href={discordLoginUrl('/app')}
           >
             Sign in
-          </Link>
+          </a>
           <a
             className={`${buttonVariants({ size: 'sm', variant: 'primary' })} hidden sm:inline-flex`}
             href={discordInviteUrl}
@@ -85,9 +86,12 @@ export const SiteHeader = () => {
               </a>
             ))}
             <div className="mt-3 grid grid-cols-2 gap-3 border-t border-separator pt-5">
-              <Link className={buttonVariants({ size: 'md', variant: 'secondary' })} to="/app">
+              <a
+                className={buttonVariants({ size: 'md', variant: 'secondary' })}
+                href={discordLoginUrl('/app')}
+              >
                 Sign in
-              </Link>
+              </a>
               <a
                 className={buttonVariants({ size: 'md', variant: 'primary' })}
                 href={discordInviteUrl}

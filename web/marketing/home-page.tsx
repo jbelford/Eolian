@@ -13,9 +13,9 @@ import {
   Square,
   Volume2,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import logoUrl from '../assets/eolian-logo.png';
 import { discordInviteUrl } from '../config/discord-invite';
+import { discordLoginUrl } from '../api/auth';
 
 const features = [
   {
@@ -272,8 +272,7 @@ export const HomePage = () => (
             Give your server a better reason to stay in voice.
           </h2>
           <p className="mt-5 text-lg leading-8 text-white/65">
-            Invite Eolian now, or enter the workspace placeholder to see where account and guild
-            tools will arrive next.
+            Invite Eolian now, or sign in with Discord to manage the servers available to you.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
@@ -283,12 +282,12 @@ export const HomePage = () => (
               Add to Discord
               <ArrowUpRight aria-hidden="true" className="size-5" />
             </a>
-            <Link
+            <a
               className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 px-6 font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              to="/app"
+              href={discordLoginUrl('/app')}
             >
-              Preview workspace
-            </Link>
+              Sign in to workspace
+            </a>
           </div>
         </div>
       </div>

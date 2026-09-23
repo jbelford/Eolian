@@ -1479,6 +1479,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/cookie@npm:^11.0.1":
+  version: 11.1.2
+  resolution: "@fastify/cookie@npm:11.1.2"
+  dependencies:
+    cookie: "npm:^2.0.0"
+    fastify-plugin: "npm:^6.0.0"
+  checksum: 10/06945a894c74acbe980e191c90cdf09cea784d1657c56ea5867253abf2cbf97b08e07d9a708772024a0a7c4a86de4ac3a994c056e1594ef1bb81ebdf3d20e9d7
+  languageName: node
+  linkType: hard
+
 "@fastify/error@npm:^4.0.0":
   version: 4.2.0
   resolution: "@fastify/error@npm:4.2.0"
@@ -1518,6 +1528,19 @@ __metadata:
     "@fastify/forwarded": "npm:^3.0.0"
     ipaddr.js: "npm:^2.1.0"
   checksum: 10/949e7e0aebcda2d1541a1fb86fe706cb29a86dec12b7f2dd88383b355a89eb6faa24e6b726ac9def7f98e876f371a0581443089dfeb51afee2caa49949e7275a
+  languageName: node
+  linkType: hard
+
+"@fastify/secure-session@npm:8.4.0":
+  version: 8.4.0
+  resolution: "@fastify/secure-session@npm:8.4.0"
+  dependencies:
+    "@fastify/cookie": "npm:^11.0.1"
+    fastify-plugin: "npm:^6.0.0"
+    sodium-native: "npm:^5.0.1"
+  bin:
+    secure-session: genkey.js
+  checksum: 10/ed74d6cace6842560ebd91de916719a9e987f74cd91f903d36eaeeb2986f81f7e0565b76243489a0c898f946275c70c5e89ed75caeb7ed13a469258bb8618cca
   languageName: node
   linkType: hard
 
@@ -3167,10 +3190,132 @@ __metadata:
   languageName: node
   linkType: hard
 
+"b4a@npm:^1.6.4, b4a@npm:^1.8.1":
+  version: 1.9.0
+  resolution: "b4a@npm:1.9.0"
+  peerDependencies:
+    react-native-b4a: "*"
+  peerDependenciesMeta:
+    react-native-b4a:
+      optional: true
+  checksum: 10/9b52d2d6614b10cce3b5473472be17d6db189010f41e3b914b8a2eaf177eeec668edceaecc957a143a9a435c1c0549b7d70b8059e37fc07cbad0ac82d588c30c
+  languageName: node
+  linkType: hard
+
 "balanced-match@npm:^1.0.0":
   version: 1.0.2
   resolution: "balanced-match@npm:1.0.2"
   checksum: 10/9706c088a283058a8a99e0bf91b0a2f75497f185980d9ffa8b304de1d9e58ebda7c72c07ebf01dadedaac5b2907b2c6f566f660d62bd336c3468e960403b9d65
+  languageName: node
+  linkType: hard
+
+"bare-addon-resolve@npm:^1.3.0":
+  version: 1.10.1
+  resolution: "bare-addon-resolve@npm:1.10.1"
+  dependencies:
+    bare-module-resolve: "npm:^1.10.0"
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10/735738a999cd8f01a2c5f77a73e03126549ed4cddabf42ef342e61ec57d534531fa614fd46ae0b263f1435d7e0f0fab425526fe78a7bf2c6008c27fc761be3fe
+  languageName: node
+  linkType: hard
+
+"bare-ansi-escapes@npm:^2.1.0":
+  version: 2.2.3
+  resolution: "bare-ansi-escapes@npm:2.2.3"
+  dependencies:
+    bare-stream: "npm:^2.6.5"
+  peerDependencies:
+    bare-buffer: "*"
+  peerDependenciesMeta:
+    bare-buffer:
+      optional: true
+  checksum: 10/2669d3f5a7c6d51a72dba5d5aebe4122b313f4c95774deef37392e928584aa48c2a1d5f9826ecb30b980f42058bddb8bae49d6afd5c74408e91a5189633773db
+  languageName: node
+  linkType: hard
+
+"bare-assert@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "bare-assert@npm:1.2.0"
+  dependencies:
+    bare-inspect: "npm:^3.1.2"
+  checksum: 10/16608d50d684a6cdea70c83525f2963626ebb8df61009c2a9ecdb9246c3d6abd00da059b8433be1e3bfb3b70f3ff5941c5907bcfad97721415be9f9067bbe394
+  languageName: node
+  linkType: hard
+
+"bare-events@npm:^2.7.0":
+  version: 2.9.2
+  resolution: "bare-events@npm:2.9.2"
+  peerDependencies:
+    bare-abort-controller: "*"
+  peerDependenciesMeta:
+    bare-abort-controller:
+      optional: true
+  checksum: 10/28b1571b49bce4fb6ea7701f201aa364134607a5840d79285c2fa4a17d9248781bc14a6da16b4004b3bc6e87fd0de6eadf4f5f30346c1617845ef8d4b91fd3b9
+  languageName: node
+  linkType: hard
+
+"bare-inspect@npm:^3.1.2":
+  version: 3.1.10
+  resolution: "bare-inspect@npm:3.1.10"
+  dependencies:
+    bare-ansi-escapes: "npm:^2.1.0"
+    bare-type: "npm:^1.0.0"
+  checksum: 10/93a2e559469f2afc02d1c0761177db8b4ff6ea5525f1f643921399894b224aa31a58035534a790ade2e78384e80fc0db55bb63d653c3804b08fbd8d2a7316765
+  languageName: node
+  linkType: hard
+
+"bare-module-resolve@npm:^1.10.0":
+  version: 1.12.5
+  resolution: "bare-module-resolve@npm:1.12.5"
+  dependencies:
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10/bf189a02e2ac8eb1902c3e77cb2c4eb41ea6d560076a06fc496d742c7cb8333858bb0b500a2d943ab93d0769a86b20094585d83fbf1772dcea051ec118fa44ad
+  languageName: node
+  linkType: hard
+
+"bare-semver@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "bare-semver@npm:1.1.0"
+  checksum: 10/afe05b0300b81d053b14d958ce087813e87724ee9df39997f88b8407d215daf921611fde5fe037fbc88452756d0c1c5e3f838ab01fa95f145f3501c9e5ad2c7a
+  languageName: node
+  linkType: hard
+
+"bare-stream@npm:^2.6.5":
+  version: 2.13.4
+  resolution: "bare-stream@npm:2.13.4"
+  dependencies:
+    b4a: "npm:^1.8.1"
+    streamx: "npm:^2.25.0"
+    teex: "npm:^1.0.1"
+  peerDependencies:
+    bare-abort-controller: "*"
+    bare-buffer: "*"
+    bare-events: "*"
+  peerDependenciesMeta:
+    bare-abort-controller:
+      optional: true
+    bare-buffer:
+      optional: true
+    bare-events:
+      optional: true
+  checksum: 10/9b7b03d134072697f13b3e28ce7feb0a743b9cd8640659ff502d0e7d222f033459c723d57682288eb09b61ff6e0652e0c7efb87d539696f64a8203622949c29b
+  languageName: node
+  linkType: hard
+
+"bare-type@npm:^1.0.0":
+  version: 1.4.0
+  resolution: "bare-type@npm:1.4.0"
+  checksum: 10/7c54a928c0af4f0e32d914587c417411e2027fbc86161be6bbc3a508f00f72662e166a33250c293b09fb36e55098031628caced25e7fd3b1cc287827a8d21e4c
   languageName: node
   linkType: hard
 
@@ -3575,6 +3720,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "cookie@npm:2.0.1"
+  checksum: 10/9fd785e98334f78e6337f4aafd5a3558a2ff49931b92c9cd9f1f3f042819532dc7f0730d55bd1666bb1d82b86090581d690388764aab1b84dfcd47eb0b959361
+  languageName: node
+  linkType: hard
+
 "core-util-is@npm:~1.0.0":
   version: 1.0.3
   resolution: "core-util-is@npm:1.0.3"
@@ -3913,6 +4065,7 @@ __metadata:
     "@discordjs/opus": "npm:^0.10.0"
     "@discordjs/rest": "npm:^2.6.0"
     "@discordjs/voice": "npm:0.19.2"
+    "@fastify/secure-session": "npm:8.4.0"
     "@heroui/react": "npm:3.2.6"
     "@heroui/styles": "npm:3.2.6"
     "@internationalized/date": "npm:3.12.4"
@@ -4131,6 +4284,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"events-universal@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "events-universal@npm:1.0.1"
+  dependencies:
+    bare-events: "npm:^2.7.0"
+  checksum: 10/71b2e6079b4dc030c613ef73d99f1acb369dd3ddb6034f49fd98b3e2c6632cde9f61c15fb1351004339d7c79672252a4694ecc46a6124dc794b558be50a83867
+  languageName: node
+  linkType: hard
+
 "expect-type@npm:^1.3.0":
   version: 1.4.0
   resolution: "expect-type@npm:1.4.0"
@@ -4172,6 +4334,13 @@ __metadata:
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
   checksum: 10/e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
+  languageName: node
+  linkType: hard
+
+"fast-fifo@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "fast-fifo@npm:1.3.2"
+  checksum: 10/6bfcba3e4df5af7be3332703b69a7898a8ed7020837ec4395bb341bd96cc3a6d86c3f6071dd98da289618cf2234c70d84b2a6f09a33dd6f988b1ff60d8e54275
   languageName: node
   linkType: hard
 
@@ -4227,6 +4396,13 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10/ccc24272f08fa4bc2701dfaa1a364b5b0c014c1015c9496d2748e1d0ab3e03b872d19e52c249ecc05759665c2b060d20ce455ebe147dd2b98dee1655da99c8b3
+  languageName: node
+  linkType: hard
+
+"fastify-plugin@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "fastify-plugin@npm:6.0.0"
+  checksum: 10/ec41a929dbccc3af4fdaef1faee14aab824420bb11dc2daf06cfa1d6182d37c6d6da2add601f907d6ef27131901165ddb59d5e1d80a05ba70bf28d8e7ff3d60d
   languageName: node
   linkType: hard
 
@@ -6647,6 +6823,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"require-addon@npm:^1.1.0":
+  version: 1.3.0
+  resolution: "require-addon@npm:1.3.0"
+  dependencies:
+    bare-addon-resolve: "npm:^1.3.0"
+  checksum: 10/1ab8f2564371bc825d2bcdffcb5fc618f678a8b00c85e3c6719193ab02777a2c3b2d05440cea9be1f7866936d0f6d57ad0f243fccc1d750c88c0f127f47b8f17
+  languageName: node
+  linkType: hard
+
 "require-from-string@npm:^2.0.2":
   version: 2.0.2
   resolution: "require-from-string@npm:2.0.2"
@@ -7042,6 +7227,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sodium-native@npm:^5.0.1":
+  version: 5.1.0
+  resolution: "sodium-native@npm:5.1.0"
+  dependencies:
+    bare-assert: "npm:^1.2.0"
+    require-addon: "npm:^1.1.0"
+    which-runtime: "npm:^1.2.1"
+  checksum: 10/2111eca64707730d1b6893da6eabffcb7ab996e45b695d59492cd55d94444b3ec0209c2a6c8feb471428608a687bd5b62c5a581a6b452f442dfe868090e22deb
+  languageName: node
+  linkType: hard
+
 "sonic-boom@npm:^4.0.1":
   version: 4.2.1
   resolution: "sonic-boom@npm:4.2.1"
@@ -7124,6 +7320,17 @@ __metadata:
   version: 4.2.0
   resolution: "std-env@npm:4.2.0"
   checksum: 10/d30c3ae49c5568b4e61dca628eaafe12944dbcfe76980e5b1b1499b48e23f85f1ee01fe2306eeef5964a80b763948bbf2ba40490bc53709f45cf989071c9e4e7
+  languageName: node
+  linkType: hard
+
+"streamx@npm:^2.12.5, streamx@npm:^2.25.0":
+  version: 2.28.1
+  resolution: "streamx@npm:2.28.1"
+  dependencies:
+    events-universal: "npm:^1.0.0"
+    fast-fifo: "npm:^1.3.2"
+    text-decoder: "npm:^1.1.0"
+  checksum: 10/1bbfad45ee015af1e8ccf73315e1a03bb3c650865c06b64c28b328c20d9a8ff1aa7993d79a124b26ac17720b4f4825fe225bc4ab78a1b2c36a7d04343d312e51
   languageName: node
   linkType: hard
 
@@ -7297,6 +7504,24 @@ __metadata:
     mkdirp: "npm:^1.0.3"
     yallist: "npm:^4.0.0"
   checksum: 10/bfbfbb2861888077fc1130b84029cdc2721efb93d1d1fb80f22a7ac3a98ec6f8972f29e564103bbebf5e97be67ebc356d37fa48dbc4960600a1eb7230fbd1ea0
+  languageName: node
+  linkType: hard
+
+"teex@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "teex@npm:1.0.1"
+  dependencies:
+    streamx: "npm:^2.12.5"
+  checksum: 10/36bf7ce8bb5eb428ad7b14b695ee7fb0a02f09c1a9d8181cc42531208543a920b299d711bf78dad4ff9bcf36ac437ae8e138053734746076e3e0e7d6d76eef64
+  languageName: node
+  linkType: hard
+
+"text-decoder@npm:^1.1.0":
+  version: 1.2.7
+  resolution: "text-decoder@npm:1.2.7"
+  dependencies:
+    b4a: "npm:^1.6.4"
+  checksum: 10/151f89339a497353ad579b32536be94bf90a0785fd2aa2dc0a5ec8a4b71ed59998f4adb872201bdc536805425aa8c5cf8f4a936c449be614c1d3c4527688b3d0
   languageName: node
   linkType: hard
 
@@ -7866,6 +8091,13 @@ __metadata:
     tr46: "npm:~0.0.3"
     webidl-conversions: "npm:^3.0.0"
   checksum: 10/f95adbc1e80820828b45cc671d97da7cd5e4ef9deb426c31bcd5ab00dc7103042291613b3ef3caec0a2335ed09e0d5ed026c940755dbb6d404e2b27f940fdf07
+  languageName: node
+  linkType: hard
+
+"which-runtime@npm:^1.2.1":
+  version: 1.4.0
+  resolution: "which-runtime@npm:1.4.0"
+  checksum: 10/217893040289b8049c01e967203777a871cc0aaa8f7d4d87d0140306cbae7d2e29f5ce88b8be8d75bf63dda8402ceb9a30bbf3a69b7d34fab216be22e3abfe36
   languageName: node
   linkType: hard
 

@@ -24,6 +24,7 @@ export interface AppEnv {
   tokens: {
     discord: {
       clientId?: string;
+      clientSecret: string;
       main: string;
       old?: string;
       oldLeave?: boolean;
@@ -63,6 +64,7 @@ export interface AppEnv {
     uri: string;
     db_name: string;
   };
+  sessionSecret: string;
   config: {
     queueLimit: number;
     youtubeCacheLimit: number;

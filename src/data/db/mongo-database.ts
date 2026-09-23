@@ -24,10 +24,11 @@ export async function createDatabase(): Promise<AppDatabase> {
   const client = new MongoClient(environment.mongo.uri);
   try {
     await client.connect();
+    return new MongoDatabase(client);
   } catch (err) {
+    await client.close().catch(() => undefined);
     logger.error('Failed to connect to DB');
     logger.error(err);
     process.exit(1);
   }
-  return new MongoDatabase(client);
 }

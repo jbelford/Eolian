@@ -112,6 +112,7 @@ describe('createDatabase', () => {
   beforeEach(() => {
     connect.mockReset();
     close.mockReset();
+    close.mockResolvedValue(undefined);
     collection.mockClear();
     db.mockClear();
     MongoClient.mockClear();

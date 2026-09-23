@@ -1,7 +1,7 @@
 import { Link as HeroLink } from '@heroui/react';
 import { ArrowUpRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { BrandMark } from './brand';
+import { discordLoginUrl } from '../api/auth';
 
 export const SiteFooter = () => (
   <footer className="border-t border-separator bg-surface">
@@ -22,9 +22,9 @@ export const SiteFooter = () => (
           <a className="footer-link" href="/#command-modes">
             Command modes
           </a>
-          <Link className="footer-link" to="/app">
+          <a className="footer-link" href={discordLoginUrl('/app')}>
             Sign in
-          </Link>
+          </a>
         </div>
       </div>
       <div>
