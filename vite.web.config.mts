@@ -4,12 +4,14 @@ import { defineConfig, loadEnv } from 'vite';
 import { validateDiscordClientId } from './web/config/discord-client-id.mts';
 
 const root = import.meta.dirname;
+const envDir = resolve(root, 'web');
 
 export default defineConfig(({ mode }) => {
-  validateDiscordClientId(loadEnv(mode, root, 'VITE_').VITE_DISCORD_CLIENT_ID);
+  validateDiscordClientId(loadEnv(mode, envDir, 'VITE_').VITE_DISCORD_CLIENT_ID);
 
   return {
     root,
+    envDir,
     publicDir: false,
     plugins: [tailwindcss()],
     build: {
