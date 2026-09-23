@@ -6,6 +6,7 @@
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.tsx"]

@@ -2,6 +2,7 @@ import { Button } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { discordInviteUrl } from '../config/discord-invite';
 import { BrandMark } from './brand';
 import { CloseIcon, MenuIcon } from './icons';
 import { ThemeToggle } from './theme-toggle';
@@ -49,7 +50,7 @@ export const SiteHeader = () => {
           </Link>
           <a
             className={`${buttonVariants({ size: 'sm', variant: 'primary' })} hidden sm:inline-flex`}
-            href="https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216"
+            href={discordInviteUrl}
           >
             Add to Discord
           </a>
@@ -85,7 +86,7 @@ export const SiteHeader = () => {
               </Link>
               <a
                 className={buttonVariants({ size: 'md', variant: 'primary' })}
-                href="https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216"
+                href={discordInviteUrl}
               >
                 Add to Discord
               </a>

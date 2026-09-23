@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../../web/app';
 
+const testClientId = '123456789012345678';
+
 const renderAt = (path: string) => {
   window.history.pushState({}, '', path);
   return render(<App />);
@@ -24,7 +26,17 @@ describe('public web experience', () => {
         name: /turn a voice channel into the place everyone stays/i,
       }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /add (eolian )?to discord/i })).not.toHaveLength(0);
+    const inviteLinks = screen.getAllByRole('link', { name: /add (eolian )?to discord/i });
+    expect(inviteLinks).toHaveLength(3);
+
+    for (const link of inviteLinks) {
+      const url = new URL(link.getAttribute('href')!);
+      expect(url.origin).toBe('https://discord.com');
+      expect(url.pathname).toBe('/api/oauth2/authorize');
+      expect(url.searchParams.get('client_id')).toBe(testClientId);
+      expect(url.searchParams.get('scope')).toBe('bot applications.commands');
+      expect(url.searchParams.get('permissions')).toBe('3665216');
+    }
     expect(
       screen.getByRole('heading', { name: /less time managing the bot/i }),
     ).toBeInTheDocument();

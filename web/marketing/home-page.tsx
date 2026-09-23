@@ -1,6 +1,7 @@
 import { Card, Chip } from '@heroui/react';
 import { buttonVariants } from '@heroui/styles';
 import { Link } from 'react-router-dom';
+import { discordInviteUrl } from '../config/discord-invite';
 import {
   ArrowUpRightIcon,
   CommandIcon,
@@ -8,9 +9,6 @@ import {
   QueueIcon,
   SparklesIcon,
 } from '../components/icons';
-
-const inviteUrl =
-  'https://discord.com/api/oauth2/authorize?client_id=900529540839899138&scope=bot+applications.commands&permissions=3665216';
 
 const features = [
   {
@@ -94,7 +92,10 @@ export const HomePage = () => (
             Discord server can shape together.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a className={buttonVariants({ size: 'lg', variant: 'primary' })} href={inviteUrl}>
+            <a
+              className={buttonVariants({ size: 'lg', variant: 'primary' })}
+              href={discordInviteUrl}
+            >
               Add Eolian to Discord
               <ArrowUpRightIcon className="size-5" />
             </a>
@@ -257,7 +258,10 @@ export const HomePage = () => (
             tools will arrive next.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a className={buttonVariants({ size: 'lg', variant: 'primary' })} href={inviteUrl}>
+            <a
+              className={buttonVariants({ size: 'lg', variant: 'primary' })}
+              href={discordInviteUrl}
+            >
               Add to Discord
               <ArrowUpRightIcon className="size-5" />
             </a>

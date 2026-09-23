@@ -39,7 +39,25 @@ chmod 600 ~/.config/eolian/profiles/default.env
 ```
 
 All worktrees use this file through mise, so credentials do not need to be copied or linked into
-each checkout. Do not commit environment files or credentials.
+each checkout. Do not commit runtime credentials.
+
+The public browser build has a separate, **non-secret** Discord application ID. For local
+development, copy `.env.development.example` to `.env.development.local` in this worktree and
+replace the placeholder with your own Discord application's numeric client ID:
+
+```bash
+cp .env.development.example .env.development.local
+$EDITOR .env.development.local
+```
+
+`.env.development.local` and other `.env.*.local` files are ignored by Git. Vite reads
+`.env.development.local` when running its development server or building with
+`--mode development`; the example file is not loaded. The committed `.env.production` holds the
+current **public** Eolian client ID for production browser builds. A release job may override it
+by setting `VITE_DISCORD_CLIENT_ID` in the process environment **before** `yarn build:web`; Vite
+gives process variables precedence over `.env.production` and embeds the value at build time.
+The variable is public and must not contain a token or secret. A missing or malformed client ID
+fails the browser build with a configuration error; there is no fallback.
 
 ## Build architecture
 
@@ -70,6 +88,7 @@ yarn typecheck        # Check Node, browser, and test TypeScript without emittin
 yarn typecheck:node   # Check only the Node application
 yarn typecheck:web    # Check only the browser application
 yarn typecheck:test   # Check the test suites and harness configuration
+yarn test:web         # Run the browser component and public configuration tests
 mise run start-local # Start the built bot and web server with the shared local environment
 mise run start-debug # Start the built application with the Node inspector
 ```

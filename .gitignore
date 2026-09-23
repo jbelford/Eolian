@@ -6,6 +6,7 @@ coverage
 .vs
 # Secrets
 .env
+.env*.local
 
 .pnp.*
 .yarn/*

@@ -24,8 +24,8 @@
     "typecheck:web": "tsc -p web/tsconfig.json --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json",
     "typecheck": "yarn typecheck:node && yarn typecheck:web && yarn typecheck:test",
-    "format": "prettier --write README.md \"docs/**/*.md\" package.json index.html \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"web/**/*.{ts,tsx,css}\"",
-    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json index.html \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"web/**/*.{ts,tsx,css}\""
+    "format": "prettier --write README.md \"docs/**/*.md\" package.json index.html \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"web/**/*.{ts,tsx,mts,css}\"",
+    "format:check": "prettier --check README.md \"docs/**/*.md\" package.json index.html \"vite*.mts\" \"vitest*.mts\" \".github/workflows/*.yml\" \"src/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"web/**/*.{ts,tsx,mts,css}\""
   },
   "keywords": [
     "music",
