@@ -477,9 +477,9 @@ export const GuildSettingsPage = () => {
 
         <Card>
           <Card.Header>
-            <Card.Title>Announcements and DJ access</Card.Title>
+            <Card.Title>Text channel and DJ access</Card.Title>
             <Card.Description>
-              Pick a channel for announcements and up to ten roles that can use DJ commands.
+              Choose a preferred text channel and up to ten roles that can use DJ commands.
             </Card.Description>
           </Card.Header>
           <Card.Content className="grid gap-7">
@@ -506,7 +506,7 @@ export const GuildSettingsPage = () => {
                 ))}
               </select>
               <span className="mt-2 block text-sm text-muted">
-                Save a channel preference for server announcements, or leave it blank.
+                Select a preferred text channel for this server, or leave it blank.
               </span>
             </label>
 

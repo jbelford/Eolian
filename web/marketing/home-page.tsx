@@ -215,7 +215,7 @@ export const HomePage = () => (
         <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="section-heading text-left">
             <p className="eyebrow">Getting started</p>
-            <h2>Invite the bot. Add a song. Press play.</h2>
+            <h2>Invite Eolian. Queue a song. Take turns.</h2>
             <p>
               You can listen without setting up the website. Sign in when you want to change account
               or server settings.
