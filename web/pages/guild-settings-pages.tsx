@@ -73,7 +73,7 @@ export const GuildsSettingsPage = () => {
     <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
       <h1 className="font-display text-4xl font-bold tracking-[-0.04em]">Servers</h1>
       <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-        Choose a shared Discord server where you have permission to manage Eolian.
+        Choose a server where you can change Eolian’s settings.
       </p>
 
       {!guilds && !error && (
@@ -103,9 +103,10 @@ export const GuildsSettingsPage = () => {
       {guilds && guilds.length === 0 && (
         <Card className="mt-10 max-w-3xl">
           <Card.Header>
-            <Card.Title>No shared manageable servers</Card.Title>
+            <Card.Title>No servers to set up</Card.Title>
             <Card.Description>
-              Eolian is not currently in a server that your Discord account can manage.
+              Eolian isn’t in any of the servers you can manage. Invite it to a server to change its
+              settings here.
             </Card.Description>
           </Card.Header>
         </Card>
@@ -334,7 +335,7 @@ export const GuildSettingsPage = () => {
         (error.code === 'channel_not_found' || error.code === 'role_not_found')
       ) {
         setFormError(
-          `${error.message} The available options were refreshed; review and try again.`,
+          `${error.message} The channel and role lists have been refreshed. Check your choices and try again.`,
         );
         await load(controller.signal, true);
       } else {
@@ -380,7 +381,7 @@ export const GuildSettingsPage = () => {
           <Alert role="status" status="warning">
             <Alert.Indicator />
             <Alert.Content>
-              <Alert.Title>Some saved Discord options are unavailable</Alert.Title>
+              <Alert.Title>A saved channel or role is no longer available</Alert.Title>
               <Alert.Description>
                 Clear the unavailable channel or roles before saving related changes.
               </Alert.Description>
@@ -392,7 +393,7 @@ export const GuildSettingsPage = () => {
           <Card.Header>
             <Card.Title>Commands and playback defaults</Card.Title>
             <Card.Description>
-              Configure command parsing, prefix, and the default player volume.
+              Choose how commands work here and set the starting volume.
             </Card.Description>
           </Card.Header>
           <Card.Content className="grid gap-6 sm:grid-cols-2">
@@ -409,7 +410,7 @@ export const GuildSettingsPage = () => {
                 }
               />
               <span className="mt-2 block text-sm text-muted" id="prefix-description">
-                The one-Unicode-character prefix used for traditional message commands.
+                One character to put before a message command, like !play.
               </span>
               {prefixError && (
                 <span className="mt-1 block text-sm text-danger" id="prefix-error" role="alert">
@@ -445,7 +446,7 @@ export const GuildSettingsPage = () => {
                 }
               />
               <span className="mt-2 block text-sm text-muted" id="volume-description">
-                Displayed as 0–100%; saved as the API’s 0–1 volume value.
+                Set the starting volume for music in this server, from 0% to 100%.
               </span>
               {volumeError && (
                 <span className="mt-1 block text-sm text-danger" id="volume-error" role="alert">
@@ -476,9 +477,9 @@ export const GuildSettingsPage = () => {
 
         <Card>
           <Card.Header>
-            <Card.Title>Announcements and DJ access</Card.Title>
+            <Card.Title>Text channel and DJ access</Card.Title>
             <Card.Description>
-              Choose an optional text channel and up to ten roles that receive DJ permissions.
+              Choose a preferred text channel and up to ten roles that can use DJ commands.
             </Card.Description>
           </Card.Header>
           <Card.Content className="grid gap-7">
@@ -505,7 +506,7 @@ export const GuildSettingsPage = () => {
                 ))}
               </select>
               <span className="mt-2 block text-sm text-muted">
-                Eolian uses this channel for server announcements when configured.
+                Select a preferred text channel for this server, or leave it blank.
               </span>
             </label>
 
@@ -565,7 +566,7 @@ export const GuildSettingsPage = () => {
               <span>
                 <span className="block font-semibold">Allow limited DJ mode</span>
                 <span className="mt-1 block text-sm leading-6 text-muted">
-                  Let members use the limited set of DJ actions when no configured DJ is present.
+                  Let members without a DJ role use a limited set of DJ commands.
                 </span>
               </span>
             </label>

@@ -66,7 +66,7 @@ describe('public web experience', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /turn a voice channel into the place everyone stays/i,
+        name: /bring the songs\. eolian handles the queue/i,
       }),
     ).toBeInTheDocument();
     const inviteLinks = screen.getAllByRole('link', { name: /add (eolian )?to discord/i });
@@ -81,9 +81,11 @@ describe('public web experience', () => {
       expect(url.searchParams.get('permissions')).toBe('3665216');
     }
     expect(
-      screen.getByRole('heading', { name: /less time managing the bot/i }),
+      screen.getByRole('heading', { name: /one song or a whole playlist/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /speak naturally/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /keywords, flags, or slash commands/i }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Sign in' })[0]).toHaveAttribute(
       'href',
       '/api/auth/discord?returnTo=%2Fapp',
@@ -180,7 +182,7 @@ describe('authenticated application shell', () => {
 
     renderAt('/app');
 
-    expect(screen.getByRole('heading', { name: 'Loading your workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Loading your account' })).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true');
 
     resolveSession(jsonResponse(authenticatedSession()));
@@ -246,7 +248,7 @@ describe('authenticated application shell', () => {
     renderAt('/app');
 
     const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText('We could not load your workspace')).toBeInTheDocument();
+    expect(within(alert).getByText('We could not load your account')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(
@@ -461,7 +463,7 @@ describe('authenticated application shell', () => {
     renderAt('/app');
 
     expect(
-      await screen.findByRole('heading', { name: 'No manageable servers found' }),
+      await screen.findByRole('heading', { name: 'No servers to manage yet' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Listening Room')).not.toBeInTheDocument();
   });
@@ -473,7 +475,7 @@ describe('authenticated application shell', () => {
     renderAt('/app');
 
     const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText('We could not load your workspace')).toBeInTheDocument();
+    expect(within(alert).getByText('We could not load your account')).toBeInTheDocument();
     expect(within(alert).getByText(/unexpected content type/i)).toBeInTheDocument();
   });
 
@@ -486,7 +488,7 @@ describe('authenticated application shell', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: /turn a voice channel into the place everyone stays/i,
+        name: /bring the songs\. eolian handles the queue/i,
       }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe('/');

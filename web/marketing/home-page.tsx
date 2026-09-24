@@ -20,24 +20,24 @@ import { discordLoginUrl } from '../api/auth';
 const features = [
   {
     icon: ListMusic,
-    title: 'A queue that keeps the room moving',
+    title: 'Add more than one song',
     description:
-      'Bring in songs, albums, playlists, artist catalogs, likes, and top tracks without rebuilding the queue by hand.',
-    detail: 'Spotify, SoundCloud, and YouTube-aware resolution',
+      'Queue songs, albums, playlists, or an artist’s tracks. Link accounts for likes and Spotify top tracks.',
+    detail: 'Spotify, SoundCloud, and YouTube',
   },
   {
     icon: Command,
-    title: 'Commands that meet people where they are',
+    title: 'Your choice of commands',
     description:
-      'Use natural keywords, familiar flags, or Discord slash commands. Every mode reaches the same dependable command system.',
-    detail: 'Keyword, traditional, and slash syntax',
+      'Type keywords, use flags, or pick a slash command. They all work with the same queue.',
+    detail: 'Keywords, flags, and slash commands',
   },
   {
     icon: Headphones,
-    title: 'Playback shaped for a shared channel',
+    title: 'Keep the music playing',
     description:
-      'Skip, shuffle, loop, adjust volume, and add audio effects while Eolian keeps controls and queue state close at hand.',
-    detail: 'Interactive player and queue controls',
+      'Skip a track, shuffle the queue, loop a favorite, or change the volume with commands and Discord buttons.',
+    detail: 'Player and queue controls',
   },
 ];
 
@@ -45,20 +45,17 @@ const steps = [
   {
     number: '01',
     title: 'Invite Eolian',
-    description:
-      'Add the bot to a Discord server, then choose the text and voice channels where your group gathers.',
+    description: 'Add the bot to your Discord server and join a voice channel.',
   },
   {
     number: '02',
-    title: 'Ask for the music',
-    description:
-      'Paste a link or describe what you want. Eolian resolves the source and builds a playable queue.',
+    title: 'Add a track',
+    description: 'Paste a link or search for a song, album, or playlist to add to the queue.',
   },
   {
     number: '03',
-    title: 'Run the room together',
-    description:
-      'Use shared controls to tune playback, reorder the moment, or let the queue carry everyone forward.',
+    title: 'Take turns picking',
+    description: 'Use commands or player buttons to skip, pause, and choose what plays next.',
   },
 ];
 
@@ -66,17 +63,17 @@ const commandModes = [
   {
     label: 'Keyword',
     command: 'play my spotify top tracks shuffle',
-    description: 'Readable requests that feel natural in conversation.',
+    description: 'Write the options out as words.',
   },
   {
     label: 'Traditional',
     command: 'play -my -spotify -tracks -top -shuffle',
-    description: 'Explicit flags for people who prefer a terminal-like rhythm.',
+    description: 'Use short flags for each option.',
   },
   {
     label: 'Slash',
     command: '/play source:spotify resource:top-tracks',
-    description: 'Discord-native discovery with guided options.',
+    description: 'Choose options from Discord’s slash command menu.',
   },
 ];
 
@@ -89,14 +86,14 @@ export const HomePage = () => (
         <div className="relative z-10 max-w-3xl">
           <Chip color="accent" variant="soft">
             <Sparkles aria-hidden="true" className="size-4" />
-            Discord music, without the friction
+            Music for your Discord voice channel
           </Chip>
           <h1 className="font-display mt-7 text-balance text-5xl font-bold leading-[0.94] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
-            Turn a voice channel into <span className="text-accent">the place everyone stays.</span>
+            Bring the songs. <span className="text-accent">Eolian handles the queue.</span>
           </h1>
           <p className="mt-7 max-w-2xl text-pretty text-lg leading-8 text-muted sm:text-xl">
-            Eolian turns links, searches, playlists, and passing ideas into a shared queue your
-            Discord server can shape together.
+            Add a song by name or link, queue a playlist, and take turns choosing what plays next in
+            your Discord voice channel.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <a
@@ -114,7 +111,7 @@ export const HomePage = () => (
             </a>
           </div>
           <p className="mt-5 text-sm text-muted">
-            Open source. No dashboard setup required to start listening.
+            Open source. Start with a command in Discord, not a dashboard.
           </p>
         </div>
 
@@ -182,11 +179,11 @@ export const HomePage = () => (
 
     <section className="section-shell" id="features">
       <div className="section-heading">
-        <p className="eyebrow">Built for real listening sessions</p>
-        <h2>Less time managing the bot. More time sharing the room.</h2>
+        <p className="eyebrow">What you can play</p>
+        <h2>One song or a whole playlist. Your call.</h2>
         <p>
-          Eolian keeps a powerful music system approachable, whether someone brings a single song or
-          an entire listening history.
+          Add tracks from Spotify, SoundCloud, and YouTube. The queue and playback controls live in
+          Discord.
         </p>
       </div>
       <div className="mt-12 grid gap-5 lg:grid-cols-3">
@@ -217,11 +214,11 @@ export const HomePage = () => (
       <div className="section-shell">
         <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="section-heading text-left">
-            <p className="eyebrow">From invite to encore</p>
-            <h2>Three steps between “what should we play?” and play.</h2>
+            <p className="eyebrow">Getting started</p>
+            <h2>Invite Eolian. Queue a song. Take turns.</h2>
             <p>
-              The public experience stays simple. Deeper account and server controls will live in
-              the signed-in workspace.
+              You can listen without setting up the website. Sign in when you want to change account
+              or server settings.
             </p>
           </div>
           <ol className="grid gap-4">
@@ -241,12 +238,9 @@ export const HomePage = () => (
 
     <section className="section-shell" id="command-modes">
       <div className="section-heading">
-        <p className="eyebrow">One command system, three ways in</p>
-        <h2>Speak naturally, use flags, or stay inside Discord’s UI.</h2>
-        <p>
-          Every syntax is normalized before a command runs, so people can use the style that makes
-          sense to them without splitting the server into separate workflows.
-        </p>
+        <p className="eyebrow">Pick your command style</p>
+        <h2>Keywords, flags, or slash commands.</h2>
+        <p>Pick keywords or flags for message commands. Slash commands work either way.</p>
       </div>
       <div className="mt-12 grid gap-5 lg:grid-cols-3">
         {commandModes.map(mode => (
@@ -266,13 +260,13 @@ export const HomePage = () => (
       <div className="cta-panel mx-auto max-w-7xl">
         <div className="relative z-10 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
-            Bring the next song
+            Your next track
           </p>
           <h2 className="font-display mt-4 text-4xl font-bold tracking-[-0.05em] text-white sm:text-5xl">
-            Give your server a better reason to stay in voice.
+            Ready to put something on?
           </h2>
           <p className="mt-5 text-lg leading-8 text-white/65">
-            Invite Eolian now, or sign in with Discord to manage the servers available to you.
+            Add Eolian to your server to play music. Sign in with Discord to change your settings.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a

@@ -34,17 +34,16 @@ export const WorkspaceOverviewPage = () => {
         Welcome back, {displayName}.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-        Choose a shared server to configure Eolian, or update your personal command syntax and music
-        provider connections.
+        Choose a server to change its settings, or visit Account to pick a command style and link
+        Spotify or SoundCloud.
       </p>
 
       {session.guilds.length === 0 ? (
         <Card className="mt-10 max-w-2xl">
           <Card.Header>
-            <Card.Title>No manageable servers found</Card.Title>
+            <Card.Title>No servers to manage yet</Card.Title>
             <Card.Description>
-              Discord did not return any servers where you are the owner or have permission to
-              manage the server.
+              You need to own a server or have permission to manage it before it shows up here.
             </Card.Description>
           </Card.Header>
           <Card.Content>

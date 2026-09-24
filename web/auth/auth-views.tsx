@@ -11,7 +11,7 @@ export const AuthLoading = () => (
     <div className="flex flex-col items-center gap-4 text-center">
       <Spinner color="accent" size="lg" />
       <div>
-        <h1 className="font-display text-2xl font-bold">Loading your workspace</h1>
+        <h1 className="font-display text-2xl font-bold">Loading your account</h1>
         <p className="mt-2 text-muted">Checking your Discord session.</p>
       </div>
     </div>
@@ -32,7 +32,7 @@ const SignInPanel = ({ returnTo, expired = false }: SignInPanelProps) => (
     <p className="mt-4 leading-7 text-muted">
       {expired
         ? 'Sign in with Discord again to continue managing your servers.'
-        : 'Use Discord to open your account and the servers you can manage.'}
+        : 'Sign in with Discord to change your command style, link music accounts, and manage your servers.'}
     </p>
     <a
       className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 font-semibold text-accent-foreground outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus"
@@ -44,7 +44,7 @@ const SignInPanel = ({ returnTo, expired = false }: SignInPanelProps) => (
       className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 font-semibold text-muted outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-focus"
       href="/"
     >
-      Return to the public site
+      Back to Eolian
     </a>
   </div>
 );
@@ -92,7 +92,7 @@ export const ProtectedRoute = () => {
         <Alert className="w-full max-w-xl" role="alert" status="danger">
           <Alert.Indicator />
           <Alert.Content>
-            <Alert.Title>We could not load your workspace</Alert.Title>
+            <Alert.Title>We could not load your account</Alert.Title>
             <Alert.Description>{state.error.message}</Alert.Description>
           </Alert.Content>
           <Button variant="danger" onPress={retry}>
