@@ -1,0 +1,167 @@
+name: Release production SPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: eolian-production-spa
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  FRONT_DOOR_ENDPOINT_NAME: ${{ vars.FRONT_DOOR_ENDPOINT_NAME }}
+  FRONT_DOOR_PROFILE_NAME: ${{ vars.FRONT_DOOR_PROFILE_NAME }}
+  SPA_STORAGE_ACCOUNT_NAME: ${{ vars.SPA_STORAGE_ACCOUNT_NAME }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+          cache: yarn
+
+      - name: Enable pinned Yarn
+        run: |
+          corepack enable
+          test "$(yarn --version)" = "4.4.1"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run browser UI tests
+        run: yarn test:web
+
+      - name: Typecheck browser application
+        run: yarn typecheck:web
+
+      - name: Build browser application
+        run: yarn build:web
+
+      - name: Check SPA release files
+        run: |
+          test -f dist/public/index.html
+          shopt -s nullglob
+          assets=(dist/public/assets/*)
+          ((${#assets[@]} > 0))
+          if find dist/public -type f \
+            ! -path 'dist/public/assets/*' \
+            ! -path 'dist/public/index.html' -print -quit | grep -q .; then
+            echo "Unexpected file outside SPA assets" >&2
+            exit 1
+          fi
+          for asset in "${assets[@]}"; do
+            if [[ ! "$asset" =~ -[A-Za-z0-9_-]{8,}\.(js|css|png)$ ]]; then
+              echo "Unexpected SPA asset: $asset" >&2
+              exit 1
+            fi
+          done
+
+      - name: Validate release configuration
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+        run: |
+          : "${AZURE_CLIENT_ID:?AZURE_CLIENT_ID production variable is required}"
+          : "${AZURE_TENANT_ID:?AZURE_TENANT_ID production variable is required}"
+          : "${AZURE_SUBSCRIPTION_ID:?AZURE_SUBSCRIPTION_ID production variable is required}"
+          : "${AZURE_RESOURCE_GROUP:?AZURE_RESOURCE_GROUP production variable is required}"
+          : "${SPA_STORAGE_ACCOUNT_NAME:?SPA_STORAGE_ACCOUNT_NAME production variable is required}"
+          : "${FRONT_DOOR_PROFILE_NAME:?FRONT_DOOR_PROFILE_NAME production variable is required}"
+          : "${FRONT_DOOR_ENDPOINT_NAME:?FRONT_DOOR_ENDPOINT_NAME production variable is required}"
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Front Door CLI extension
+        run: az extension add --name cdn --version 1.0.0b3 --allow-preview true --upgrade --yes
+
+      - name: Upload content-hashed assets
+        run: |
+          az storage blob upload-batch \
+            --account-name "$SPA_STORAGE_ACCOUNT_NAME" \
+            --auth-mode login \
+            --destination '$web' \
+            --destination-path assets \
+            --source dist/public/assets \
+            --pattern '*.js' \
+            --content-cache-control 'public, max-age=31536000, immutable' \
+            --content-type 'text/javascript; charset=utf-8' \
+            --overwrite true \
+            --only-show-errors \
+            --output none
+          az storage blob upload-batch \
+            --account-name "$SPA_STORAGE_ACCOUNT_NAME" \
+            --auth-mode login \
+            --destination '$web' \
+            --destination-path assets \
+            --source dist/public/assets \
+            --pattern '*.css' \
+            --content-cache-control 'public, max-age=31536000, immutable' \
+            --content-type 'text/css; charset=utf-8' \
+            --overwrite true \
+            --only-show-errors \
+            --output none
+          az storage blob upload-batch \
+            --account-name "$SPA_STORAGE_ACCOUNT_NAME" \
+            --auth-mode login \
+            --destination '$web' \
+            --destination-path assets \
+            --source dist/public/assets \
+            --pattern '*.png' \
+            --content-cache-control 'public, max-age=31536000, immutable' \
+            --content-type image/png \
+            --overwrite true \
+            --only-show-errors \
+            --output none
+
+      - name: Upload index last
+        run: |
+          az storage blob upload \
+            --account-name "$SPA_STORAGE_ACCOUNT_NAME" \
+            --auth-mode login \
+            --container-name '$web' \
+            --name index.html \
+            --file dist/public/index.html \
+            --content-cache-control 'no-cache, no-store, must-revalidate' \
+            --content-type 'text/html; charset=utf-8' \
+            --overwrite true \
+            --only-show-errors \
+            --output none
+
+      - name: Purge Front Door cache
+        run: |
+          az afd endpoint purge \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --profile-name "$FRONT_DOOR_PROFILE_NAME" \
+            --endpoint-name "$FRONT_DOOR_ENDPOINT_NAME" \
+            --content-paths '/*'
+
+      - name: Publish release summary
+        run: |
+          {
+            echo "## Production SPA release"
+            echo
+            echo "- **Status:** Succeeded"
+            echo "- **Source commit:** \`$GITHUB_SHA\`"
+            echo "- **Workflow run:** [${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+            echo "- **Storage account:** \`$SPA_STORAGE_ACCOUNT_NAME\` (\`\$web\`)"
+            echo "- **Front Door profile / endpoint:** \`$FRONT_DOOR_PROFILE_NAME\` / \`$FRONT_DOOR_ENDPOINT_NAME\`"
+            echo "- **Cache policy:** hashed assets are immutable for one year; \`index.html\` is not stored"
+          } >>"$GITHUB_STEP_SUMMARY"

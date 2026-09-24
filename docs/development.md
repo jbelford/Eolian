@@ -47,11 +47,10 @@ browser environment files from `web/` (while `index.html` remains at the reposit
 `web/.env.production` tracks the current public Eolian client ID for production builds. To use
 a different local application ID without editing the tracked file, put
 `VITE_DISCORD_CLIENT_ID=<your-numeric-application-id>` in `web/.env.development.local`.
-`.env.*.local` files are ignored by Git. A release job may override the production ID by setting
-`VITE_DISCORD_CLIENT_ID` in the process environment **before** `yarn build:web`; Vite gives
-process variables precedence over `web/.env.production` and embeds the value at build time.
-The variable is public and must not contain a token or secret. A missing or malformed client ID
-fails the browser build with a configuration error; there is no fallback.
+`.env.*.local` files are ignored by Git. The SPA release builds with the ID from
+`web/.env.production`; Vite embeds this public value at build time. Never put a token or secret in
+a `VITE_` variable. A missing or malformed client ID fails the browser build with a configuration
+error; there is no fallback.
 
 Discord web login additionally requires `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`,
 `SESSION_SECRET`, and the authoritative public `BASE_URI`. See
@@ -72,6 +71,10 @@ The Node build injects `__COMMIT_DATE__` from the latest Git commit. It also map
 development Node builds use the same output path, so PM2, Docker, and local startup commands all
 execute `dist/bundle.js`. The production Docker build runs only the Node build and copies only
 that bundle into the runtime image.
+
+Production browser deployment is also independent from the image release. See
+[Production SPA release](spa-release.md) for the Azure Storage and Front Door release contract,
+cache policy, and rollback procedure.
 
 ## Commands
 
