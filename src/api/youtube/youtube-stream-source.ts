@@ -128,7 +128,8 @@ function createProxyUrl(): string | undefined {
   if (!environment.proxy) {
     return undefined;
   }
-  const sessionId = `sessid-${randomUUID()}`;
   const { user, password, name } = environment.proxy;
-  return `http://${user}-cc-us-${sessionId}:${password}@${name}`;
+  // DataImpulse: country and 30-minute sticky session are parameters after `__`
+  const username = encodeURIComponent(`${user}__cr.us;sessid.${randomUUID().replaceAll('-', '')}`);
+  return `http://${username}:${encodeURIComponent(password)}@${name}`;
 }

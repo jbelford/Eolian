@@ -107,7 +107,7 @@ describe('YouTubeStreamSource', () => {
     ];
     expect(args).toContain('/run/secrets/youtube-cookies.txt');
     expect(options.env.HTTP_PROXY).toMatch(
-      /^http:\/\/proxy-user-cc-us-sessid-[^:]+:proxy-password@proxy\.test$/,
+      /^http:\/\/proxy-user__cr\.us%3Bsessid\.[0-9a-f]{32}:proxy-password@proxy\.test$/,
     );
     expect(options.env.HTTPS_PROXY).toBe(options.env.HTTP_PROXY);
   });
